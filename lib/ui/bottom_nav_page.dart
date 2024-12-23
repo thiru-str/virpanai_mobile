@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -28,7 +29,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
     const Center(child: Text('Categories Page')),
     const Center(child: Text('Cart Page')),
     const Center(child: Text('Favourite Page')),
-    const Center(child: Text('Account Page')),
+    SettingsPage()
   ];
 
   @override
