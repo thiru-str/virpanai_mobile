@@ -1,15 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/model/product_model.dart';
-import 'package:waioz/model/branch_response_model.dart';
-import 'package:waioz/model/create_order_response_model.dart';
-import 'package:waioz/model/login_response_model.dart';
-import 'package:waioz/model/open_cash_response_model.dart';
-import 'package:waioz/model/send_otp_response_model.dart';
-import 'package:waioz/model/verify_otp_response_model.dart';
-import 'package:waioz/ui/login_page.dart';
-
-import '../model/get_orders_response_model.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
@@ -74,36 +64,18 @@ class ApiService {
     String? tenantId = await SharedPreferencesUtil().getString('tenant_id');
 
     // Navigate to the login screen and clear all navigation history
-    Navigator.pushAndRemoveUntil(
+    /*Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen(branchId: branchId!, tenantId: tenantId!)),
           (route) => false,
-    );
+    );*/
   }
 
 
 
-  Future<List<ProductCategory>> getAllProducts() async {
-    try {
-      await addHeader();
-      int? branchId = await SharedPreferencesUtil().getInt('branch_id');
-
-      final response = await _dio.post("get_all_products", data: {"branch_id": branchId});
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        return (response.data['data']['products_list'] as List)
-            .map((categoryJson) => ProductCategory.fromJson(categoryJson))
-            .toList();
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
 
 
-
-  Future<BranchResponse> getBranches(BuildContext context,String tenantId) async {
+/*  Future<BranchResponse> getBranches(BuildContext context,String tenantId) async {
     _dio.options.headers['x-tenant-id'] = tenantId;
     return _makePostRequest(
       "get_branches",
@@ -111,94 +83,8 @@ class ApiService {
           (data) => BranchResponse.fromJson(data),
           context
     );
-  }
+  }*/
 
-  Future<GetOrdersResponse> getOrders(BuildContext context) async {
-    await addHeader();
-    int? branchId = await SharedPreferencesUtil().getInt('branch_id');
-    return _makePostRequest(
-      "get_orders",
-        {"branch_id": branchId,"fiscal_year": "2024-2025"},
-          (data) => GetOrdersResponse.fromJson(data),
-          context
-    );
-  }
-
-  Future<LoginResponse> login(BuildContext context,String tenantId,int branchId,String employeeName,String password) async {
-    _dio.options.headers['x-tenant-id'] = tenantId;
-    return _makePostRequest(
-      "employee_login",
-      {"branch_id": branchId,"employee_name": employeeName,"password": password},
-          (data) => LoginResponse.fromJson(data),
-      context
-    );
-  }
-
-  Future<SendOtpResponse> sendOtp(BuildContext context,String emailId) async {
-    return _makePostRequest(
-      "login_otp",
-      {"email_id": emailId},
-          (data) => SendOtpResponse.fromJson(data),
-      context
-    );
-  }
-
-  Future<VerifyOtpResponse> verifyOtp(BuildContext context,String emailId, String otp) async {
-    return _makePostRequest(
-      "verify_login_otp",
-      {"email_id": emailId, "otp": otp},
-          (data) => VerifyOtpResponse.fromJson(data),
-      context
-    );
-  }
-
-
-  Future<CreateOrderResponse> createOrder(String tenantId,String branchId,String employeeName,String password) async {
-    try {
-      _dio.options.headers['x-tenant-id'] = tenantId;
-        debugPrint('API Request: ${_dio.options.baseUrl}get_branches');
-      final response = await _dio.post("get_branches",data: {"branch_id": branchId,"employee_name": employeeName,"password": password});
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        debugPrint('API Response: ${response.data}');
-        return CreateOrderResponse.fromJson(response.data);
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  Future<OpenCashResponse> openCash(BuildContext context,int employeeId,int openBalanceAmount) async {
-    await addHeader();
-    int? branchId = await SharedPreferencesUtil().getInt('branch_id');
-    return _makePostRequest(
-      "open_cash",
-      {
-        "branch_id": branchId,
-        "employee_id": employeeId,
-        "open_balence": openBalanceAmount
-      },
-          (data) => OpenCashResponse.fromJson(data),
-      context
-    );
-  }
-
-  Future<OpenCashResponse> get(String tenantId,String branchId,String employeeName,String password) async {
-    try {
-      _dio.options.headers['x-tenant-id'] = tenantId;
-        debugPrint('API Request: ${_dio.options.baseUrl}get_branches');
-      final response = await _dio.post("get_branches",data: {"branch_id": branchId,"employee_name": employeeName,"password": password});
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        debugPrint('API Response: ${response.data}');
-        return OpenCashResponse.fromJson(response.data);
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
 
   Future<void> addHeader() async {
     _dio.options.headers['x-jwt-token'] = await SharedPreferencesUtil().getString('token');
