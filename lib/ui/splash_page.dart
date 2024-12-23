@@ -1,19 +1,22 @@
 
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
@@ -33,12 +36,12 @@ class _SplashScreenState extends State<SplashScreen> {
   void navToNextPage() async{
 
 
-    /*Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => nextPage));
+            context, MaterialPageRoute(builder: (context) => WelcomePage()));
       }
-    });*/
+    });
   }
 
 }
