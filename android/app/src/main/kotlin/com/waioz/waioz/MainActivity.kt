@@ -1,4 +1,4 @@
-package com.waioz.waioz
+package com.waioz.cartel
 
 import io.flutter.embedding.android.FlutterActivity
 

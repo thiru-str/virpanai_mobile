@@ -80,28 +80,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - images/ic_no_order.png
-    - images/ic_storees_logo.png
-    - images/ic_storees_splash.png
-    - images/welcome_bg.svg
-    - images/welcome_logo.svg
-    - images/intro_1.svg
-    - images/intro_2.svg
-    - images/intro_3.svg
-    - images/curved_background.svg
-    - images/storees_logo.svg
-    - images/cash_flow_icon.svg
-    - images/cash_icon.svg
-    - images/expense_icon.svg
-    - images/logout_icon.svg
-    - images/order_icon.svg
-    - images/settings_icon.svg
-    - images/message_icon.svg
-    - images/closed_box_icon.svg
-    - images/box_icon.svg
-    - images/total_icon.svg
-    - images/cash_fund_icon.svg
-    - images/order_success_icon.svg
+    - images/ # Includes all files in the `images` folder
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

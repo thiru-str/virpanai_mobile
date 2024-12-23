@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 
@@ -24,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor:AppColors.primary,
       body: Center(
-        child: SvgPicture.asset('images/ic_storees_splash.png',height: 200,width: 200,)
+        child: SvgPicture.asset(AppAssets.app_logo,height: 120,width: 158)
       ),
     );
   }
