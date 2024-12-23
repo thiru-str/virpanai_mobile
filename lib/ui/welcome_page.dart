@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:waioz/ui/sign_in_page.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -63,7 +63,7 @@ class WelcomePage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     // Handle button tap
-                    PageRouteUtils.push(context, SignInPage());
+                    PageRouteUtils.push(context, PhoneNumberPage());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary, // Button color
