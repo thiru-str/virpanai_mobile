@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -27,9 +28,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
   // Pages for each tab
   final List<Widget> _pages = [
     Center(
-      child: AddressCard(icon: Icons.home, title: 'Home', address: 'abc loresum skups dfk sldjf sldkfjs dl \nskjfhds dsjkfhs dfkjsdh', onDelete: ()
-      {}, onEdit: (){}),
-    ),
+      child: NoOrdersWidget(message: 'No Orders yet', buttonText: 'explore categories',iconPath: AppAssets.ic_order_empty, onButtonTap: (){})),
     const Center(child: Text('Categories Page')),
     const Center(child: Text('Cart Page')),
     const Center(child: Text('Favourite Page')),
@@ -73,6 +72,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.tabInActivecolor,
         showUnselectedLabels: true,
+        backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: FontUtils.circularStdStyle(),
         unselectedLabelStyle: FontUtils.circularStdStyle(),

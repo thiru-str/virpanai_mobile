@@ -1,5 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/model/product_detail_response.dart';
+import 'package:waioz/model/product_response.dart';
+import 'package:waioz/model/send_otp_response.dart';
+import 'package:waioz/model/verify_otp_response.dart';
+import 'package:waioz/utility/app_logger.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
@@ -8,9 +13,10 @@ class ApiService {
 
   ApiService() {
     // Configure Dio
-    _dio.options.baseUrl = "https://test.posapi.storees.io/";
+    _dio.options.baseUrl = "https://cartel.waioz.com/";
     _dio.options.headers = {
       "Content-Type": "application/json",
+      "x-publishable-api-key": "pk_44ebcac78abeb65b06a8adfc90f56bafa548043255c2da64f99174bfb1bd2830",
     };
     _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
@@ -24,13 +30,13 @@ class ApiService {
       BuildContext context,
       ) async {
     try {
-      debugPrint('API Request: ${_dio.options.baseUrl}$endpoint');
-      debugPrint('API Params: ${data ?? {}}');
+      AppLogger.print('API Request', '_dio.options.baseUrl}$endpoint');
+      AppLogger.print('API Params:', '${data ?? {}}');
 
       final response = await _dio.post(endpoint, data: data ?? {});
       if (response.statusCode == 200) {
         if (response.data['success'] == true) {
-          debugPrint('API Response: ${response.data}');
+          AppLogger.print('API Response:', '${response.data}');
           return fromJson(response.data);
         } else if (response.data['status'] == 401) {
           await _handleLogout(context, response.data['message']);
@@ -44,11 +50,50 @@ class ApiService {
       }
 
     } catch (e, stacktrace) {
-      debugPrint('API Exception: $e');
-      debugPrint('Stacktrace: $stacktrace');
+      AppLogger.print('API Exception:','$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
       throw Exception('An error occurred: $e');
     }
   }
+
+  Future<T> _makeGetRequest<T>(
+      String endpoint,
+      String? dynamicPath, // Optional dynamic path
+      T Function(Map<String, dynamic>) fromJson,
+      BuildContext context,
+      ) async {
+    try {
+
+      // Combine endpoint and dynamic path
+      final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
+          ? '$endpoint/$dynamicPath'
+          : endpoint;
+
+      AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
+
+      final response = await _dio.get(fullEndpoint);
+
+      if (response.statusCode == 200) {
+        if (response.data['success'] == true) {
+          AppLogger.print('API Response:', '${response.data}');
+          return fromJson(response.data);
+        } else if (response.data['status'] == 401) {
+          await _handleLogout(context, response.data['message']);
+          throw Exception('Unauthorized: ${response.data['message']}');
+        } else {
+          AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+          throw Exception('API Error: ${response.data['message'] ?? 'Unknown error'}');
+        }
+      } else {
+        throw Exception('Unexpected status code: ${response.statusCode}');
+      }
+    } catch (e, stacktrace) {
+      AppLogger.print('API Exception:','$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
+    }
+  }
+
 
 
   Future<void> _handleLogout(BuildContext context, String? message) async {
@@ -71,19 +116,41 @@ class ApiService {
     );*/
   }
 
-
-
-
-
-/*  Future<BranchResponse> getBranches(BuildContext context,String tenantId) async {
-    _dio.options.headers['x-tenant-id'] = tenantId;
+  Future<SendOtpResponse> sendOtp(BuildContext context,String phone) async {
     return _makePostRequest(
-      "get_branches",
-          null,
-          (data) => BranchResponse.fromJson(data),
-          context
+        "store/customers/send-otp",
+        {"phone": phone},
+            (data) => SendOtpResponse.fromJson(data),
+        context
     );
-  }*/
+  }
+
+  Future<VerifyOtpResponse> verifyOtp(BuildContext context,String phone,String otp) async {
+    return _makePostRequest(
+        "store/customers/verify-otp",
+        {"phone": phone},
+            (data) => VerifyOtpResponse.fromJson(data),
+        context
+    );
+  }
+
+  Future<ProductsResponse> listProducts(BuildContext context) async {
+      return _makeGetRequest<ProductsResponse>(
+        'store/products',
+        null,
+            (json) => ProductsResponse.fromJson(json),
+        context,
+      );
+  }
+
+  Future<ProductDetailReponse> productDetail(BuildContext context,String productId) async {
+      return _makeGetRequest<ProductDetailReponse>(
+        'store/products',
+        productId,
+            (json) => ProductDetailReponse.fromJson(json),
+        context,
+      );
+  }
 
 
   Future<void> addHeader() async {

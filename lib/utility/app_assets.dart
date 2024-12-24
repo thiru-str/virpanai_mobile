@@ -8,6 +8,8 @@ class AppAssets {
   static const String ic_menu_categories = 'images/ic_menu_categories.png';
   static const String ic_menu_favourite = 'images/ic_menu_favourite.png';
   static const String ic_menu_shop = 'images/ic_menu_shop.png';
+  static const String ic_cart_empty = 'images/ic_cart_empty.png';
+  static const String ic_order_empty = 'images/ic_order_empty.png';
 
 // Add more assets as needed
 }

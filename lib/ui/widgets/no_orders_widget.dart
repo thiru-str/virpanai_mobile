@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:waioz/utility/font_utils.dart';
 
+import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 
 class NoOrdersWidget extends StatelessWidget {
   final String message;
   final String buttonText;
+  final String iconPath;
   final VoidCallback onButtonTap;
 
   const NoOrdersWidget({
     Key? key,
     required this.message,
     required this.buttonText,
+    required this.iconPath,
     required this.onButtonTap,
   }) : super(key: key);
 
@@ -22,34 +27,14 @@ class NoOrdersWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Icon Section
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              Icon(
-                Icons.shopping_cart_outlined,
-                size: 100,
-                color: Colors.orange,
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: CircleAvatar(
-                  radius: 15,
-                  backgroundColor: AppColors.primary,
-                  child: Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+          Image.asset(
+            iconPath,height: 100,width: 100,
           ),
           const SizedBox(height: 16),
           // Message Section
           Text(
             message,
-            style: TextStyle(
+            style: FontUtils.circularStdStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -68,7 +53,7 @@ class NoOrdersWidget extends StatelessWidget {
             ),
             child: Text(
               buttonText,
-              style: TextStyle(
+              style: FontUtils.circularStdStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
