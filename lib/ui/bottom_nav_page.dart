@@ -27,8 +27,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
 
   // Pages for each tab
   final List<Widget> _pages = [
-    Center(
-      child: NoOrdersWidget(message: 'No Orders yet', buttonText: 'explore categories',iconPath: AppAssets.ic_order_empty, onButtonTap: (){})),
+    const Center(child: Text('Shop Page')),
     const Center(child: Text('Categories Page')),
     const Center(child: Text('Cart Page')),
     const Center(child: Text('Favourite Page')),

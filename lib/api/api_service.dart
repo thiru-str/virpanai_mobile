@@ -47,6 +47,9 @@ class ApiService {
           AppUtils.showToast(response.data['message'] ?? 'An error occurred');
           throw Exception('API Error: ${response.data['message'] ?? 'Unknown error'}');
         }
+      } else if (response.statusCode == 400) {
+        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
@@ -88,6 +91,10 @@ class ApiService {
           AppUtils.showToast(response.data['message'] ?? 'An error occurred');
           throw Exception('API Error: ${response.data['message'] ?? 'Unknown error'}');
         }
+      }
+      else if (response.statusCode == 400) {
+        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }

@@ -11,9 +11,10 @@ import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 
 class OtpVerificationPage extends StatefulWidget {
+  final String countryCode;
   final String phoneNo;
 
-  const OtpVerificationPage({super.key,required this.phoneNo});
+  const OtpVerificationPage({super.key,required this.countryCode,required this.phoneNo});
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -65,7 +66,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             const SizedBox(height: 16),
             // Subtitle
             Text(
-              'Enter the code from the number we sent to\n ${widget.phoneNo}',
+              'Enter the code from the number we sent to\n ${widget.countryCode} ${widget.phoneNo}',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[700],

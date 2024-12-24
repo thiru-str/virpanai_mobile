@@ -22,6 +22,7 @@ class PhoneNumberPage extends StatefulWidget {
 class _PhoneNumberPageState extends State<PhoneNumberPage> {
   final _formKey = GlobalKey<FormState>();
   String? _phoneNumber;
+  String? _countryCode;
 
   SendOtpResponse? sendOtpResponse;
   bool apiCalling = true;
@@ -86,10 +87,11 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                       ),
                     ),
                     initialCountryCode: 'IN', // Default country code
-                    showDropdownIcon: false,
+                    showDropdownIcon: true,
                     onChanged: (phone) {
                       setState(() {
-                        _phoneNumber = phone.number; // Full phone number
+                        _phoneNumber = phone.number;
+                        _countryCode = phone.countryCode;
                       });
                     },
                     validator: (value) {
@@ -118,8 +120,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     // Proceed if validation passes
-                    if(_phoneNumber!=null) {
-                      sendOtp(_phoneNumber!);
+                    if (_phoneNumber != null) {
+                      sendOtp();
+                    } else {
+                      AppUtils.showToast('Enter Phone Number');
                     }
                   }
                 },
@@ -134,10 +138,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     );
   }
 
-  void sendOtp(String phoneNo) async {
+  void sendOtp() async {
     try {
       final ApiService apiService = ApiService();
-      sendOtpResponse = await apiService.sendOtp(context,phoneNo);
+      sendOtpResponse = await apiService.sendOtp(context,_phoneNumber!);
       if (kDebugMode) {
         AppUtils.showToast(sendOtpResponse!.otp!);
       }
@@ -145,7 +149,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         apiCalling = false;
       });
 
-      PageRouteUtils.push(context, OtpVerificationPage(phoneNo: phoneNo));
+      PageRouteUtils.push(context, OtpVerificationPage(countryCode:_countryCode!,phoneNo: _phoneNumber!));
     } catch (e) {
       setState(() {
         apiCalling = false;
