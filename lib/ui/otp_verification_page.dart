@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/ui/register_page.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -172,7 +173,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       }
       else{
         //redirect to create account page
-
+        PageRouteUtils.pushAndRemoveUntil(context, RegisterPage());
+        return;
       }
 
       PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());

@@ -65,7 +65,7 @@ class WelcomePage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     // Handle button tap
-                    PageRouteUtils.push(context, RegisterPage());
+                    PageRouteUtils.push(context, const PhoneNumberPage());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary, // Button color
