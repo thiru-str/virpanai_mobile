@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../utility/app_colors.dart';
+
 class CartItemCard extends StatelessWidget {
   final String imageUrl;
   final String productName;
@@ -107,7 +109,7 @@ class CartItemCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4.0),
                       decoration: BoxDecoration(
-                        color: Colors.purple,
+                        color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -134,7 +136,7 @@ class CartItemCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4.0),
                       decoration: BoxDecoration(
-                        color: Colors.purple,
+                        color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/accounts_page.dart';
+import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -25,7 +26,10 @@ class _BottomNavPageState extends State<BottomNavPage> {
 
   // Pages for each tab
   final List<Widget> _pages = [
-    const Center(child: Text('Shop Page')),
+    Center(
+      child: AddressCard(icon: Icons.home, title: 'Home', address: 'abc loresum skups dfk sldjf sldkfjs dl \nskjfhds dsjkfhs dfkjsdh', onDelete: ()
+      {}, onEdit: (){}),
+    ),
     const Center(child: Text('Categories Page')),
     const Center(child: Text('Cart Page')),
     const Center(child: Text('Favourite Page')),
@@ -36,19 +40,6 @@ class _BottomNavPageState extends State<BottomNavPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          _titles[_currentIndex], // Dynamic title
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: _pages[_currentIndex], // Render the current page
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,

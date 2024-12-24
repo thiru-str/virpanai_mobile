@@ -10,6 +10,7 @@ class SettingsPage extends StatelessWidget {
       body: Column(
         children: [
           // Profile Section
+          const SizedBox(height: 50,),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -25,7 +26,7 @@ class SettingsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.purple,
+                        color: AppColors.primary,
                         width: 2,
                       ),
                     ),
@@ -42,9 +43,9 @@ class SettingsPage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
+                      const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Gilbert Jones',
                             style: TextStyle(
@@ -73,7 +74,7 @@ class SettingsPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Colors.purple,
+                            color: AppColors.primary,
                           ),
                         ),
                       ),

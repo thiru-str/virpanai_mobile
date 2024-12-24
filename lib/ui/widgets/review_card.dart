@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../utility/app_colors.dart';
+
 class ReviewCard extends StatelessWidget {
   final String profileImageUrl;
   final String name;
@@ -57,7 +59,7 @@ class ReviewCard extends StatelessWidget {
                           index < rating.round()
                               ? Icons.star
                               : Icons.star_border,
-                          color: Colors.purple,
+                          color: AppColors.primary,
                           size: 16,
                         );
                       }),

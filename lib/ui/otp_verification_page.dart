@@ -3,6 +3,8 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../utility/app_colors.dart';
+
 class OtpVerificationPage extends StatefulWidget {
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -82,7 +84,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 selectedFillColor: Colors.white,
                 inactiveColor: Colors.grey[400]!,
                 activeColor: Colors.blue,
-                selectedColor: Colors.purple,
+                selectedColor: AppColors.primary,
               ),
               enableActiveFill: true,
               onCompleted: (value) {

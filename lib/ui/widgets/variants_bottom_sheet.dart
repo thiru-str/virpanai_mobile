@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../utility/app_colors.dart';
+
 class VariantsBottomSheet extends StatelessWidget {
   final String title;
   final List<String> options;
@@ -72,7 +74,7 @@ class VariantsBottomSheet extends StatelessWidget {
                   trailing: option == selectedOption
                       ? Icon(
                     Icons.check_circle,
-                    color: Colors.purple,
+                    color: AppColors.primary,
                     size: 24,
                   )
                       : null,

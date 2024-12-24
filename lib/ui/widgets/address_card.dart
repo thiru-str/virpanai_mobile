@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/font_utils.dart';
+
+import '../../utility/app_colors.dart';
 
 class AddressCard extends StatelessWidget {
   final IconData icon;
@@ -19,67 +22,81 @@ class AddressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 145,
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: AppColors.secondary,
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 10,),
           Row(
             children: [
               Icon(
                 icon,
-                color: Colors.purple,
+                color: AppColors.primary,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: TextStyle(
+                style: FontUtils.circularStdStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.profileItemArrowColor,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            address,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
+          Container(
+            margin: const EdgeInsets.only(left: 36.0),
+            child: Text(
+              address,
+              style:  FontUtils.circularStdStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: AppColors.profileItemArrowColor,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              TextButton(
-                onPressed: onDelete,
-                child: Text(
-                  'DELETE',
-                  style: TextStyle(
-                    color: Colors.purple,
-                    fontWeight: FontWeight.bold,
+
+          Container(
+            margin: const EdgeInsets.only(left: 36.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding:  EdgeInsets.zero, // Removes the default padding
+                    minimumSize: const Size(0, 0), // Ensures no extra size is added
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
+                  ),
+                  onPressed: onDelete,
+                  child:  Text(
+                    'DELETE',
+                    style: FontUtils.circularStdStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              TextButton(
-                onPressed: onEdit,
-                child: Text(
-                  'EDIT',
-                  style: TextStyle(
-                    color: Colors.purple,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 16),
+                TextButton(
+                  onPressed: onEdit,
+                  child:  Text(
+                    'EDIT',
+                    style: FontUtils.circularStdStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           )
         ],
       ),

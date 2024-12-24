@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../utility/app_colors.dart';
+
 class NoOrdersWidget extends StatelessWidget {
   final String message;
   final String buttonText;
@@ -33,7 +35,7 @@ class NoOrdersWidget extends StatelessWidget {
                 right: 10,
                 child: CircleAvatar(
                   radius: 15,
-                  backgroundColor: Colors.purple,
+                  backgroundColor: AppColors.primary,
                   child: Icon(
                     Icons.check,
                     size: 16,
@@ -58,7 +60,7 @@ class NoOrdersWidget extends StatelessWidget {
           ElevatedButton(
             onPressed: onButtonTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple, // Background color
+              backgroundColor: AppColors.primary, // Background color
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
