@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -38,7 +39,7 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
       ),
       title: Text(
         title,
-        style: TextStyle(
+        style: FontUtils.circularStdStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: Colors.black87,

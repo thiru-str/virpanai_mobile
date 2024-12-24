@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class OrderDetailItemCard extends StatelessWidget {
   final String imageUrl;
@@ -47,7 +48,7 @@ class OrderDetailItemCard extends StatelessWidget {
                 // Product Name
                 Text(
                   productName,
-                  style: TextStyle(
+                  style: FontUtils.circularStdStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -59,7 +60,7 @@ class OrderDetailItemCard extends StatelessWidget {
                   children: [
                     Text(
                       'Size - $size',
-                      style: TextStyle(
+                      style: FontUtils.circularStdStyle(
                         fontSize: 14,
                         color: Colors.black54,
                       ),
@@ -67,7 +68,7 @@ class OrderDetailItemCard extends StatelessWidget {
                     const SizedBox(width: 16),
                     Text(
                       'Color - $color',
-                      style: TextStyle(
+                      style: FontUtils.circularStdStyle(
                         fontSize: 14,
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
@@ -81,7 +82,7 @@ class OrderDetailItemCard extends StatelessWidget {
           // Product Price
           Text(
             '\$$price',
-            style: TextStyle(
+            style: FontUtils.circularStdStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black87,

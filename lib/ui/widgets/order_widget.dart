@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class OrderWidget extends StatelessWidget {
   final String orderId;
@@ -39,7 +40,7 @@ class OrderWidget extends StatelessWidget {
                   children: [
                     Text(
                       'Order #$orderId',
-                      style: TextStyle(
+                      style: FontUtils.circularStdStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -48,9 +49,9 @@ class OrderWidget extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '$itemCount items',
-                      style: TextStyle(
+                      style: FontUtils.circularStdStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: Colors.grey[600]!,
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_colors.dart';
 
@@ -34,7 +35,7 @@ class VariantsBottomSheet extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: FontUtils.circularStdStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -65,7 +66,7 @@ class VariantsBottomSheet extends StatelessWidget {
                   onTap: () => onOptionSelected(option),
                   title: Text(
                     option,
-                    style: TextStyle(
+                    style: FontUtils.circularStdStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: Colors.black87,

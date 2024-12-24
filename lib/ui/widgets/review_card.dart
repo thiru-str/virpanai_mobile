@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_colors.dart';
 
@@ -46,7 +47,7 @@ class ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: TextStyle(
+                      style: FontUtils.circularStdStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -73,7 +74,7 @@ class ReviewCard extends StatelessWidget {
           // Review Text
           Text(
             reviewText,
-            style: TextStyle(
+            style: FontUtils.circularStdStyle(
               fontSize: 14,
               color: Colors.black54,
             ),
@@ -82,7 +83,7 @@ class ReviewCard extends StatelessWidget {
           // Timestamp
           Text(
             timestamp,
-            style: TextStyle(
+            style: FontUtils.circularStdStyle(
               fontSize: 12,
               color: Colors.grey,
             ),

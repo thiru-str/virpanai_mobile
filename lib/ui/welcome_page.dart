@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/ui/phone_number_page.dart';
+import 'package:waioz/ui/register_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -64,7 +65,7 @@ class WelcomePage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     // Handle button tap
-                    PageRouteUtils.push(context, PhoneNumberPage());
+                    PageRouteUtils.push(context, RegisterPage());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary, // Button color

@@ -51,7 +51,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             // Title
             Text(
               'Enter your mobile\nnumber',
-              style: TextStyle(
+              style: FontUtils.circularStdStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -67,10 +67,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                   // Label
                   Text(
                     'Mobile Number',
-                    style: TextStyle(
+                    style: FontUtils.circularStdStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
+                      color: Colors.grey[700]!,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -117,6 +117,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
+                elevation: 0,
+                shape: const CircleBorder(),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     // Proceed if validation passes
@@ -127,8 +129,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     }
                   }
                 },
-                backgroundColor: Color(0xFF6A4BF6), // Purple color
-                child: Icon(Icons.arrow_forward, color: Colors.white),
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.arrow_forward_ios, color: Colors.white),
               ),
             ),
             const SizedBox(height: 20),

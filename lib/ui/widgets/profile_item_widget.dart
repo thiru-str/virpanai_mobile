@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class ProfileItemWidget extends StatelessWidget {
   final String title;
@@ -29,7 +30,7 @@ class ProfileItemWidget extends StatelessWidget {
             // Title
             Text(
               title,
-              style: TextStyle(
+              style: FontUtils.circularStdStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,

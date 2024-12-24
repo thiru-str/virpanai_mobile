@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class CheckoutItemCard extends StatelessWidget {
   final String title;
@@ -32,7 +33,7 @@ class CheckoutItemCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: FontUtils.circularStdStyle(
                     fontSize: 14,
                     color: Colors.black54,
                     fontWeight: FontWeight.normal,
@@ -41,7 +42,7 @@ class CheckoutItemCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: FontUtils.circularStdStyle(
                     fontSize: 16,
                     color: Colors.black87,
                     fontWeight: FontWeight.w500,

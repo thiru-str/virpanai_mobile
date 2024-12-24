@@ -3,6 +3,7 @@ import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
@@ -47,12 +48,12 @@ class SettingsPage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Gilbert Jones',
-                            style: TextStyle(
+                            style: FontUtils.circularStdStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
@@ -61,7 +62,7 @@ class SettingsPage extends StatelessWidget {
                           SizedBox(height: 4),
                           Text(
                             'Gilbertjones001@gmail.com',
-                            style: TextStyle(
+                            style: FontUtils.circularStdStyle(
                               fontSize: 14,
                               color: Colors.black54,
                             ),
@@ -73,9 +74,9 @@ class SettingsPage extends StatelessWidget {
                         onPressed: () {
                           // Edit action
                         },
-                        child: const Text(
+                        child: Text(
                           'Edit',
-                          style: TextStyle(
+                          style: FontUtils.circularStdStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
@@ -150,9 +151,9 @@ class SettingsPage extends StatelessWidget {
                 SharedPreferencesUtil().clear();
                 PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
               },
-              child: const Text(
+              child: Text(
                 'Sign Out',
-                style: TextStyle(
+                style: FontUtils.circularStdStyle(
                   color: Colors.red,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

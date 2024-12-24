@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
@@ -55,9 +56,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           children: [
             const SizedBox(height: 16),
             // Title
-            const Text(
+            Text(
               'Enter Your 6-Digit\nCode',
-              style: TextStyle(
+              style: FontUtils.circularStdStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -67,9 +68,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             // Subtitle
             Text(
               'Enter the code from the number we sent to\n ${widget.countryCode} ${widget.phoneNo}',
-              style: TextStyle(
+              style: FontUtils.circularStdStyle(
                 fontSize: 16,
-                color: Colors.grey[700],
+                color: Colors.grey[700]!,
               ),
             ),
             const SizedBox(height: 32),
@@ -82,7 +83,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               keyboardType: TextInputType.number,
               autoFocus: true,
               animationType: AnimationType.none,
-              textStyle: const TextStyle(
+              textStyle: FontUtils.circularStdStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -118,11 +119,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     // Handle Resend Code
                     print('Resend Code');
                   },
-                  child: const Row(
+                  child: Row(
                     children: [
                       Text(
                         'Resend Code',
-                        style: TextStyle(
+                        style: FontUtils.circularStdStyle(
                           fontSize: 16,
                           color: AppColors.primary,
                         ),
@@ -130,9 +131,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       SizedBox(width: 8),
                       Text(
                         '02:32', // Replace with actual timer logic
-                        style: TextStyle(
+                        style: FontUtils.circularStdStyle(
                           fontSize: 16,
-                          color: Colors.black,
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
@@ -140,13 +141,14 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 ),
                 // Floating Action Button
                 FloatingActionButton(
+                  shape: const CircleBorder(),
                   onPressed: () {
                     // Validate OTP and proceed
                     print('Submitted OTP: ${_otpController.text}');
                     verifyOtp();
                   },
-                  backgroundColor: const Color(0xFF6A4BF6), // Purple color
-                  child: const Icon(Icons.arrow_forward, color: Colors.white),
+                  backgroundColor: AppColors.primary,
+                  child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
                 ),
               ],
             ),
