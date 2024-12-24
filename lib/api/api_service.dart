@@ -145,6 +145,15 @@ class ApiService {
     );
   }
 
+  Future<VerifyOtpResponse> register(BuildContext context,String email,String companyName,String firstName,String lastName,String phone) async {
+    return _makePostRequest(
+        "store/customers",
+        {"email": email,"company_name": companyName,"first_name":firstName,"last_name":lastName,"phone":phone, "metadata": {}},
+            (data) => VerifyOtpResponse.fromJson(data),
+        context
+    );
+  }
+
   Future<ProductsResponse> listProducts(BuildContext context) async {
       return _makeGetRequest<ProductsResponse>(
         'store/products',

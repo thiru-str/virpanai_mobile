@@ -4,7 +4,6 @@ import 'package:waioz/ui/widgets/custom_text_field.dart';
 
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
-import '../utility/app_strings.dart';
 import '../utility/font_utils.dart';
 
 class RegisterPage extends StatelessWidget {
