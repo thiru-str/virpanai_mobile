@@ -1,11 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../api/api_service.dart';
+import '../utility/app_utils.dart';
+
 class PhoneNumberPage extends StatefulWidget {
+  const PhoneNumberPage({super.key});
+
   @override
   _PhoneNumberPageState createState() => _PhoneNumberPageState();
 }
@@ -13,6 +20,9 @@ class PhoneNumberPage extends StatefulWidget {
 class _PhoneNumberPageState extends State<PhoneNumberPage> {
   final _formKey = GlobalKey<FormState>();
   String? _phoneNumber;
+
+  SendOtpResponse? sendOtpResponse;
+  bool apiCalling = true;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +87,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     showDropdownIcon: false,
                     onChanged: (phone) {
                       setState(() {
-                        _phoneNumber = phone.completeNumber; // Full phone number
+                        _phoneNumber = phone.number; // Full phone number
                       });
                     },
                     validator: (value) {
@@ -106,8 +116,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     // Proceed if validation passes
-                    print('Phone Number: $_phoneNumber');
-                    PageRouteUtils.push(context, OtpVerificationPage());
+                    if(_phoneNumber!=null) {
+                      sendOtp(_phoneNumber!);
+                    }
                   }
                 },
                 backgroundColor: Color(0xFF6A4BF6), // Purple color
@@ -119,5 +130,25 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         ),
       ),
     );
+  }
+
+  void sendOtp(String phoneNo) async {
+    try {
+      final ApiService apiService = ApiService();
+      sendOtpResponse = await apiService.sendOtp(context,phoneNo);
+      if (kDebugMode) {
+        AppUtils.showToast(sendOtpResponse!.otp!);
+      }
+      setState(() {
+        apiCalling = false;
+      });
+
+      PageRouteUtils.push(context, OtpVerificationPage(phoneNo: phoneNo));
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
   }
 }

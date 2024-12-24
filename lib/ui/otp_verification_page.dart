@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../api/api_service.dart';
 import '../utility/app_colors.dart';
 
 class OtpVerificationPage extends StatefulWidget {
+  final String phoneNo;
+
+  const OtpVerificationPage({super.key,required this.phoneNo});
+
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
 }
@@ -13,6 +20,9 @@ class OtpVerificationPage extends StatefulWidget {
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
   final TextEditingController _otpController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+
+  bool apiCalling = true;
+  VerifyOtpResponse? verifyOtpResponse;
 
   @override
   void dispose() {
@@ -29,7 +39,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -42,7 +52,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           children: [
             const SizedBox(height: 16),
             // Title
-            Text(
+            const Text(
               'Enter Your 4-Digit\nCode',
               style: TextStyle(
                 fontSize: 24,
@@ -53,7 +63,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             const SizedBox(height: 16),
             // Subtitle
             Text(
-              'Enter the code from the number we sent to\n+91 856234125',
+              'Enter the code from the number we sent to\n ${widget.phoneNo}',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[700],
@@ -63,13 +73,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             // OTP Fields
             PinCodeTextField(
               appContext: context,
-              length: 4, // Number of OTP digits
+              length: 6, // Number of OTP digits
               controller: _otpController,
               focusNode: _focusNode,
               keyboardType: TextInputType.number,
               autoFocus: true,
               animationType: AnimationType.none,
-              textStyle: TextStyle(
+              textStyle: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -79,11 +89,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 borderRadius: BorderRadius.circular(8),
                 fieldHeight: 50,
                 fieldWidth: 50,
-                inactiveFillColor: Colors.grey[200]!,
-                activeFillColor: Colors.grey[200]!,
+                inactiveFillColor: Colors.white,
+                activeFillColor: Colors.white,
                 selectedFillColor: Colors.white,
-                inactiveColor: Colors.grey[400]!,
-                activeColor: Colors.blue,
+                inactiveColor: AppColors.secondary,
+                activeColor: AppColors.primary,
                 selectedColor: AppColors.primary,
               ),
               enableActiveFill: true,
@@ -105,16 +115,16 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     // Handle Resend Code
                     print('Resend Code');
                   },
-                  child: Row(
+                  child: const Row(
                     children: [
                       Text(
                         'Resend Code',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.blue,
+                          color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text(
                         '02:32', // Replace with actual timer logic
                         style: TextStyle(
@@ -130,10 +140,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   onPressed: () {
                     // Validate OTP and proceed
                     print('Submitted OTP: ${_otpController.text}');
-                    PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+                    verifyOtp();
                   },
-                  backgroundColor: Color(0xFF6A4BF6), // Purple color
-                  child: Icon(Icons.arrow_forward, color: Colors.white),
+                  backgroundColor: const Color(0xFF6A4BF6), // Purple color
+                  child: const Icon(Icons.arrow_forward, color: Colors.white),
                 ),
               ],
             ),
@@ -142,5 +152,30 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         ),
       ),
     );
+  }
+
+  void verifyOtp() async {
+    try {
+      final ApiService apiService = ApiService();
+      verifyOtpResponse = await apiService.verifyOtp(context,widget.phoneNo,_otpController.text);
+      setState(() {
+        apiCalling = false;
+      });
+
+      if(!verifyOtpResponse!.newUser!) {
+        SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
+      }
+      else{
+        //redirect to create account page
+
+      }
+
+      PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
   }
 }

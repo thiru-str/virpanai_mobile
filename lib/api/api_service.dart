@@ -30,11 +30,13 @@ class ApiService {
       BuildContext context,
       ) async {
     try {
-      AppLogger.print('API Request', '_dio.options.baseUrl}$endpoint');
+      debugPrint('API Request: ${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
 
       final response = await _dio.post(endpoint, data: data ?? {});
       if (response.statusCode == 200) {
+        AppLogger.print('API Response:', '${response.data}');
+        return fromJson(response.data);
         if (response.data['success'] == true) {
           AppLogger.print('API Response:', '${response.data}');
           return fromJson(response.data);
@@ -74,6 +76,8 @@ class ApiService {
       final response = await _dio.get(fullEndpoint);
 
       if (response.statusCode == 200) {
+        AppLogger.print('API Response:', '${response.data}');
+        return fromJson(response.data);
         if (response.data['success'] == true) {
           AppLogger.print('API Response:', '${response.data}');
           return fromJson(response.data);
@@ -128,7 +132,7 @@ class ApiService {
   Future<VerifyOtpResponse> verifyOtp(BuildContext context,String phone,String otp) async {
     return _makePostRequest(
         "store/customers/verify-otp",
-        {"phone": phone},
+        {"phone": phone,"otp": otp},
             (data) => VerifyOtpResponse.fromJson(data),
         context
     );

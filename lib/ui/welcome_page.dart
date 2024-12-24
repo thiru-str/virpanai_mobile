@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -88,5 +89,6 @@ class WelcomePage extends StatelessWidget {
         ],
       ),)
     );
+
   }
 }
