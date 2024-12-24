@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -32,7 +34,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: SvgPicture.asset(AppAssets.ic_arrow_svg,height: 16,width: 16,),
           onPressed: () {
             Navigator.pop(context);
           },

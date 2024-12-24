@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
@@ -6,6 +7,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
+import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 
 class OtpVerificationPage extends StatefulWidget {
@@ -35,11 +37,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar:AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: SvgPicture.asset(AppAssets.ic_arrow_svg,height: 16,width: 16),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -53,7 +55,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             const SizedBox(height: 16),
             // Title
             const Text(
-              'Enter Your 4-Digit\nCode',
+              'Enter Your 6-Digit\nCode',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

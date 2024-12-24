@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:waioz/utility/app_assets.dart';
 
 class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -21,13 +23,16 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
         child: Container(
           margin: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
             shape: BoxShape.circle,
+            color: Colors.grey[200], // Background color
           ),
-          child: Icon(
-            Icons.arrow_back_ios,
-            size: 16,
-            color: Colors.black87,
+          child: Center(
+            child: SvgPicture.asset(
+              AppAssets.ic_arrow_svg,
+              height: 16,
+              width: 16,
+              color: Colors.black87,
+            ),
           ),
         ),
       ),
