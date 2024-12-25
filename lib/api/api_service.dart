@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/model/product_categories_response.dart';
+import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart';
@@ -170,6 +172,24 @@ class ApiService {
         'store/products',
         productId,
             (json) => ProductDetailReponse.fromJson(json),
+        context,
+      );
+  }
+
+  Future<ProductCategoriesResponse> productCategories(BuildContext context) async {
+      return _makeGetRequest<ProductCategoriesResponse>(
+        'store/product-categories',
+            null,
+            (json) => ProductCategoriesResponse.fromJson(json),
+        context,
+      );
+  }
+
+  Future<ProductCategoryResponse> productCategory(BuildContext context,String categoryId) async {
+      return _makeGetRequest<ProductCategoryResponse>(
+        'store/product-categories',
+        categoryId,
+            (json) => ProductCategoryResponse.fromJson(json),
         context,
       );
   }
