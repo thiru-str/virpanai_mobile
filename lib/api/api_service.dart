@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
+import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -145,11 +146,12 @@ class ApiService {
     );
   }
 
-  Future<VerifyOtpResponse> register(BuildContext context,String email,String companyName,String firstName,String lastName,String phone) async {
+  Future<RegisterResponse> register(BuildContext context,String email,String companyName,String firstName,String lastName,String phone,String token) async {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
     return _makePostRequest(
         "store/customers",
         {"email": email,"company_name": companyName,"first_name":firstName,"last_name":lastName,"phone":phone, "metadata": {}},
-            (data) => VerifyOtpResponse.fromJson(data),
+            (data) => RegisterResponse.fromJson(data),
         context
     );
   }

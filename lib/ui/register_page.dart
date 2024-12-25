@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 
+import '../api/api_service.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
+import '../utility/page_route_utils.dart';
+import '../utility/shared_preferences_util.dart';
+import 'bottom_nav_page.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
+  final String countryCode;
+  final String phoneNo;
+  final String token;
+  const RegisterPage({super.key,required this.countryCode,required this.phoneNo,required this.token});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-  TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
 
-  RegisterPage({Key? key}) : super(key: key);
+  final TextEditingController emailController = TextEditingController();
+
+  final TextEditingController companyController = TextEditingController();
+
+
+  bool apiCalling = true;
+  RegisterResponse? registerResponse;
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +66,22 @@ class RegisterPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               CustomTextField(
-                hintText: "Username",
-                controller: usernameController,
+                hintText: "First Name",
+                controller: firstNameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Username is required";
+                    return "First name  is required";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                hintText: "Last Name",
+                controller: lastNameController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "First name  is required";
                   }
                   return null;
                 },
@@ -75,30 +104,12 @@ class RegisterPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               CustomTextField(
-                hintText: "Password",
-                controller: passwordController,
+                hintText: "Company",
+                controller: companyController,
                 isPassword: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Password is required";
-                  }
-                  if (value.length < 6) {
-                    return "Password must be at least 6 characters";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: "Confirm password",
-                controller: confirmPasswordController,
-                isPassword: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Confirm password is required";
-                  }
-                  if (value != passwordController.text) {
-                    return "Passwords do not match";
+                    return "Company is required";
                   }
                   return null;
                 },
@@ -109,6 +120,7 @@ class RegisterPage extends StatelessWidget {
                   if (_formKey.currentState!.validate()) {
                     // Handle registration logic
                     print("Form is valid. Proceed to register.");
+                    register();
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -132,5 +144,25 @@ class RegisterPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void register() async {
+    try {
+      final ApiService apiService = ApiService();
+      registerResponse = await apiService.register(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text,widget.phoneNo,widget.token);
+      setState(() {
+        apiCalling = false;
+      });
+
+      SharedPreferencesUtil().saveString('token', widget.token);
+      SharedPreferencesUtil().saveMap('customer', registerResponse!.customer!.toJson());
+
+      PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
   }
 }

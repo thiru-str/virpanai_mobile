@@ -173,7 +173,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       }
       else{
         //redirect to create account page
-        PageRouteUtils.pushAndRemoveUntil(context, RegisterPage());
+        PageRouteUtils.pushAndRemoveUntil(context, RegisterPage(phoneNo: widget.phoneNo,countryCode: widget.countryCode,token: verifyOtpResponse!.token!,));
         return;
       }
 
