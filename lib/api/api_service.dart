@@ -7,7 +7,9 @@ import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
+import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
@@ -40,19 +42,12 @@ class ApiService {
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
-        if (response.data['success'] == true) {
-          AppLogger.print('API Response:', '${response.data}');
-          return fromJson(response.data);
-        } else if (response.data['status'] == 401) {
-          await _handleLogout(context, response.data['message']);
-          throw Exception('Unauthorized: ${response.data['message']}');
-        } else {
-          AppUtils.showToast(response.data['message'] ?? 'An error occurred');
-          throw Exception('API Error: ${response.data['message'] ?? 'Unknown error'}');
-        }
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
+      }else if (response.statusCode == 401) {
+        await _handleLogout(context, response.data['message']);
+        throw Exception('Unauthorized: ${response.data['message']}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
@@ -84,16 +79,6 @@ class ApiService {
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
-        if (response.data['success'] == true) {
-          AppLogger.print('API Response:', '${response.data}');
-          return fromJson(response.data);
-        } else if (response.data['status'] == 401) {
-          await _handleLogout(context, response.data['message']);
-          throw Exception('Unauthorized: ${response.data['message']}');
-        } else {
-          AppUtils.showToast(response.data['message'] ?? 'An error occurred');
-          throw Exception('API Error: ${response.data['message'] ?? 'Unknown error'}');
-        }
       }
       else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
@@ -117,17 +102,11 @@ class ApiService {
     }
 
     // Clear user-specific data
-    await SharedPreferencesUtil.removeUserId();
+    await SharedPreferencesUtil().clear();
 
-    int? branchId = await SharedPreferencesUtil().getInt('branch_id');
-    String? tenantId = await SharedPreferencesUtil().getString('tenant_id');
 
     // Navigate to the login screen and clear all navigation history
-    /*Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen(branchId: branchId!, tenantId: tenantId!)),
-          (route) => false,
-    );*/
+    PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
   }
 
   Future<SendOtpResponse> sendOtp(BuildContext context,String phone) async {
