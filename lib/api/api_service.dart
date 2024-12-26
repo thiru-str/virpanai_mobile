@@ -174,7 +174,7 @@ class ApiService {
   }
 
 
-  Future<void> addHeader() async {
-    _dio.options.headers['x-jwt-token'] = await SharedPreferencesUtil().getString('token');
+  Future<void> addToken() async {
+    _dio.options.headers['Authorization'] = 'Bearer ${await SharedPreferencesUtil().getString('token')}';
   }
 }
