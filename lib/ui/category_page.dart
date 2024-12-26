@@ -45,7 +45,7 @@ class _CategoryPageState extends State<CategoryPage> {
                 final productCategory = productCategoriesResponse!.productCategories![index];
                 return GestureDetector(
                   onTap: () {},
-                  child: CategoryCard(imagePath: '', title: productCategory.name!, onTap: (){
+                  child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (){
                   }),
                 );
               },

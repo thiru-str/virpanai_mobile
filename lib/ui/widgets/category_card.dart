@@ -23,9 +23,7 @@ class CategoryCard extends StatelessWidget {
       height: 180,
       child: GestureDetector(
         onTap: onTap,
-
         child: Container(
-
           margin: const EdgeInsets.all(8.0),
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
@@ -44,11 +42,12 @@ class CategoryCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              /*Image.asset(
+              imagePath.isNotEmpty?
+              Image.network(
                 imagePath,
                 height: 80,
                 fit: BoxFit.contain,
-              ),*/
+              ): const SizedBox(),
               const SizedBox(height: 12),
               Text(
                 title,

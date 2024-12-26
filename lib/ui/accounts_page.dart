@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
@@ -7,7 +8,21 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+
+  Customer? customer;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCustomerInfo();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +67,7 @@ class SettingsPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Gilbert Jones',
+                            customer!= null?'${customer!.firstName!} ${customer!.lastName}':'',
                             style: FontUtils.circularStdStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -61,7 +76,7 @@ class SettingsPage extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Gilbertjones001@gmail.com',
+                            customer!= null?customer!.email!:'',
                             style: FontUtils.circularStdStyle(
                               fontSize: 14,
                               color: Colors.black54,
@@ -165,4 +180,23 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> getCustomerInfo() async {
+    customer = await getCustomerResponse();
+    if (customer != null) {
+      setState(() {
+        customer;
+      });
+    }
+  }
+
+  Future<Customer?> getCustomerResponse() async {
+    dynamic userData = await SharedPreferencesUtil().getMap('customer');
+    if (userData != null) {
+      return Customer.fromJson(userData);
+    }
+    return null;
+  }
 }
+
+

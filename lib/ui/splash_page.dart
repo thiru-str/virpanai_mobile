@@ -4,9 +4,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/page_route_utils.dart';
+
+import '../utility/shared_preferences_util.dart';
 
 
 class SplashPage extends StatefulWidget {
@@ -34,12 +38,12 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void navToNextPage() async{
-
+    String? token = await SharedPreferencesUtil().getString('token');
+    Widget nextPage = token == null ? WelcomePage() : const BottomNavPage();
 
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => WelcomePage()));
+        PageRouteUtils.pushReplacement(context, nextPage);
       }
     });
   }

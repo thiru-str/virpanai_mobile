@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
@@ -6,6 +7,10 @@ import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+
+import '../api/api_service.dart';
+import '../model/register_response.dart';
+import '../utility/shared_preferences_util.dart';
 
 class BottomNavPage extends StatefulWidget {
   const BottomNavPage({super.key});
@@ -34,6 +39,13 @@ class _BottomNavPageState extends State<BottomNavPage> {
     const Center(child: Text('Favourite Page')),
     SettingsPage()
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCustomerApi();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,4 +91,29 @@ class _BottomNavPageState extends State<BottomNavPage> {
       ),
     );
   }
+
+  void getCustomerApi() async {
+    try {
+      Customer? customer = await getCustomerResponse();
+      if(customer!=null) {
+        final ApiService apiService = ApiService();
+        CustomerResponse customerResponse = await apiService.getCustomer(
+            context);
+        SharedPreferencesUtil()
+            .saveMap('customer', customerResponse.customer!.toJson());
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<Customer?> getCustomerResponse() async {
+    dynamic userData = await SharedPreferencesUtil().getMap('customer');
+    if (userData != null) {
+      return Customer.fromJson(userData);
+    }
+    return null;
+  }
 }
+
+

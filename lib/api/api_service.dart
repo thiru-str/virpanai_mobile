@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
@@ -157,7 +158,7 @@ class ApiService {
 
   Future<ProductCategoriesResponse> productCategories(BuildContext context) async {
       return _makeGetRequest<ProductCategoriesResponse>(
-        'store/product-categories',
+        'store/product-custom-categories',
             null,
             (json) => ProductCategoriesResponse.fromJson(json),
         context,
@@ -166,9 +167,19 @@ class ApiService {
 
   Future<ProductCategoryResponse> productCategory(BuildContext context,String categoryId) async {
       return _makeGetRequest<ProductCategoryResponse>(
-        'store/product-categories',
+        'store/product-custom-categories',
         categoryId,
             (json) => ProductCategoryResponse.fromJson(json),
+        context,
+      );
+  }
+
+  Future<CustomerResponse> getCustomer(BuildContext context) async {
+      await addToken();
+      return _makeGetRequest<CustomerResponse>(
+        'store/customers/me',
+        null,
+            (json) => CustomerResponse.fromJson(json),
         context,
       );
   }

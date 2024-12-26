@@ -10,7 +10,7 @@ String productCategoriesResponseToJson(ProductCategoriesResponse data) => json.e
 
 class ProductCategoriesResponse {
   List<ProductCategory>? productCategories;
-  int? count;
+  String? count;
   int? offset;
   int? limit;
 
@@ -51,6 +51,7 @@ class ProductCategory {
   String? mpath;
   bool? isActive;
   bool? isInternal;
+  String? image;
 
   ProductCategory({
     this.id,
@@ -67,6 +68,7 @@ class ProductCategory {
     this.mpath,
     this.isActive,
     this.isInternal,
+    this.image,
   });
 
   factory ProductCategory.fromJson(Map<String, dynamic> json) => ProductCategory(
@@ -84,6 +86,7 @@ class ProductCategory {
     mpath: json["mpath"],
     isActive: json["is_active"],
     isInternal: json["is_internal"],
+    image: json["image"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -101,5 +104,6 @@ class ProductCategory {
     "mpath": mpath,
     "is_active": isActive,
     "is_internal": isInternal,
+    "image": image,
   };
 }
