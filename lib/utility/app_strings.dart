@@ -7,5 +7,8 @@ class AppStrings {
   static const String get_started = 'Get Started';
   static const String or = 'Or';
   static const String continue_with_google = 'Continue with Google';
+  static const String my_address = 'My Address';
+  static const String add_address = 'Add Address';
+  static const String my_favorites = 'My Favorites';
 
 }
