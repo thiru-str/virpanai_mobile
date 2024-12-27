@@ -65,6 +65,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                 PageRouteUtils.push(
                                     context,
                                     SubCategoryPage(
+                                      categoryTitle: productCategory.name!,
                                       productCategory:
                                           productCategory.categoryChildren!,
                                     ));
