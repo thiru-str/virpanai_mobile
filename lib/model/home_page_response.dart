@@ -84,7 +84,7 @@ class LayoutDatum {
   String? id;
   String? image;
   String? title;
-  SubTitle? subTitle;
+  String? subTitle;
 
   LayoutDatum({
     this.id,
@@ -97,39 +97,13 @@ class LayoutDatum {
     id: json["id"],
     image: json["image"],
     title: json["title"],
-    subTitle: subTitleValues.map[json["sub_title"]]!,
+    subTitle: json["sub_title"],
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "image": image,
     "title": title,
-    "sub_title": subTitleValues.reverse[subTitle],
+    "sub_title": subTitle,
   };
-}
-
-enum SubTitle {
-  EMPTY,
-  THE_299800,
-  THE_54000,
-  THE_799900
-}
-
-final subTitleValues = EnumValues({
-  "": SubTitle.EMPTY,
-  "2998.00": SubTitle.THE_299800,
-  "540.00": SubTitle.THE_54000,
-  "7999.00": SubTitle.THE_799900
-});
-
-class EnumValues<T> {
-  Map<String, T> map;
-  late Map<T, String> reverseMap;
-
-  EnumValues(this.map);
-
-  Map<T, String> get reverse {
-    reverseMap = map.map((k, v) => MapEntry(v, k));
-    return reverseMap;
-  }
 }

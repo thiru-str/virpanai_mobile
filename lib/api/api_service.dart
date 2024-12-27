@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/customer_response.dart';
+import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
@@ -180,6 +181,15 @@ class ApiService {
         'store/customers/me',
         null,
             (json) => CustomerResponse.fromJson(json),
+        context,
+      );
+  }
+
+  Future<HomePageResponse> getHomePage(BuildContext context) async {
+      return _makeGetRequest<HomePageResponse>(
+        'store/get_home_page',
+        null,
+            (json) => HomePageResponse.fromJson(json),
         context,
       );
   }
