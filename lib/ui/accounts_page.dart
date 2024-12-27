@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/ui/address_list_page.dart';
+import 'package:waioz/ui/my_favorites_page.dart';
+import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
@@ -114,7 +117,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: 'Address',
                     onTap: () {
-                      // Handle Address action
+                      PageRouteUtils.push(context, AddressListPage());
                     },
                   ),
                 ),
@@ -123,7 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: 'Favourites',
                     onTap: () {
-                      // Handle Address action
+                      PageRouteUtils.push(context, MyFavoritesPage());
                     },
                   ),
                 ),
@@ -132,7 +135,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: 'Order',
                     onTap: () {
-                      // Handle Address action
+                      PageRouteUtils.push(context, OrdersHistoryPage());
                     },
                   ),
                 ),

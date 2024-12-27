@@ -22,8 +22,7 @@ class AddressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 145,
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
       padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
       decoration: BoxDecoration(
         color: AppColors.secondary,
