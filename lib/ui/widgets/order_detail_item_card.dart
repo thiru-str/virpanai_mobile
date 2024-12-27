@@ -27,7 +27,7 @@ class OrderDetailItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center, // Vertically center the content in Column
         children: [
           // Product Image
           ClipRRect(

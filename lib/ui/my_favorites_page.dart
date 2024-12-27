@@ -13,7 +13,6 @@ class MyFavoritesPage extends StatefulWidget {
 }
 
 class _MyFavoritesPageState extends State<MyFavoritesPage> {
-
   bool apiLoading = false;
 
   @override
@@ -26,28 +25,36 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
           Navigator.of(context).pop();
         },
       ),
-      body: apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-          :Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: 2,
-          shrinkWrap: true,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1,
-          ),
-          itemBuilder: (context, index) {
-            // final productCategory = productCategoriesResponse!.productCategories![index];
-            return GestureDetector(
-              onTap: () {},
-              child: ProductCard(imageUrl: "imageUrl", title: "title", price: "200", onTapFavorite: (){
-              }, onTapCard: (){
-              }),
-            );
-          },
-        ),
-      ),
+      body: apiLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: 6,
+                shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.7,
+                ),
+                itemBuilder: (context, index) {
+                  // final productCategory = productCategoriesResponse!.productCategories![index];
+                  return GestureDetector(
+                    onTap: () {},
+                    child: ProductCard(
+                        imageUrl: "https://cartel.waioz.com/uploads/1735195194161-men.png",
+                        title: "Nike Fuel Pack",
+                        price: "32.0",
+                        onTapFavorite: () {},
+                        onTapCard: () {}),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

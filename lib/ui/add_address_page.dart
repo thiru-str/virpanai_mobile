@@ -22,7 +22,7 @@ class _AddAddressPage extends State<AddAddressPage> {
   final TextEditingController stateController = TextEditingController();
   final TextEditingController zipCodeController = TextEditingController();
 
-  String selectedLocation = "Home"; // Default location selection
+  String selectedLocation = AppStrings.home; // Default location selection
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +45,11 @@ class _AddAddressPage extends State<AddAddressPage> {
                   padding: const EdgeInsets.only(top: 16.0),
                   children: [
                     CustomTextField(
-                      hintText: "Street Address",
+                      hintText: AppStrings.street_address,
                       controller: streetAddressController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Street address is required";
+                          return AppStrings.street_address_required;
                         }
                         return null;
                       },
@@ -121,23 +121,23 @@ class _AddAddressPage extends State<AddAddressPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildLocationButton("Home", Icons.home),
+                          child: _buildLocationButton(AppStrings.home, Icons.home),
                         ),
                         const SizedBox(
                             width: 8), // Small spacing between buttons
                         Expanded(
-                          child: _buildLocationButton("Work", Icons.work),
+                          child: _buildLocationButton(AppStrings.work, Icons.work),
                         ),
                         const SizedBox(
                             width: 8), // Small spacing between buttons
                         Expanded(
                           child: _buildLocationButton(
-                              "Others", Icons.location_pin),
+                              AppStrings.others, Icons.location_pin),
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    if (selectedLocation == "Others")
+                    if (selectedLocation == AppStrings.others)
                       TextField(
                         decoration: InputDecoration(
                           filled: true, // Enables background color

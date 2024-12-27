@@ -10,5 +10,12 @@ class AppStrings {
   static const String my_address = 'My Address';
   static const String add_address = 'Add Address';
   static const String my_favorites = 'My Favorites';
+  static const String orders = 'Orders';
+  static const String home = 'Home';
+  static const String work = 'Work';
+  static const String others = 'Others';
+  static const String street_address = 'Street Address';
+  static const String street_address_required = 'Street address is required';
+
 
 }
