@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_categories_response.dart';
+import 'package:waioz/ui/sub_category_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 
@@ -33,22 +35,44 @@ class _CategoryPageState extends State<CategoryPage> {
       body: apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
           :Padding(
             padding: const EdgeInsets.all(16.0),
-            child: GridView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: productCategoriesResponse!.productCategories!.length,
-              shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1,
-            ),
-              itemBuilder: (context, index) {
-                final productCategory = productCategoriesResponse!.productCategories![index];
-                return GestureDetector(
-                  onTap: () {},
-                  child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (){
-                  }),
-                );
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text('All categories',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
+                ),
+                const SizedBox(height: 10,),
+                GridView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount:
+                          productCategoriesResponse!.productCategories!.length,
+                      shrinkWrap: true,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 1,
+                      ),
+                      itemBuilder: (context, index) {
+                        final productCategory = productCategoriesResponse!
+                            .productCategories![index];
+                        return CategoryCard(
+                            imagePath: productCategory.image ?? '',
+                            title: productCategory.name!,
+                            onTap: () {
+                              if (productCategory
+                                  .categoryChildren!.isNotEmpty) {
+                                PageRouteUtils.push(
+                                    context,
+                                    SubCategoryPage(
+                                      productCategory:
+                                          productCategory.categoryChildren!,
+                                    ));
+                              }
+                            });
+                      },
+                    ),
+                  ],
             ),
           )
     );
