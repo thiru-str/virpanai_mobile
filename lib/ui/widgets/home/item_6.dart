@@ -66,7 +66,7 @@ class Item6 extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       CircleAvatar(
                         radius: 30,
@@ -79,14 +79,17 @@ class Item6 extends StatelessWidget {
                       ),
                       const SizedBox(width: 8), // Horizontal spacing
                       Flexible( // Constrain the Text widget
-                        child: Text(
-                          layoutData.title!,
-                          style: FontUtils.circularStdStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            layoutData.title!,
+                            style: FontUtils.circularStdStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis, // Adds ellipsis
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis, // Adds ellipsis
                         ),
                       ),
                     ],

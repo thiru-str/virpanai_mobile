@@ -186,8 +186,9 @@ class ApiService {
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context) async {
+    await addToken();
       return _makeGetRequest<HomePageResponse>(
-        'store/get_home_page',
+        'store/get_home_page/v1',
         null,
             (json) => HomePageResponse.fromJson(json),
         context,

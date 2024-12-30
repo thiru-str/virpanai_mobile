@@ -45,10 +45,10 @@ class _HomePageState extends State<HomePage> {
             child: ListView.separated(
               separatorBuilder: (context, index) => const SizedBox(height: 16),
               scrollDirection: Axis.vertical,
-              itemCount: homePageResponse!.data!.content!.length,
+              itemCount: homePageResponse!.content!.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                final homePageContent = homePageResponse!.data!.content![index];
+                final homePageContent = homePageResponse!.content![index];
                 return getLayoutWidget(homePageContent);
               },
             ),

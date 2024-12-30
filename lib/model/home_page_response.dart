@@ -10,43 +10,32 @@ String homePageResponseToJson(HomePageResponse data) => json.encode(data.toJson(
 
 class HomePageResponse {
   String? status;
-  Data? data;
+  List<Content>? content;
+  Global? global;
 
   HomePageResponse({
     this.status,
-    this.data,
+    this.content,
+    this.global,
   });
 
   factory HomePageResponse.fromJson(Map<String, dynamic> json) => HomePageResponse(
     status: json["status"],
-    data: json["data"] == null ? null : Data.fromJson(json["data"]),
+    content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
+    global: json["global"] == null ? null : Global.fromJson(json["global"]),
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
-    "data": data?.toJson(),
-  };
-}
-
-class Data {
-  List<Content>? content;
-
-  Data({
-    this.content,
-  });
-
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-    content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
-  );
-
-  Map<String, dynamic> toJson() => {
     "content": content == null ? [] : List<dynamic>.from(content!.map((x) => x.toJson())),
+    "global": global?.toJson(),
   };
 }
 
 class Content {
   String? layoutName;
   String? layoutTitle;
+  String? layoutRedirectTitle;
   String? layoutRedirect;
   String? layoutOption;
   String? layoutSearchFilter;
@@ -55,6 +44,7 @@ class Content {
   Content({
     this.layoutName,
     this.layoutTitle,
+    this.layoutRedirectTitle,
     this.layoutRedirect,
     this.layoutOption,
     this.layoutSearchFilter,
@@ -64,6 +54,7 @@ class Content {
   factory Content.fromJson(Map<String, dynamic> json) => Content(
     layoutName: json["layout_name"],
     layoutTitle: json["layout_title"],
+    layoutRedirectTitle: json["layout_redirect_title"],
     layoutRedirect: json["layout_redirect"],
     layoutOption: json["layout_option"],
     layoutSearchFilter: json["layout_search_filter"],
@@ -73,6 +64,7 @@ class Content {
   Map<String, dynamic> toJson() => {
     "layout_name": layoutName,
     "layout_title": layoutTitle,
+    "layout_redirect_title": layoutRedirectTitle,
     "layout_redirect": layoutRedirect,
     "layout_option": layoutOption,
     "layout_search_filter": layoutSearchFilter,
@@ -105,5 +97,53 @@ class LayoutDatum {
     "image": image,
     "title": title,
     "sub_title": subTitle,
+  };
+}
+
+class Global {
+  List<PaymentProvider>? paymentProvider;
+  String? regionId;
+  String? cartId;
+
+  Global({
+    this.paymentProvider,
+    this.regionId,
+    this.cartId,
+  });
+
+  factory Global.fromJson(Map<String, dynamic> json) => Global(
+    paymentProvider: json["payment_provider"] == null ? [] : List<PaymentProvider>.from(json["payment_provider"]!.map((x) => PaymentProvider.fromJson(x))),
+    regionId: json["region_id"],
+    cartId: json["cart_id"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "payment_provider": paymentProvider == null ? [] : List<dynamic>.from(paymentProvider!.map((x) => x.toJson())),
+    "region_id": regionId,
+    "cart_id": cartId,
+  };
+}
+
+class PaymentProvider {
+  String? id;
+  bool? isEnabled;
+  String? name;
+
+  PaymentProvider({
+    this.id,
+    this.isEnabled,
+    this.name,
+  });
+
+  factory PaymentProvider.fromJson(Map<String, dynamic> json) => PaymentProvider(
+    id: json["id"],
+    isEnabled: json["is_enabled"],
+    name: json["name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "is_enabled": isEnabled,
+    "name": name,
   };
 }

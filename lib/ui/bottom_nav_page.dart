@@ -96,7 +96,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
   void getCustomerApi() async {
     try {
       Customer? customer = await getCustomerResponse();
-      if(customer!=null) {
+      if(customer==null) {
         final ApiService apiService = ApiService();
         CustomerResponse customerResponse = await apiService.getCustomer(
             context);
