@@ -255,6 +255,7 @@ class ApiService {
     return _makeGetRequest<GetAddressListResponse>(
       'store/customers/me/addresses?fields=+address_name',
       null,
+          null,
           (json) => GetAddressListResponse.fromJson(json),
       context,
     );

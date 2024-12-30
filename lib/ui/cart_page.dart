@@ -12,9 +12,9 @@ import 'package:waioz/utility/font_utils.dart';
 import '../api/api_service.dart';
 
 class CartPage extends StatefulWidget {
-  final bool isFromNav;
+  final bool isFromBottomNav;
 
-  const CartPage({super.key,this.isFromNav = true});
+  const CartPage({super.key,this.isFromBottomNav = true});
 
   @override
   State<CartPage> createState() => _CartPageState();
@@ -33,9 +33,11 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CommonHeaderAppBar(
-          onBackTap: (){
-            Navigator.pop(context);
+        appBar: widget.isFromBottomNav ?? false
+            ? null
+            : CommonHeaderAppBar(
+          onBackTap: () {
+            Navigator.of(context).pop();
           },
         ),
         backgroundColor: Colors.white,
