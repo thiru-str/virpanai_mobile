@@ -28,13 +28,15 @@ class CommonAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () {
-            onTapCancel;
+            onTapCancel();
+            Navigator.of(context).pop();  // Close the dialog
           },
           child: Text(contentCancel,style: FontUtils.circularStdStyle(color: AppColors.textColor),),
         ),
         TextButton(
           onPressed: () {
-            onTapOk;
+            onTapOk();
+            Navigator.of(context).pop();  // Close the dialog
           },
           child: Text(contentOk,style:FontUtils.circularStdStyle(color: AppColors.textColor)),
         ),

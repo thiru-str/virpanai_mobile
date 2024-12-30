@@ -4,8 +4,10 @@ import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/add_address_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_strings.dart';
 
 import '../utility/app_colors.dart';
@@ -42,79 +44,81 @@ class _AddressListPageState extends State<AddressListPage> {
       ),
       body: apiLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      )
           : addressListResponse?.addresses?.length != 0
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          itemCount: addressListResponse?.addresses?.length ??
-                              0, // Dynamic count of AddressCard widgets
-                          itemBuilder: (context, index) {
-                            Address? address =
-                                addressListResponse?.addresses?[index];
-                            return AddressCard(
-                              title: address?.addressName ??
-                                  'Others', // If address name is null, show 'Untitled'
-                              address:
-                                  '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                              icon: Icons
-                                  .home, // Or choose another icon based on address data
-                              onDelete: () {
-                                deleteAddress(address?.id);
-                              },
-                              onEdit: () {
-                                PageRouteUtils.push(
-                                    context,
-                                    AddAddressPage(
-                                      selectedAddress: address,
-                                    ));
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                      SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              PageRouteUtils.push(context, AddAddressPage());
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              minimumSize: const Size(
-                                  double.infinity, 52), // Full-width button
-                            ),
-                            child: Text(
-                              AppStrings.add_address,
-                              style: FontUtils.circularStdStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.secondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+          ? Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 16.0),
+                itemCount: addressListResponse?.addresses?.length ??
+                    0, // Dynamic count of AddressCard widgets
+                itemBuilder: (context, index) {
+                  Address? address =
+                  addressListResponse?.addresses?[index];
+                  return AddressCard(
+                    title: address?.addressName ??
+                        'Others', // If address name is null, show 'Untitled'
+                    address:
+                    '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
+                    icon: Icons
+                        .home, // Or choose another icon based on address data
+                    onDelete: () {
+                      _showDeleteDialog(context, address?.id);
+                    },
+                    onEdit: () {
+                      PageRouteUtils.push(
+                          context,
+                          AddAddressPage(
+                            selectedAddress: address,
+                          ));
+                    },
+                  );
+                },
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    PageRouteUtils.push(context, AddAddressPage());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    minimumSize: const Size(
+                        double.infinity, 52), // Full-width button
                   ),
-                )
-              : NoOrdersWidget(
-                  message: "message",
-                  buttonText: AppStrings.add_address,
-                  iconPath: "iconPath",
-                  onButtonTap: () {},
+                  child: Text(
+                    AppStrings.add_address,
+                    style: FontUtils.circularStdStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.secondary,
+                    ),
+                  ),
                 ),
+              ),
+            ),
+          ],
+        ),
+      )
+          : NoOrdersWidget(
+        message: "No Address Yet",
+        buttonText: AppStrings.add_address,
+        iconPath: AppAssets.ic_cart_empty,
+        onButtonTap: () {
+          PageRouteUtils.push(context, AddAddressPage());
+        },
+      ),
     );
   }
 
@@ -134,13 +138,35 @@ class _AddressListPageState extends State<AddressListPage> {
     }
   }
 
+  void _showDeleteDialog(BuildContext context, String? addressID) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: "Confirm Deletion",
+          content: "Are you sure you want to delete this address?",
+          contentOk: "Yes",
+          contentCancel: "No",
+          onTapOk: () {
+            print("OK");
+            deleteAddress(addressID);  // Call deleteAddress when confirmed
+          },
+          onTapCancel: () {
+            print("Cancel");
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
+
   void deleteAddress(String? addressID) async {
     try {
       final ApiService apiService = ApiService();
       await apiService.deleteAddress(context, addressID);
       setState(() {
         apiLoading = false;
-        getAddressListApi();
+        getAddressListApi();  // Refresh the address list after deletion
       });
     } catch (e) {
       setState(() {
