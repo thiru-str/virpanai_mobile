@@ -1,8 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/ui/phone_number_page.dart';
-import 'package:waioz/ui/register_page.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -25,6 +24,7 @@ class WelcomePage extends StatelessWidget {
           Positioned.fill(
             child: Container(
               color: Colors.white,
+              child: Image.asset(AppAssets.welcome_bg),
             ),
           ),
           // Content

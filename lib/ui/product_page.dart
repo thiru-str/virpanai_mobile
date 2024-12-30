@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_response.dart';
+import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 
@@ -72,7 +74,9 @@ class _ProductPageState extends State<ProductPage> {
                         itemCount: productsResponse!.products!.length,
                         itemBuilder: (context, index) {
                           final product = productsResponse!.products![index];
-                          return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: '500', onTapCard: (){}, onTapFavorite: (){});
+                          return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: '500', onTapCard: (){
+                            PageRouteUtils.push(context, ProductDetailPage(productId: product.id!));
+                          }, onTapFavorite: (){});
                         },
                       ),
                     ],

@@ -30,13 +30,13 @@ class Item4 extends StatelessWidget {
                     color: AppColors.textColor
                 ),
               ),
-              if (true)
+              if (content.layoutRedirectTitle!.isNotEmpty)
                 GestureDetector(
                   onTap: (){
 
                   },
                   child: Text(
-                    'See All',
+                    content.layoutRedirectTitle!,
                     style: FontUtils.circularStdStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -83,14 +83,14 @@ class Item4 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Positioned(
+                          /*Positioned(
                             top: 8,
                             right: 8,
                             child: Icon(
                               Icons.favorite_border,
                               color: Colors.grey[600],
                             ),
-                          ),
+                          ),*/
                         ],
                       ),
                       const SizedBox(height: 16),

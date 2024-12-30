@@ -9,7 +9,7 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
 
   const CommonHeaderAppBar({
     Key? key,
-    required this.title,
+    this.title = '',
     required this.onBackTap,
   }) : super(key: key);
 

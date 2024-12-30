@@ -30,13 +30,13 @@ class Item7 extends StatelessWidget {
                     color: AppColors.textColor
                 ),
               ),
-              if (true)
+              if (content.layoutRedirectTitle!.isNotEmpty)
                 GestureDetector(
                   onTap: (){
 
                   },
                   child: Text(
-                    'See All',
+                    content.layoutRedirectTitle!,
                     style: FontUtils.circularStdStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

@@ -63,12 +63,12 @@ class ApiService {
 
   Future<T> _makeGetRequest<T>(
       String endpoint,
-      String? dynamicPath, // Optional dynamic path
+      String? dynamicPath,
+      Map<String, dynamic>? queryParams,
       T Function(Map<String, dynamic>) fromJson,
-      BuildContext context,
+      BuildContext context
       ) async {
     try {
-
       // Combine endpoint and dynamic path
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath'
@@ -76,24 +76,28 @@ class ApiService {
 
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
 
-      final response = await _dio.get(fullEndpoint);
+      // Include query parameters in the GET request
+      final response = await _dio.get(
+        fullEndpoint,
+        queryParameters: queryParams,
+      );
 
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
-      }
-      else if (response.statusCode == 400) {
+      } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
-      AppLogger.print('API Exception:','$e');
+      AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
       throw Exception('An error occurred: $e');
     }
   }
+
 
 
 
@@ -143,15 +147,18 @@ class ApiService {
       return _makeGetRequest<ProductsResponse>(
         'store/products',
         null,
+            null,
             (json) => ProductsResponse.fromJson(json),
         context,
       );
   }
 
   Future<ProductDetailReponse> productDetail(BuildContext context,String productId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
       return _makeGetRequest<ProductDetailReponse>(
         'store/products',
         productId,
+        {"region_id": regionId},
             (json) => ProductDetailReponse.fromJson(json),
         context,
       );
@@ -160,6 +167,7 @@ class ApiService {
   Future<ProductCategoriesResponse> productCategories(BuildContext context) async {
       return _makeGetRequest<ProductCategoriesResponse>(
         'store/product-custom-categories',
+            null,
             null,
             (json) => ProductCategoriesResponse.fromJson(json),
         context,
@@ -170,6 +178,7 @@ class ApiService {
       return _makeGetRequest<ProductCategoryResponse>(
         'store/product-custom-categories',
         categoryId,
+            null,
             (json) => ProductCategoryResponse.fromJson(json),
         context,
       );
@@ -180,6 +189,7 @@ class ApiService {
       return _makeGetRequest<CustomerResponse>(
         'store/customers/me',
         null,
+            null,
             (json) => CustomerResponse.fromJson(json),
         context,
       );
@@ -190,6 +200,7 @@ class ApiService {
       return _makeGetRequest<HomePageResponse>(
         'store/get_home_page/v1',
         null,
+            null,
             (json) => HomePageResponse.fromJson(json),
         context,
       );
@@ -199,4 +210,5 @@ class ApiService {
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] = 'Bearer ${await SharedPreferencesUtil().getString('token')}';
   }
+
 }

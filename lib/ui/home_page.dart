@@ -12,6 +12,7 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
 
@@ -83,6 +84,9 @@ class _HomePageState extends State<HomePage> {
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
+      SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
+      SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
+      SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
       setState(() {
         apiLoading = false;
         homePageResponse;
