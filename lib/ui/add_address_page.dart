@@ -54,7 +54,7 @@ class _AddAddressPage extends State<AddAddressPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CommonHeaderAppBar(
-        title: AppStrings.add_address,
+        title: AppStrings.save,
         onBackTap: () {
           Navigator.of(context).pop();
         },
@@ -277,8 +277,9 @@ class _AddAddressPage extends State<AddAddressPage> {
     try {
       final ApiService apiService = ApiService();
       selectedLocation = selectedLocation == AppStrings.others ? otherAddressName.text : AppStrings.others;
-      registerResponse = await apiService.createAddress(
+      registerResponse = await apiService.createOrUpdateAddress(
           context,
+          widget.selectedAddress?.id,
           streetAddressController.text,
           phoneNumberController.text,
           cityController.text,

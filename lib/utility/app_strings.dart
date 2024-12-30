@@ -16,6 +16,5 @@ class AppStrings {
   static const String others = 'Others';
   static const String street_address = 'Street Address';
   static const String street_address_required = 'Street address is required';
-
-
+  static const String save = 'Save';
 }

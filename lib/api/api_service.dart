@@ -96,6 +96,38 @@ class ApiService {
     }
   }
 
+  Future<T> _makeDeleteRequest<T>(
+      String endpoint,
+      String? dynamicPath, // Optional dynamic path (for example, addressID)
+      T Function(Map<String, dynamic>) fromJson,
+      BuildContext context,
+      ) async {
+    try {
+      // Combine endpoint and dynamic path
+      final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
+          ? '$endpoint/$dynamicPath' // Append dynamic path if provided
+          : endpoint;
+
+      AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
+
+      // Make the DELETE request
+      final response = await _dio.delete(fullEndpoint); // Use DELETE instead of GET
+
+      if (response.statusCode == 200) {
+        AppLogger.print('API Response:', '${response.data}');
+        return fromJson(response.data); // Parse the response data
+      } else if (response.statusCode == 400) {
+        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        throw Exception('Unexpected status code: ${response.statusCode}');
+      } else {
+        throw Exception('Unexpected status code: ${response.statusCode}');
+      }
+    } catch (e, stacktrace) {
+      AppLogger.print('API Exception:', '$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
+    }
+  }
 
 
   Future<void> _handleLogout(BuildContext context, String? message) async {
@@ -197,10 +229,10 @@ class ApiService {
   }
 
 
-  Future<RegisterResponse> createAddress(BuildContext context,String address_1,String phone,String city,String state,String country,String zipCode,String addressName) async {
+  Future<RegisterResponse> createOrUpdateAddress(BuildContext context,String? addressID, String address_1,String phone,String city,String state,String country,String zipCode,String addressName) async {
     await addToken();
     return _makePostRequest(
-        "store/customers/me/addresses",
+        addressID != null ? "store/customers/me/addresses/$addressID" : "store/customers/me/addresses",
         {"address_1": address_1,"phone": phone,"city":city,"province":state,"postal_code":zipCode, "address_name" : addressName,  "metadata": {}},
             (data) => RegisterResponse.fromJson(data),
         context
@@ -217,6 +249,14 @@ class ApiService {
     );
   }
 
+  Future<RegisterResponse> deleteAddress(BuildContext context,String? addressID) async {
+    await addToken();
+    return _makeDeleteRequest("store/customers/me/addresses/$addressID",
+        null,
+            (data) => RegisterResponse.fromJson(data),
+        context
+    );
+  }
 
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] = 'Bearer ${await SharedPreferencesUtil().getString('token')}';
