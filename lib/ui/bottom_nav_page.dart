@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/ui/accounts_page.dart';
+import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
@@ -36,7 +37,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
   final List<Widget> _pages = [
     HomePage(),
     CategoryPage(),
-    const Center(child: Text('Cart Page')),
+    CartPage(),
     const Center(child: Text('Favourite Page')),
     SettingsPage()
   ];
