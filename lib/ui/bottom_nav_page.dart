@@ -4,6 +4,7 @@ import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
+import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -38,7 +39,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
     HomePage(),
     CategoryPage(),
     CartPage(),
-    const Center(child: Text('Favourite Page')),
+    MyFavoritesPage(isFromBottomNav: true,),
     SettingsPage()
   ];
 
