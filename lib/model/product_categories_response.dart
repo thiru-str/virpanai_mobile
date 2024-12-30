@@ -10,7 +10,7 @@ String productCategoriesResponseToJson(ProductCategoriesResponse data) => json.e
 
 class ProductCategoriesResponse {
   List<ProductCategory>? productCategories;
-  String? count;
+  int? count;
   int? offset;
   int? limit;
 
