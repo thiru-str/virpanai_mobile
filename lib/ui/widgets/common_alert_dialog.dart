@@ -11,14 +11,14 @@ class CommonAlertDialog extends StatelessWidget {
   final VoidCallback onTapCancel;
 
   const CommonAlertDialog({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     required this.contentOk,
     required this.contentCancel,
     required this.onTapOk,
     required this.onTapCancel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
