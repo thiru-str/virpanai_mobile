@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
@@ -8,7 +10,9 @@ import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 
 class AddAddressPage extends StatefulWidget {
-  const AddAddressPage({super.key});
+  final Address? selectedAddress; // Optional Address parameter
+
+  const AddAddressPage({super.key, this.selectedAddress});
 
   @override
   State<AddAddressPage> createState() => _AddAddressPage();
@@ -21,9 +25,30 @@ class _AddAddressPage extends State<AddAddressPage> {
   final TextEditingController cityController = TextEditingController();
   final TextEditingController stateController = TextEditingController();
   final TextEditingController zipCodeController = TextEditingController();
+  final TextEditingController otherAddressName = TextEditingController();
 
   String selectedLocation = AppStrings.home; // Default location selection
+  bool apiCalling = true;
+  RegisterResponse? registerResponse;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.selectedAddress != null) {
+      // Populate the form fields with existing address data
+      final address = widget.selectedAddress!;
+      streetAddressController.text = address.address1 ?? '';
+      phoneNumberController.text = address.phone ?? '';
+      cityController.text = address.city ?? '';
+      stateController.text = address.province ?? '';
+      zipCodeController.text = address.postalCode ?? '';
+      selectedLocation = address.addressName ?? AppStrings.home;
+      if (selectedLocation == AppStrings.others) {
+        otherAddressName.text = address.addressName ?? '';
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,12 +146,14 @@ class _AddAddressPage extends State<AddAddressPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildLocationButton(AppStrings.home, Icons.home),
+                          child:
+                              _buildLocationButton(AppStrings.home, Icons.home),
                         ),
                         const SizedBox(
                             width: 8), // Small spacing between buttons
                         Expanded(
-                          child: _buildLocationButton(AppStrings.work, Icons.work),
+                          child:
+                              _buildLocationButton(AppStrings.work, Icons.work),
                         ),
                         const SizedBox(
                             width: 8), // Small spacing between buttons
@@ -138,27 +165,34 @@ class _AddAddressPage extends State<AddAddressPage> {
                     ),
                     const SizedBox(height: 24),
                     if (selectedLocation == AppStrings.others)
-                      TextField(
-                        decoration: InputDecoration(
-                          filled: true, // Enables background color
-                          fillColor: Colors
-                              .grey[200], // Background color when not focused
-                          hintText: 'ex: Friend House',
-                          border: InputBorder.none, // No border
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: AppColors.primary, // Color when focused
-                              width: 2.0,
+                      TextFormField(
+                          controller: otherAddressName,
+                          decoration: InputDecoration(
+                            filled: true, // Enables background color
+                            fillColor: Colors
+                                .grey[200], // Background color when not focused
+                            hintText: 'ex: Friend House',
+                            border: InputBorder.none, // No border
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.primary, // Color when focused
+                                width: 2.0,
+                              ),
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color:
+                                    AppColors.primary, // Color when not focused
+                                width: 1.0,
+                              ),
                             ),
                           ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: AppColors.primary, // Color when not focused
-                              width: 1.0,
-                            ),
-                          ),
-                        ),
-                      ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter an address name';
+                            }
+                            return null; // Return null if validation passes
+                          }),
                   ],
                 ),
               ),
@@ -168,7 +202,10 @@ class _AddAddressPage extends State<AddAddressPage> {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {}
+                    if (_formKey.currentState!.validate()) {
+                      print("Form is valid. Proceed to Create Address.");
+                      createAddress();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -234,5 +271,29 @@ class _AddAddressPage extends State<AddAddressPage> {
         ),
       ),
     );
+  }
+
+  void createAddress() async {
+    try {
+      final ApiService apiService = ApiService();
+      selectedLocation = selectedLocation == AppStrings.others ? otherAddressName.text : AppStrings.others;
+      registerResponse = await apiService.createAddress(
+          context,
+          streetAddressController.text,
+          phoneNumberController.text,
+          cityController.text,
+          stateController.text,
+          "India",
+          zipCodeController.text,
+          selectedLocation);
+      setState(() {
+        apiCalling = false;
+      });
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
   }
 }

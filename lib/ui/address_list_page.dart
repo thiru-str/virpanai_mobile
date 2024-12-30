@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/add_address_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -17,6 +20,17 @@ class AddressListPage extends StatefulWidget {
 
 class _AddressListPageState extends State<AddressListPage> {
   @override
+
+  GetAddressListResponse? addressListResponse;
+  bool apiLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getAddressListApi();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -26,39 +40,29 @@ class _AddressListPageState extends State<AddressListPage> {
           Navigator.of(context).pop();
         },
       ),
-      body: Padding(
+      body: apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
+          :Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           children: [
             Expanded(
-              child: ListView(
+              child: ListView.builder(
                 padding: const EdgeInsets.only(top: 16.0),
-                children: [
-                  AddressCard(
-                    title: 'Home',
-                    address:
-                        '2715 Ash Dr. San Jose, South Dakota\nJose, South 83475',
-                    icon: Icons.home,
+                itemCount: addressListResponse?.addresses?.length ?? 0,  // Dynamic count of AddressCard widgets
+                itemBuilder: (context, index) {
+                  Address? address = addressListResponse?.addresses?[index];
+                  return AddressCard(
+                    title: address?.addressName ?? 'Others',  // If address name is null, show 'Untitled'
+                    address: '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
+                    icon: Icons.home,  // Or choose another icon based on address data
                     onDelete: () {
-
+                      // Implement delete functionality
                     },
                     onEdit: () {
-
+                      PageRouteUtils.push(context, AddAddressPage(selectedAddress: address,));
                     },
-                  ),
-                  AddressCard(
-                    title: 'Work',
-                    address:
-                        '2715 Ash Dr. San Jose, South Dakota\nJose, South 83475',
-                    icon: Icons.work,
-                    onDelete: () {
-
-                    },
-                    onEdit: () {
-
-                    },
-                  ),
-                ],
+                  );
+                },
               ),
             ),
             SafeArea(
@@ -92,4 +96,21 @@ class _AddressListPageState extends State<AddressListPage> {
       ),
     );
   }
+
+  void getAddressListApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      addressListResponse = await apiService.getAddressList(context);
+      setState(() {
+        apiLoading = false;
+        addressListResponse;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
+  }
+
 }

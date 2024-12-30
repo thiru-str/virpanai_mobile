@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -193,6 +194,27 @@ class ApiService {
             (json) => HomePageResponse.fromJson(json),
         context,
       );
+  }
+
+
+  Future<RegisterResponse> createAddress(BuildContext context,String address_1,String phone,String city,String state,String country,String zipCode,String addressName) async {
+    await addToken();
+    return _makePostRequest(
+        "store/customers/me/addresses",
+        {"address_1": address_1,"phone": phone,"city":city,"province":state,"postal_code":zipCode, "address_name" : addressName,  "metadata": {}},
+            (data) => RegisterResponse.fromJson(data),
+        context
+    );
+  }
+
+  Future<GetAddressListResponse> getAddressList(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<GetAddressListResponse>(
+      'store/customers/me/addresses?fields=+address_name',
+      null,
+          (json) => GetAddressListResponse.fromJson(json),
+      context,
+    );
   }
 
 
