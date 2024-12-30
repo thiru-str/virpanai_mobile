@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class ProductCard extends StatelessWidget {
   final String imageUrl;
   final String title;
   final String price;
-  final bool isFavorite;
-  final VoidCallback onTapFavorite;
   final VoidCallback onTapCard;
+  final VoidCallback onTapFavorite;
+  final bool isFavorite; // Indicates if the item is marked as favorite
 
   const ProductCard({
     Key? key,
     required this.imageUrl,
     required this.title,
     required this.price,
-    this.isFavorite = false,
-    required this.onTapFavorite,
     required this.onTapCard,
+    required this.onTapFavorite,
+    this.isFavorite = false, // Default is not favorite
   }) : super(key: key);
 
   @override
@@ -24,71 +25,68 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTapCard,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-            ),
-          ],
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-                  child: Image.network(
-                    imageUrl,
-                     height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                Container(
+                  height: 230,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                    image: DecorationImage(
+                      image: NetworkImage(imageUrl),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                // Favorite Icon
                 Positioned(
                   top: 8,
                   right: 8,
                   child: GestureDetector(
                     onTap: onTapFavorite,
                     child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.black54,
+                      isFavorite
+                          ? Icons.favorite // Filled icon if favorite
+                          : Icons.favorite_border, // Outline icon if not favorite
+                      color: isFavorite ? Colors.red : Colors.grey[600],
                     ),
                   ),
                 ),
               ],
             ),
-            // Product Details
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: FontUtils.circularStdStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '\$$price',
-                    style: FontUtils.circularStdStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                title,
+                style: FontUtils.circularStdStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color:AppColors.textColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
+              child: Text(
+                price,
+                style: FontUtils.gabaritoStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

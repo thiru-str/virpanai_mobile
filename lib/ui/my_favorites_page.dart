@@ -31,30 +31,36 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                 color: AppColors.primary,
               ),
             )
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: 6,
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.7,
+          : SingleChildScrollView(
+            child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GridView.builder(
+                  scrollDirection: Axis.vertical,
+                  itemCount: 6,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate:  const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Number of columns
+                    crossAxisSpacing: 16, // Space between columns
+                    mainAxisSpacing: 16, // Space between rows
+                    childAspectRatio:
+                    0.6, // Adjust this for proper card proportions
+                  ),
+                  itemBuilder: (context, index) {
+                    // final productCategory = productCategoriesResponse!.productCategories![index];
+                    return GestureDetector(
+                      onTap: () {},
+                      child: ProductCard(
+                          imageUrl: "https://cartel.waioz.com/uploads/1735195194161-men.png",
+                          title: "Nike Fuel Pack",
+                          price: "32.0",
+                          onTapFavorite: () {},
+                          onTapCard: () {}),
+                    );
+                  },
                 ),
-                itemBuilder: (context, index) {
-                  // final productCategory = productCategoriesResponse!.productCategories![index];
-                  return GestureDetector(
-                    onTap: () {},
-                    child: ProductCard(
-                        imageUrl: "https://cartel.waioz.com/uploads/1735195194161-men.png",
-                        title: "Nike Fuel Pack",
-                        price: "32.0",
-                        onTapFavorite: () {},
-                        onTapCard: () {}),
-                  );
-                },
               ),
-            ),
+          ),
     );
   }
 }

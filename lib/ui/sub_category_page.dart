@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_categories_response.dart';
+import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 
@@ -48,7 +50,9 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                     final productCategory =  widget.productCategory[index];
                     return GestureDetector(
                       onTap: () {},
-                      child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (){
+                      child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (
+                          ){
+                        PageRouteUtils.push(context, ProductPage());
                       }),
                     );
                   },

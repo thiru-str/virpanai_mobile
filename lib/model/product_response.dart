@@ -45,7 +45,7 @@ class Product {
   bool? isGiftcard;
   bool? discountable;
   String? thumbnail;
-  CollectionId? collectionId;
+  String? collectionId;
   dynamic typeId;
   dynamic weight;
   dynamic length;
@@ -102,7 +102,7 @@ class Product {
     isGiftcard: json["is_giftcard"],
     discountable: json["discountable"],
     thumbnail: json["thumbnail"],
-    collectionId: collectionIdValues.map[json["collection_id"]]!,
+    collectionId: json["collection_id"],
     typeId: json["type_id"],
     weight: json["weight"],
     length: json["length"],
@@ -131,7 +131,7 @@ class Product {
     "is_giftcard": isGiftcard,
     "discountable": discountable,
     "thumbnail": thumbnail,
-    "collection_id": collectionIdValues.reverse[collectionId],
+    "collection_id": collectionId,
     "type_id": typeId,
     "weight": weight,
     "length": length,
@@ -154,8 +154,8 @@ class Product {
 
 class Tion {
   String? id;
-  CollectionTitle? title;
-  Handle? handle;
+  String? title;
+  String? handle;
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic metadata;
@@ -175,8 +175,8 @@ class Tion {
 
   factory Tion.fromJson(Map<String, dynamic> json) => Tion(
     id: json["id"],
-    title: collectionTitleValues.map[json["title"]]!,
-    handle: handleValues.map[json["handle"]]!,
+    title: json["title"],
+    handle: json["handle"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     metadata: json["metadata"],
@@ -186,8 +186,8 @@ class Tion {
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "title": collectionTitleValues.reverse[title],
-    "handle": handleValues.reverse[handle],
+    "title": title,
+    "handle": handle,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "metadata": metadata,
@@ -195,32 +195,6 @@ class Tion {
     "product_id": productId,
   };
 }
-
-enum Handle {
-  WITHOUT_VARIANTS
-}
-
-final handleValues = EnumValues({
-  "without_variants": Handle.WITHOUT_VARIANTS
-});
-
-enum CollectionTitle {
-  DEFAULT_OPTION,
-  WITHOUT_VARIANTS
-}
-
-final collectionTitleValues = EnumValues({
-  "Default option": CollectionTitle.DEFAULT_OPTION,
-  "Without Variants": CollectionTitle.WITHOUT_VARIANTS
-});
-
-enum CollectionId {
-  PCOL_01_JF00_GAGRXJJMYZHJKK9_JV5_RQ
-}
-
-final collectionIdValues = EnumValues({
-  "pcol_01JF00GAGRXJJMYZHJKK9JV5RQ": CollectionId.PCOL_01_JF00_GAGRXJJMYZHJKK9_JV5_RQ
-});
 
 class Image {
   String? id;
@@ -231,8 +205,8 @@ class Image {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic deletedAt;
-  CollectionTitle? title;
-  List<ValueElement>? values;
+  String? title;
+  List<Value>? values;
 
   Image({
     this.id,
@@ -256,8 +230,8 @@ class Image {
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     deletedAt: json["deleted_at"],
-    title: collectionTitleValues.map[json["title"]]!,
-    values: json["values"] == null ? [] : List<ValueElement>.from(json["values"]!.map((x) => ValueElement.fromJson(x))),
+    title: json["title"],
+    values: json["values"] == null ? [] : List<Value>.from(json["values"]!.map((x) => Value.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -269,14 +243,14 @@ class Image {
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "deleted_at": deletedAt,
-    "title": collectionTitleValues.reverse[title],
+    "title": title,
     "values": values == null ? [] : List<dynamic>.from(values!.map((x) => x.toJson())),
   };
 }
 
-class ValueElement {
+class Value {
   String? id;
-  ValueEnum? value;
+  String? value;
   dynamic metadata;
   String? optionId;
   DateTime? createdAt;
@@ -284,7 +258,7 @@ class ValueElement {
   dynamic deletedAt;
   Tion? option;
 
-  ValueElement({
+  Value({
     this.id,
     this.value,
     this.metadata,
@@ -295,9 +269,9 @@ class ValueElement {
     this.option,
   });
 
-  factory ValueElement.fromJson(Map<String, dynamic> json) => ValueElement(
+  factory Value.fromJson(Map<String, dynamic> json) => Value(
     id: json["id"],
-    value: valueEnumValues.map[json["value"]]!,
+    value: json["value"],
     metadata: json["metadata"],
     optionId: json["option_id"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
@@ -308,7 +282,7 @@ class ValueElement {
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "value": valueEnumValues.reverse[value],
+    "value": value,
     "metadata": metadata,
     "option_id": optionId,
     "created_at": createdAt?.toIso8601String(),
@@ -318,17 +292,9 @@ class ValueElement {
   };
 }
 
-enum ValueEnum {
-  DEFAULT_OPTION_VALUE
-}
-
-final valueEnumValues = EnumValues({
-  "Default option value": ValueEnum.DEFAULT_OPTION_VALUE
-});
-
 class Variant {
   String? id;
-  VariantTitle? title;
+  String? title;
   String? sku;
   dynamic barcode;
   dynamic ean;
@@ -349,7 +315,8 @@ class Variant {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic deletedAt;
-  List<ValueElement>? options;
+  List<Value>? options;
+  CalculatedPrice? calculatedPrice;
 
   Variant({
     this.id,
@@ -375,11 +342,12 @@ class Variant {
     this.updatedAt,
     this.deletedAt,
     this.options,
+    this.calculatedPrice,
   });
 
   factory Variant.fromJson(Map<String, dynamic> json) => Variant(
     id: json["id"],
-    title: variantTitleValues.map[json["title"]]!,
+    title: json["title"],
     sku: json["sku"],
     barcode: json["barcode"],
     ean: json["ean"],
@@ -400,12 +368,13 @@ class Variant {
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     deletedAt: json["deleted_at"],
-    options: json["options"] == null ? [] : List<ValueElement>.from(json["options"]!.map((x) => ValueElement.fromJson(x))),
+    options: json["options"] == null ? [] : List<Value>.from(json["options"]!.map((x) => Value.fromJson(x))),
+    calculatedPrice: json["calculated_price"] == null ? null : CalculatedPrice.fromJson(json["calculated_price"]),
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "title": variantTitleValues.reverse[title],
+    "title": title,
     "sku": sku,
     "barcode": barcode,
     "ean": ean,
@@ -427,25 +396,118 @@ class Variant {
     "updated_at": updatedAt?.toIso8601String(),
     "deleted_at": deletedAt,
     "options": options == null ? [] : List<dynamic>.from(options!.map((x) => x.toJson())),
+    "calculated_price": calculatedPrice?.toJson(),
   };
 }
 
-enum VariantTitle {
-  DEFAULT_VARIANT
+class CalculatedPrice {
+  String? id;
+  bool? isCalculatedPricePriceList;
+  bool? isCalculatedPriceTaxInclusive;
+  int? calculatedAmount;
+  RawAmount? rawCalculatedAmount;
+  bool? isOriginalPricePriceList;
+  bool? isOriginalPriceTaxInclusive;
+  int? originalAmount;
+  RawAmount? rawOriginalAmount;
+  String? currencyCode;
+  Price? calculatedPrice;
+  Price? originalPrice;
+
+  CalculatedPrice({
+    this.id,
+    this.isCalculatedPricePriceList,
+    this.isCalculatedPriceTaxInclusive,
+    this.calculatedAmount,
+    this.rawCalculatedAmount,
+    this.isOriginalPricePriceList,
+    this.isOriginalPriceTaxInclusive,
+    this.originalAmount,
+    this.rawOriginalAmount,
+    this.currencyCode,
+    this.calculatedPrice,
+    this.originalPrice,
+  });
+
+  factory CalculatedPrice.fromJson(Map<String, dynamic> json) => CalculatedPrice(
+    id: json["id"],
+    isCalculatedPricePriceList: json["is_calculated_price_price_list"],
+    isCalculatedPriceTaxInclusive: json["is_calculated_price_tax_inclusive"],
+    calculatedAmount: json["calculated_amount"],
+    rawCalculatedAmount: json["raw_calculated_amount"] == null ? null : RawAmount.fromJson(json["raw_calculated_amount"]),
+    isOriginalPricePriceList: json["is_original_price_price_list"],
+    isOriginalPriceTaxInclusive: json["is_original_price_tax_inclusive"],
+    originalAmount: json["original_amount"],
+    rawOriginalAmount: json["raw_original_amount"] == null ? null : RawAmount.fromJson(json["raw_original_amount"]),
+    currencyCode: json["currency_code"],
+    calculatedPrice: json["calculated_price"] == null ? null : Price.fromJson(json["calculated_price"]),
+    originalPrice: json["original_price"] == null ? null : Price.fromJson(json["original_price"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "is_calculated_price_price_list": isCalculatedPricePriceList,
+    "is_calculated_price_tax_inclusive": isCalculatedPriceTaxInclusive,
+    "calculated_amount": calculatedAmount,
+    "raw_calculated_amount": rawCalculatedAmount?.toJson(),
+    "is_original_price_price_list": isOriginalPricePriceList,
+    "is_original_price_tax_inclusive": isOriginalPriceTaxInclusive,
+    "original_amount": originalAmount,
+    "raw_original_amount": rawOriginalAmount?.toJson(),
+    "currency_code": currencyCode,
+    "calculated_price": calculatedPrice?.toJson(),
+    "original_price": originalPrice?.toJson(),
+  };
 }
 
-final variantTitleValues = EnumValues({
-  "Default variant": VariantTitle.DEFAULT_VARIANT
-});
+class Price {
+  String? id;
+  dynamic priceListId;
+  dynamic priceListType;
+  dynamic minQuantity;
+  dynamic maxQuantity;
 
-class EnumValues<T> {
-  Map<String, T> map;
-  late Map<T, String> reverseMap;
+  Price({
+    this.id,
+    this.priceListId,
+    this.priceListType,
+    this.minQuantity,
+    this.maxQuantity,
+  });
 
-  EnumValues(this.map);
+  factory Price.fromJson(Map<String, dynamic> json) => Price(
+    id: json["id"],
+    priceListId: json["price_list_id"],
+    priceListType: json["price_list_type"],
+    minQuantity: json["min_quantity"],
+    maxQuantity: json["max_quantity"],
+  );
 
-  Map<T, String> get reverse {
-    reverseMap = map.map((k, v) => MapEntry(v, k));
-    return reverseMap;
-  }
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "price_list_id": priceListId,
+    "price_list_type": priceListType,
+    "min_quantity": minQuantity,
+    "max_quantity": maxQuantity,
+  };
+}
+
+class RawAmount {
+  String? value;
+  int? precision;
+
+  RawAmount({
+    this.value,
+    this.precision,
+  });
+
+  factory RawAmount.fromJson(Map<String, dynamic> json) => RawAmount(
+    value: json["value"],
+    precision: json["precision"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "value": value,
+    "precision": precision,
+  };
 }
