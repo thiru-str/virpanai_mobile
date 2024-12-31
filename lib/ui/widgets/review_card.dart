@@ -37,12 +37,14 @@ class ReviewCard extends StatelessWidget {
               // Profile Image
               CircleAvatar(
                 radius: 24,
-                backgroundImage: NetworkImage(profileImageUrl),
+                backgroundColor: AppColors.primary,
+                /*backgroundImage: NetworkImage(profileImageUrl),*/
               ),
               const SizedBox(width: 12),
               // Name and Rating
               Expanded(
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -54,16 +56,19 @@ class ReviewCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: List.generate(5, (index) {
-                        return Icon(
-                          index < rating.round()
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: AppColors.primary,
-                          size: 16,
-                        );
-                      }),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < rating.round()
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: AppColors.primary,
+                            size: 16,
+                          );
+                        }),
+                      ),
                     ),
                   ],
                 ),

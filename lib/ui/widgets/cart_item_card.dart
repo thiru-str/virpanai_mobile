@@ -28,6 +28,7 @@ class CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 100,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -43,7 +44,7 @@ class CartItemCard extends StatelessWidget {
             child: Image.network(
               imageUrl,
               width: 60,
-              height: 60,
+              height: 80,
               fit: BoxFit.cover,
             ),
           ),
@@ -52,6 +53,7 @@ class CartItemCard extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Product Name
                 Text(
@@ -73,15 +75,6 @@ class CartItemCard extends StatelessWidget {
                         color: Colors.black54,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Text(
-                      'Color - $color',
-                      style: FontUtils.circularStdStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
                   ],
                 ),
               ],
@@ -90,6 +83,7 @@ class CartItemCard extends StatelessWidget {
           // Price and Quantity Adjustment
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               // Price
               Text(
@@ -103,6 +97,7 @@ class CartItemCard extends StatelessWidget {
               const SizedBox(height: 8),
               // Quantity Buttons
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Decrease Button
                   GestureDetector(

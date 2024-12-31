@@ -9,7 +9,8 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 
 class ProductPage extends StatefulWidget {
-  const ProductPage({super.key});
+  final String categoryId;
+  const ProductPage({super.key,required this.categoryId});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -88,7 +89,7 @@ class _ProductPageState extends State<ProductPage> {
   void getProductsApi() async {
     try {
       final ApiService apiService = ApiService();
-      productsResponse = await apiService.listProducts(context);
+      productsResponse = await apiService.listProducts(context,widget.categoryId);
       setState(() {
         apiLoading = false;
         productsResponse;

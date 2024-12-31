@@ -52,7 +52,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                       onTap: () {},
                       child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (
                           ){
-                        PageRouteUtils.push(context, ProductPage());
+                        PageRouteUtils.push(context, ProductPage(categoryId: productCategory.id!,));
                       }),
                     );
                   },

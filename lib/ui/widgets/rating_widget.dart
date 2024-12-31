@@ -39,7 +39,7 @@ class RatingWidget extends StatelessWidget {
             itemCount: 5,
             itemBuilder: (context, _) => const Icon(
               Icons.star,
-              color: Color(0xFF6A4BF6), // Purple color for filled stars
+              color: AppColors.primary, // Purple color for filled stars
             ),
             unratedColor: Colors.grey.shade300, // Color for unfilled stars
             itemSize: 48,
@@ -68,7 +68,7 @@ class RatingWidget extends StatelessWidget {
           ElevatedButton(
             onPressed: onSubmit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6A4BF6), // Purple color for button
+              backgroundColor: AppColors.primary, // Purple color for button
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),

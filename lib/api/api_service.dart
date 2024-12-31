@@ -8,9 +8,12 @@ import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
+import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/ui/widgets/product_wishlist.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../utility/app_utils.dart';
@@ -176,11 +179,12 @@ class ApiService {
     );
   }
 
-  Future<ProductsResponse> listProducts(BuildContext context) async {
+  Future<ProductsResponse> listProducts(BuildContext context,String categoryId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
       return _makeGetRequest<ProductsResponse>(
         'store/products',
         null,
-            null,
+        {"region_id":regionId,"category_id":categoryId},
             (json) => ProductsResponse.fromJson(json),
         context,
       );
@@ -266,6 +270,59 @@ class ApiService {
     return _makeDeleteRequest("store/customers/me/addresses/$addressID",
         null,
             (data) => RegisterResponse.fromJson(data),
+        context
+    );
+  }
+
+  Future<ReviewResponse> getProductReviews(BuildContext context,String productId) async {
+    await addToken();
+    return _makeGetRequest<ReviewResponse>(
+      'store/product-reviews',
+      productId,
+      null,
+          (json) => ReviewResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> addCart(BuildContext context,int qty,String variantId) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/carts/$cartId/line-items',
+      {"variant_id": variantId,"quantity": qty,"metadata":{}},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> getCart(BuildContext context) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeGetRequest(
+      'store/carts/$cartId',
+      null,
+        null,
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishListResponse> addFavourite(BuildContext context,String productId) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-wishlist',
+        {"product_id": productId},
+          (json) => WishListResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishListResponse> deleteFavourite(BuildContext context,String productId) async {
+    await addToken();
+    return _makeDeleteRequest('store/product-wishlist/$productId',
+        null,
+            (data) => WishListResponse.fromJson(data),
         context
     );
   }
