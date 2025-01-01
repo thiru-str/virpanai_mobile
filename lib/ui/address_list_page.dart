@@ -33,6 +33,11 @@ class _AddressListPageState extends State<AddressListPage> {
     getAddressListApi();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -44,96 +49,113 @@ class _AddressListPageState extends State<AddressListPage> {
       ),
       body: apiLoading
           ? const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-        ),
-      )
-          : addressListResponse?.addresses?.length != 0
-          ? Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 16.0),
-                itemCount: addressListResponse?.addresses?.length ??
-                    0, // Dynamic count of AddressCard widgets
-                itemBuilder: (context, index) {
-                  Address? address =
-                  addressListResponse?.addresses?[index];
-                  return AddressCard(
-                    title: address?.addressName ??
-                        'Others', // If address name is null, show 'Untitled'
-                    address:
-                    '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                    icon: Icons
-                        .home, // Or choose another icon based on address data
-                    onDelete: () {
-                      _showDeleteDialog(context, address?.id);
-                    },
-                    onEdit: () {
-                      PageRouteUtils.push(
-                          context,
-                          AddAddressPage(
-                            selectedAddress: address,
-                          ));
-                    },
-                  );
-                },
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
               ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    PageRouteUtils.push(context, AddAddressPage());
+            )
+          : addressListResponse?.addresses?.isNotEmpty ?? false
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          itemCount: addressListResponse?.addresses?.length ??
+                              0, // Dynamic count of AddressCard widgets
+                          itemBuilder: (context, index) {
+                            Address? address =
+                                addressListResponse?.addresses?[index];
+                            return AddressCard(
+                              title: address?.addressName ??
+                                  'Others', // If address name is null, show 'Untitled'
+                              address:
+                                  '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
+                              icon: Icons
+                                  .home, // Or choose another icon based on address data
+                              onDelete: () {
+                                _showDeleteDialog(context, address?.id);
+                              },
+                              onEdit: () async {
+                                final result = await PageRouteUtils.push(
+                                    context,
+                                    AddAddressPage(
+                                      selectedAddress: address,
+                                    ));
+                                if (result == true) {
+                                  getAddressListApi();
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final result = await PageRouteUtils.push(
+                                  context,
+                                  AddAddressPage());
+                              if (result == true) {
+                                getAddressListApi();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
+                              ),
+                              minimumSize: const Size(
+                                  double.infinity, 52), // Full-width button
+                            ),
+                            child: Text(
+                              AppStrings.add_address,
+                              style: FontUtils.circularStdStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : NoOrdersWidget(
+                  message: AppStrings.no_address_yet,
+                  buttonText: AppStrings.add_address,
+                  iconPath: AppAssets.ic_cart_empty,
+                  onButtonTap: () async {
+                    final result = await PageRouteUtils.push(
+                        context,
+                        AddAddressPage());
+                    if (result == true) {
+                      getAddressListApi();
+                    }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    minimumSize: const Size(
-                        double.infinity, 52), // Full-width button
-                  ),
-                  child: Text(
-                    AppStrings.add_address,
-                    style: FontUtils.circularStdStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.secondary,
-                    ),
-                  ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      )
-          : NoOrdersWidget(
-        message: "No Address Yet",
-        buttonText: AppStrings.add_address,
-        iconPath: AppAssets.ic_cart_empty,
-        onButtonTap: () {
-          PageRouteUtils.push(context, AddAddressPage());
-        },
-      ),
     );
   }
 
   void getAddressListApi() async {
     try {
       final ApiService apiService = ApiService();
-      addressListResponse = await apiService.getAddressList(context);
-      setState(() {
-        apiLoading = false;
-        addressListResponse;
-      });
+      var response = await apiService.getAddressList(context);
+      if (mounted) {
+        setState(() {
+          addressListResponse = response;
+          apiLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          apiLoading = false;
+        });
+      }
       print(e);
     }
   }
@@ -149,11 +171,10 @@ class _AddressListPageState extends State<AddressListPage> {
           contentCancel: "No",
           onTapOk: () {
             print("OK");
-            deleteAddress(addressID);  // Call deleteAddress when confirmed
+            deleteAddress(addressID); // Call deleteAddress when confirmed
           },
           onTapCancel: () {
             print("Cancel");
-            Navigator.of(context).pop();
           },
         );
       },
@@ -166,7 +187,7 @@ class _AddressListPageState extends State<AddressListPage> {
       await apiService.deleteAddress(context, addressID);
       setState(() {
         apiLoading = false;
-        getAddressListApi();  // Refresh the address list after deletion
+        getAddressListApi(); // Refresh the address list after deletion
       });
     } catch (e) {
       setState(() {

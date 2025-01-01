@@ -18,7 +18,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-
   Customer? customer;
 
   @override
@@ -27,14 +26,16 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     getCustomerInfo();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
+      body: SafeArea(
+          child: Column(
         children: [
           // Profile Section
-          const SizedBox(height: 50,),
+
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -56,7 +57,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 30),
                 // Name and Email
                 Container(
                   padding: const EdgeInsets.all(16.0),
@@ -67,11 +68,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                       Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            customer!= null?'${customer!.firstName!} ${customer!.lastName}':'',
+                            customer != null
+                                ? '${customer!.firstName!} ${customer!.lastName}'
+                                : '',
                             style: FontUtils.circularStdStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -80,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            customer!= null?customer!.email!:'',
+                            customer != null ? customer!.email! : '',
                             style: FontUtils.circularStdStyle(
                               fontSize: 14,
                               color: Colors.black54,
@@ -163,7 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           // Sign Out Button
           Padding(
-            padding: const EdgeInsets.only(bottom: 24.0),
+            padding: const EdgeInsets.only(bottom: 30.0),
             child: GestureDetector(
               onTap: () {
                 SharedPreferencesUtil().clear();
@@ -181,7 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 
@@ -224,5 +227,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-
-

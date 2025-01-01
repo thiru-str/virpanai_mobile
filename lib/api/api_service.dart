@@ -7,6 +7,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
+import 'package:waioz/model/product_wishlist_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
@@ -27,19 +28,19 @@ class ApiService {
     _dio.options.baseUrl = "https://cartel.waioz.com/";
     _dio.options.headers = {
       "Content-Type": "application/json",
-      "x-publishable-api-key": "pk_44ebcac78abeb65b06a8adfc90f56bafa548043255c2da64f99174bfb1bd2830",
+      "x-publishable-api-key":
+          "pk_44ebcac78abeb65b06a8adfc90f56bafa548043255c2da64f99174bfb1bd2830",
     };
     _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
   }
 
-
   Future<T> _makePostRequest<T>(
-      String endpoint,
-      Map<String, dynamic>? data,
-      T Function(Map<String, dynamic>) fromJson,
-      BuildContext context,
-      ) async {
+    String endpoint,
+    Map<String, dynamic>? data,
+    T Function(Map<String, dynamic>) fromJson,
+    BuildContext context,
+  ) async {
     try {
       debugPrint('API Request: ${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
@@ -51,15 +52,14 @@ class ApiService {
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
-      }else if (response.statusCode == 401) {
+      } else if (response.statusCode == 401) {
         await _handleLogout(context, response.data['message']);
         throw Exception('Unauthorized: ${response.data['message']}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
-
     } catch (e, stacktrace) {
-      AppLogger.print('API Exception:','$e');
+      AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
       throw Exception('An error occurred: $e');
     }
@@ -70,8 +70,7 @@ class ApiService {
       String? dynamicPath,
       Map<String, dynamic>? queryParams,
       T Function(Map<String, dynamic>) fromJson,
-      BuildContext context
-      ) async {
+      BuildContext context) async {
     try {
       // Combine endpoint and dynamic path
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
@@ -103,11 +102,11 @@ class ApiService {
   }
 
   Future<T> _makeDeleteRequest<T>(
-      String endpoint,
-      String? dynamicPath, // Optional dynamic path (for example, addressID)
-      T Function(Map<String, dynamic>) fromJson,
-      BuildContext context,
-      ) async {
+    String endpoint,
+    String? dynamicPath, // Optional dynamic path (for example, addressID)
+    T Function(Map<String, dynamic>) fromJson,
+    BuildContext context,
+  ) async {
     try {
       // Combine endpoint and dynamic path
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
@@ -117,7 +116,8 @@ class ApiService {
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
 
       // Make the DELETE request
-      final response = await _dio.delete(fullEndpoint); // Use DELETE instead of GET
+      final response =
+          await _dio.delete(fullEndpoint); // Use DELETE instead of GET
 
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
@@ -135,8 +135,6 @@ class ApiService {
     }
   }
 
-
-
   Future<void> _handleLogout(BuildContext context, String? message) async {
     // Optionally show a toast with the message
     if (message != null) {
@@ -146,112 +144,141 @@ class ApiService {
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
 
-
     // Navigate to the login screen and clear all navigation history
     PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
   }
 
-  Future<SendOtpResponse> sendOtp(BuildContext context,String phone) async {
-    return _makePostRequest(
-        "store/customers/send-otp",
-        {"phone": phone},
-            (data) => SendOtpResponse.fromJson(data),
-        context
-    );
+  Future<SendOtpResponse> sendOtp(BuildContext context, String phone) async {
+    return _makePostRequest("store/customers/send-otp", {"phone": phone},
+        (data) => SendOtpResponse.fromJson(data), context);
   }
 
-  Future<VerifyOtpResponse> verifyOtp(BuildContext context,String phone,String otp) async {
+  Future<VerifyOtpResponse> verifyOtp(
+      BuildContext context, String phone, String otp) async {
     return _makePostRequest(
         "store/customers/verify-otp",
-        {"phone": phone,"otp": otp},
-            (data) => VerifyOtpResponse.fromJson(data),
-        context
-    );
+        {"phone": phone, "otp": otp},
+        (data) => VerifyOtpResponse.fromJson(data),
+        context);
   }
 
-  Future<RegisterResponse> register(BuildContext context,String email,String companyName,String firstName,String lastName,String phone,String token) async {
+  Future<RegisterResponse> register(
+      BuildContext context,
+      String email,
+      String companyName,
+      String firstName,
+      String lastName,
+      String phone,
+      String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     return _makePostRequest(
         "store/customers",
-        {"email": email,"company_name": companyName,"first_name":firstName,"last_name":lastName,"phone":phone, "metadata": {}},
-            (data) => RegisterResponse.fromJson(data),
-        context
+        {
+          "email": email,
+          "company_name": companyName,
+          "first_name": firstName,
+          "last_name": lastName,
+          "phone": phone,
+          "metadata": {}
+        },
+        (data) => RegisterResponse.fromJson(data),
+        context);
+  }
+
+  Future<ProductsResponse> listProducts(
+      BuildContext context, String categoryId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makeGetRequest<ProductsResponse>(
+      'store/products',
+      null,
+      {"region_id": regionId, "category_id": categoryId},
+      (json) => ProductsResponse.fromJson(json),
+      context,
     );
   }
 
-  Future<ProductsResponse> listProducts(BuildContext context,String categoryId) async {
+  Future<ProductDetailReponse> productDetail(
+      BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-      return _makeGetRequest<ProductsResponse>(
-        'store/products',
-        null,
-        {"region_id":regionId,"category_id":categoryId},
-            (json) => ProductsResponse.fromJson(json),
-        context,
-      );
+    return _makeGetRequest<ProductDetailReponse>(
+      'store/products',
+      productId,
+      {"region_id": regionId},
+      (json) => ProductDetailReponse.fromJson(json),
+      context,
+    );
   }
 
-  Future<ProductDetailReponse> productDetail(BuildContext context,String productId) async {
-    String? regionId = await SharedPreferencesUtil().getString('region_id');
-      return _makeGetRequest<ProductDetailReponse>(
-        'store/products',
-        productId,
-        {"region_id": regionId},
-            (json) => ProductDetailReponse.fromJson(json),
-        context,
-      );
+  Future<ProductCategoriesResponse> productCategories(
+      BuildContext context) async {
+    return _makeGetRequest<ProductCategoriesResponse>(
+      'store/product-custom-categories',
+      null,
+      null,
+      (json) => ProductCategoriesResponse.fromJson(json),
+      context,
+    );
   }
 
-  Future<ProductCategoriesResponse> productCategories(BuildContext context) async {
-      return _makeGetRequest<ProductCategoriesResponse>(
-        'store/product-custom-categories',
-            null,
-            null,
-            (json) => ProductCategoriesResponse.fromJson(json),
-        context,
-      );
-  }
-
-  Future<ProductCategoryResponse> productCategory(BuildContext context,String categoryId) async {
-      return _makeGetRequest<ProductCategoryResponse>(
-        'store/product-custom-categories',
-        categoryId,
-            null,
-            (json) => ProductCategoryResponse.fromJson(json),
-        context,
-      );
+  Future<ProductCategoryResponse> productCategory(
+      BuildContext context, String categoryId) async {
+    return _makeGetRequest<ProductCategoryResponse>(
+      'store/product-custom-categories',
+      categoryId,
+      null,
+      (json) => ProductCategoryResponse.fromJson(json),
+      context,
+    );
   }
 
   Future<CustomerResponse> getCustomer(BuildContext context) async {
-      await addToken();
-      return _makeGetRequest<CustomerResponse>(
-        'store/customers/me',
-        null,
-            null,
-            (json) => CustomerResponse.fromJson(json),
-        context,
-      );
+    await addToken();
+    return _makeGetRequest<CustomerResponse>(
+      'store/customers/me',
+      null,
+      null,
+      (json) => CustomerResponse.fromJson(json),
+      context,
+    );
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
-      return _makeGetRequest<HomePageResponse>(
-        'store/get_home_page/v1',
-        null,
-            null,
-            (json) => HomePageResponse.fromJson(json),
-        context,
-      );
+    return _makeGetRequest<HomePageResponse>(
+      'store/get_home_page/v1',
+      null,
+      null,
+      (json) => HomePageResponse.fromJson(json),
+      context,
+    );
   }
 
-
-  Future<RegisterResponse> createOrUpdateAddress(BuildContext context,String? addressID, String address_1,String phone,String city,String state,String country,String zipCode,String addressName) async {
+  Future<RegisterResponse> createOrUpdateAddress(
+      BuildContext context,
+      String? addressID,
+      String address_1,
+      String phone,
+      String city,
+      String state,
+      String country,
+      String zipCode,
+      String addressName) async {
     await addToken();
     return _makePostRequest(
-        addressID != null ? "store/customers/me/addresses/$addressID" : "store/customers/me/addresses",
-        {"address_1": address_1,"phone": phone,"city":city,"province":state,"postal_code":zipCode, "address_name" : addressName,  "metadata": {}},
-            (data) => RegisterResponse.fromJson(data),
-        context
-    );
+        addressID != null
+            ? "store/customers/me/addresses/$addressID"
+            : "store/customers/me/addresses",
+        {
+          "address_1": address_1,
+          "phone": phone,
+          "city": city,
+          "province": state,
+          "postal_code": zipCode,
+          "address_name": addressName,
+          "metadata": {}
+        },
+        (data) => RegisterResponse.fromJson(data),
+        context);
   }
 
   Future<GetAddressListResponse> getAddressList(BuildContext context) async {
@@ -259,39 +286,53 @@ class ApiService {
     return _makeGetRequest<GetAddressListResponse>(
       'store/customers/me/addresses?fields=+address_name',
       null,
-          null,
-          (json) => GetAddressListResponse.fromJson(json),
+      null,
+      (json) => GetAddressListResponse.fromJson(json),
       context,
     );
   }
 
-  Future<RegisterResponse> deleteAddress(BuildContext context,String? addressID) async {
+  Future<RegisterResponse> deleteAddress(
+      BuildContext context, String? addressID) async {
     await addToken();
-    return _makeDeleteRequest("store/customers/me/addresses/$addressID",
-        null,
-            (data) => RegisterResponse.fromJson(data),
-        context
-    );
+    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null,
+        (data) => RegisterResponse.fromJson(data), context);
   }
 
-  Future<ReviewResponse> getProductReviews(BuildContext context,String productId) async {
+  Future<ReviewResponse> getProductReviews(
+      BuildContext context, String productId) async {
     await addToken();
     return _makeGetRequest<ReviewResponse>(
       'store/product-reviews',
       productId,
       null,
-          (json) => ReviewResponse.fromJson(json),
+      (json) => ReviewResponse.fromJson(json),
       context,
     );
   }
 
-  Future<CartResponse> addCart(BuildContext context,int qty,String variantId) async {
+  Future<GetWishlistResponse> getWishList(
+      BuildContext context, String? customerID) async {
+    await addToken();
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    print(regionId);
+    return _makeGetRequest<GetWishlistResponse>(
+      'store/product-wishlist/$customerID',
+      null,
+      {"region_id": regionId},
+      (json) => GetWishlistResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> addCart(
+      BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId/line-items',
-      {"variant_id": variantId,"quantity": qty,"metadata":{}},
-          (json) => CartResponse.fromJson(json),
+      {"variant_id": variantId, "quantity": qty, "metadata": {}},
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
@@ -302,33 +343,42 @@ class ApiService {
     return _makeGetRequest(
       'store/carts/$cartId',
       null,
-        null,
-          (json) => CartResponse.fromJson(json),
+      null,
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
 
-  Future<WishListResponse> addFavourite(BuildContext context,String productId) async {
+  Future<WishListResponse> addFavourite(
+      BuildContext context, String productId) async {
     await addToken();
     return _makePostRequest(
       'store/product-wishlist',
-        {"product_id": productId},
-          (json) => WishListResponse.fromJson(json),
+      {"product_id": productId},
+      (json) => WishListResponse.fromJson(json),
       context,
     );
   }
 
-  Future<WishListResponse> deleteFavourite(BuildContext context,String productId) async {
+  Future<WishListResponse> deleteFavourite(
+      BuildContext context, String productId) async {
     await addToken();
-    return _makeDeleteRequest('store/product-wishlist/$productId',
-        null,
-            (data) => WishListResponse.fromJson(data),
-        context
-    );
+    return _makeDeleteRequest('store/product-wishlist/$productId', null,
+        (data) => WishListResponse.fromJson(data), context);
+  }
+
+  Future<ProductWishlist> addWishList(
+      BuildContext context, String? productID) async {
+    await addToken();
+    return _makePostRequest(
+        "/store/product-wishlist",
+        {"product_id": productID},
+        (data) => ProductWishlist.fromJson(data),
+        context);
   }
 
   Future<void> addToken() async {
-    _dio.options.headers['Authorization'] = 'Bearer ${await SharedPreferencesUtil().getString('token')}';
+    _dio.options.headers['Authorization'] =
+        'Bearer ${await SharedPreferencesUtil().getString('token')}';
   }
-
 }

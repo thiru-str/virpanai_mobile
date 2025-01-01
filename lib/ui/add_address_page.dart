@@ -5,6 +5,7 @@ import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/app_utils.dart';
 
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
@@ -44,7 +45,9 @@ class _AddAddressPage extends State<AddAddressPage> {
       stateController.text = address.province ?? '';
       zipCodeController.text = address.postalCode ?? '';
       selectedLocation = address.addressName ?? AppStrings.home;
-      if (selectedLocation == AppStrings.others) {
+      print(selectedLocation);
+      if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
+        selectedLocation = AppStrings.others;
         otherAddressName.text = address.addressName ?? '';
       }
     }
@@ -135,7 +138,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      "Location",
+                      AppStrings.location,
                       style: FontUtils.circularStdStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -204,7 +207,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       print("Form is valid. Proceed to Create Address.");
-                      createAddress();
+                      createOrUpdateAddress();
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -216,7 +219,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                         const Size(double.infinity, 52), // Full-width button
                   ),
                   child: Text(
-                    AppStrings.add_address,
+                    widget.selectedAddress != null ? AppStrings.save : AppStrings.add_address,
                     style: FontUtils.circularStdStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -273,10 +276,10 @@ class _AddAddressPage extends State<AddAddressPage> {
     );
   }
 
-  void createAddress() async {
+  void createOrUpdateAddress() async {
     try {
       final ApiService apiService = ApiService();
-      selectedLocation = selectedLocation == AppStrings.others ? otherAddressName.text : AppStrings.others;
+      selectedLocation = selectedLocation == AppStrings.others ? otherAddressName.text : selectedLocation;
       registerResponse = await apiService.createOrUpdateAddress(
           context,
           widget.selectedAddress?.id,
@@ -290,6 +293,8 @@ class _AddAddressPage extends State<AddAddressPage> {
       setState(() {
         apiCalling = false;
       });
+      print("1111111object");
+      Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         apiCalling = false;

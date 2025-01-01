@@ -77,7 +77,9 @@ class _ProductPageState extends State<ProductPage> {
                           final product = productsResponse!.products![index];
                           return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: '500', onTapCard: (){
                             PageRouteUtils.push(context, ProductDetailPage(productId: product.id!));
-                          }, onTapFavorite: (){});
+                          }, onTapFavorite: (){
+                            addWishListAPI(product.id);
+                          });
                         },
                       ),
                     ],
@@ -94,6 +96,22 @@ class _ProductPageState extends State<ProductPage> {
         apiLoading = false;
         productsResponse;
       });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  void addWishListAPI(String? productID) async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.addWishList(context, productID);
+      setState(() {
+        apiLoading = false;
+      });
+      Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         apiLoading = false;
