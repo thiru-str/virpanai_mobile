@@ -3,6 +3,9 @@ import 'package:waioz/model/home_page_response.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/font_utils.dart';
+import '../../../utility/page_route_utils.dart';
+import '../../product_detail_page.dart';
+import '../../product_page.dart';
 
 class Item5 extends StatelessWidget {
   final Content content;
@@ -58,6 +61,12 @@ class Item5 extends StatelessWidget {
               LayoutDatum layoutData = content.layoutData![index];
               return GestureDetector(
                 onTap: () {
+                  switch (content.layoutOption!) {
+                    case "Category":
+                      PageRouteUtils.push(context, ProductPage(categoryId: layoutData.id!));
+                    case "Product":
+                      PageRouteUtils.push(context, ProductDetailPage(productId: layoutData.id!));
+                  }
                 },
                 child: Container(
                   width: 160,
