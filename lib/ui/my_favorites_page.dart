@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
-import 'package:waioz/model/product_wishlist_response.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/utility/app_assets.dart';
-import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../utility/app_colors.dart';
@@ -22,7 +21,7 @@ class MyFavoritesPage extends StatefulWidget {
 }
 
 class _MyFavoritesPageState extends State<MyFavoritesPage> {
-  GetWishlistResponse? wishListResponse;
+  WishlistResponse? wishListResponse;
   bool apiLoading = true;
   Customer? customer;
 
@@ -87,7 +86,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               title: product?.title ?? "",
                               price: "32.0",
                               onTapFavorite: () {
-                                addWishListAPI(product?.id);
+
                               },
                               isFavorite: true,
                               onTapCard: () {}),
@@ -101,7 +100,6 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   buttonText: AppStrings.explore_categories,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () {
-                    // PageRouteUtils.push(context, AddAddressPage());
                   },
                 ),
     );
@@ -140,22 +138,6 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
           apiLoading = false;
         });
       }
-      print(e);
-    }
-  }
-
-  void addWishListAPI(String? productID) async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.addWishList(context, productID);
-      setState(() {
-        apiLoading = false;
-      });
-      Navigator.pop(context, true);
-    } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
       print(e);
     }
   }

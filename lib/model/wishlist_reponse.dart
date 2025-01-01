@@ -1,25 +1,25 @@
 // To parse this JSON data, do
 //
-//     final getWishlistResponse = getWishlistResponseFromJson(jsonString);
+//     final wishlistResponse = wishlistResponseFromJson(jsonString);
 
 import 'dart:convert';
 
 import 'package:waioz/model/product_response.dart';
 
-GetWishlistResponse getWishlistResponseFromJson(String str) => GetWishlistResponse.fromJson(json.decode(str));
+WishlistResponse wishlistResponseFromJson(String str) => WishlistResponse.fromJson(json.decode(str));
 
-String getWishlistResponseToJson(GetWishlistResponse data) => json.encode(data.toJson());
+String wishlistResponseToJson(WishlistResponse data) => json.encode(data.toJson());
 
-class GetWishlistResponse {
+class WishlistResponse {
   bool? success;
   List<ProductWishlist>? productWishlist;
 
-  GetWishlistResponse({
+  WishlistResponse({
     this.success,
     this.productWishlist,
   });
 
-  factory GetWishlistResponse.fromJson(Map<String, dynamic> json) => GetWishlistResponse(
+  factory WishlistResponse.fromJson(Map<String, dynamic> json) => WishlistResponse(
     success: json["success"],
     productWishlist: json["product_wishlist"] == null ? [] : List<ProductWishlist>.from(json["product_wishlist"]!.map((x) => ProductWishlist.fromJson(x))),
   );

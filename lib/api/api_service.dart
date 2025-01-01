@@ -7,14 +7,13 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
-import 'package:waioz/model/product_wishlist_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
+import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
-import 'package:waioz/ui/widgets/product_wishlist.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../utility/app_utils.dart';
@@ -311,16 +310,16 @@ class ApiService {
     );
   }
 
-  Future<GetWishlistResponse> getWishList(
+  Future<WishlistResponse> getWishList(
       BuildContext context, String? customerID) async {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     print(regionId);
-    return _makeGetRequest<GetWishlistResponse>(
+    return _makeGetRequest<WishlistResponse>(
       'store/product-wishlist/$customerID',
       null,
       {"region_id": regionId},
-      (json) => GetWishlistResponse.fromJson(json),
+      (json) => WishlistResponse.fromJson(json),
       context,
     );
   }
@@ -349,32 +348,22 @@ class ApiService {
     );
   }
 
-  Future<WishListResponse> addFavourite(
+  Future<WishlistResponse> addFavourite(
       BuildContext context, String productId) async {
     await addToken();
     return _makePostRequest(
       'store/product-wishlist',
       {"product_id": productId},
-      (json) => WishListResponse.fromJson(json),
+      (json) => WishlistResponse.fromJson(json),
       context,
     );
   }
 
-  Future<WishListResponse> deleteFavourite(
+  Future<WishlistResponse> deleteFavourite(
       BuildContext context, String productId) async {
     await addToken();
     return _makeDeleteRequest('store/product-wishlist/$productId', null,
-        (data) => WishListResponse.fromJson(data), context);
-  }
-
-  Future<ProductWishlist> addWishList(
-      BuildContext context, String? productID) async {
-    await addToken();
-    return _makePostRequest(
-        "/store/product-wishlist",
-        {"product_id": productID},
-        (data) => ProductWishlist.fromJson(data),
-        context);
+        (data) => WishlistResponse.fromJson(data), context);
   }
 
   Future<void> addToken() async {
