@@ -33,7 +33,7 @@ class _QuantitySelectorState extends State<QuantitySelector> {
   }
 
   void _decrement() {
-    if (quantity > 1) {
+    if (quantity > 0) {
       setState(() {
         quantity--;
       });
