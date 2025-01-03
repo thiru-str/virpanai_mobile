@@ -112,21 +112,22 @@ class ApiService {
 
   Future<T> _makeDeleteRequest<T>(
     String endpoint,
-    String? dynamicPath, // Optional dynamic path (for example, addressID)
+    String? dynamicPath,
+    Map<String, dynamic>?
+        queryParams, // Optional dynamic path (for example, addressID)
     T Function(Map<String, dynamic>) fromJson,
     BuildContext context,
   ) async {
     try {
-      // Combine endpoint and dynamic path
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath' // Append dynamic path if provided
           : endpoint;
-      debugPrint('API headers: ${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
+      AppLogger.print('API Params:', '${queryParams ?? {}}');
 
       // Make the DELETE request
       final response =
-          await _dio.delete(fullEndpoint); // Use DELETE instead of GET
+          await _dio.delete(fullEndpoint, data: queryParams);
 
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
@@ -276,6 +277,8 @@ class ApiService {
 
   Future<RegisterResponse> createOrUpdateAddress(
       BuildContext context,
+      String? firstName,
+      String? lastName,
       String? addressID,
       String address_1,
       String phone,
@@ -290,6 +293,8 @@ class ApiService {
             ? "store/customers/me/addresses/$addressID"
             : "store/customers/me/addresses",
         {
+          "first_name" : firstName,
+          "last_name" : lastName,
           "address_1": address_1,
           "phone": phone,
           "city": city,
@@ -316,7 +321,7 @@ class ApiService {
   Future<RegisterResponse> deleteAddress(
       BuildContext context, String? addressID) async {
     await addToken();
-    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null,
+    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null, null,
         (data) => RegisterResponse.fromJson(data), context);
   }
 
@@ -381,10 +386,11 @@ class ApiService {
   }
 
   Future<WishlistResponse> deleteFavourite(
-      BuildContext context, String? productId) async {
+      BuildContext context, String? productId, String? wishlistId) async {
     await addToken();
-    return _makeDeleteRequest('store/product-wishlist/$productId', null,
-        (data) => WishlistResponse.fromJson(data), context);
+    return _makeDeleteRequest('store/product-wishlist', wishlistId, {"product_id": productId},
+            (data) => WishlistResponse.fromJson(data), context);
+
   }
 
   Future<CartResponse> updateAddress(
@@ -394,7 +400,7 @@ class ApiService {
     return _makePostRequest(
       'store/carts/$cartId',
       {"shipping_address": address},
-          (json) => CartResponse.fromJson(json),
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
@@ -406,19 +412,20 @@ class ApiService {
     return _makePostRequest(
       'store/carts/$cartId/line-items/$cartItemId',
       {"quantity": qty, "metadata": {}},
-          (json) => CartResponse.fromJson(json),
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
 
   Future<DeleteResponse> removeCart(
-      BuildContext context,String cartItemId) async {
+      BuildContext context, String cartItemId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
       'store/carts/$cartId/line-items/$cartItemId',
-          null,
-          (json) => DeleteResponse.fromJson(json),
+      null,
+      null,
+      (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
@@ -430,7 +437,7 @@ class ApiService {
     return _makePostRequest(
       'store/place-order/$cartId',
       {"payment_provider_id": pp_id},
-          (json) => PlaceOrderResponse.fromJson(json),
+      (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }
@@ -450,8 +457,8 @@ class ApiService {
     return _makeGetRequest<OrderHistoryResponse>(
       'store/orders?fields=+subtotal,+tax_total,+total',
       null,
-          null,
-          (json) => OrderHistoryResponse.fromJson(json),
+      null,
+      (json) => OrderHistoryResponse.fromJson(json),
       context,
     );
   }
@@ -462,31 +469,31 @@ class ApiService {
     return _makePostRequest(
       'store/product-info',
       {"product_id": productId, "variant_id": variantId},
-          (json) => ProductInfoResponse.fromJson(json),
+      (json) => ProductInfoResponse.fromJson(json),
       context,
     );
   }
 
   Future<RegisterResponse> updateProfile(
-      BuildContext context,
-      String email,
-      String companyName,
-      String firstName,
-      String lastName,) async {
-    addToken();
+    BuildContext context,
+    String phone,
+    String companyName,
+    String firstName,
+    String lastName,
+  ) async {
+    await addToken();
     return _makePostRequest(
         "store/customers/me",
         {
-          "email": email,
+          "phone": phone,
           "company_name": companyName,
           "first_name": firstName,
           "last_name": lastName,
           "metadata": {}
         },
-            (data) => RegisterResponse.fromJson(data),
+        (data) => RegisterResponse.fromJson(data),
         context);
   }
-
 
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =

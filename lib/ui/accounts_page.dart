@@ -94,8 +94,14 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       // Edit Button
                       TextButton(
-                        onPressed: () {
-                          PageRouteUtils.push(context, EditProfilePage());
+                        onPressed: () async {
+                          final result = await PageRouteUtils.push(context, EditProfilePage());
+                          if (result == true) {
+                            print("PageRouteUtilsHariiii");
+                            setState(() {
+                              getCustomerInfo();
+                            });
+                          }
                         },
                         child: Text(
                           'Edit',

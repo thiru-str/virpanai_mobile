@@ -21,6 +21,8 @@ class AddAddressPage extends StatefulWidget {
 
 class _AddAddressPage extends State<AddAddressPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController streetAddressController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
@@ -39,6 +41,8 @@ class _AddAddressPage extends State<AddAddressPage> {
     if (widget.selectedAddress != null) {
       // Populate the form fields with existing address data
       final address = widget.selectedAddress!;
+      firstNameController.text = address.firstName ?? '';
+      lastNameController.text = address.lastName ?? '';
       streetAddressController.text = address.address1 ?? '';
       phoneNumberController.text = address.phone ?? '';
       cityController.text = address.city ?? '';
@@ -72,6 +76,37 @@ class _AddAddressPage extends State<AddAddressPage> {
                 child: ListView(
                   padding: const EdgeInsets.only(top: 16.0),
                   children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            hintText: AppStrings.firstname,
+                            controller: firstNameController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "State is required";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: CustomTextField(
+                            hintText: AppStrings.lastname,
+                            controller: lastNameController,
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Lastname is required";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     CustomTextField(
                       hintText: AppStrings.street_address,
                       controller: streetAddressController,
@@ -282,6 +317,8 @@ class _AddAddressPage extends State<AddAddressPage> {
       selectedLocation = selectedLocation == AppStrings.others ? otherAddressName.text : selectedLocation;
       registerResponse = await apiService.createOrUpdateAddress(
           context,
+          firstNameController.text,
+          lastNameController.text,
           widget.selectedAddress?.id,
           streetAddressController.text,
           phoneNumberController.text,

@@ -17,11 +17,10 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   @override
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneNoController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
   RegisterResponse? registerResponse;
   bool apiCalling = true;
@@ -43,104 +42,112 @@ class _EditProfilePageState extends State<EditProfilePage> {
           Navigator.of(context).pop();
         },
       ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              const SizedBox(height: 32),
-              CustomTextField(
-                hintText: "First Name",
-                controller: firstNameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "First name  is required";
-                  }
-                  return null;
-                },
+      body: apiCalling
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
               ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: "Last Name",
-                controller: lastNameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "First name  is required";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: "Email",
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Email is required";
-                  }
-                  if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                      .hasMatch(value)) {
-                    return "Enter a valid email";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: "Company",
-                controller: companyController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Company is required";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Handle registration logic
-                    print("Form is valid. Proceed to register.");
-                    updateUser();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary, // Button color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  minimumSize: const Size(double.infinity, 60),
+            )
+          : Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 32),
+                    CustomTextField(
+                      hintText: "First Name",
+                      controller: firstNameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "First name  is required";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      hintText: "Last Name",
+                      controller: lastNameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "First name  is required";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      hintText: "Phone number",
+                      controller: phoneNoController,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Phone number is required";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      hintText: "Company",
+                      controller: companyController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Company is required";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          // Handle registration logic
+                          print("Form is valid. Proceed to register.");
+                          updateUser();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary, // Button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        minimumSize: const Size(double.infinity, 60),
+                      ),
+                      child: Text(
+                        'Update',
+                        style: FontUtils.circularStdStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  'Update',
-                  style: FontUtils.circularStdStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
   Future<void> getCustomerInfo() async {
-    customer = await getCustomerResponse();
-    if (customer != null) {
+    try {
+      customer = await getCustomerResponse();
+      if (customer != null) {
+        setState(() {
+          firstNameController.text = customer?.firstName ?? "";
+          lastNameController.text = customer?.lastName ?? "";
+          phoneNoController.text = customer?.phone ?? "";
+          companyController.text = customer?.companyName ?? "";
+        });
+      }
+    } catch (e) {
+      print("Error fetching customer info: $e");
+    } finally {
       setState(() {
-        customer;
-        firstNameController.text = customer?.firstName ?? "";
-        lastNameController.text = customer?.lastName ?? "";
-        emailController.text = customer?.email ?? "";
-        companyController.text = customer?.companyName ?? "";
+        apiCalling = false; // Hide the loading spinner when done
       });
     }
   }
@@ -156,11 +163,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void updateUser() async {
     try {
       final ApiService apiService = ApiService();
-      registerResponse = await apiService.updateProfile(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text);
+      registerResponse = await apiService.updateProfile(
+          context,
+          phoneNoController.text,
+          companyController.text,
+          firstNameController.text,
+          lastNameController.text);
       setState(() {
         apiCalling = false;
       });
-      SharedPreferencesUtil().saveMap('customer', registerResponse!.customer!.toJson());
+      SharedPreferencesUtil()
+          .saveMap('customer', registerResponse!.customer!.toJson());
+      Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         apiCalling = false;
