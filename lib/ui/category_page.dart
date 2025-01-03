@@ -10,7 +10,8 @@ import '../api/api_service.dart';
 import 'widgets/common_header_app_bar.dart';
 
 class CategoryPage extends StatefulWidget {
-  const CategoryPage({super.key});
+  final bool isFromBottomNav;
+  const CategoryPage({super.key,this.isFromBottomNav = false});
 
   @override
   State<CategoryPage> createState() => _CategoryPageState();
@@ -33,8 +34,9 @@ class _CategoryPageState extends State<CategoryPage> {
       appBar:
       CommonHeaderAppBar(
         title: "Categories",
+        leading: widget.isFromBottomNav ? false : true,
         onBackTap: () {
-          Navigator.of(context).pop();
+          Navigator.pop(context,true);
         },
       ),
       backgroundColor: Colors.white,
