@@ -53,7 +53,7 @@ class _CartPageState extends State<CartPage> {
             )
           : CommonHeaderAppBar(
               onBackTap: () {
-                Navigator.of(context).pop();
+                Navigator.pop(context,true);
               },
             ),
       backgroundColor: Colors.white,
@@ -173,9 +173,9 @@ class _CartPageState extends State<CartPage> {
                         // Add checkout logic here
                         PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse,));
                       },
-                      child: const Text(
+                      child:  Text(
                         'Checkout',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+                        style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),

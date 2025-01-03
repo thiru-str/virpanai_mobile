@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/review_response.dart';
@@ -7,11 +6,11 @@ import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -22,7 +21,7 @@ import '../api/api_service.dart';
 class ProductDetailPage extends StatefulWidget {
   final String productId;
 
-  const ProductDetailPage({super.key,required this.productId});
+  const ProductDetailPage({super.key, required this.productId});
 
   @override
   State<ProductDetailPage> createState() => _ProductDetailPageState();
@@ -33,15 +32,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
   CartResponse? cartResponse;
+
   bool apiLoading = true;
-  bool reviewApiLoading = true;
+  bool quantityLoading = false;
   bool hasVariants = false;
-  String? varientId;
+  String? variantId;
+  bool? productPresentInCart; // Changed to nullable to handle loading state
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    fetchInitialData();
+  }
+
+  Future<void> fetchInitialData() async {
     getProductsApi();
     getReviewApi();
   }
@@ -49,219 +53,343 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CommonHeaderAppBar(
-          onBackTap: (){
-            Navigator.pop(context);
-          },
-          onFavTap: (){
-            addFavourite();
-          },
-          isFavorite: productInfoResponse?.productOnWishlist ?? false,
+      appBar: CommonHeaderAppBar(
+        onBackTap: () => Navigator.pop(context),
+        onFavTap: addFavourite,
+        isFavorite: productInfoResponse?.productOnWishlist ?? false,
+      ),
+      backgroundColor: Colors.white,
+      body: apiLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildProductImages(),
+                  const SizedBox(height: 25),
+                  buildProductDetails(),
+                  const SizedBox(height: 33),
+                  buildCartSection(),
+                  const SizedBox(height: 15),
+                  buildProductDescription(),
+                  const SizedBox(height: 15),
+                  buildShippingAndReturns(),
+                  const SizedBox(height: 15),
+                  buildRatingSection(),
+                  const SizedBox(height: 15),
+                  buildReviews(),
+                  const SizedBox(height: 70),
+                ],
+              ),
+            ),
+            buildBottomButton(),
+          ],
         ),
-        backgroundColor: Colors.white,
-        body: apiLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Stack(
-                  children: [SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        SizedBox(
-                          height: 250,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: product!.images!.length,
-                            separatorBuilder: (context, index) => const SizedBox(width: 10),
-                            itemBuilder: (context, index) {
-                              return Container(
-                                width: 160,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        Container(
-                                          height: 250,
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            image: DecorationImage(
-                                              image: NetworkImage(product!.images![index].url!),
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 25,),
-                        Text(product!.title!,style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.textColor)),
-                        const SizedBox(height: 15,),
-                        Text(product!.variants!.isNotEmpty? CurrencyUtil.appendCurrency(product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!):'',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.primary)),
-                        const SizedBox(height: 33,),
-                      QuantitySelector(
-                        initialQuantity: 1,
-                        onQuantityChanged: (quantity) {
-                          print('Selected Quantity: $quantity');
-                          addCart(quantity, product!.variants![0].id!);
-                        },
-                      ),
-                        const SizedBox(height: 26,),
-                        Text(product!.description!,style: FontUtils.circularStdStyle(fontWeight: FontWeight.w400,fontSize: 12,color: AppColors.textColor)),
-                        const SizedBox(height: 10,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Shipping & returns',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.textColor)),
-                              const SizedBox(height: 10,),
-                              Text('Free standard shipping and free 60-day returns',style: FontUtils.circularStdStyle(fontWeight: FontWeight.w400,fontSize: 12,color: AppColors.textColor))
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 15,),
-                        RatingWidget(
-                          onRatingChanged: (rating) {
-                            print('Rating: $rating');
-                          },
-                          onSubmit: () {
-                            print('Review submitted!');
-                          },
-                        ),
-                        const SizedBox(height: 15,),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Reviews',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.textColor)),
-                            const SizedBox(height: 12,),
-                            Text('4.5 Ratings',style: FontUtils.circularStdStyle(fontWeight: FontWeight.w700,fontSize: 12,color: AppColors.textColor)),
-                            const SizedBox(height: 12,),
-                            Text('213 reviews',style: FontUtils.circularStdStyle(fontWeight: FontWeight.w400,fontSize: 12,color: AppColors.textColor)),
-                            ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: reviewResponse!=null?reviewResponse!.productReviews!.length : 0,
-                              itemBuilder: (context, index) {
-                                final review = reviewResponse!.productReviews![index];
-                                return ReviewCard(profileImageUrl: 'profileImageUrl', name: review.customer!=null?review.customer!.firstName!:'', reviewText: review.description!, rating: double.parse(review.rating!), timestamp: AppUtils.timeAgo(review.updatedAt!));
-                              },
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 70,)
-                      ],
-                    ),
-                  ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: CartButton(amount: '\$148', title: 'Add to Cart', onPressed: (){
-                        PageRouteUtils.push(context, CartPage());
-                      }),
-                    )
-                  ],
-                ),
-              ));
+      ),
+    );
   }
 
+  Widget buildProductImages() {
+    return SizedBox(
+      height: 250,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: product?.images?.length ?? 0,
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          return Container(
+            width: 160,
+            decoration: BoxDecoration(color: Colors.grey[200]),
+            child: Image.network(
+              product!.images![index].url!,
+              height: 250,
+              fit: BoxFit.cover,
+            ),
+          );
+        },
+      ),
+    );
+  }
 
+  Widget buildProductDetails() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          product?.title ?? '',
+          style: FontUtils.gabaritoStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
+          ),
+        ),
+        const SizedBox(height: 15),
+        Text(
+          product?.variants?.isNotEmpty ?? false
+              ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawCalculatedAmount!.value!)
+              : '',
+          style: FontUtils.gabaritoStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
 
-  void getProductsApi() async {
+  Widget buildCartSection() {
+    if (productPresentInCart == null) {
+      // Show a placeholder while determining cart state
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+    if (!productPresentInCart!) return const SizedBox();
+    return Column(
+      children: [
+        if (quantityLoading)
+          const Center(child: CircularProgressIndicator(color: AppColors.primary))
+        else
+          QuantitySelector(
+            initialQuantity: cartResponse?.cart?.items
+                ?.firstWhere((item) => item.variantId == variantId, orElse: null)
+                ?.quantity ??
+                1,
+            onQuantityChanged: (quantity) async {
+              await updateQuantity(quantity);
+            },
+          ),
+        const SizedBox(height: 26),
+      ],
+    );
+  }
+
+  Widget buildProductDescription() {
+    return Text(
+      product?.description ?? '',
+      style: FontUtils.circularStdStyle(
+        fontWeight: FontWeight.w400,
+        fontSize: 12,
+        color: AppColors.textColor,
+      ),
+    );
+  }
+
+  Widget buildShippingAndReturns() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Shipping & returns',
+          style: FontUtils.gabaritoStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Free standard shipping and free 60-day returns',
+          style: FontUtils.circularStdStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
+            color: AppColors.textColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildRatingSection() {
+    return RatingWidget(
+      onRatingChanged: (rating) => print('Rating: $rating'),
+      onSubmit: () => print('Review submitted!'),
+    );
+  }
+
+  Widget buildReviews() {
+    if (reviewResponse == null || reviewResponse!.productReviews!.isEmpty) return const SizedBox();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Reviews',
+          style: FontUtils.gabaritoStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: reviewResponse!.productReviews!.length,
+          itemBuilder: (context, index) {
+            final review = reviewResponse!.productReviews![index];
+            return ReviewCard(
+              profileImageUrl: 'profileImageUrl',
+              name: review.customer?.firstName ?? '',
+              reviewText: review.description!,
+              rating: double.parse(review.rating!),
+              timestamp: AppUtils.timeAgo(review.updatedAt!),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget buildBottomButton() {
+    if (productPresentInCart == null) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: productPresentInCart!
+          ? CartButton(
+        amount: CurrencyUtil.appendCurrency(cartResponse?.cart?.subtotal?.toString() ?? ''),
+        title: 'Go to Cart',
+        onPressed: navigateToCart,
+      )
+          : ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          minimumSize: const Size(double.infinity, 56),
+        ),
+        onPressed: () async {
+          await addCart(1, product?.variants?.first.id ?? '');
+        },
+        child: Text(
+          'Add to Cart',
+          style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Future<void> getProductsApi() async {
     try {
-      final ApiService apiService = ApiService();
-      ProductDetailReponse productDetailReponse = await apiService.productDetail(context,widget.productId);
+      final apiService = ApiService();
+      final response = await apiService.productDetail(context, widget.productId);
       setState(() {
+        product = response.product;
+        variantId = product?.variants?.first.id;
         apiLoading = false;
-        product = productDetailReponse.product;
-        hasVariants = product!.variants!.length> 1;
-        varientId = product?.variants?.first.id ?? '0';
-        getProductsInfoApi();
       });
+
+      // Call cart API only after product API succeeds
+      await getCartApi();
+      await getProductsInfoApi();
     } catch (e) {
+      setState(() => apiLoading = false);
+    }
+  }
+
+
+
+  Future<void> getReviewApi() async {
+    try {
+      final apiService = ApiService();
+      final response = await apiService.getProductReviews(context, widget.productId);
+      setState(() => reviewResponse = response);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> getProductsInfoApi() async {
+    try {
+      final apiService = ApiService();
+      final response = await apiService.getProductInfo(context, widget.productId, variantId);
       setState(() {
+        productInfoResponse = response;
         apiLoading = false;
       });
+      getCartApi();
+    } catch (e) {
+      setState(() => apiLoading = false);
+    }
+  }
+
+  Future<void> addCart(int qty, String variantId) async {
+    try {
+      final apiService = ApiService();
+      setState(() => quantityLoading = true);
+      await apiService.addCart(context, qty, variantId);
+      await getCartApi(); // Fetch updated cart details
+      setState(() => quantityLoading = false);
+    } catch (e) {
+      setState(() => quantityLoading = false);
       print(e);
     }
   }
 
-  void getReviewApi() async {
-    print("getReviewApi");
+  Future<void> addFavourite() async {
     try {
-      final ApiService apiService = ApiService();
-      reviewResponse = await apiService.getProductReviews(context,widget.productId);
+      final apiService = ApiService();
+      await apiService.addFavourite(context, widget.productId);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> getCartApi() async {
+    try {
+      final apiService = ApiService();
+      final response = await apiService.getCart(context);
       setState(() {
-        reviewApiLoading = false;
-        reviewResponse;
+        cartResponse = response;
+        productPresentInCart = cartResponse?.cart?.items?.any((item) => item.variantId == variantId) ?? false;
+        debugPrint('productPresentInCart ${productPresentInCart}');
       });
     } catch (e) {
-      setState(() {
-        reviewApiLoading = false;
-      });
       print(e);
+      setState(() {
+        productPresentInCart = false;
+      });
     }
   }
 
-  void getProductsInfoApi() async {
+  Future<void> navigateToCart() async {
+    final result = await PageRouteUtils.push(context, CartPage());
+    if (result == true) {
+      setState(() => apiLoading = true);
+      fetchInitialData();
+    }
+  }
+
+  Future<void> updateQuantity(int newQuantity) async {
     try {
-      final ApiService apiService = ApiService();
-      productInfoResponse = await apiService.getProductInfo(context, widget.productId, varientId);
-      setState(() {
-        apiLoading = false;
-      });
+      if (variantId == null) return;
+
+      final apiService = ApiService();
+      setState(() => quantityLoading = true);
+
+      // Find the current quantity of the product in the cart
+      final currentQuantity = cartResponse?.cart?.items
+          ?.firstWhere((item) => item.variantId == variantId, orElse: null)
+          ?.quantity ??
+          0;
+
+      // Calculate the difference to adjust the quantity
+      final quantityDifference = newQuantity - currentQuantity;
+      await apiService.addCart(context, quantityDifference, variantId!);
+
+      // Fetch updated cart data
+      await getCartApi();
     } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
       print(e);
+    } finally {
+      setState(() => quantityLoading = false);
     }
   }
 
-  void addCart(int qty,String variantId) async {
-    try {
-      final ApiService apiService = ApiService();
-      cartResponse = await apiService.addCart(context,qty,variantId);
-      setState(() {
-        reviewApiLoading = false;
-        cartResponse;
-      });
-    } catch (e) {
-      setState(() {
-        reviewApiLoading = false;
-      });
-      print(e);
-    }
-  }
-
-  void addFavourite() async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.addFavourite(context,widget.productId);
-      setState(() {
-
-      });
-    } catch (e) {
-      setState(() {
-      });
-      print(e);
-    }
-  }
 }
+
