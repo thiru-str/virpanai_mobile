@@ -9,6 +9,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -97,14 +98,13 @@ class _SettingsPageState extends State<SettingsPage> {
                         onPressed: () async {
                           final result = await PageRouteUtils.push(context, EditProfilePage());
                           if (result == true) {
-                            print("PageRouteUtilsHariiii");
                             setState(() {
                               getCustomerInfo();
                             });
                           }
                         },
                         child: Text(
-                          'Edit',
+                          AppStrings.edit,
                           style: FontUtils.circularStdStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -126,7 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ProfileItemWidget(
-                    title: 'Address',
+                    title: AppStrings.address,
                     onTap: () {
                       PageRouteUtils.push(context, AddressListPage(onSelectedAddress: (address){
 
@@ -137,7 +137,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ProfileItemWidget(
-                    title: 'Favourites',
+                    title: AppStrings.favourites,
                     onTap: () {
                       PageRouteUtils.push(context, MyFavoritesPage());
                     },
@@ -146,7 +146,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ProfileItemWidget(
-                    title: 'Order',
+                    title: AppStrings.orders,
                     onTap: () {
                       PageRouteUtils.push(context, OrdersHistoryPage());
                     },
@@ -155,7 +155,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ProfileItemWidget(
-                    title: 'Help',
+                    title: AppStrings.help,
                     onTap: () {
                       // Handle Address action
                     },
@@ -164,7 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ProfileItemWidget(
-                    title: 'Support',
+                    title: AppStrings.support,
                     onTap: () {
                       // Handle Address action
                     },
@@ -181,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 _showLogout(this.context);
               },
               child: Text(
-                'Sign Out',
+                AppStrings.signout,
                 style: FontUtils.circularStdStyle(
                   color: Colors.red,
                   fontSize: 16,
@@ -217,10 +217,10 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) {
         return CommonAlertDialog(
-          title: 'Sign Out',
-          content: 'Are you sure you want to log out?',
-          contentOk: 'Yes',
-          contentCancel: 'No',
+          title: AppStrings.signout,
+          content: AppStrings.signout_confirm_msg,
+          contentOk: AppStrings.yes,
+          contentCancel: AppStrings.no,
           onTapOk: () {
             // Handle sign out action
             SharedPreferencesUtil().clear();
