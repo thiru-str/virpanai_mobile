@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/customer_response.dart';
+import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
@@ -83,6 +86,7 @@ class ApiService {
 
       debugPrint('API headers: ${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
+      AppLogger.print('API Params:', '${queryParams ?? {}}');
 
       // Include query parameters in the GET request
       final response = await _dio.get(
@@ -197,6 +201,18 @@ class ApiService {
       'store/products',
       null,
       {"region_id": regionId, "category_id": categoryId},
+      (json) => ProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductsResponse> listBrands(
+      BuildContext context, String tagId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makeGetRequest<ProductsResponse>(
+      'store/products',
+      null,
+      {"region_id": regionId, "tag_id": tagId},
       (json) => ProductsResponse.fromJson(json),
       context,
     );
@@ -395,14 +411,14 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> removeCart(
+  Future<DeleteResponse> removeCart(
       BuildContext context,String cartItemId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
       'store/carts/$cartId/line-items/$cartItemId',
           null,
-          (json) => CartResponse.fromJson(json),
+          (json) => DeleteResponse.fromJson(json),
       context,
     );
   }

@@ -13,6 +13,7 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_utils.dart';
+import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -112,7 +113,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         const SizedBox(height: 25,),
                         Text(product!.title!,style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.textColor)),
                         const SizedBox(height: 15,),
-                        Text(product!.variants!.isNotEmpty? '\$${product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!}':'',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.primary)),
+                        Text(product!.variants!.isNotEmpty? CurrencyUtil.appendCurrency(product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!):'',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 16,color: AppColors.primary)),
                         const SizedBox(height: 33,),
                       QuantitySelector(
                         initialQuantity: 1,

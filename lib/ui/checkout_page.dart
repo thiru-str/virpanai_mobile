@@ -132,7 +132,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16.0),
             child: placeOrderApiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),): CartButton(
-                amount: cartResponse!.cart!.total.toString(),
+                amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
                 title: 'Place Order',
                 onPressed: () {
                   if (!addAddress) {
