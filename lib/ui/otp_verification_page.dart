@@ -50,7 +50,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           },
         ),
       ),
-      body: Padding(
+      body: Container(
+        color: Colors.white, // Full page background color
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,8 +66,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 16),
-            // Subtitle
+            const SizedBox(height: 24),
+            // Form for phone input
             Text(
               'Enter the code from the number we sent to\n ${widget.countryCode} ${widget.phoneNo}',
               style: FontUtils.circularStdStyle(
@@ -109,54 +110,25 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 print(value);
               },
             ),
-            const SizedBox(height: 24),
-            // Resend Code and Timer Aligned with FAB
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Resend Code Button and Timer
-                TextButton(
-                  onPressed: () {
-                    // Handle Resend Code
-                    print('Resend Code');
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        'Resend Code',
-                        style: FontUtils.circularStdStyle(
-                          fontSize: 16,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        '02:32', // Replace with actual timer logic
-                        style: FontUtils.circularStdStyle(
-                          fontSize: 16,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Floating Action Button
-                FloatingActionButton(
-                  shape: const CircleBorder(),
-                  onPressed: () {
-                    // Validate OTP and proceed
-                    print('Submitted OTP: ${_otpController.text}');
-                    verifyOtp();
-                  },
-                  backgroundColor: AppColors.primary,
-                  child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                ),
-              ],
+            const Spacer(),
+            // Submit button
+            Align(
+              alignment: Alignment.bottomRight,
+              child: FloatingActionButton(
+                shape: const CircleBorder(),
+                onPressed: () {
+                  // Validate OTP and proceed
+                  print('Submitted OTP: ${_otpController.text}');
+                  verifyOtp();
+                },
+                backgroundColor: AppColors.primary,
+                child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+              ),
             ),
             const SizedBox(height: 20),
           ],
         ),
-      ),
+      )
     );
   }
 
