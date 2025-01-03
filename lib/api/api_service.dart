@@ -386,7 +386,7 @@ class ApiService {
   }
 
   Future<WishlistResponse> deleteFavourite(
-      BuildContext context, String productId, String? wishlistId) async {
+      BuildContext context, String? productId, String? wishlistId) async {
     await addToken();
     return _makeDeleteRequest('store/product-wishlist', wishlistId, {"product_id": productId},
             (data) => WishlistResponse.fromJson(data), context);
@@ -455,7 +455,7 @@ class ApiService {
   Future<OrderHistoryResponse> getOrderHistory(BuildContext context) async {
     await addToken();
     return _makeGetRequest<OrderHistoryResponse>(
-      'store/orders?fields=+subtotal,+tax_total,+total',
+      'store/orders?fields=+subtotal,+tax_total,+total,',
       null,
       null,
       (json) => OrderHistoryResponse.fromJson(json),
