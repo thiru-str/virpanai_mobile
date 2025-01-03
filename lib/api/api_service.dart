@@ -455,7 +455,7 @@ class ApiService {
   Future<OrderHistoryResponse> getOrderHistory(BuildContext context) async {
     await addToken();
     return _makeGetRequest<OrderHistoryResponse>(
-      'store/orders?fields=+subtotal,+tax_total,+total,',
+      'store/orders?fields=+subtotal,+tax_total,+total,+cart.shipping_address.*',
       null,
       null,
       (json) => OrderHistoryResponse.fromJson(json),

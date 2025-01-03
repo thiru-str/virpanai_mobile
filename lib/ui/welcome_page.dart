@@ -24,7 +24,7 @@ class WelcomePage extends StatelessWidget {
           Positioned.fill(
             child: Container(
               color: Colors.white,
-              child: Image.asset(AppAssets.welcome_bg),
+              child: Image.asset(AppAssets.welcome_bg, fit: BoxFit.cover,),
             ),
           ),
           // Content
