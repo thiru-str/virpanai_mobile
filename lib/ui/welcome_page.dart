@@ -8,88 +8,97 @@ import 'package:waioz/utility/font_utils.dart';
 
 import '../utility/page_route_utils.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Extend the body behind the status bar
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
-        statusBarColor:  Colors.white, // Transparent or your desired color
-        statusBarIconBrightness: Brightness.dark, // For dark icons
-        statusBarBrightness: Brightness.light, // For light icons (iOS)
-    ),
-    child: Stack(
-        children: [
-          // Background image
-          Positioned.fill(
-            child: Container(
-              color: Colors.white,
-              child: Image.asset(AppAssets.welcome_bg, fit: BoxFit.cover,),
+          statusBarColor: Colors.transparent, // Transparent status bar
+          statusBarIconBrightness: Brightness.dark, // For dark icons
+          statusBarBrightness: Brightness.light, // For light icons (iOS)
+        ),
+        child: Stack(
+          children: [
+            // Background image
+            Positioned.fill(
+              child: Image.asset(
+                AppAssets.welcome_bg,
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          // Content
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Welcome text
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  children: [
-                    Text(
-                      AppStrings.welcome_to_store,
-                      textAlign: TextAlign.center,
-                      style: FontUtils.gabaritoStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+            // Content
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Welcome text
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        AppStrings.welcome_to_store,
+                        textAlign: TextAlign.center,
+                        style: FontUtils.gabaritoStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      Text(
+                        AppStrings.get_your_product,
+                        textAlign: TextAlign.center,
+                        style: FontUtils.circularStdStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                // Get Started button
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    bottom: 80,
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Handle button tap
+                      PageRouteUtils.push(context, const PhoneNumberPage());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary, // Button color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: const Size(double.infinity, 60),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      AppStrings.get_your_product,
-                      textAlign: TextAlign.center,
+                    child: Text(
+                      AppStrings.get_started,
                       style: FontUtils.circularStdStyle(
-                        fontSize: 16,
-                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              // Get Started button
-              Padding(
-                padding: const EdgeInsets.only(left: 24,right: 24,bottom: 80,),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle button tap
-                    PageRouteUtils.push(context, const PhoneNumberPage());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary, // Button color
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    minimumSize: const Size(double.infinity, 60),
-                  ),
-                  child: Text(
-                    AppStrings.get_started,
-                    style: FontUtils.circularStdStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ],
-      ),)
+                const SizedBox(height: 20),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
-
   }
 }
+
