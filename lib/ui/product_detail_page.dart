@@ -38,6 +38,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool hasVariants = false;
   String? variantId;
   bool? productPresentInCart; // Changed to nullable to handle loading state
+  bool isFavorite = false;
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       appBar: CommonHeaderAppBar(
         onBackTap: () => Navigator.pop(context),
         onFavTap: addFavourite,
-        isFavorite: productInfoResponse?.productOnWishlist ?? false,
+        isFavorite: isFavorite, // Pass the updated favorite status here
       ),
       backgroundColor: Colors.white,
       body: apiLoading
@@ -328,6 +329,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final response = await apiService.getProductInfo(context, widget.productId, variantId);
       setState(() {
         productInfoResponse = response;
+        setState(() {
+          isFavorite = productInfoResponse?.productOnWishlist ?? false;
+        });
         apiLoading = false;
       });
       getCartApi();
@@ -350,12 +354,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> addFavourite() async {
-    try {
-      final apiService = ApiService();
-      await apiService.addFavourite(context, widget.productId);
-    } catch (e) {
-      print(e);
+    if (!isFavorite){
+      try {
+        final apiService = ApiService();
+        await apiService.addFavourite(context, widget.productId);
+        setState(() {
+          isFavorite = true;
+        });
+      } catch (e) {
+        print(e);
+      }
     }
+
   }
 
   Future<void> getCartApi() async {
