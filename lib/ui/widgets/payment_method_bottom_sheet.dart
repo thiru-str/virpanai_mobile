@@ -32,16 +32,23 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ...paymentProviders.map((provider) {
-            return ListTile(
-              onTap: () {
-                onPaymentSelected(provider);
-                Navigator.pop(context); // Close the bottom sheet
-              },
-              title: Text(
-                provider.name!,
-                style: FontUtils.circularStdStyle(fontSize: 16),
+            return Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(40.0),
+                ),
+              child: ListTile(
+                onTap: () {
+                  onPaymentSelected(provider);
+                  Navigator.pop(context); // Close the bottom sheet
+                },
+                title: Text(
+                  provider.name!,
+                  style: FontUtils.circularStdStyle(fontSize: 16),
+                ),
+                trailing: const Icon(Icons.radio_button_unchecked),
               ),
-              trailing: const Icon(Icons.radio_button_unchecked),
             );
           }).toList(),
         ],
