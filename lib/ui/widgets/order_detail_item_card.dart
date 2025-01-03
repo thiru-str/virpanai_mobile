@@ -65,15 +65,15 @@ class OrderDetailItemCard extends StatelessWidget {
                         color: Colors.black54,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Text(
-                      'Color - $color',
-                      style: FontUtils.circularStdStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    // const SizedBox(width: 16),
+                    // Text(
+                    //   'Color - $color',
+                    //   style: FontUtils.circularStdStyle(
+                    //     fontSize: 14,
+                    //     color: Colors.black87,
+                    //     fontWeight: FontWeight.w600,
+                    //   ),
+                    // ),
                   ],
                 ),
               ],
@@ -81,7 +81,7 @@ class OrderDetailItemCard extends StatelessWidget {
           ),
           // Product Price
           Text(
-            '\$$price',
+            '$price',
             style: FontUtils.circularStdStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,

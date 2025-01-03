@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/model/order_history_reponse.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/font_utils.dart';
 
+import 'widgets/cart_calculation.dart';
 import 'widgets/common_header_app_bar.dart';
 import 'widgets/order_detail_item_card.dart';
 
 class OrderDetailItemPage extends StatefulWidget {
-  const OrderDetailItemPage({super.key});
+
+  final Order? selectedOrder;
+
+  const OrderDetailItemPage({super.key, this.selectedOrder});
 
   @override
   State<OrderDetailItemPage> createState() => _OrderDetailItemPageState();
@@ -22,25 +29,92 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           Navigator.of(context).pop();
         },
       ),
-      body: Padding(
+      body: SingleChildScrollView(  // Wrap the body with SingleChildScrollView for scrolling
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        child: _buildOrdersList(),
+        child: Column(  // Use a Column to arrange the widgets vertically
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildOrdersList(),
+            _buildSectionTitle('Billing details'),
+            const SizedBox(height: 10),// List of order items
+            Container(
+              padding: const EdgeInsets.all(0.0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CartCalculation(
+                    keyText: 'Subtotal:',
+                    valueText: (widget.selectedOrder?.subtotal ?? 0).toString()
+                  ),
+                  CartCalculation(
+                    keyText: 'Tax:',
+                    valueText: (widget.selectedOrder?.taxTotal ?? 0).toString()
+                  ),
+                  CartCalculation(
+                    keyText: 'Total:',
+                    valueText: (widget.selectedOrder?.total ?? 0).toString()
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildSectionTitle('Shipping details'),
+            const SizedBox(height: 20),// List of order items
+            _buildShippingDetailsCard(),  // Shipping details card
+          ],
+        ),
       ),
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: FontUtils.circularStdStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  // Method to build the list of orders
   Widget _buildOrdersList() {
     return ListView.builder(
-      itemCount: 3,
+      shrinkWrap: true,  // Prevent the list from taking up unnecessary space
+      physics: NeverScrollableScrollPhysics(),  // Disable scrolling for the list within SingleChildScrollView
+      itemCount: widget.selectedOrder?.items?.length,  // Define the number of items you want to show
       itemBuilder: (context, index) {
+        final itemDetail = widget.selectedOrder?.items?[index];
         return OrderDetailItemCard(
-          imageUrl: 'https://cartel.waioz.com/uploads/1735195194161-men.png',
-          size: 'M',
-          productName: 'Men\'s Harrington Jacket',
-          color: 'Lemon',
-          price: '148',
+          imageUrl: itemDetail?.thumbnail ?? "",
+          size: itemDetail?.variantTitle ?? "",
+          productName: (itemDetail?.quantity ?? "").toString() + " x " + (itemDetail?.productTitle ?? ""),
+          color: '',  // Product color
+          price: itemDetail?.total.toString() ?? "0",  // Product price
         );
       },
     );
+  }
+
+  Widget _buildShippingDetailsCard() {
+    return Container(
+        padding: EdgeInsets.all(20),
+        width: double.infinity, // Full width
+        decoration: BoxDecoration(
+          color: AppColors.secondary, // Background color
+          borderRadius:
+          BorderRadius.circular(8), // Border radius for rounded corners
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('2715 Ash Dr. San Jose, South Dakota 83475'),
+            SizedBox(height: 8),
+            Text('121-224-7890'),
+          ],
+        ));
   }
 }

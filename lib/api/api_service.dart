@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
+import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
@@ -315,7 +317,7 @@ class ApiService {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makeGetRequest<WishlistResponse>(
-      'store/product-wishlist/$customerID',
+      'store/product-wishlist',
       null,
       {"region_id": regionId},
       (json) => WishlistResponse.fromJson(json),
@@ -365,16 +367,27 @@ class ApiService {
         (data) => WishlistResponse.fromJson(data), context);
   }
 
-  // Future<CartResponse> getOrderHistory(BuildContext context) async {
-  //   await addToken();
-  //   return _makeGetRequest<WishlistResponse>(
-  //     'store/product-wishlist/$customerID',
-  //     null,
-  //     {"region_id": regionId},
-  //         (json) => WishlistResponse.fromJson(json),
-  //     context,
-  //   );
-  // }
+  Future<OrderHistoryResponse> getOrderHistory(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<OrderHistoryResponse>(
+      'store/orders?fields=+subtotal,+tax_total,+total',
+      null,
+          null,
+          (json) => OrderHistoryResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductInfoResponse> getProductInfo(
+      BuildContext context, String? productId, String? variantId) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-info',
+      {"product_id": productId, "variant_id": variantId},
+          (json) => ProductInfoResponse.fromJson(json),
+      context,
+    );
+  }
 
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =

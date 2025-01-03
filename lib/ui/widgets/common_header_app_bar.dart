@@ -8,13 +8,14 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
   final VoidCallback onBackTap;
   final VoidCallback? onFavTap;
   final bool leading;
+  final bool? isFavorite;
 
   const CommonHeaderAppBar({
     Key? key,
     this.title = '',
     required this.onBackTap,
     this.onFavTap,
-    this.leading = false,
+    this.leading = false, this.isFavorite = false,
   }) : super(key: key);
 
   @override
@@ -62,12 +63,19 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
                 color: Colors.grey[200], // Background color
               ),
               child: Center(
-                child: SvgPicture.asset(
-                  AppAssets.ic_fav,
-                  height: 16,
-                  width: 16,
-                  color: Colors.black87,
-                ),
+                child: Icon(
+                  isFavorite ?? false
+                      ? Icons.favorite // Filled icon if favorite
+                      : Icons.favorite_border, // Outline icon if not favorite
+                  color: isFavorite ?? false ? Colors.red : Colors.grey[600],
+                )
+
+                // SvgPicture.asset(
+                //   AppAssets.ic_fav,
+                //   height: 16,
+                //   width: 16,
+                //   color: Colors.black87,
+                // ),
               ),
             ),
           ),

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/order_history_reponse.dart';
+import 'package:waioz/ui/order_detail_item_page.dart';
 import 'package:waioz/ui/order_detail_page.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_scrollable_tab_bar.dart';
 import 'package:waioz/ui/widgets/order_widget.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+
+import 'widgets/no_orders_widget.dart';
 
 class OrdersHistoryPage extends StatefulWidget {
   const OrdersHistoryPage({super.key});
@@ -18,12 +23,15 @@ class OrdersHistoryPage extends StatefulWidget {
 
 class _OrdersHistoryPageState extends State<OrdersHistoryPage>
     with SingleTickerProviderStateMixin {
+
   late TabController _tabController;
+  OrderHistoryResponse? orderHistoryResponse;
+  bool apiLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // getOrderHistoryAPI();
+    getOrderHistoryAPI();
     _tabController = TabController(length: 5, vsync: this); // 5 tabs
   }
 
@@ -43,11 +51,17 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           Navigator.of(context).pop();
         },
       ),
-      body: Padding(padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+      body:  apiLoading
+          ? const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
+      Padding(padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
       child: Column(
         children: [
           Expanded(
-            child: _buildOrdersList(["428912", "427364"]),
+            child: _buildOrdersList(),
           ),
           // const SizedBox(height: 20),
           // CustomScrollableTabBar(
@@ -77,40 +91,54 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           //   ),
           // ),
         ],
-      ),),
+      ),) : NoOrdersWidget(
+        message: AppStrings.no_address_yet,
+        buttonText: AppStrings.add_address,
+        iconPath: AppAssets.ic_cart_empty,
+        onButtonTap: () async {
+          // final result = await PageRouteUtils.push(
+          //     context,
+          //     AddAddressPage());
+          // if (result == true) {
+          //   getAddressListApi();
+          // }
+        },
+      ),
     );
   }
 
-  Widget _buildOrdersList(List<String> orders) {
+  Widget _buildOrdersList() {
     return ListView.builder(
-      itemCount: orders.length,
+      itemCount: orderHistoryResponse?.orders?.length ?? 1,
       itemBuilder: (context, index) {
         return OrderWidget(
-          orderId: orders[index],
-          itemCount: "2",
+          orderId: (orderHistoryResponse?.orders?[index].displayId ?? 1).toString(),
+          itemCount: (orderHistoryResponse?.orders?[index].items?.length ?? 1).toString(),
           onTap: () {
-            PageRouteUtils.push(context, OrderDetailPage());
+            // PageRouteUtils.push(context, OrderDetailPage());
+            PageRouteUtils.push(context, OrderDetailItemPage(selectedOrder: orderHistoryResponse?.orders?[index],));
           },
         );
       },
     );
   }
-  // void getOrderHistoryAPI(String? customerID) async {
-  //   try {
-  //     final ApiService apiService = ApiService();
-  //     var response = await apiService.getWishList(context, customerID);
-  //     if (mounted) {
-  //       setState(() {
-  //         apiLoading = false;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         apiLoading = false;
-  //       });
-  //     }
-  //     print(e);
-  //   }
-  // }
+  void getOrderHistoryAPI() async {
+    try {
+      final ApiService apiService = ApiService();
+      var response = await apiService.getOrderHistory(context);
+      if (mounted) {
+        setState(() {
+          apiLoading = false;
+          orderHistoryResponse = response;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          apiLoading = false;
+        });
+      }
+      print(e);
+    }
+  }
 }
