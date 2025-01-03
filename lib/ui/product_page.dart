@@ -77,7 +77,7 @@ class _ProductPageState extends State<ProductPage> {
                         itemBuilder: (context, index) {
                           final product = productsResponse!.products![index];
                           return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: product!.variants!.isNotEmpty? CurrencyUtil.appendCurrency(product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!):'', onTapCard: (){
-                            PageRouteUtils.push(context, ProductDetailPage(productId: product.id!));
+                            PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: product.id!));
                           });
                         },
                       ),

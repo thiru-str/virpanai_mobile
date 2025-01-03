@@ -112,7 +112,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               },
                               isFavorite: true,
                               onTapCard: () {
-                                PageRouteUtils.push(context, ProductDetailPage(productId: product?.id ?? "0"));
+                                PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: product?.id ?? "0"));
                               }),
                         );
                       },

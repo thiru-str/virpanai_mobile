@@ -80,7 +80,7 @@ class _AddressListPageState extends State<AddressListPage> {
                                   _showDeleteDialog(context, address?.id);
                                 },
                                 onEdit: () async {
-                                  final result = await PageRouteUtils.push(
+                                  final result = await PageRouteUtils.pushWithSlide(
                                       context,
                                       AddAddressPage(
                                         selectedAddress: address,
@@ -105,7 +105,7 @@ class _AddressListPageState extends State<AddressListPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: ElevatedButton(
                             onPressed: () async {
-                              final result = await PageRouteUtils.push(
+                              final result = await PageRouteUtils.pushWithSlide(
                                   context,
                                   AddAddressPage());
                               if (result == true) {
@@ -139,7 +139,7 @@ class _AddressListPageState extends State<AddressListPage> {
                   buttonText: AppStrings.add_address,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () async {
-                    final result = await PageRouteUtils.push(
+                    final result = await PageRouteUtils.pushWithSlide(
                         context,
                         AddAddressPage());
                     if (result == true) {

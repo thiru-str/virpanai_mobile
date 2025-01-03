@@ -163,7 +163,7 @@ class _CartPageState extends State<CartPage> {
                       ),
                       onPressed: () {
                         // Add checkout logic here
-                        PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse,));
+                        PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
                       },
                       child:  Text(
                         'Checkout',

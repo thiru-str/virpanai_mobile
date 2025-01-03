@@ -61,7 +61,7 @@ class PageRouteUtils {
       BuildContext context,
       Widget page, {
         Duration duration = const Duration(milliseconds: 300),
-        Offset begin = const Offset(0, 1), // Slide from the bottom
+        Offset begin = const Offset(1, 0), // Slide from the left
       }) {
     return Navigator.push(
       context,

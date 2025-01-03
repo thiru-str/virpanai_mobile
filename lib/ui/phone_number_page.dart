@@ -151,7 +151,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         apiCalling = false;
       });
 
-      PageRouteUtils.push(context, OtpVerificationPage(countryCode:_countryCode!,phoneNo: _phoneNumber!));
+      PageRouteUtils.pushWithSlide(context, OtpVerificationPage(countryCode:_countryCode!,phoneNo: _phoneNumber!));
     } catch (e) {
       setState(() {
         apiCalling = false;

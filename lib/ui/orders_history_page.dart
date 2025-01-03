@@ -96,7 +96,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         buttonText: AppStrings.explore_categories,
         iconPath: AppAssets.ic_cart_empty,
         onButtonTap: () async {
-          // final result = await PageRouteUtils.push(
+          // final result = await PageRouteUtils.pushWithSlide(
           //     context,
           //     AddAddressPage());
           // if (result == true) {
@@ -115,8 +115,8 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           orderId: (orderHistoryResponse?.orders?[index].displayId ?? 1).toString(),
           itemCount: (orderHistoryResponse?.orders?[index].items?.length ?? 1).toString(),
           onTap: () {
-            // PageRouteUtils.push(context, OrderDetailPage());
-            PageRouteUtils.push(context, OrderDetailItemPage(selectedOrder: orderHistoryResponse?.orders?[index],));
+            // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
+            PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(selectedOrder: orderHistoryResponse?.orders?[index],));
           },
         );
       },

@@ -96,7 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       // Edit Button
                       TextButton(
                         onPressed: () async {
-                          final result = await PageRouteUtils.push(context, EditProfilePage());
+                          final result = await PageRouteUtils.pushWithSlide(context, EditProfilePage());
                           if (result == true) {
                             setState(() {
                               getCustomerInfo();
@@ -128,7 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: AppStrings.address,
                     onTap: () {
-                      PageRouteUtils.push(context, AddressListPage(onSelectedAddress: (address){
+                      PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address){
 
                       },));
                     },
@@ -139,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: AppStrings.favourites,
                     onTap: () {
-                      PageRouteUtils.push(context, MyFavoritesPage());
+                      PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
                     },
                   ),
                 ),
@@ -148,7 +148,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: AppStrings.orders,
                     onTap: () {
-                      PageRouteUtils.push(context, OrdersHistoryPage());
+                      PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
                     },
                   ),
                 ),

@@ -390,7 +390,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> navigateToCart() async {
-    final result = await PageRouteUtils.push(context, CartPage());
+    final result = await PageRouteUtils.pushWithSlide(context, CartPage());
     if (result == true) {
       setState(() => apiLoading = true);
       fetchInitialData();

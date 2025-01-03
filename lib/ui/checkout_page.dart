@@ -84,7 +84,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                             title: 'Shipping Address',
                             subtitle: addAddress? selectedAddress!.address1!: 'Add Shipping Address',
                             onTap: () {
-                              PageRouteUtils.push(context, AddressListPage(isFromCheckout: true,onSelectedAddress: (address){
+                              PageRouteUtils.pushWithSlide(context, AddressListPage(isFromCheckout: true,onSelectedAddress: (address){
                               setState(() {
                                 addAddress = true;
                                 selectedAddress = address;

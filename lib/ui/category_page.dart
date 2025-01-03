@@ -70,7 +70,7 @@ class _CategoryPageState extends State<CategoryPage> {
                             onTap: () {
                               if (productCategory
                                   .categoryChildren!.isNotEmpty) {
-                                PageRouteUtils.push(
+                                PageRouteUtils.pushWithSlide(
                                     context,
                                     SubCategoryPage(
                                       categoryTitle: productCategory.name!,

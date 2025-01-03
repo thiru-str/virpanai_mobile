@@ -63,11 +63,11 @@ class Item6 extends StatelessWidget {
                 onTap: () {
                   switch (content.layoutOption!) {
                     case "Category":
-                      PageRouteUtils.push(context, ProductPage(categoryId: layoutData.id!));
+                      PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!));
                     case "Product":
-                      PageRouteUtils.push(context, ProductDetailPage(productId: layoutData.id!));
+                      PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: layoutData.id!));
                     case "Brand":
-                      PageRouteUtils.push(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
+                      PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
                   }
                 },
                 child: Container(

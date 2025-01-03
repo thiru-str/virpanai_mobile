@@ -103,7 +103,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           children: [
             TextButton(
               onPressed: () {
-                PageRouteUtils.push(context, OrderDetailItemPage());
+                PageRouteUtils.pushWithSlide(context, OrderDetailItemPage());
               },
               child: Text('View All',
                   style: FontUtils.circularStdStyle(
