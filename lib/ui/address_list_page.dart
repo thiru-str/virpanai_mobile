@@ -75,8 +75,7 @@ class _AddressListPageState extends State<AddressListPage> {
                                     'Others', // If address name is null, show 'Untitled'
                                 address:
                                     '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                                icon: Icons
-                                    .home, // Or choose another icon based on address data
+                                icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
                                 onDelete: () {
                                   _showDeleteDialog(context, address?.id);
                                 },
@@ -182,6 +181,7 @@ class _AddressListPageState extends State<AddressListPage> {
           contentCancel: "No",
           onTapOk: () {
             print("OK");
+            Navigator.pop(context);
             deleteAddress(addressID); // Call deleteAddress when confirmed
           },
         );

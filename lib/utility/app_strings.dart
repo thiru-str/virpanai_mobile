@@ -22,4 +22,6 @@ class AppStrings {
   static const String no_address_yet = 'No Addresses Yet';
   static const String no_wishlist_yet = 'No Wishlist Yet';
   static const String edit_profile = 'Edit Profile';
+  static const String firstname = 'First Name';
+  static const String lastname = 'Last Name';
 }

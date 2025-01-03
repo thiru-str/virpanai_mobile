@@ -32,11 +32,10 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
 
   Future<void> _initializeData() async {
     // Wait for the customer data to be fetched
-    Customer? customer = await getCustomerResponse();
+    customer = await getCustomerResponse();
 
-    // If customer is available, call getWishListApi() with the customer ID
     if (customer != null) {
-      getWishListApi(customer.id);
+      getWishListApi(customer?.id);
     }
   }
 
@@ -84,7 +83,29 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               title: product?.title ?? "",
                               price: (product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString(),
                               onTapFavorite: () {
-                                deleteWishList(product?.id);
+                                String currentCustomerId = customer?.id ?? "";
+                                var currentWishlistEntry;
+
+                                // Check if productWishlist is not null and is a list
+                                if (product?.productWishlist is List) {
+                                  // Check if the list contains the current customer's wishlist entry
+                                  currentWishlistEntry = (product?.productWishlist as List).firstWhere(
+                                        (item) => item['customer_id'] == currentCustomerId,
+                                    orElse: () => null, // Return null if no match is found
+                                  );
+                                } else if (product?.productWishlist is Map) {
+                                  // Check if the productWishlist is a map and matches the current customer ID
+                                  currentWishlistEntry = (product?.productWishlist as Map)['customer_id'] == currentCustomerId
+                                      ? product?.productWishlist
+                                      : null;
+                                }
+                                if (currentWishlistEntry != null) {
+                                  // If the wishlist entry is found, delete it
+                                  print('Wishlist entry found: ${currentWishlistEntry['id']}');
+                                  deleteWishList(product?.id, currentWishlistEntry['id']);
+                                } else {
+                                  print('No wishlist entry for this customer.');
+                                }
                               },
                               isFavorite: true,
                               onTapCard: () {}),
@@ -140,14 +161,14 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
     }
   }
 
-  void deleteWishList(String? productId) async {
+  void deleteWishList(String? productId, String? wishlistId) async {
     try {
       final ApiService apiService = ApiService();
-      var response = await apiService.deleteFavourite(context, productId!);
+      await apiService.deleteFavourite(context, productId, wishlistId);
       if (mounted) {
         setState(() {
-          wishListResponse = response;
           apiLoading = false;
+          getWishListApi(customer?.id);
         });
       }
     } catch (e) {
