@@ -63,6 +63,8 @@ class Product {
   List<dynamic>? tags;
   List<Image>? images;
   List<Variant>? variants;
+  List<ProductWishlistElement>? productReview;
+  ProductWishlistElement? productWishlist;
 
   Product({
     this.id,
@@ -91,6 +93,8 @@ class Product {
     this.tags,
     this.images,
     this.variants,
+    this.productReview,
+    this.productWishlist,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -120,6 +124,9 @@ class Product {
     tags: json["tags"] == null ? [] : List<dynamic>.from(json["tags"]!.map((x) => x)),
     images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
     variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
+    productReview: json["product_review"] == null ? [] : List<ProductWishlistElement>.from(json["product_review"]!.map((x) => ProductWishlistElement.fromJson(x))),
+    productWishlist: json["product_wishlist"] == null ? null : ProductWishlistElement.fromJson(json["product_wishlist"]),
+
   );
 
   Map<String, dynamic> toJson() => {
@@ -149,6 +156,8 @@ class Product {
     "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
     "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
     "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
+    "product_review": productReview == null ? [] : List<dynamic>.from(productReview!.map((x) => x.toJson())),
+    "product_wishlist": productWishlist?.toJson(),
   };
 }
 
@@ -289,6 +298,50 @@ class Value {
     "updated_at": updatedAt?.toIso8601String(),
     "deleted_at": deletedAt,
     "option": option?.toJson(),
+  };
+}
+
+class ProductWishlistElement {
+  String? id;
+  String? customerId;
+  String? productId;
+  String? rating;
+  String? description;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+
+  ProductWishlistElement({
+    this.id,
+    this.customerId,
+    this.productId,
+    this.rating,
+    this.description,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  factory ProductWishlistElement.fromJson(Map<String, dynamic> json) => ProductWishlistElement(
+    id: json["id"],
+    customerId: json["customer_id"],
+    productId: json["product_id"],
+    rating: json["rating"],
+    description: json["description"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "customer_id": customerId,
+    "product_id": productId,
+    "rating": rating,
+    "description": description,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
   };
 }
 

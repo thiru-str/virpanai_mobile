@@ -58,14 +58,14 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                 color: AppColors.primary,
               ),
             )
-          : wishListResponse?.productWishlist?.isNotEmpty ?? false
+          : wishListResponse?.products?.isNotEmpty ?? false
               ? SafeArea(
                   child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: GridView.builder(
                       scrollDirection: Axis.vertical,
-                      itemCount: wishListResponse?.productWishlist?.length,
+                      itemCount: wishListResponse?.products?.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
@@ -77,14 +77,14 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                             0.6, // Adjust this for proper card proportions
                       ),
                       itemBuilder: (context, index) {
-                        final product = wishListResponse!.productWishlist![index].products?.first;
+                        final product = wishListResponse!.products?[index];
                         return GestureDetector(
                           onTap: () {},
                           child: ProductCard(
                               imageUrl:
                               product?.thumbnail ?? "",
                               title: product?.title ?? "",
-                              price: "32.0",
+                              price: (product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString(),
                               onTapFavorite: () {
 
                               },

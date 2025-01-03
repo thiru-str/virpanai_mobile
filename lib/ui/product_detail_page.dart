@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_detail_response.dart';
+import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/ui/cart_page.dart';
@@ -29,10 +30,12 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   ProductResponse.Product? product;
   ReviewResponse? reviewResponse;
+  ProductInfoResponse? productInfoResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
   bool reviewApiLoading = true;
   bool hasVariants = false;
+  String? varientId;
 
   @override
   void initState() {
@@ -52,6 +55,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           onFavTap: (){
             addFavourite();
           },
+          isFavorite: productInfoResponse?.productOnWishlist ?? false,
         ),
         backgroundColor: Colors.white,
         body: apiLoading
@@ -187,6 +191,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         apiLoading = false;
         product = productDetailReponse.product;
         hasVariants = product!.variants!.length> 1;
+        varientId = product?.variants?.first.id ?? '0';
+        getProductsInfoApi();
       });
     } catch (e) {
       setState(() {
@@ -197,6 +203,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void getReviewApi() async {
+    print("getReviewApi");
     try {
       final ApiService apiService = ApiService();
       reviewResponse = await apiService.getProductReviews(context,widget.productId);
@@ -207,6 +214,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     } catch (e) {
       setState(() {
         reviewApiLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  void getProductsInfoApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      productInfoResponse = await apiService.getProductInfo(context, widget.productId, varientId);
+      setState(() {
+        apiLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
       });
       print(e);
     }
