@@ -34,8 +34,8 @@ class ProductWishlist {
   String? id;
   String? customerId;
   String? productId;
-  DateTime? createdAt;
-  DateTime? updatedAt;
+  String? createdAt;
+  String? updatedAt;
   dynamic deletedAt;
   List<Product>? products;
 
@@ -53,8 +53,8 @@ class ProductWishlist {
     id: json["id"],
     customerId: json["customer_id"],
     productId: json["product_id"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    createdAt: json["created_at"],
+    updatedAt: json["updated_at"],
     deletedAt: json["deleted_at"],
     products: json["products"] == null ? [] : List<Product>.from(json["products"]!.map((x) => Product.fromJson(x))),
   );
@@ -63,8 +63,8 @@ class ProductWishlist {
     "id": id,
     "customer_id": customerId,
     "product_id": productId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
+    "created_at": createdAt,
+    "updated_at": updatedAt,
     "deleted_at": deletedAt,
     "products": products == null ? [] : List<dynamic>.from(products!.map((x) => x.toJson())),
   };

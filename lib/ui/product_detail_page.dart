@@ -47,6 +47,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           onBackTap: (){
             Navigator.pop(context);
           },
+          onFavTap: (){
+            addFavourite();
+          },
         ),
         backgroundColor: Colors.white,
         body: apiLoading

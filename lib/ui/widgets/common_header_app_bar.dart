@@ -6,11 +6,15 @@ import 'package:waioz/utility/font_utils.dart';
 class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback onBackTap;
+  final VoidCallback? onFavTap;
+  final bool leading;
 
   const CommonHeaderAppBar({
     Key? key,
     this.title = '',
     required this.onBackTap,
+    this.onFavTap,
+    this.leading = false,
   }) : super(key: key);
 
   @override
@@ -45,6 +49,31 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
           color: Colors.black87,
         ),
       ),
+      actions: [
+        GestureDetector(
+          onTap: onFavTap,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0), // Ensure consistent padding
+            child: Container(
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey[200], // Background color
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  AppAssets.ic_fav,
+                  height: 16,
+                  width: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+
     );
   }
 
