@@ -84,7 +84,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                             controller: firstNameController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "State is required";
+                                return AppStrings.firstname;
                               }
                               return null;
                             },

@@ -25,4 +25,14 @@ class AppStrings {
   static const String edit_profile = 'Edit Profile';
   static const String firstname = 'First Name';
   static const String lastname = 'Last Name';
+  static const String edit = 'Edit';
+  static const String address = 'Address';
+  static const String favourites = 'Favourites';
+  static const String help = 'Help';
+  static const String support = 'Support';
+  static const String signout = 'Sign Out';
+  static const String signout_confirm_msg = 'Are you sure you want to log out?';
+  static const String yes = 'Yes';
+  static const String no = 'No';
+
 }
