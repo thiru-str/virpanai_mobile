@@ -114,8 +114,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             ),
             const Spacer(),
             // Submit button
-            Align(
-              alignment: Alignment.bottomRight,
+              Align(
+                alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 elevation: 0,
                 shape: const CircleBorder(),
