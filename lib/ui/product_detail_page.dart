@@ -159,7 +159,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ?.quantity ??
                 1,
             onQuantityChanged: (quantity) async {
-              await updateQuantity(quantity);
+              if(quantity == 0)
+                {
+                  try {
+                    final cartItem = cartResponse?.cart?.items?.firstWhere(
+                          (item) => item.variantId == variantId,
+                          orElse: null);
+                    setState(() => quantityLoading = true);
+                    removeCart(cartItem!.id!);
+                  } catch (e) {
+                    print(e);
+                    setState(() => quantityLoading = false);
+                  } finally {
+                    //setState(() => quantityLoading = false);
+                  }
+                }
+              else {
+                await updateQuantity(quantity);
+              }
             },
           ),
         const SizedBox(height: 26),
@@ -264,6 +281,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           minimumSize: const Size(double.infinity, 56),
         ),
         onPressed: () async {
+          setState(() => productPresentInCart = true);
           await addCart(1, product?.variants?.first.id ?? '');
         },
         child: Text(
@@ -388,6 +406,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       print(e);
     } finally {
       setState(() => quantityLoading = false);
+    }
+  }
+
+  void removeCart(String cartItemId) async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.removeCart(context,cartItemId);
+      await getCartApi();
+    } catch (e) {
+      setState(() {
+
+      });
+      print(e);
     }
   }
 
