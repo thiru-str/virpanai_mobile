@@ -95,7 +95,6 @@ class _AddAddressPage extends State<AddAddressPage> {
                           child: CustomTextField(
                             hintText: AppStrings.lastname,
                             controller: lastNameController,
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return "Lastname is required";
