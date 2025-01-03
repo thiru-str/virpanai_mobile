@@ -54,6 +54,7 @@ class Order {
   List<Item>? items;
   String? paymentStatus;
   String? fulfillmentStatus;
+  Cart? cart;
 
   Order({
     this.id,
@@ -69,6 +70,7 @@ class Order {
     this.taxTotal,
     this.version,
     this.items,
+    this.cart,
     this.paymentStatus,
     this.fulfillmentStatus,
   });
@@ -87,6 +89,7 @@ class Order {
     taxTotal: json["tax_total"]?.toDouble(),
     version: json["version"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
+    cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
     paymentStatus: json["payment_status"],
     fulfillmentStatus: json["fulfillment_status"],
   );
@@ -105,6 +108,7 @@ class Order {
     "tax_total": taxTotal,
     "version": version,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
+    "cart": cart?.toJson(),
     "payment_status": paymentStatus,
     "fulfillment_status": fulfillmentStatus,
   };

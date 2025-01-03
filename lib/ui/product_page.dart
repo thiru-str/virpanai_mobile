@@ -71,7 +71,7 @@ class _ProductPageState extends State<ProductPage> {
                           crossAxisSpacing: 16, // Space between columns
                           mainAxisSpacing: 16, // Space between rows
                           childAspectRatio:
-                              0.6, // Adjust this for proper card proportions
+                              0.55, // Adjust this for proper card proportions
                         ),
                         itemCount: productsResponse!.products!.length,
                         itemBuilder: (context, index) {

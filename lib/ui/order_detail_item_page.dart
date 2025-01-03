@@ -112,9 +112,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('2715 Ash Dr. San Jose, South Dakota 83475'),
+            //
+            Text(
+              '${widget.selectedOrder?.cart?.shippingAddress?.address1}, '
+                  '${widget.selectedOrder?.cart?.shippingAddress?.city},'
+                  '${widget.selectedOrder?.cart?.shippingAddress?.postalCode}, '
+                  '${widget.selectedOrder?.cart?.shippingAddress?.province ?? ''}',
+            ),
             SizedBox(height: 8),
-            Text('121-224-7890'),
+            Text('${widget.selectedOrder?.cart?.shippingAddress?.phone}'),
           ],
         ));
   }
