@@ -35,7 +35,13 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text('All categories > ${widget.categoryTitle}',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('All categories > ',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
+                      Text('${widget.categoryTitle}',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.primary)),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 10,),
                 GridView.builder(
