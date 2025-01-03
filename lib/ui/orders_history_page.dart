@@ -92,8 +92,8 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           // ),
         ],
       ),) : NoOrdersWidget(
-        message: AppStrings.no_address_yet,
-        buttonText: AppStrings.add_address,
+        message: AppStrings.no_order_yet,
+        buttonText: AppStrings.explore_categories,
         iconPath: AppAssets.ic_cart_empty,
         onButtonTap: () async {
           // final result = await PageRouteUtils.push(

@@ -38,7 +38,7 @@ class _BottomNavPageState extends State<BottomNavPage> {
   final List<Widget> _pages = [
     HomePage(),
     CategoryPage(),
-    CartPage(),
+    CartPage(isFromBottomNav: true,),
     MyFavoritesPage(isFromBottomNav: true,),
     SettingsPage()
   ];

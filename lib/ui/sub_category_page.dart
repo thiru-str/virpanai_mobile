@@ -7,6 +7,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import 'widgets/common_header_app_bar.dart';
 
 class SubCategoryPage extends StatefulWidget {
   final List<ProductCategory> productCategory;
@@ -25,9 +26,14 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white,
-      title: Text('Categories',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 18),),centerTitle: true,),
-      backgroundColor: Colors.white,
+      appBar:
+      CommonHeaderAppBar(
+        title: "Categories",
+        onBackTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
+        backgroundColor: Colors.white,
       body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(

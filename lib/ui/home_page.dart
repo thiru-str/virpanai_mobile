@@ -15,6 +15,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
+import 'widgets/common_header_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,8 +38,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white,
-      title: Text('Home',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 18),),centerTitle: true,),
+      appBar:CommonHeaderAppBar(
+        title: "Home",
+        leading: false,
+        onBackTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
       backgroundColor: Colors.white,
       body: apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
           :Padding(

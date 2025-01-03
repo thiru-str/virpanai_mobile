@@ -16,7 +16,7 @@ class CommonHeaderAppBar extends StatelessWidget
     this.title = '',
     required this.onBackTap,
     this.onFavTap,
-    this.leading = false,
+    this.leading = true,
     this.isFavorite = false,
   }) : super(key: key);
 
@@ -26,6 +26,7 @@ class CommonHeaderAppBar extends StatelessWidget
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
+      automaticallyImplyLeading: false,
       leading: leading ? GestureDetector(
         onTap: onBackTap,
         child: Container(
@@ -37,7 +38,7 @@ class CommonHeaderAppBar extends StatelessWidget
           child: Center(
             child: SvgPicture.asset(
               AppAssets.ic_arrow_svg,
-              height: 16,
+              height: 19,
               width: 16,
               color: Colors.black87,
             ),
