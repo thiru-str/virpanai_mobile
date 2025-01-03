@@ -143,11 +143,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildCartSection() {
-    if (productPresentInCart == null) {
+    /*if (productPresentInCart == null) {
       // Show a placeholder while determining cart state
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
-    }
-    if (!productPresentInCart!) return const SizedBox();
+      return apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }*/
+    if (productPresentInCart == null || !productPresentInCart!) return const SizedBox();
     return Column(
       children: [
         if (quantityLoading)
