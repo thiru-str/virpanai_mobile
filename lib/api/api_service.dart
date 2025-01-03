@@ -314,7 +314,6 @@ class ApiService {
       BuildContext context, String? customerID) async {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    print(regionId);
     return _makeGetRequest<WishlistResponse>(
       'store/product-wishlist/$customerID',
       null,
@@ -365,6 +364,17 @@ class ApiService {
     return _makeDeleteRequest('store/product-wishlist/$productId', null,
         (data) => WishlistResponse.fromJson(data), context);
   }
+
+  // Future<CartResponse> getOrderHistory(BuildContext context) async {
+  //   await addToken();
+  //   return _makeGetRequest<WishlistResponse>(
+  //     'store/product-wishlist/$customerID',
+  //     null,
+  //     {"region_id": regionId},
+  //         (json) => WishlistResponse.fromJson(json),
+  //     context,
+  //   );
+  // }
 
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =

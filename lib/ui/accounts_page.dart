@@ -44,15 +44,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: AppColors.primary,
-                  /*backgroundImage: NetworkImage(
-                    'https://via.placeholder.com/150', // Replace with actual image URL
-                  ),*/
                   child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.primary,
-                        width: 2,
+                    child: Center(
+                      child: Text(
+                          (customer?.firstName ?? "C").substring(0, 1), // The letter to display
+                        style: FontUtils.circularStdStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        )
                       ),
                     ),
                   ),

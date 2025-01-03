@@ -38,6 +38,18 @@ class ReviewCard extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.primary,
+                  child: Container(
+                    child: Center(
+                      child: Text(
+                          name.isNotEmpty ? name.substring(0,1) : "C",
+                          style: FontUtils.circularStdStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )
+                      ),
+                    ),
+                  )
                 /*backgroundImage: NetworkImage(profileImageUrl),*/
               ),
               const SizedBox(width: 12),
