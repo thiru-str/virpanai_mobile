@@ -7,6 +7,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import 'widgets/common_header_app_bar.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -29,8 +30,13 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white,
-      title: Text('Categories',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold,fontSize: 18),),centerTitle: true,),
+      appBar:
+      CommonHeaderAppBar(
+        title: "Categories",
+        onBackTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
       backgroundColor: Colors.white,
       body: apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
           :Padding(

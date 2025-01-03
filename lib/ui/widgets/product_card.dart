@@ -7,8 +7,8 @@ class ProductCard extends StatelessWidget {
   final String title;
   final String price;
   final VoidCallback onTapCard;
-  final VoidCallback onTapFavorite;
-  final bool isFavorite; // Indicates if the item is marked as favorite
+  final VoidCallback? onTapFavorite;
+  final bool isFavorite;
 
   const ProductCard({
     Key? key,
@@ -16,8 +16,8 @@ class ProductCard extends StatelessWidget {
     required this.title,
     required this.price,
     required this.onTapCard,
-    required this.onTapFavorite,
-    this.isFavorite = false, // Default is not favorite
+    this.onTapFavorite,
+    this.isFavorite = false,
   }) : super(key: key);
 
   @override
@@ -47,19 +47,20 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: onTapFavorite,
-                    child: Icon(
-                      isFavorite
-                          ? Icons.favorite // Filled icon if favorite
-                          : Icons.favorite_border, // Outline icon if not favorite
-                      color: isFavorite ? Colors.red : Colors.grey[600],
+                if (onTapFavorite != null)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: onTapFavorite,
+                      child: Icon(
+                        isFavorite
+                            ? Icons.favorite // Filled icon if favorite
+                            : Icons.favorite_border, // Outline icon if not favorite
+                        color: isFavorite ? Colors.red : Colors.grey[600],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 16),

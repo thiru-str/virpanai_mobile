@@ -21,7 +21,7 @@ import '../utility/currency_util.dart';
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
 
-  const CartPage({super.key, this.isFromBottomNav = true});
+  const CartPage({super.key, this.isFromBottomNav = false});
 
   @override
   State<CartPage> createState() => _CartPageState();
@@ -41,17 +41,9 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.isFromBottomNav
-          ? AppBar(
-              backgroundColor: Colors.white,
-              title: Text(
-                'Cart',
-                style: FontUtils.gabaritoStyle(
-                    fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              centerTitle: true,
-            )
-          : CommonHeaderAppBar(
+      appBar: CommonHeaderAppBar(
+              title: "Cart",
+              leading: widget.isFromBottomNav ? false : true,
               onBackTap: () {
                 Navigator.pop(context,true);
               },

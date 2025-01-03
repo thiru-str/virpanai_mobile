@@ -8,6 +8,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 import '../utility/currency_util.dart';
+import 'widgets/common_header_app_bar.dart';
 
 class ProductPage extends StatefulWidget {
   final String categoryId;
@@ -32,14 +33,12 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Text(
-            'Products',
-            style: FontUtils.gabaritoStyle(
-                fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          centerTitle: true,
+        appBar:
+        CommonHeaderAppBar(
+          title: "Products",
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
         ),
         backgroundColor: Colors.white,
         body: apiLoading
@@ -79,7 +78,6 @@ class _ProductPageState extends State<ProductPage> {
                           final product = productsResponse!.products![index];
                           return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: product!.variants!.isNotEmpty? CurrencyUtil.appendCurrency(product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!):'', onTapCard: (){
                             PageRouteUtils.push(context, ProductDetailPage(productId: product.id!));
-                          }, onTapFavorite: (){
                           });
                         },
                       ),

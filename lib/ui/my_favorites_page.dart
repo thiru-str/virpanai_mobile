@@ -5,10 +5,12 @@ import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
+import 'product_detail_page.dart';
 import 'widgets/no_orders_widget.dart';
 
 class MyFavoritesPage extends StatefulWidget {
@@ -45,6 +47,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
       backgroundColor: Colors.white,
       appBar:CommonHeaderAppBar(
               title: AppStrings.my_favorites,
+              leading: widget.isFromBottomNav ?? false ? false : true,
               onBackTap: () {
                 Navigator.of(context).pop();
               },
@@ -108,7 +111,9 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                                 }
                               },
                               isFavorite: true,
-                              onTapCard: () {}),
+                              onTapCard: () {
+                                PageRouteUtils.push(context, ProductDetailPage(productId: product?.id ?? "0"));
+                              }),
                         );
                       },
                     ),
