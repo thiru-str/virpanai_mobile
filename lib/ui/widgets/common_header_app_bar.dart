@@ -3,7 +3,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/font_utils.dart';
 
-class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
+class CommonHeaderAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
   final String title;
   final VoidCallback onBackTap;
   final VoidCallback? onFavTap;
@@ -15,7 +16,8 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
     this.title = '',
     required this.onBackTap,
     this.onFavTap,
-    this.leading = false, this.isFavorite = false,
+    this.leading = false,
+    this.isFavorite = false,
   }) : super(key: key);
 
   @override
@@ -24,7 +26,7 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
-      leading: GestureDetector(
+      leading: leading ? GestureDetector(
         onTap: onBackTap,
         child: Container(
           margin: const EdgeInsets.all(8.0),
@@ -41,7 +43,7 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
             ),
           ),
         ),
-      ),
+      ) : null,
       title: Text(
         title,
         style: FontUtils.circularStdStyle(
@@ -51,37 +53,37 @@ class CommonHeaderAppBar extends StatelessWidget implements PreferredSizeWidget 
         ),
       ),
       actions: [
-        GestureDetector(
-          onTap: onFavTap,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0), // Ensure consistent padding
-            child: Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey[200], // Background color
-              ),
-              child: Center(
-                child: Icon(
+        if (onFavTap != null)
+          GestureDetector(
+            onTap: onFavTap,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0), // Ensure consistent padding
+              child: Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[200], // Background color
+                ),
+                child: Center(
+                    child: Icon(
                   isFavorite ?? false
                       ? Icons.favorite // Filled icon if favorite
                       : Icons.favorite_border, // Outline icon if not favorite
                   color: isFavorite ?? false ? Colors.red : Colors.grey[600],
                 )
 
-                // SvgPicture.asset(
-                //   AppAssets.ic_fav,
-                //   height: 16,
-                //   width: 16,
-                //   color: Colors.black87,
-                // ),
-              ),
+                  // SvgPicture.asset(
+                  //   AppAssets.ic_fav,
+                  //   height: 16,
+                  //   width: 16,
+                  //   color: Colors.black87,
+                  // ),
+                  ),
             ),
           ),
         ),
       ],
-
     );
   }
 

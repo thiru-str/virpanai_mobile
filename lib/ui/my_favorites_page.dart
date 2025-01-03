@@ -44,9 +44,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: widget.isFromBottomNav ?? false
-          ? null
-          : CommonHeaderAppBar(
+      appBar:CommonHeaderAppBar(
               title: AppStrings.my_favorites,
               onBackTap: () {
                 Navigator.of(context).pop();
@@ -86,7 +84,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               title: product?.title ?? "",
                               price: (product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString(),
                               onTapFavorite: () {
-
+                                deleteWishList(product?.id);
                               },
                               isFavorite: true,
                               onTapCard: () {}),
@@ -126,6 +124,26 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
     try {
       final ApiService apiService = ApiService();
       var response = await apiService.getWishList(context, customerID);
+      if (mounted) {
+        setState(() {
+          wishListResponse = response;
+          apiLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          apiLoading = false;
+        });
+      }
+      print(e);
+    }
+  }
+
+  void deleteWishList(String? productId) async {
+    try {
+      final ApiService apiService = ApiService();
+      var response = await apiService.deleteFavourite(context, productId);
       if (mounted) {
         setState(() {
           wishListResponse = response;

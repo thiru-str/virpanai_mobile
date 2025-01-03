@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import 'widgets/cart_calculation.dart';
@@ -47,15 +48,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 children: [
                   CartCalculation(
                     keyText: 'Subtotal:',
-                    valueText: (widget.selectedOrder?.subtotal ?? 0).toString()
+                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.subtotal ?? 0).toString()),
                   ),
                   CartCalculation(
                     keyText: 'Tax:',
-                    valueText: (widget.selectedOrder?.taxTotal ?? 0).toString()
+                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.taxTotal ?? 0).toString()),
                   ),
                   CartCalculation(
                     keyText: 'Total:',
-                    valueText: (widget.selectedOrder?.total ?? 0).toString()
+                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.total ?? 0).toString())
                   ),
                 ],
               ),
@@ -93,7 +94,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           size: itemDetail?.variantTitle ?? "",
           productName: (itemDetail?.quantity ?? "").toString() + " x " + (itemDetail?.productTitle ?? ""),
           color: '',  // Product color
-          price: itemDetail?.total.toString() ?? "0",  // Product price
+          price: CurrencyUtil.appendCurrency(itemDetail?.total.toString() ?? "0"),
         );
       },
     );

@@ -129,6 +129,13 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
       if (mounted) {
         setState(() {
           apiLoading = false;
+          // Sort orders by displayId in descending order, handling nullable displayId
+          if (response?.orders != null) {
+            response?.orders?.sort((a, b) {
+              // Use null-coalescing operator to handle null values (default to 0)
+              return (b.displayId ?? 0).compareTo(a.displayId ?? 0);  // Sort in descending order
+            });
+          }
           orderHistoryResponse = response;
         });
       }

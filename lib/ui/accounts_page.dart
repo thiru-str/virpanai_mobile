@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
+import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -94,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       // Edit Button
                       TextButton(
                         onPressed: () {
-                          // Edit action
+                          PageRouteUtils.push(context, EditProfilePage());
                         },
                         child: Text(
                           'Edit',

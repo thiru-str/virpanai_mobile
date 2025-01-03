@@ -65,15 +65,6 @@ class OrderDetailItemCard extends StatelessWidget {
                         color: Colors.black54,
                       ),
                     ),
-                    // const SizedBox(width: 16),
-                    // Text(
-                    //   'Color - $color',
-                    //   style: FontUtils.circularStdStyle(
-                    //     fontSize: 14,
-                    //     color: Colors.black87,
-                    //     fontWeight: FontWeight.w600,
-                    //   ),
-                    // ),
                   ],
                 ),
               ],
