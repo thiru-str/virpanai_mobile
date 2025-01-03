@@ -143,7 +143,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   void deleteWishList(String? productId) async {
     try {
       final ApiService apiService = ApiService();
-      var response = await apiService.deleteFavourite(context, productId);
+      var response = await apiService.deleteFavourite(context, productId!);
       if (mounted) {
         setState(() {
           wishListResponse = response;

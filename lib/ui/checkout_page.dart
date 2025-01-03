@@ -22,6 +22,8 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/font_utils.dart';
 
+import 'package:lottie/lottie.dart';
+
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
@@ -131,7 +133,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
           ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: placeOrderApiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),): CartButton(
+            child: placeOrderApiLoading?  Center(child: Lottie.asset(AppAssets.place_order_lottie,fit: BoxFit.cover)): CartButton(
                 amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
                 title: 'Place Order',
                 onPressed: () {

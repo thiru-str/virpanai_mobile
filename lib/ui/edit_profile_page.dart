@@ -156,7 +156,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void updateUser() async {
     try {
       final ApiService apiService = ApiService();
-      registerResponse = await apiService.updateProfile(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text);
+      //registerResponse = await apiService.updateProfile(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text);
       setState(() {
         apiCalling = false;
       });

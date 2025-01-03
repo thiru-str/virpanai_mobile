@@ -381,7 +381,7 @@ class ApiService {
   }
 
   Future<WishlistResponse> deleteFavourite(
-      BuildContext context, String? productId) async {
+      BuildContext context, String productId) async {
     await addToken();
     return _makeDeleteRequest('store/product-wishlist/$productId', null,
         (data) => WishlistResponse.fromJson(data), context);
@@ -466,27 +466,6 @@ class ApiService {
       context,
     );
   }
-
-  Future<RegisterResponse> updateProfile(
-      BuildContext context,
-      String email,
-      String companyName,
-      String firstName,
-      String lastName,) async {
-    addToken();
-    return _makePostRequest(
-        "store/customers/me",
-        {
-          "email": email,
-          "company_name": companyName,
-          "first_name": firstName,
-          "last_name": lastName,
-          "metadata": {}
-        },
-            (data) => RegisterResponse.fromJson(data),
-        context);
-  }
-
 
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =
