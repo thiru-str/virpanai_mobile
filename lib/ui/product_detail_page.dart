@@ -391,5 +391,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  void removeCart(String cartItemId) async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.removeCart(context,cartItemId);
+      getCartApi();
+    } catch (e) {
+      setState(() {
+
+      });
+      print(e);
+    }
+  }
+
 }
 
