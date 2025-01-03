@@ -13,6 +13,7 @@ class AppAssets {
   static const String ic_arrow = 'images/ic_arrow.png';
   static const String ic_arrow_svg = 'images/ic_arrow.svg';
   static const String welcome_bg = 'images/welcome_bg.png';
+  static const String ic_fav = 'images/ic_fav.svg';
 
 // Add more assets as needed
 }

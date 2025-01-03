@@ -190,7 +190,7 @@ class ApiService {
     return _makeGetRequest<ProductsResponse>(
       'store/products',
       null,
-      {"region_id": regionId, "category_id": categoryId},
+      /*{"region_id": regionId, "category_id": categoryId}*/null,
       (json) => ProductsResponse.fromJson(json),
       context,
     );
