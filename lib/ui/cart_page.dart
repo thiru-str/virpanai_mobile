@@ -103,7 +103,7 @@ class _CartPageState extends State<CartPage> {
                                       size: cartItem.variantTitle!,
                                       color: 'color',
                                       // Replace with actual color
-                                      price: cartItem.unitPrice.toString(),
+                                      price: (cartItem.unitPrice! * cartItem.quantity!).toString(),
                                       quantity: cartItem.quantity!,
                                       onIncrease: () {
                                         updateCart(cartItem.quantity!+1,cartItem.id!);
@@ -226,5 +226,7 @@ class _CartPageState extends State<CartPage> {
       print(e);
     }
   }
+
+
 
 }

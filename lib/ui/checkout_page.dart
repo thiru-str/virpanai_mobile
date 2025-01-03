@@ -25,6 +25,7 @@ import 'package:waioz/utility/font_utils.dart';
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
+import '../utility/currency_util.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -113,15 +114,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   children: [
                     CartCalculation(
                       keyText: 'Subtotal:',
-                      valueText: cartResponse!.cart!.subtotal.toString(),
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal.toString()),
                     ),
                     CartCalculation(
                       keyText: 'Tax:',
-                      valueText: cartResponse!.cart!.taxTotal.toString(),
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal.toString()),
                     ),
                     CartCalculation(
                       keyText: 'Total:',
-                      valueText: cartResponse!.cart!.total.toString(),
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
                     ),
                   ],
                 ),

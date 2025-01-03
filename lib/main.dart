@@ -1,11 +1,19 @@
 
+import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../ui/splash_page.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  String? currencySymbol = await SharedPreferencesUtil().getString('currency_symbol') ?? '₹';
+
+  // Initialize the currency symbol cache
+  await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
+
   runApp( HomeScreen());
 }
 
