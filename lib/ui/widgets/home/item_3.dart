@@ -66,6 +66,8 @@ class Item3 extends StatelessWidget {
                       PageRouteUtils.push(context, ProductPage(categoryId: layoutData.id!));
                     case "Product":
                       PageRouteUtils.push(context, ProductDetailPage(productId: layoutData.id!));
+                    case "Brand":
+                      PageRouteUtils.push(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
                   }
                 },
                 child: Column(

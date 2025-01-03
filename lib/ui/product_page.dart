@@ -7,10 +7,12 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/currency_util.dart';
 
 class ProductPage extends StatefulWidget {
   final String categoryId;
-  const ProductPage({super.key,required this.categoryId});
+  final bool isFromBrand;
+  const ProductPage({super.key,required this.categoryId,this.isFromBrand = false});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -75,7 +77,7 @@ class _ProductPageState extends State<ProductPage> {
                         itemCount: productsResponse!.products!.length,
                         itemBuilder: (context, index) {
                           final product = productsResponse!.products![index];
-                          return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: '500', onTapCard: (){
+                          return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: product!.variants!.isNotEmpty? CurrencyUtil.appendCurrency(product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!):'', onTapCard: (){
                             PageRouteUtils.push(context, ProductDetailPage(productId: product.id!));
                           }, onTapFavorite: (){
                           });
@@ -90,7 +92,8 @@ class _ProductPageState extends State<ProductPage> {
   void getProductsApi() async {
     try {
       final ApiService apiService = ApiService();
-      productsResponse = await apiService.listProducts(context,widget.categoryId);
+
+      productsResponse = widget.isFromBrand ? await apiService.listBrands(context,widget.categoryId):await apiService.listProducts(context,widget.categoryId);
       setState(() {
         apiLoading = false;
         productsResponse;

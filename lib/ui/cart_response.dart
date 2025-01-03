@@ -283,6 +283,7 @@ class Item {
   Raw? rawReturnReceivedTotal;
   Raw? rawReturnDismissedTotal;
   Raw? rawWriteOffTotal;
+  bool? isUpdating;
 
   Item({
     this.id,
@@ -352,6 +353,7 @@ class Item {
     this.rawReturnReceivedTotal,
     this.rawReturnDismissedTotal,
     this.rawWriteOffTotal,
+    this.isUpdating = false,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(

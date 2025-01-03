@@ -104,7 +104,7 @@ class _RegisterPageState extends State<RegisterPage> {
               CustomTextField(
                 hintText: "Company",
                 controller: companyController,
-                isPassword: true,
+                isPassword: false,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Company is required";

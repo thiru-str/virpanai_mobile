@@ -16,6 +16,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
+import '../utility/currency_util.dart';
 
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
@@ -29,7 +30,7 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage> {
   CartResponse? cartResponse;
   bool apiLoading = true;
-
+  bool isAnimating = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -103,19 +104,25 @@ class _CartPageState extends State<CartPage> {
                                       size: cartItem.variantTitle!,
                                       color: 'color',
                                       // Replace with actual color
-                                      price: (cartItem.unitPrice! * cartItem.quantity!).toString(),
+                                      price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toString()),
                                       quantity: cartItem.quantity!,
+                                      isUpdating: cartItem.isUpdating!,
                                       onIncrease: () {
-                                        updateCart(cartItem.quantity!+1,cartItem.id!);
+                                        setState(() {
+                                          cartResponse!.cart!.items![index].isUpdating = true;
+                                        });
+                                        updateCart(cartItem.quantity!+1,cartItem.id!,index);
                                       },
-                                      // Handle quantity increase
                                       onDecrease:
                                           () {
+                                            setState(() {
+                                              cartResponse!.cart!.items![index].isUpdating = true;
+                                            });
                                             if (cartItem.quantity! - 1 <= 0) {
                                               removeCart(cartItem.id!);
                                         } else {
                                           updateCart(cartItem.quantity! - 1,
-                                              cartItem.id!);
+                                              cartItem.id!,index);
                                         }
                                       }, // Handle quantity decrease
                                     );
@@ -136,15 +143,15 @@ class _CartPageState extends State<CartPage> {
                           children: [
                             CartCalculation(
                               keyText: 'Subtotal:',
-                              valueText: cartResponse!.cart!.subtotal.toString(),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal.toString()),
                             ),
                             CartCalculation(
                               keyText: 'Tax:',
-                              valueText: cartResponse!.cart!.taxTotal.toString(),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal.toString()),
                             ),
                             CartCalculation(
                               keyText: 'Total:',
-                              valueText: cartResponse!.cart!.total.toString(),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
                             ),
                           ],
                         ),
@@ -197,12 +204,15 @@ class _CartPageState extends State<CartPage> {
     }
   }
 
-  void updateCart(int qty,String cartItemId) async {
+  void updateCart(int qty,String cartItemId,int index) async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.updateCart(context,qty,cartItemId);
       setState(() {
         cartResponse;
+        setState(() {
+          cartResponse!.cart!.items![index].isUpdating = false;
+        });
       });
     } catch (e) {
       setState(() {
@@ -215,10 +225,8 @@ class _CartPageState extends State<CartPage> {
   void removeCart(String cartItemId) async {
     try {
       final ApiService apiService = ApiService();
-      cartResponse = await apiService.removeCart(context,cartItemId);
-      setState(() {
-        cartResponse;
-      });
+      await apiService.removeCart(context,cartItemId);
+      getCartApi();
     } catch (e) {
       setState(() {
 
