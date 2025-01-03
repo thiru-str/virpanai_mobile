@@ -86,6 +86,7 @@ class _HomePageState extends State<HomePage> {
       homePageResponse = await apiService.getHomePage(context);
       SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
       SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
+      SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
       SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
       setState(() {
         apiLoading = false;

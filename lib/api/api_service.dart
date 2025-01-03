@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
@@ -18,6 +19,7 @@ import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
+import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
 class ApiService {
   final Dio _dio = Dio();
@@ -41,6 +43,7 @@ class ApiService {
     BuildContext context,
   ) async {
     try {
+      debugPrint('API headers: ${_dio.options.headers}');
       debugPrint('API Request: ${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
 
@@ -76,6 +79,7 @@ class ApiService {
           ? '$endpoint/$dynamicPath'
           : endpoint;
 
+      debugPrint('API headers: ${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
 
       // Include query parameters in the GET request
@@ -111,7 +115,7 @@ class ApiService {
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath' // Append dynamic path if provided
           : endpoint;
-
+      debugPrint('API headers: ${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
 
       // Make the DELETE request
@@ -190,7 +194,7 @@ class ApiService {
     return _makeGetRequest<ProductsResponse>(
       'store/products',
       null,
-      /*{"region_id": regionId, "category_id": categoryId}*/null,
+      {"region_id": regionId, "category_id": categoryId},
       (json) => ProductsResponse.fromJson(json),
       context,
     );
@@ -363,6 +367,54 @@ class ApiService {
     await addToken();
     return _makeDeleteRequest('store/product-wishlist/$productId', null,
         (data) => WishlistResponse.fromJson(data), context);
+  }
+
+  Future<CartResponse> updateAddress(
+      BuildContext context, CheckOut.ShippingAddress address) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/carts/$cartId',
+      {"shipping_address": address},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> updateCart(
+      BuildContext context, int qty, String cartItemId) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/carts/$cartId/line-items/$cartItemId',
+      {"quantity": qty, "metadata": {}},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> removeCart(
+      BuildContext context,String cartItemId) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeDeleteRequest(
+      'store/carts/$cartId/line-items/$cartItemId',
+          null,
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<PlaceOrderResponse> placeOrder(
+      BuildContext context, String pp_id) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/place-order/$cartId',
+      {"payment_provider_id": pp_id},
+          (json) => PlaceOrderResponse.fromJson(json),
+      context,
+    );
   }
 
   // Future<CartResponse> getOrderHistory(BuildContext context) async {

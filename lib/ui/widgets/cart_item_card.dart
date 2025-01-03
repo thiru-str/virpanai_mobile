@@ -69,7 +69,7 @@ class CartItemCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Size - $size',
+                      '$size',
                       style: FontUtils.circularStdStyle(
                         fontSize: 14,
                         color: Colors.black54,

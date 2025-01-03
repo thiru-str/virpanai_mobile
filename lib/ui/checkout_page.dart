@@ -1,172 +1,153 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
+import 'package:waioz/model/register_response.dart';
+import 'package:waioz/ui/address_list_page.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/order_placed_page.dart';
+import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
+import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/home_page_response.dart';
+import '../utility/app_utils.dart';
+import '../utility/page_route_utils.dart';
+import '../utility/shared_preferences_util.dart';
+import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
-class CartPage extends StatefulWidget {
-  final bool isFromBottomNav;
+class CheckOutPage extends StatefulWidget {
+  final CartResponse? cartResponse;
 
-  const CartPage({super.key, this.isFromBottomNav = false});
+  const CheckOutPage({super.key, required this.cartResponse});
 
   @override
-  State<CartPage> createState() => _CartPageState();
+  State<CheckOutPage> createState() => _CheckOutPageState();
 }
 
-class _CartPageState extends State<CartPage> {
+class _CheckOutPageState extends State<CheckOutPage> {
   CartResponse? cartResponse;
   bool apiLoading = true;
+  bool addAddress = false;
+  bool addPaymentMethod = false;
+  Address? selectedAddress;
+  String? pp_id;
+  String? pp_title;
+  bool placeOrderApiLoading = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getCartApi();
+    cartResponse = widget.cartResponse;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.isFromBottomNav
-          ? AppBar(
-              backgroundColor: Colors.white,
-              title: Text(
-                'Checkout',
-                style: FontUtils.gabaritoStyle(
-                    fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              centerTitle: true,
-            )
-          : CommonHeaderAppBar(
-              onBackTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-      backgroundColor: Colors.white,
-      /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
-      body: apiLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
-          : cartResponse!.cart!.items!.isNotEmpty
-              ? Scaffold(
-                  backgroundColor: Colors.white,
-                  body: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Text(
-                                      'Remove All',
-                                      style: FontUtils.circularStdStyle(
-                                        fontSize: 16,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: cartResponse!.cart!.items!.length,
-                                  itemBuilder: (context, index) {
-                                    final cartItem =
-                                        cartResponse!.cart!.items![index];
-                                    return CartItemCard(
-                                      imageUrl: cartItem.thumbnail!,
-                                      productName: cartItem.productTitle!,
-                                      size: cartItem.variantTitle!,
-                                      color: 'color',
-                                      // Replace with actual color
-                                      price: cartItem.unitPrice.toString(),
-                                      quantity: cartItem.quantity!,
-                                      onIncrease: () {},
-                                      // Handle quantity increase
-                                      onDecrease:
-                                          () {}, // Handle quantity decrease
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CartCalculation(
-                              keyText: 'Subtotal:',
-                              valueText: cartResponse!.cart!.subtotal.toString(),
-                            ),
-                            CartCalculation(
-                              keyText: 'Tax:',
-                              valueText: cartResponse!.cart!.taxTotal.toString(),
-                            ),
-                            CartCalculation(
-                              keyText: 'Total:',
-                              valueText: cartResponse!.cart!.total.toString(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  bottomNavigationBar: Padding(
+        appBar: CommonHeaderAppBar(
+          title: 'Checkout',
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        backgroundColor: Colors.white,
+        /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
+        body: Scaffold(
+          backgroundColor: Colors.white,
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        minimumSize: const Size(
-                            double.infinity, 56), // Full width button
-                      ),
-                      onPressed: () {
-                        // Add checkout logic here
-                      },
-                      child: const Text(
-                        'Checkout',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CheckoutItemCard(
+                            title: 'Shipping Address',
+                            subtitle: addAddress? selectedAddress!.address1!: 'Add Shipping Address',
+                            onTap: () {
+                              PageRouteUtils.push(context, AddressListPage(isFromCheckout: true,onSelectedAddress: (address){
+                              setState(() {
+                                addAddress = true;
+                                selectedAddress = address;
+                              });
+                              },));
+                            }),
+                        CheckoutItemCard(
+                            title: 'Payment Method',
+                            subtitle: addPaymentMethod? pp_title!: 'Add Payment Method',
+                            onTap: () async {
+                              Global? global  = await getGlobal();
+                              if (global != null) {
+                                showPaymentMethodsBottomSheet(
+                                    context, global.paymentProvider!);
+                              }
+                            })
+                      ],
                     ),
                   ),
-                )
-              : Center(
-                  child: NoOrdersWidget(
-                      message: 'Your Cart is Empty',
-                      buttonText: 'Explore Categories',
-                      iconPath: AppAssets.ic_cart_empty,
-                      onButtonTap: () {})),
-    );
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CartCalculation(
+                      keyText: 'Subtotal:',
+                      valueText: cartResponse!.cart!.subtotal.toString(),
+                    ),
+                    CartCalculation(
+                      keyText: 'Tax:',
+                      valueText: cartResponse!.cart!.taxTotal.toString(),
+                    ),
+                    CartCalculation(
+                      keyText: 'Total:',
+                      valueText: cartResponse!.cart!.total.toString(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: placeOrderApiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),): CartButton(
+                amount: cartResponse!.cart!.total.toString(),
+                title: 'Place Order',
+                onPressed: () {
+                  if (!addAddress) {
+                    AppUtils.showToast('Add Shipping Address');
+                  } else if (!addPaymentMethod) {
+                    AppUtils.showToast('Add Payment Method');
+                  }
+                  else{ // validations done proceed to place order
+                    setState(() {
+                      placeOrderApiLoading = true;
+                    });
+                    updateCart(selectedAddress!);
+                  }
+                }),
+          ),
+        ));
   }
 
   void getCartApi() async {
@@ -182,5 +163,81 @@ class _CartPageState extends State<CartPage> {
       });
       print(e);
     }
+  }
+
+  Future<Global?> getGlobal() async {
+    dynamic global = await SharedPreferencesUtil().getMap('global');
+    if (global != null) {
+      return Global.fromJson(global);
+    }
+    return null;
+  }
+
+  void showPaymentMethodsBottomSheet(
+      BuildContext context, List<PaymentProvider> paymentProviders) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return PaymentMethodsBottomSheet(
+          paymentProviders: paymentProviders,
+          onPaymentSelected: (PaymentProvider paymentProvider) {
+            setState(() {
+              addPaymentMethod = true;
+              pp_id = paymentProvider.id;
+              pp_title = paymentProvider.name;
+            });
+          },
+        );
+      },
+    );
+  }
+
+  void updateCart(Address address) async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.updateAddress(context,convertToShippingAddress(address));
+      placeOrder();
+    } catch (e) {
+      setState(() {
+        placeOrderApiLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  void placeOrder() async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.placeOrder(context,pp_id!);
+      setState(() {
+        placeOrderApiLoading = false;
+      });
+      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+    } catch (e) {
+      setState(() {
+        placeOrderApiLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  CheckOut.ShippingAddress convertToShippingAddress(Address address) {
+    return CheckOut.ShippingAddress(
+      // Map the fields from Address to ShippingAddress
+      address1: address.address1 ?? '',
+      address2: address.address2 ?? '',
+      firstName: address.firstName ??'',
+      lastName: address.lastName ?? '',
+      phone: address.phone ?? '',
+      company: address.company ?? '',
+      postalCode: address.postalCode ?? '',
+      countryCode: address.countryCode ?? '',
+      province: address.province ?? '',
+      city: address.city ?? '',
+    );
   }
 }

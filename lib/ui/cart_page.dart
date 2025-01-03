@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/checkout_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -11,6 +12,8 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
 
@@ -72,7 +75,7 @@ class _CartPageState extends State<CartPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Align(
+                                /*Align(
                                   alignment: Alignment.topRight,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -85,7 +88,7 @@ class _CartPageState extends State<CartPage> {
                                       ),
                                     ),
                                   ),
-                                ),
+                                ),*/
                                 const SizedBox(height: 10),
                                 ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
@@ -102,10 +105,19 @@ class _CartPageState extends State<CartPage> {
                                       // Replace with actual color
                                       price: cartItem.unitPrice.toString(),
                                       quantity: cartItem.quantity!,
-                                      onIncrease: () {},
+                                      onIncrease: () {
+                                        updateCart(cartItem.quantity!+1,cartItem.id!);
+                                      },
                                       // Handle quantity increase
                                       onDecrease:
-                                          () {}, // Handle quantity decrease
+                                          () {
+                                            if (cartItem.quantity! - 1 <= 0) {
+                                              removeCart(cartItem.id!);
+                                        } else {
+                                          updateCart(cartItem.quantity! - 1,
+                                              cartItem.id!);
+                                        }
+                                      }, // Handle quantity decrease
                                     );
                                   },
                                 ),
@@ -152,6 +164,7 @@ class _CartPageState extends State<CartPage> {
                       ),
                       onPressed: () {
                         // Add checkout logic here
+                        PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse,));
                       },
                       child: const Text(
                         'Checkout',
@@ -183,4 +196,35 @@ class _CartPageState extends State<CartPage> {
       print(e);
     }
   }
+
+  void updateCart(int qty,String cartItemId) async {
+    try {
+      final ApiService apiService = ApiService();
+      cartResponse = await apiService.updateCart(context,qty,cartItemId);
+      setState(() {
+        cartResponse;
+      });
+    } catch (e) {
+      setState(() {
+
+      });
+      print(e);
+    }
+  }
+
+  void removeCart(String cartItemId) async {
+    try {
+      final ApiService apiService = ApiService();
+      cartResponse = await apiService.removeCart(context,cartItemId);
+      setState(() {
+        cartResponse;
+      });
+    } catch (e) {
+      setState(() {
+
+      });
+      print(e);
+    }
+  }
+
 }

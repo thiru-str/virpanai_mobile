@@ -14,6 +14,7 @@ class AppAssets {
   static const String ic_arrow_svg = 'images/ic_arrow.svg';
   static const String welcome_bg = 'images/welcome_bg.png';
   static const String ic_fav = 'images/ic_fav.svg';
+  static const String place_order = 'images/place_order.png';
 
 // Add more assets as needed
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/review_response.dart';
+import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -12,6 +13,7 @@ import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 
@@ -166,7 +168,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      child: CartButton(amount: '\$148', title: 'Add to Bag', onPressed: (){}),
+                      child: CartButton(amount: '\$148', title: 'Add to Cart', onPressed: (){
+                        PageRouteUtils.push(context, CartPage());
+                      }),
                     )
                   ],
                 ),

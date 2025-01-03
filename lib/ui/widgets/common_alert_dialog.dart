@@ -8,7 +8,6 @@ class CommonAlertDialog extends StatelessWidget {
   final String contentOk;
   final String contentCancel;
   final VoidCallback onTapOk;
-  final VoidCallback onTapCancel;
 
   const CommonAlertDialog({
     super.key,
@@ -17,7 +16,6 @@ class CommonAlertDialog extends StatelessWidget {
     required this.contentOk,
     required this.contentCancel,
     required this.onTapOk,
-    required this.onTapCancel,
   });
 
   @override
@@ -29,15 +27,13 @@ class CommonAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () {
-            onTapCancel();
-            Navigator.of(context).pop();  // Close the dialog
+            Navigator.pop(context);
           },
           child: Text(contentCancel,style: FontUtils.circularStdStyle(color: AppColors.textColor),),
         ),
         TextButton(
           onPressed: () {
             onTapOk();
-            Navigator.of(context).pop();  // Close the dialog
           },
           child: Text(contentOk,style:FontUtils.circularStdStyle(color: AppColors.textColor)),
         ),

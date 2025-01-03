@@ -8,4 +8,5 @@ class AppColors {
   static const Color tabInActivecolor = Color(0xFFA2A2A2);
   static const Color profileItemArrowColor = Color(0xFF272727);
   static const Color textColor = Color(0xFF272727);
+  static const Color textColor50 = Color(0x80272727);
 }

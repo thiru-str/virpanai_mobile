@@ -15,7 +15,10 @@ import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 
 class AddressListPage extends StatefulWidget {
-  const AddressListPage({super.key});
+
+  final Function(Address address) onSelectedAddress;
+  final bool isFromCheckout;
+  const AddressListPage({super.key,required this.onSelectedAddress,this.isFromCheckout = false});
 
   @override
   State<AddressListPage> createState() => _AddressListPageState();
@@ -66,24 +69,32 @@ class _AddressListPageState extends State<AddressListPage> {
                           itemBuilder: (context, index) {
                             Address? address =
                                 addressListResponse?.addresses?[index];
-                            return AddressCard(
-                              title: address?.addressName ??
-                                  'Others', // If address name is null, show 'Untitled'
-                              address:
-                                  '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                              icon: Icons
-                                  .home, // Or choose another icon based on address data
-                              onDelete: () {
-                                _showDeleteDialog(context, address?.id);
-                              },
-                              onEdit: () async {
-                                final result = await PageRouteUtils.push(
-                                    context,
-                                    AddAddressPage(
-                                      selectedAddress: address,
-                                    ));
-                                if (result == true) {
-                                  getAddressListApi();
+                            return GestureDetector(
+                              child: AddressCard(
+                                title: address?.addressName ??
+                                    'Others', // If address name is null, show 'Untitled'
+                                address:
+                                    '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
+                                icon: Icons
+                                    .home, // Or choose another icon based on address data
+                                onDelete: () {
+                                  _showDeleteDialog(context, address?.id);
+                                },
+                                onEdit: () async {
+                                  final result = await PageRouteUtils.push(
+                                      context,
+                                      AddAddressPage(
+                                        selectedAddress: address,
+                                      ));
+                                  if (result == true) {
+                                    getAddressListApi();
+                                  }
+                                },
+                              ),
+                              onTap: (){
+                                if(widget.isFromCheckout) {
+                                  widget.onSelectedAddress(address!);
+                                  Navigator.pop(context);
                                 }
                               },
                             );
@@ -172,9 +183,6 @@ class _AddressListPageState extends State<AddressListPage> {
           onTapOk: () {
             print("OK");
             deleteAddress(addressID); // Call deleteAddress when confirmed
-          },
-          onTapCancel: () {
-            print("Cancel");
           },
         );
       },

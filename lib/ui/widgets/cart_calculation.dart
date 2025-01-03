@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class CartCalculation extends StatelessWidget {
   final String keyText;
@@ -23,11 +25,11 @@ class CartCalculation extends StatelessWidget {
         children: [
           Text(
             keyText,
-            style: keyStyle ?? const TextStyle(fontSize: 14),
+            style: keyStyle ?? FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor50),
           ),
           Text(
             valueText,
-            style: valueStyle ?? const TextStyle(fontSize: 14),
+            style: valueStyle ??  FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor),
           ),
         ],
       ),

@@ -121,7 +121,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: ProfileItemWidget(
                     title: 'Address',
                     onTap: () {
-                      PageRouteUtils.push(context, AddressListPage());
+                      PageRouteUtils.push(context, AddressListPage(onSelectedAddress: (address){
+
+                      },));
                     },
                   ),
                 ),
@@ -169,9 +171,7 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.only(bottom: 30.0),
             child: GestureDetector(
               onTap: () {
-                SharedPreferencesUtil().clear();
-                PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
-                //_showLogout(context);
+                _showLogout(this.context);
               },
               child: Text(
                 'Sign Out',
@@ -218,9 +218,6 @@ class _SettingsPageState extends State<SettingsPage> {
             // Handle sign out action
             SharedPreferencesUtil().clear();
             PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
-          },
-          onTapCancel: () {
-            Navigator.pop(context);
           },
         );
       },

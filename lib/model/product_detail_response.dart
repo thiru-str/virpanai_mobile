@@ -10,6 +10,7 @@ ProductDetailReponse productDetailReponseFromJson(String str) => ProductDetailRe
 
 String productDetailReponseToJson(ProductDetailReponse data) => json.encode(data.toJson());
 
+
 class ProductDetailReponse {
   Product? product;
 
