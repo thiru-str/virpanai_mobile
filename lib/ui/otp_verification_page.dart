@@ -15,8 +15,9 @@ import '../utility/app_colors.dart';
 class OtpVerificationPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
+  final String otp;
 
-  const OtpVerificationPage({super.key,required this.countryCode,required this.phoneNo});
+  const OtpVerificationPage({super.key,required this.countryCode,required this.phoneNo,this.otp = ''});
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -38,6 +39,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      _otpController.text = widget.otp;
+    });
     return Scaffold(
       backgroundColor: Colors.white,
       appBar:AppBar(
