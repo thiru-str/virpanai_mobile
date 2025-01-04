@@ -43,13 +43,13 @@ class Order {
   String? status;
   Summary? summary;
   int? displayId;
-  double? total;
+  num? total;
   String? currencyCode;
   dynamic metadata;
   DateTime? createdAt;
   DateTime? updatedAt;
-  int? subtotal;
-  double? taxTotal;
+  num? subtotal;
+  num? taxTotal;
   int? version;
   List<Item>? items;
   String? paymentStatus;
@@ -86,7 +86,7 @@ class Order {
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     subtotal: json["subtotal"],
-    taxTotal: json["tax_total"]?.toDouble(),
+    taxTotal: json["tax_total"],
     version: json["version"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
     cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
