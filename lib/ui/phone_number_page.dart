@@ -144,14 +144,14 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     try {
       final ApiService apiService = ApiService();
       sendOtpResponse = await apiService.sendOtp(context,_phoneNumber!);
-      if (kDebugMode) {
+      /*if (kDebugMode) {
         AppUtils.showToast(sendOtpResponse!.otp!);
-      }
+      }*/
       setState(() {
         apiCalling = false;
       });
 
-      PageRouteUtils.pushWithSlide(context, OtpVerificationPage(countryCode:_countryCode!,phoneNo: _phoneNumber!));
+      PageRouteUtils.pushWithSlide(context, OtpVerificationPage(countryCode:_countryCode!,phoneNo: _phoneNumber!,otp: sendOtpResponse!.otp!,));
     } catch (e) {
       setState(() {
         apiCalling = false;
