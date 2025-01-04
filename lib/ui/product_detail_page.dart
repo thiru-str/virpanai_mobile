@@ -61,35 +61,41 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
       backgroundColor: Colors.white,
       body: apiLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  buildProductImages(),
-                  const SizedBox(height: 25),
-                  buildProductDetails(),
-                  const SizedBox(height: 33),
-                  buildCartSection(),
-                  const SizedBox(height: 15),
-                  buildProductDescription(),
-                  const SizedBox(height: 15),
-                  buildShippingAndReturns(),
-                  const SizedBox(height: 15),
-                  //buildRatingSection(),
-                  const SizedBox(height: 15),
-                  buildReviews(),
-                  const SizedBox(height: 70),
-                ],
+          ? const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      )
+          : Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildProductImages(),
+                    const SizedBox(height: 25),
+                    buildProductDetails(),
+                    const SizedBox(height: 33),
+                    buildCartSection(),
+                    const SizedBox(height: 15),
+                    buildProductDescription(),
+                    const SizedBox(height: 15),
+                    buildShippingAndReturns(),
+                    const SizedBox(height: 15),
+                    buildReviews(),
+                    const SizedBox(height: 70),
+                  ],
+                ),
               ),
             ),
-            buildBottomButton(),
-          ],
-        ),
+          ),
+          // Bottom button that sticks to the bottom
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: buildBottomButton(),
+          )
+        ],
       ),
     );
   }
