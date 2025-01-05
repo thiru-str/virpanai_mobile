@@ -285,21 +285,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         title: 'Go to Cart',
         onPressed: navigateToCart,
       )
-          : ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          minimumSize: const Size(double.infinity, 56),
-        ),
-        onPressed: () async {
-          setState(() => productPresentInCart = true);
-          await addCart(1, product?.variants?.first.id ?? '');
-        },
-        child: Text(
-          'Add to Cart',
-          style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
-        ),
-      ),
+          : Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24.0,horizontal: 8.0),
+            child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            minimumSize: const Size(double.infinity, 56),
+                    ),
+                    onPressed: () async {
+            setState(() => productPresentInCart = true);
+            await addCart(1, product?.variants?.first.id ?? '');
+                    },
+                    child: Text(
+            'Add to Cart',
+            style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+          ),
     );
   }
 
