@@ -35,7 +35,7 @@ class ApiService {
     _dio.options.headers = {
       "Content-Type": "application/json",
       "x-publishable-api-key":
-          "pk_44ebcac78abeb65b06a8adfc90f56bafa548043255c2da64f99174bfb1bd2830",
+          "pk_c75b5817e2d0fbd95c46472e3deaccda6cddb11bc8a6c0fccb056a5f2c9211cb",
     };
     _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds

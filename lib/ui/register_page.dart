@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
         leading: IconButton(
           icon: SvgPicture.asset(AppAssets.ic_arrow_svg,height: 16,width: 16),
           onPressed: () {
-            Navigator.pop(context);
+            //Navigator.pop(context);
           },
         ),
       ),
