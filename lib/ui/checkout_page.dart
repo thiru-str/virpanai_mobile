@@ -116,15 +116,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   children: [
                     CartCalculation(
                       keyText: 'Subtotal:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal.toString()),
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
                     ),
                     CartCalculation(
                       keyText: 'Tax:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal.toString()),
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
                     ),
                     CartCalculation(
                       keyText: 'Total:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                     ),
                   ],
                 ),
@@ -134,7 +134,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16.0),
             child: placeOrderApiLoading?  Center(child: Lottie.asset(AppAssets.place_order_lottie,fit: BoxFit.cover)): CartButton(
-                amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
+                amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                 title: 'Place Order',
                 onPressed: () {
                   if (!addAddress) {
