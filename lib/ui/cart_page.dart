@@ -135,15 +135,15 @@ class _CartPageState extends State<CartPage> {
                           children: [
                             CartCalculation(
                               keyText: 'Subtotal:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal.toString()),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
                             ),
                             CartCalculation(
                               keyText: 'Tax:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal.toString()),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
                             ),
                             CartCalculation(
                               keyText: 'Total:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total.toString()),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                             ),
                           ],
                         ),
