@@ -31,11 +31,12 @@ class ProductCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // Ensures the height wraps around its children
           children: [
             Stack(
               children: [
                 Container(
-                  height: 230,
+                  height: 210, // Fixed height for the image
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.vertical(
@@ -55,15 +56,15 @@ class ProductCard extends StatelessWidget {
                       onTap: onTapFavorite,
                       child: Icon(
                         isFavorite
-                            ? Icons.favorite // Filled icon if favorite
-                            : Icons.favorite_border, // Outline icon if not favorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.grey[600],
                       ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -71,14 +72,14 @@ class ProductCard extends StatelessWidget {
                 style: FontUtils.circularStdStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color:AppColors.textColor,
+                  color: AppColors.textColor,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
               child: Text(
                 price,
                 style: FontUtils.gabaritoStyle(
@@ -92,7 +93,9 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      )
+      ,
+    )
+    ;
   }
 }

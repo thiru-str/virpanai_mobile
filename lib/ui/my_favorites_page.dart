@@ -10,6 +10,7 @@ import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
+import '../utility/currency_util.dart';
 import 'product_detail_page.dart';
 import 'widgets/no_orders_widget.dart';
 
@@ -69,12 +70,12 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                          SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2, // Number of columns
                         crossAxisSpacing: 16, // Space between columns
                         mainAxisSpacing: 16, // Space between rows
-                        childAspectRatio:
-                        0.55, // Adjust this for proper card proportions
+                        childAspectRatio: (MediaQuery.of(context).size.width / 2) /
+                        (230 + 16 + 16 + 32 + 20), // Adjust this for proper card proportions
                       ),
                       itemBuilder: (context, index) {
                         final product = wishListResponse!.products?[index];
@@ -84,7 +85,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               imageUrl:
                               product?.thumbnail ?? "",
                               title: product?.title ?? "",
-                              price: (product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString(),
+                              price: CurrencyUtil.appendCurrency((product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString()),
                               onTapFavorite: () {
                                 String currentCustomerId = customer?.id ?? "";
                                 var currentWishlistEntry;
