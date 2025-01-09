@@ -68,7 +68,7 @@ class WelcomePage extends StatelessWidget {
                   padding: const EdgeInsets.only(
                     left: 24,
                     right: 24,
-                    bottom: 80,
+                    bottom: 24,
                   ),
                   child: ElevatedButton(
                     onPressed: () {
