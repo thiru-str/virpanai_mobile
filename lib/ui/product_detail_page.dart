@@ -91,13 +91,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
           // Bottom button that sticks to the bottom
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: buildBottomButton(),
-          )
+          buildBottomButton(),
         ],
       ),
     );
+
   }
 
   Widget buildProductImages() {
@@ -273,24 +271,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget buildBottomButton() {
     if (productPresentInCart == null) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.primary));
     }
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
+
+    return Container(
+      // Use a container instead of Positioned for non-Stack widgets
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: productPresentInCart!
           ? CartButton(
-        amount: CurrencyUtil.appendCurrency(cartResponse?.cart?.subtotal?.toString() ?? ''),
+        amount: CurrencyUtil.appendCurrency(
+            cartResponse?.cart?.subtotal?.toString() ?? ''),
         title: 'Go to Cart',
         onPressed: navigateToCart,
       )
           : Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24.0,horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 8.0),
             child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30)),
             minimumSize: const Size(double.infinity, 56),
                     ),
                     onPressed: () async {
@@ -299,12 +300,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     },
                     child: Text(
             'Add to Cart',
-            style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+            style: FontUtils.circularStdStyle(
+                fontSize: 18, color: Colors.white),
                     ),
                   ),
           ),
     );
   }
+
 
   Future<void> getProductsApi() async {
     try {

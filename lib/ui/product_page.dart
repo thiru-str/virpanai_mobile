@@ -65,22 +65,31 @@ class _ProductPageState extends State<ProductPage> {
                       GridView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2, // Number of columns
                           crossAxisSpacing: 16, // Space between columns
                           mainAxisSpacing: 16, // Space between rows
-                          childAspectRatio:
-                              0.55, // Adjust this for proper card proportions
+                          childAspectRatio: (MediaQuery.of(context).size.width / 2) /
+                              (230 + 16 + 16 + 32 + 20), // Dynamically calculate aspect ratio
                         ),
                         itemCount: productsResponse!.products!.length,
                         itemBuilder: (context, index) {
                           final product = productsResponse!.products![index];
-                          return ProductCard(imageUrl: product.thumbnail!, title: product.title!, price: product!.variants!.isNotEmpty? CurrencyUtil.appendCurrency(product!.variants![0].calculatedPrice!.rawCalculatedAmount!.value!):'', onTapCard: (){
-                            PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: product.id!));
-                          });
+                          return ProductCard(
+                            imageUrl: product.thumbnail!,
+                            title: product.title!,
+                            price: product.variants!.isNotEmpty
+                                ? CurrencyUtil.appendCurrency(
+                                product.variants![0].calculatedPrice!.rawCalculatedAmount!.value!)
+                                : '',
+                            onTapCard: () {
+                              PageRouteUtils.pushWithSlide(
+                                  context, ProductDetailPage(productId: product.id!));
+                            },
+                          );
                         },
-                      ),
+                      )
+                      ,
                     ],
                   ),
                 ),
