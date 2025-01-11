@@ -63,7 +63,7 @@ class Item5 extends StatelessWidget {
                 onTap: () {
                   switch (content.layoutOption!) {
                     case "Category":
-                      PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!));
+                      PageRouteUtils.pushWithFade(context, ProductPage(categoryId: layoutData.id!));
                     case "Product":
                       PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: layoutData.id!));
                     case "Brand":

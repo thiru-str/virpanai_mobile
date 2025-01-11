@@ -67,6 +67,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     _animationController.forward();
   }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+
   Future<void> fetchInitialData() async {
     getProductsApi();
     getReviewApi();
@@ -296,6 +303,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           child: CircularProgressIndicator(color: AppColors.primary));
     }
 
+    if(!productPresentInCart!)
+      // Start the animation when the widget is built
+      _animationController.forward();
+
     return SlideTransition(
       position: _animation,
       child: Container(
@@ -303,7 +314,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         child: productPresentInCart!
             ? CartButton(
           amount: CurrencyUtil.appendCurrency(
-              cartResponse?.cart?.subtotal?.toString() ?? ''),
+              cartResponse?.cart?.subtotal?.toStringAsFixed(2) ?? ''),
           title: 'Go to Cart',
           onPressed: navigateToCart,
         )

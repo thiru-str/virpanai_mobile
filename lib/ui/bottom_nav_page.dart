@@ -22,7 +22,7 @@ class BottomNavPage extends StatefulWidget {
   _BottomNavPageState createState() => _BottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> {
+class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
 
   // Define static titles for each page
@@ -43,54 +43,99 @@ class _BottomNavPageState extends State<BottomNavPage> {
     SettingsPage()
   ];
 
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCustomerApi();
+
+    // Initialize animation for the bottom navigation bar
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1), // Start from offscreen (bottom)
+      end: Offset.zero, // Slide to its original position
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Delay animation start by 300ms
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _animationController.forward();
+    });
   }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _pages[_currentIndex], // Render the current page
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index; // Update selected tab
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-            label: 'Shop',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-            label: 'Categories',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-            label: 'Favourite',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-            label: 'Account',
-          ),
-        ],
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.tabInActivecolor,
-        showUnselectedLabels: true,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: FontUtils.circularStdStyle(),
-        unselectedLabelStyle: FontUtils.circularStdStyle(),
+      body: Stack(
+        children: List.generate(_pages.length, (index) {
+          return AnimatedOpacity(
+            opacity: _currentIndex == index ? 1.0 : 0.0, // Set opacity
+            duration: const Duration(milliseconds: 300), // Fade duration
+            curve: Curves.easeInOut,
+            child: Offstage(
+              offstage: _currentIndex != index, // Hide other pages
+              child: _pages[index],
+            ),
+          );
+        }),
+      ),
+      bottomNavigationBar: SlideTransition(
+        position: _slideAnimation, // Slide in from bottom
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index; // Update selected tab
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+              label: 'Shop',
+            ),
+            BottomNavigationBarItem(
+              icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+              label: 'Categories',
+            ),
+            BottomNavigationBarItem(
+              icon: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+              label: 'Cart',
+            ),
+            BottomNavigationBarItem(
+              icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+              label: 'Favourite',
+            ),
+            BottomNavigationBarItem(
+              icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+              label: 'Account',
+            ),
+          ],
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.tabInActivecolor,
+          showUnselectedLabels: true,
+          backgroundColor: Colors.white,
+          type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: FontUtils.circularStdStyle(),
+          unselectedLabelStyle: FontUtils.circularStdStyle(),
+        ),
       ),
     );
   }
