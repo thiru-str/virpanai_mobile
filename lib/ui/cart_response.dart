@@ -232,7 +232,7 @@ class Item {
   bool? requiresShipping;
   bool? isDiscountable;
   bool? isTaxInclusive;
-  Raw? rawUnitPrice;
+  num? rawUnitPrice;
   bool? isCustomPrice;
   List<TaxLine>? taxLines;
   List<dynamic>? adjustments;
@@ -249,7 +249,7 @@ class Item {
   dynamic compareAtUnitPrice;
   int? unitPrice;
   int? quantity;
-  Raw? rawQuantity;
+  num? rawQuantity;
   Detail? detail;
   int? subtotal;
   double? total;
@@ -267,22 +267,22 @@ class Item {
   int? returnReceivedTotal;
   int? returnDismissedTotal;
   int? writeOffTotal;
-  Raw? rawSubtotal;
-  Raw? rawTotal;
-  Raw? rawOriginalTotal;
-  Raw? rawDiscountTotal;
-  Raw? rawDiscountSubtotal;
-  Raw? rawDiscountTaxTotal;
-  Raw? rawTaxTotal;
-  Raw? rawOriginalTaxTotal;
-  Raw? rawRefundableTotalPerUnit;
-  Raw? rawRefundableTotal;
-  Raw? rawFulfilledTotal;
-  Raw? rawShippedTotal;
-  Raw? rawReturnRequestedTotal;
-  Raw? rawReturnReceivedTotal;
-  Raw? rawReturnDismissedTotal;
-  Raw? rawWriteOffTotal;
+  num? rawSubtotal;
+  num? rawTotal;
+  num? rawOriginalTotal;
+  num? rawDiscountTotal;
+  num? rawDiscountSubtotal;
+  num? rawDiscountTaxTotal;
+  num? rawTaxTotal;
+  num? rawOriginalTaxTotal;
+  num? rawRefundableTotalPerUnit;
+  num? rawRefundableTotal;
+  num? rawFulfilledTotal;
+  num? rawShippedTotal;
+  num? rawReturnRequestedTotal;
+  num? rawReturnReceivedTotal;
+  num? rawReturnDismissedTotal;
+  num? rawWriteOffTotal;
   bool? isUpdating;
 
   Item({
@@ -373,7 +373,7 @@ class Item {
     requiresShipping: json["requires_shipping"],
     isDiscountable: json["is_discountable"],
     isTaxInclusive: json["is_tax_inclusive"],
-    rawUnitPrice: json["raw_unit_price"] == null ? null : Raw.fromJson(json["raw_unit_price"]),
+    rawUnitPrice: json["raw_unit_price"],
     isCustomPrice: json["is_custom_price"],
     taxLines: json["tax_lines"] == null ? [] : List<TaxLine>.from(json["tax_lines"]!.map((x) => TaxLine.fromJson(x))),
     adjustments: json["adjustments"] == null ? [] : List<dynamic>.from(json["adjustments"]!.map((x) => x)),
@@ -390,7 +390,7 @@ class Item {
     compareAtUnitPrice: json["compare_at_unit_price"],
     unitPrice: json["unit_price"],
     quantity: json["quantity"],
-    rawQuantity: json["raw_quantity"] == null ? null : Raw.fromJson(json["raw_quantity"]),
+    rawQuantity: json["raw_quantity"],
     detail: json["detail"] == null ? null : Detail.fromJson(json["detail"]),
     subtotal: json["subtotal"],
     total: json["total"]?.toDouble(),
@@ -408,22 +408,22 @@ class Item {
     returnReceivedTotal: json["return_received_total"],
     returnDismissedTotal: json["return_dismissed_total"],
     writeOffTotal: json["write_off_total"],
-    rawSubtotal: json["raw_subtotal"] == null ? null : Raw.fromJson(json["raw_subtotal"]),
-    rawTotal: json["raw_total"] == null ? null : Raw.fromJson(json["raw_total"]),
-    rawOriginalTotal: json["raw_original_total"] == null ? null : Raw.fromJson(json["raw_original_total"]),
-    rawDiscountTotal: json["raw_discount_total"] == null ? null : Raw.fromJson(json["raw_discount_total"]),
-    rawDiscountSubtotal: json["raw_discount_subtotal"] == null ? null : Raw.fromJson(json["raw_discount_subtotal"]),
-    rawDiscountTaxTotal: json["raw_discount_tax_total"] == null ? null : Raw.fromJson(json["raw_discount_tax_total"]),
-    rawTaxTotal: json["raw_tax_total"] == null ? null : Raw.fromJson(json["raw_tax_total"]),
-    rawOriginalTaxTotal: json["raw_original_tax_total"] == null ? null : Raw.fromJson(json["raw_original_tax_total"]),
-    rawRefundableTotalPerUnit: json["raw_refundable_total_per_unit"] == null ? null : Raw.fromJson(json["raw_refundable_total_per_unit"]),
-    rawRefundableTotal: json["raw_refundable_total"] == null ? null : Raw.fromJson(json["raw_refundable_total"]),
-    rawFulfilledTotal: json["raw_fulfilled_total"] == null ? null : Raw.fromJson(json["raw_fulfilled_total"]),
-    rawShippedTotal: json["raw_shipped_total"] == null ? null : Raw.fromJson(json["raw_shipped_total"]),
-    rawReturnRequestedTotal: json["raw_return_requested_total"] == null ? null : Raw.fromJson(json["raw_return_requested_total"]),
-    rawReturnReceivedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
-    rawReturnDismissedTotal: json["raw_return_dismissed_total"] == null ? null : Raw.fromJson(json["raw_return_dismissed_total"]),
-    rawWriteOffTotal: json["raw_write_off_total"] == null ? null : Raw.fromJson(json["raw_write_off_total"]),
+    rawSubtotal: json["raw_subtotal"] ,
+    rawTotal: json["raw_total"],
+    rawOriginalTotal: json["raw_original_total"],
+    rawDiscountTotal: json["raw_discount_total"],
+    rawDiscountSubtotal: json["raw_discount_subtotal"],
+    rawDiscountTaxTotal: json["raw_discount_tax_total"],
+    rawTaxTotal: json["raw_tax_total"],
+    rawOriginalTaxTotal: json["raw_original_tax_total"],
+    rawRefundableTotalPerUnit: json["raw_refundable_total_per_unit"],
+    rawRefundableTotal: json["raw_refundable_total"],
+    rawFulfilledTotal: json["raw_fulfilled_total"],
+    rawShippedTotal: json["raw_shipped_total"],
+    rawReturnRequestedTotal: json["raw_return_requested_total"],
+    rawReturnReceivedTotal: json["raw_return_received_total"],
+    rawReturnDismissedTotal: json["raw_return_dismissed_total"],
+    rawWriteOffTotal: json["raw_write_off_total"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -443,7 +443,7 @@ class Item {
     "requires_shipping": requiresShipping,
     "is_discountable": isDiscountable,
     "is_tax_inclusive": isTaxInclusive,
-    "raw_unit_price": rawUnitPrice?.toJson(),
+    "raw_unit_price": rawUnitPrice,
     "is_custom_price": isCustomPrice,
     "tax_lines": taxLines == null ? [] : List<dynamic>.from(taxLines!.map((x) => x.toJson())),
     "adjustments": adjustments == null ? [] : List<dynamic>.from(adjustments!.map((x) => x)),
@@ -460,7 +460,7 @@ class Item {
     "compare_at_unit_price": compareAtUnitPrice,
     "unit_price": unitPrice,
     "quantity": quantity,
-    "raw_quantity": rawQuantity?.toJson(),
+    "raw_quantity": rawQuantity,
     "detail": detail?.toJson(),
     "subtotal": subtotal,
     "total": total,
@@ -478,22 +478,22 @@ class Item {
     "return_received_total": returnReceivedTotal,
     "return_dismissed_total": returnDismissedTotal,
     "write_off_total": writeOffTotal,
-    "raw_subtotal": rawSubtotal?.toJson(),
-    "raw_total": rawTotal?.toJson(),
-    "raw_original_total": rawOriginalTotal?.toJson(),
-    "raw_discount_total": rawDiscountTotal?.toJson(),
-    "raw_discount_subtotal": rawDiscountSubtotal?.toJson(),
-    "raw_discount_tax_total": rawDiscountTaxTotal?.toJson(),
-    "raw_tax_total": rawTaxTotal?.toJson(),
-    "raw_original_tax_total": rawOriginalTaxTotal?.toJson(),
-    "raw_refundable_total_per_unit": rawRefundableTotalPerUnit?.toJson(),
-    "raw_refundable_total": rawRefundableTotal?.toJson(),
-    "raw_fulfilled_total": rawFulfilledTotal?.toJson(),
-    "raw_shipped_total": rawShippedTotal?.toJson(),
-    "raw_return_requested_total": rawReturnRequestedTotal?.toJson(),
-    "raw_return_received_total": rawReturnReceivedTotal?.toJson(),
-    "raw_return_dismissed_total": rawReturnDismissedTotal?.toJson(),
-    "raw_write_off_total": rawWriteOffTotal?.toJson(),
+    "raw_subtotal": rawSubtotal,
+    "raw_total": rawTotal,
+    "raw_original_total": rawOriginalTotal,
+    "raw_discount_total": rawDiscountTotal,
+    "raw_discount_subtotal": rawDiscountSubtotal,
+    "raw_discount_tax_total": rawDiscountTaxTotal,
+    "raw_tax_total": rawTaxTotal,
+    "raw_original_tax_total": rawOriginalTaxTotal,
+    "raw_refundable_total_per_unit": rawRefundableTotalPerUnit,
+    "raw_refundable_total": rawRefundableTotal,
+    "raw_fulfilled_total": rawFulfilledTotal,
+    "raw_shipped_total": rawShippedTotal,
+    "raw_return_requested_total": rawReturnRequestedTotal,
+    "raw_return_received_total": rawReturnReceivedTotal,
+    "raw_return_dismissed_total": rawReturnDismissedTotal,
+    "raw_write_off_total": rawWriteOffTotal,
   };
 }
 

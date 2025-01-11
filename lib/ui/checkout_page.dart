@@ -118,6 +118,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       keyText: 'Subtotal:',
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
                     ),
+                    Visibility(
+                        visible: cartResponse!.cart!.discountSubtotal!>0,
+                        child: CartCalculation(
+                          keyText: 'Discount:',
+                          valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                        )),
+                    Visibility(
+                        visible: cartResponse!.cart!.shippingSubtotal!>0,
+                        child: CartCalculation(
+                          keyText: 'Shipping:',
+                          valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2))}',
+                        )),
                     CartCalculation(
                       keyText: 'Tax:',
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),

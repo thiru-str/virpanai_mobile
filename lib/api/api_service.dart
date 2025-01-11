@@ -52,7 +52,12 @@ class ApiService {
       debugPrint('API Request: ${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
 
-      final response = await _dio.post(endpoint, data: data ?? {});
+      final response = await _dio.post(endpoint, data: data ?? {},options: Options(
+        validateStatus: (status) {
+          // Accept status codes 400-499 as valid responses for handling errors manually
+          return status != null && status < 500;
+        },
+      ));
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
@@ -60,8 +65,8 @@ class ApiService {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['message']);
-        throw Exception('Unauthorized: ${response.data['message']}');
+        await _handleLogout(context, response.data['error']);
+        throw Exception('Unauthorized: ${response.data['error']}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
@@ -89,18 +94,25 @@ class ApiService {
       AppLogger.print('API Params:', '${queryParams ?? {}}');
 
       // Include query parameters in the GET request
-      final response = await _dio.get(
-        fullEndpoint,
-        queryParameters: queryParams,
-      );
+      final response = await _dio
+          .get(fullEndpoint, queryParameters: queryParams, options: Options(
+        validateStatus: (status) {
+          // Accept status codes 400-499 as valid responses for handling errors manually
+          return status != null && status < 500;
+        },
+      ));
 
+      AppLogger.print('response  statuscode:', '${response.statusCode}');
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
-      } else {
+      } else if (response.statusCode == 401) {
+        await _handleLogout(context, response.data['error']);
+        throw Exception('Unauthorized: ${response.data['error']}');
+      }  else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -127,7 +139,12 @@ class ApiService {
 
       // Make the DELETE request
       final response =
-          await _dio.delete(fullEndpoint, data: queryParams);
+          await _dio.delete(fullEndpoint, data: queryParams,options: Options(
+            validateStatus: (status) {
+              // Accept status codes 400-499 as valid responses for handling errors manually
+              return status != null && status < 500;
+            },
+          ));
 
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');

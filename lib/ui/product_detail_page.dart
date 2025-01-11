@@ -27,7 +27,7 @@ class ProductDetailPage extends StatefulWidget {
   State<ProductDetailPage> createState() => _ProductDetailPageState();
 }
 
-class _ProductDetailPageState extends State<ProductDetailPage> {
+class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTickerProviderStateMixin {
   ProductResponse.Product? product;
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
@@ -40,10 +40,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool? productPresentInCart; // Changed to nullable to handle loading state
   bool isFavorite = false;
 
+  late AnimationController _animationController;
+  late Animation<Offset> _animation;
+
   @override
   void initState() {
     super.initState();
     fetchInitialData();
+
+    // Initialize the animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    // Define the animation's starting and ending positions
+    _animation = Tween<Offset>(
+      begin: const Offset(0, 1), // Start just below the screen
+      end: Offset.zero, // End at its natural position
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start the animation when the widget is built
+    _animationController.forward();
   }
 
   Future<void> fetchInitialData() async {
@@ -76,7 +97,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     buildProductImages(),
                     const SizedBox(height: 25),
                     buildProductDetails(),
-                    const SizedBox(height: 33),
+                    const SizedBox(height: 30),
                     buildCartSection(),
                     const SizedBox(height: 15),
                     buildProductDescription(),
@@ -275,36 +296,39 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: CircularProgressIndicator(color: AppColors.primary));
     }
 
-    return Container(
-      // Use a container instead of Positioned for non-Stack widgets
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-      child: productPresentInCart!
-          ? CartButton(
-        amount: CurrencyUtil.appendCurrency(
-            cartResponse?.cart?.subtotal?.toString() ?? ''),
-        title: 'Go to Cart',
-        onPressed: navigateToCart,
-      )
-          : Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 8.0),
-            child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30)),
-            minimumSize: const Size(double.infinity, 56),
-                    ),
-                    onPressed: () async {
-            setState(() => productPresentInCart = true);
-            await addCart(1, product?.variants?.first.id ?? '');
-                    },
-                    child: Text(
-            'Add to Cart',
-            style: FontUtils.circularStdStyle(
-                fontSize: 18, color: Colors.white),
-                    ),
-                  ),
+    return SlideTransition(
+      position: _animation,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        child: productPresentInCart!
+            ? CartButton(
+          amount: CurrencyUtil.appendCurrency(
+              cartResponse?.cart?.subtotal?.toString() ?? ''),
+          title: 'Go to Cart',
+          onPressed: navigateToCart,
+        )
+            : Padding(
+          padding:
+          const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
+              minimumSize: const Size(double.infinity, 56),
+            ),
+            onPressed: () async {
+              setState(() => productPresentInCart = true);
+              await addCart(1, product?.variants?.first.id ?? '');
+            },
+            child: Text(
+              'Add to Cart',
+              style: FontUtils.circularStdStyle(
+                  fontSize: 18, color: Colors.white),
+            ),
           ),
+        ),
+      ),
     );
   }
 

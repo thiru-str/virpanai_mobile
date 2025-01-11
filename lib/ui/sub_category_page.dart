@@ -64,7 +64,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                       onTap: () {},
                       child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (
                           ){
-                        PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: productCategory.id!,));
+                        PageRouteUtils.pushWithFade(context, ProductPage(categoryId: productCategory.id!,));
                       }),
                     );
                   },
