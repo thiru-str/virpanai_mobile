@@ -16,6 +16,7 @@ class AppAssets {
   static const String ic_fav = 'images/ic_fav.svg';
   static const String place_order = 'images/place_order.png';
   static const String place_order_lottie = 'images/place_order.json';
+  static const String ic_discount = 'images/ic_discount.png';
 
 // Add more assets as needed
 }

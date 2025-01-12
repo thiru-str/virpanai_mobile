@@ -78,4 +78,24 @@ class PageRouteUtils {
       ),
     );
   }
+
+  static Future<T?> pushWithZoom<T extends Object?>(
+      BuildContext context,
+      Widget page, {
+        Duration duration = const Duration(milliseconds: 300),
+      }) {
+    return Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return ScaleTransition(
+            scale: animation,
+            child: child,
+          );
+        },
+        transitionDuration: duration,
+      ),
+    );
+  }
 }

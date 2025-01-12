@@ -37,7 +37,7 @@ class Cart {
   num? total;
   num? subtotal;
   num? taxTotal;
-  int? discountTotal;
+  num? discountTotal;
   num? discountSubtotal;
   num? discountTaxTotal;
   num? originalTotal;
@@ -64,7 +64,7 @@ class Cart {
   dynamic billingAddress;
   Customer? customer;
   Region? region;
-  List<dynamic>? promotions;
+  List<Promotion>? promotions;
 
   Cart({
     this.id,
@@ -145,7 +145,8 @@ class Cart {
     billingAddress: json["billing_address"],
     customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
     region: json["region"] == null ? null : Region.fromJson(json["region"]),
-    promotions: json["promotions"] == null ? [] : List<dynamic>.from(json["promotions"]!.map((x) => x)),
+    promotions: json["promotions"] == null ? [] : List<Promotion>.from(json["promotions"]!.map((x) => Promotion.fromJson(x))),
+
   );
 
   Map<String, dynamic> toJson() => {
@@ -247,26 +248,26 @@ class Item {
   dynamic rawCompareAtUnitPrice;
   dynamic deletedAt;
   dynamic compareAtUnitPrice;
-  int? unitPrice;
+  num? unitPrice;
   int? quantity;
   num? rawQuantity;
   Detail? detail;
-  int? subtotal;
-  double? total;
-  double? originalTotal;
-  int? discountTotal;
-  int? discountSubtotal;
-  int? discountTaxTotal;
-  double? taxTotal;
-  double? originalTaxTotal;
-  double? refundableTotalPerUnit;
-  double? refundableTotal;
-  int? fulfilledTotal;
-  int? shippedTotal;
-  int? returnRequestedTotal;
-  int? returnReceivedTotal;
-  int? returnDismissedTotal;
-  int? writeOffTotal;
+  num? subtotal;
+  num? total;
+  num? originalTotal;
+  num? discountTotal;
+  num? discountSubtotal;
+  num? discountTaxTotal;
+  num? taxTotal;
+  num? originalTaxTotal;
+  num? refundableTotalPerUnit;
+  num? refundableTotal;
+  num? fulfilledTotal;
+  num? shippedTotal;
+  num? returnRequestedTotal;
+  num? returnReceivedTotal;
+  num? returnDismissedTotal;
+  num? writeOffTotal;
   num? rawSubtotal;
   num? rawTotal;
   num? rawOriginalTotal;
@@ -585,6 +586,58 @@ class Region {
     "currency_code": currencyCode,
     "automatic_taxes": automaticTaxes,
     "countries": countries == null ? [] : List<dynamic>.from(countries!.map((x) => x.toJson())),
+  };
+}
+
+class Promotion {
+  String? id;
+  String? code;
+  bool? isAutomatic;
+  ApplicationMethod? applicationMethod;
+
+  Promotion({
+    this.id,
+    this.code,
+    this.isAutomatic,
+    this.applicationMethod,
+  });
+
+  factory Promotion.fromJson(Map<String, dynamic> json) => Promotion(
+    id: json["id"],
+    code: json["code"],
+    isAutomatic: json["is_automatic"],
+    applicationMethod: json["application_method"] == null ? null : ApplicationMethod.fromJson(json["application_method"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "code": code,
+    "is_automatic": isAutomatic,
+    "application_method": applicationMethod?.toJson(),
+  };
+}
+
+class ApplicationMethod {
+  num? value;
+  String? type;
+  String? currencyCode;
+
+  ApplicationMethod({
+    this.value,
+    this.type,
+    this.currencyCode,
+  });
+
+  factory ApplicationMethod.fromJson(Map<String, dynamic> json) => ApplicationMethod(
+    value: json["value"],
+    type: json["type"],
+    currencyCode: json["currency_code"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "value": value,
+    "type": type,
+    "currency_code": currencyCode,
   };
 }
 

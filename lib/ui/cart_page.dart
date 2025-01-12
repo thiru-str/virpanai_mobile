@@ -27,15 +27,46 @@ class CartPage extends StatefulWidget {
   State<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
+class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
   bool apiLoading = true;
   bool isAnimating = false;
+
+  late AnimationController _animationController;
+  late Animation<Offset> _animation;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCartApi();
+
+    // Initialize the animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    // Define the animation's starting and ending positions
+    _animation = Tween<Offset>(
+      begin: const Offset(0, 1), // Start just below the screen
+      end: Offset.zero, // End at its natural position
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Delay animation start by 300ms
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _animationController.forward();
+    });
+
+
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -96,7 +127,7 @@ class _CartPageState extends State<CartPage> {
                                       size: cartItem.variantTitle!,
                                       color: 'color',
                                       // Replace with actual color
-                                      price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toString()),
+                                      price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
                                       quantity: cartItem.quantity!,
                                       isUpdating: cartItem.isUpdating!,
                                       onIncrease: () {
@@ -157,29 +188,58 @@ class _CartPageState extends State<CartPage> {
                               keyText: 'Total:',
                               valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                             ),
+                            const SizedBox(height: 10,),
+                            GestureDetector(
+                              onTap: () {
+                                showPromoCodeBottomSheet(context);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        "Enter Promo Code",
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                    ),
+                                    const Icon(Icons.arrow_forward, color: Colors.purple),
+                                  ],
+                                ),
+                              ),
+                            )
                           ],
                         ),
                       ),
                     ],
                   ),
-                  bottomNavigationBar: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  bottomNavigationBar: SlideTransition(
+                    position: _animation,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(
+                              double.infinity, 56), // Full width button
                         ),
-                        minimumSize: const Size(
-                            double.infinity, 56), // Full width button
-                      ),
-                      onPressed: () {
-                        // Add checkout logic here
-                        PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
-                      },
-                      child:  Text(
-                        'Checkout',
-                        style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+                        onPressed: () {
+                          // Add checkout logic here
+                          PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
+                        },
+                        child:  Text(
+                          'Checkout',
+                          style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
@@ -204,6 +264,18 @@ class _CartPageState extends State<CartPage> {
       setState(() {
         apiLoading = false;
       });
+      print(e);
+    }
+  }
+
+  void addPromoCode(String promoCode) async {
+    try {
+      final ApiService apiService = ApiService();
+      cartResponse = await apiService.addPromoCode(context,promoCode);
+      setState(() {
+        cartResponse;
+      });
+    } catch (e) {
       print(e);
     }
   }
@@ -238,6 +310,88 @@ class _CartPageState extends State<CartPage> {
       print(e);
     }
   }
+
+  void showPromoCodeBottomSheet(BuildContext context) {
+    TextEditingController promoCodeController = TextEditingController();
+
+    showModalBottomSheet(
+      backgroundColor: Colors.white,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            top: 16.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Bottom Sheet Handle
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Promo Code Input
+              Text(
+                "Enter Promo Code",
+                style: FontUtils.circularStdStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: promoCodeController,
+                decoration: InputDecoration(
+                  hintText: "Promo Code",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Apply Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                onPressed: () {
+                  String promoCode = promoCodeController.text.trim();
+                  if (promoCode.isNotEmpty) {
+                    Navigator.pop(context); // Close the bottom sheet
+                    addPromoCode(promoCode); // Call API to apply promo code
+                  }
+                },
+                child: Text(
+                  "Apply",
+                  style: FontUtils.circularStdStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
 
 
