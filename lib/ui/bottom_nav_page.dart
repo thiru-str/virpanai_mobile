@@ -97,7 +97,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       backgroundColor: Colors.white,
       body: _isLoading
           ? const Center(
-        child: CircularProgressIndicator(), // Show loader until pages are ready
+        child: CircularProgressIndicator(color: AppColors.primary,), // Show loader until pages are ready
       )
           : Stack(
         children: List.generate(_pages.length, (index) {
