@@ -12,6 +12,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/home_page_response.dart';
 import '../model/register_response.dart';
 import '../utility/shared_preferences_util.dart';
 
@@ -24,34 +25,17 @@ class BottomNavPage extends StatefulWidget {
 
 class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
-
-  // Define static titles for each page
-  final List<String> _titles = [
-    'Shop',
-    'Categories',
-    'Cart',
-    'Favourite',
-    'Account',
-  ];
-
-  // Pages for each tab
-  final List<Widget> _pages = [
-    HomePage(),
-    CategoryPage(isFromBottomNav: true,),
-    CartPage(isFromBottomNav: true,),
-    MyFavoritesPage(isFromBottomNav: true,),
-    SettingsPage()
-  ];
+  HomePageResponse? homePageResponse;
+  bool _isLoading = true; // Loading flag
 
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
 
+  List<Widget> _pages = []; // Initialize as empty and fill after APIs are successful
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getCustomerApi();
 
     // Initialize animation for the bottom navigation bar
     _animationController = AnimationController(
@@ -71,6 +55,34 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     Future.delayed(const Duration(milliseconds: 500), () {
       _animationController.forward();
     });
+
+    initializePages();
+  }
+
+  Future<void> initializePages() async {
+    try {
+      await Future.wait([
+        getCustomerApi(), // Wait for customer API
+        getHomePageApi() // Wait for home page API
+      ]);
+
+      // Initialize pages only after both APIs are successful
+      setState(() {
+        _pages = [
+          const HomePage(), // Pass API response to HomePage
+          const CategoryPage(isFromBottomNav: true),
+          const CartPage(isFromBottomNav: true),
+          const MyFavoritesPage(isFromBottomNav: true),
+          SettingsPage(),
+        ];
+        _isLoading = false; // Stop loading
+      });
+    } catch (e) {
+      print("Error initializing pages: $e");
+      setState(() {
+        _isLoading = false; // Stop loading even on error
+      });
+    }
   }
 
   @override
@@ -79,12 +91,15 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
+      body: _isLoading
+          ? const Center(
+        child: CircularProgressIndicator(), // Show loader until pages are ready
+      )
+          : Stack(
         children: List.generate(_pages.length, (index) {
           return AnimatedOpacity(
             opacity: _currentIndex == index ? 1.0 : 0.0, // Set opacity
@@ -140,18 +155,16 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     );
   }
 
-  void getCustomerApi() async {
+  Future<void> getCustomerApi() async {
     try {
       Customer? customer = await getCustomerResponse();
-      if(customer==null) {
+      if (customer == null) {
         final ApiService apiService = ApiService();
-        CustomerResponse customerResponse = await apiService.getCustomer(
-            context);
-        SharedPreferencesUtil()
-            .saveMap('customer', customerResponse.customer!.toJson());
+        CustomerResponse customerResponse = await apiService.getCustomer(context);
+        await SharedPreferencesUtil().saveMap('customer', customerResponse.customer!.toJson());
       }
     } catch (e) {
-      print(e);
+      print("Error fetching customer: $e");
     }
   }
 
@@ -162,6 +175,20 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     }
     return null;
   }
+
+  Future<void> getHomePageApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      homePageResponse = await apiService.getHomePage(context);
+      await SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
+      await SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
+      await SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
+      await SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+    } catch (e) {
+      print("Error fetching home page: $e");
+    }
+  }
 }
+
 
 

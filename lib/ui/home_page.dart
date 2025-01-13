@@ -33,8 +33,14 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    initializePages();
+  }
+
+  Future<void> initializePages() async {
     getHomePageApi();
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
