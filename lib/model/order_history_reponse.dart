@@ -6,15 +6,21 @@ import 'dart:convert';
 
 import 'package:waioz/ui/cart_response.dart';
 
+// To parse this JSON data, do
+//
+//     final orderHistoryResponse = orderHistoryResponseFromJson(jsonString);
+
+import 'dart:convert';
+
 OrderHistoryResponse orderHistoryResponseFromJson(String str) => OrderHistoryResponse.fromJson(json.decode(str));
 
 String orderHistoryResponseToJson(OrderHistoryResponse data) => json.encode(data.toJson());
 
 class OrderHistoryResponse {
   List<Order>? orders;
-  int? count;
-  int? offset;
-  int? limit;
+  num? count;
+  num? offset;
+  num? limit;
 
   OrderHistoryResponse({
     this.orders,
@@ -42,7 +48,7 @@ class Order {
   String? id;
   String? status;
   Summary? summary;
-  int? displayId;
+  num? displayId;
   num? total;
   String? currencyCode;
   dynamic metadata;
@@ -50,11 +56,11 @@ class Order {
   DateTime? updatedAt;
   num? subtotal;
   num? taxTotal;
-  int? version;
+  num? version;
   List<Item>? items;
+  Cart? cart;
   String? paymentStatus;
   String? fulfillmentStatus;
-  Cart? cart;
 
   Order({
     this.id,
@@ -80,7 +86,7 @@ class Order {
     status: json["status"],
     summary: json["summary"] == null ? null : Summary.fromJson(json["summary"]),
     displayId: json["display_id"],
-    total: json["total"]?.toDouble(),
+    total: json["total"],
     currencyCode: json["currency_code"],
     metadata: json["metadata"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
@@ -114,10 +120,474 @@ class Order {
   };
 }
 
+class Cart {
+  String? id;
+  ShippingAddress? shippingAddress;
+
+  Cart({
+    this.id,
+    this.shippingAddress,
+  });
+
+  factory Cart.fromJson(Map<String, dynamic> json) => Cart(
+    id: json["id"],
+    shippingAddress: json["shipping_address"] == null ? null : ShippingAddress.fromJson(json["shipping_address"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "shipping_address": shippingAddress?.toJson(),
+  };
+}
+
+class ShippingAddress {
+  String? id;
+  dynamic customerId;
+  String? company;
+  String? firstName;
+  String? lastName;
+  String? address1;
+  String? address2;
+  String? city;
+  String? countryCode;
+  String? province;
+  String? postalCode;
+  String? phone;
+  dynamic metadata;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+
+  ShippingAddress({
+    this.id,
+    this.customerId,
+    this.company,
+    this.firstName,
+    this.lastName,
+    this.address1,
+    this.address2,
+    this.city,
+    this.countryCode,
+    this.province,
+    this.postalCode,
+    this.phone,
+    this.metadata,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  factory ShippingAddress.fromJson(Map<String, dynamic> json) => ShippingAddress(
+    id: json["id"],
+    customerId: json["customer_id"],
+    company: json["company"],
+    firstName: json["first_name"],
+    lastName: json["last_name"],
+    address1: json["address_1"],
+    address2: json["address_2"],
+    city: json["city"],
+    countryCode: json["country_code"],
+    province: json["province"],
+    postalCode: json["postal_code"],
+    phone: json["phone"],
+    metadata: json["metadata"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "customer_id": customerId,
+    "company": company,
+    "first_name": firstName,
+    "last_name": lastName,
+    "address_1": address1,
+    "address_2": address2,
+    "city": city,
+    "country_code": countryCode,
+    "province": province,
+    "postal_code": postalCode,
+    "phone": phone,
+    "metadata": metadata,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+  };
+}
+
+class Item {
+  String? id;
+  String? title;
+  String? subtitle;
+  String? thumbnail;
+  String? variantId;
+  String? productId;
+  String? productTitle;
+  String? productDescription;
+  String? productSubtitle;
+  String? productCollection;
+  String? productHandle;
+  String? variantSku;
+  String? variantTitle;
+  bool? requiresShipping;
+  bool? isDiscountable;
+  bool? isTaxInclusive;
+  Raw? rawUnitPrice;
+  bool? isCustomPrice;
+  List<dynamic>? taxLines;
+  List<Adjustment>? adjustments;
+  Metadata? metadata;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic productType;
+  dynamic productTypeId;
+  dynamic variantBarcode;
+  dynamic variantOptionValues;
+  Raw? rawCompareAtUnitPrice;
+  dynamic deletedAt;
+  num? compareAtUnitPrice;
+  num? unitPrice;
+  num? quantity;
+  Raw? rawQuantity;
+  Detail? detail;
+  num? subtotal;
+  num? total;
+  num? originalTotal;
+  num? discountTotal;
+  num? discountSubtotal;
+  num? discountTaxTotal;
+  num? taxTotal;
+  num? originalTaxTotal;
+  num? refundableTotalPerUnit;
+  num? refundableTotal;
+  num? fulfilledTotal;
+  num? shippedTotal;
+  num? returnRequestedTotal;
+  num? returnReceivedTotal;
+  num? returnDismissedTotal;
+  num? writeOffTotal;
+  Raw? rawSubtotal;
+  Raw? rawTotal;
+  Raw? rawOriginalTotal;
+  Raw? rawDiscountTotal;
+  Raw? rawDiscountSubtotal;
+  Raw? rawDiscountTaxTotal;
+  Raw? rawTaxTotal;
+  Raw? rawOriginalTaxTotal;
+  Raw? rawRefundableTotalPerUnit;
+  Raw? rawRefundableTotal;
+  Raw? rawFulfilledTotal;
+  Raw? rawShippedTotal;
+  Raw? rawReturnRequestedTotal;
+  Raw? rawReturnReceivedTotal;
+  Raw? rawReturnDismissedTotal;
+  Raw? rawWriteOffTotal;
+
+  Item({
+    this.id,
+    this.title,
+    this.subtitle,
+    this.thumbnail,
+    this.variantId,
+    this.productId,
+    this.productTitle,
+    this.productDescription,
+    this.productSubtitle,
+    this.productCollection,
+    this.productHandle,
+    this.variantSku,
+    this.variantTitle,
+    this.requiresShipping,
+    this.isDiscountable,
+    this.isTaxInclusive,
+    this.rawUnitPrice,
+    this.isCustomPrice,
+    this.taxLines,
+    this.adjustments,
+    this.metadata,
+    this.createdAt,
+    this.updatedAt,
+    this.productType,
+    this.productTypeId,
+    this.variantBarcode,
+    this.variantOptionValues,
+    this.rawCompareAtUnitPrice,
+    this.deletedAt,
+    this.compareAtUnitPrice,
+    this.unitPrice,
+    this.quantity,
+    this.rawQuantity,
+    this.detail,
+    this.subtotal,
+    this.total,
+    this.originalTotal,
+    this.discountTotal,
+    this.discountSubtotal,
+    this.discountTaxTotal,
+    this.taxTotal,
+    this.originalTaxTotal,
+    this.refundableTotalPerUnit,
+    this.refundableTotal,
+    this.fulfilledTotal,
+    this.shippedTotal,
+    this.returnRequestedTotal,
+    this.returnReceivedTotal,
+    this.returnDismissedTotal,
+    this.writeOffTotal,
+    this.rawSubtotal,
+    this.rawTotal,
+    this.rawOriginalTotal,
+    this.rawDiscountTotal,
+    this.rawDiscountSubtotal,
+    this.rawDiscountTaxTotal,
+    this.rawTaxTotal,
+    this.rawOriginalTaxTotal,
+    this.rawRefundableTotalPerUnit,
+    this.rawRefundableTotal,
+    this.rawFulfilledTotal,
+    this.rawShippedTotal,
+    this.rawReturnRequestedTotal,
+    this.rawReturnReceivedTotal,
+    this.rawReturnDismissedTotal,
+    this.rawWriteOffTotal,
+  });
+
+  factory Item.fromJson(Map<String, dynamic> json) => Item(
+    id: json["id"],
+    title: json["title"],
+    subtitle: json["subtitle"],
+    thumbnail: json["thumbnail"],
+    variantId: json["variant_id"],
+    productId: json["product_id"],
+    productTitle: json["product_title"],
+    productDescription: json["product_description"],
+    productSubtitle: json["product_subtitle"],
+    productCollection: json["product_collection"],
+    productHandle: json["product_handle"],
+    variantSku: json["variant_sku"],
+    variantTitle: json["variant_title"],
+    requiresShipping: json["requires_shipping"],
+    isDiscountable: json["is_discountable"],
+    isTaxInclusive: json["is_tax_inclusive"],
+    rawUnitPrice: json["raw_unit_price"] == null ? null : Raw.fromJson(json["raw_unit_price"]),
+    isCustomPrice: json["is_custom_price"],
+    taxLines: json["tax_lines"] == null ? [] : List<dynamic>.from(json["tax_lines"]!.map((x) => x)),
+    adjustments: json["adjustments"] == null ? [] : List<Adjustment>.from(json["adjustments"]!.map((x) => Adjustment.fromJson(x))),
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    productType: json["product_type"],
+    productTypeId: json["product_type_id"],
+    variantBarcode: json["variant_barcode"],
+    variantOptionValues: json["variant_option_values"],
+    rawCompareAtUnitPrice: json["raw_compare_at_unit_price"] == null ? null : Raw.fromJson(json["raw_compare_at_unit_price"]),
+    deletedAt: json["deleted_at"],
+    compareAtUnitPrice: json["compare_at_unit_price"],
+    unitPrice: json["unit_price"],
+    quantity: json["quantity"],
+    rawQuantity: json["raw_quantity"] == null ? null : Raw.fromJson(json["raw_quantity"]),
+    detail: json["detail"] == null ? null : Detail.fromJson(json["detail"]),
+    subtotal: json["subtotal"],
+    total: json["total"],
+    originalTotal: json["original_total"],
+    discountTotal: json["discount_total"],
+    discountSubtotal: json["discount_subtotal"],
+    discountTaxTotal: json["discount_tax_total"],
+    taxTotal: json["tax_total"],
+    originalTaxTotal: json["original_tax_total"],
+    refundableTotalPerUnit: json["refundable_total_per_unit"],
+    refundableTotal: json["refundable_total"],
+    fulfilledTotal: json["fulfilled_total"],
+    shippedTotal: json["shipped_total"],
+    returnRequestedTotal: json["return_requested_total"],
+    returnReceivedTotal: json["return_received_total"],
+    returnDismissedTotal: json["return_dismissed_total"],
+    writeOffTotal: json["write_off_total"],
+    rawSubtotal: json["raw_subtotal"] == null ? null : Raw.fromJson(json["raw_subtotal"]),
+    rawTotal: json["raw_total"] == null ? null : Raw.fromJson(json["raw_total"]),
+    rawOriginalTotal: json["raw_original_total"] == null ? null : Raw.fromJson(json["raw_original_total"]),
+    rawDiscountTotal: json["raw_discount_total"] == null ? null : Raw.fromJson(json["raw_discount_total"]),
+    rawDiscountSubtotal: json["raw_discount_subtotal"] == null ? null : Raw.fromJson(json["raw_discount_subtotal"]),
+    rawDiscountTaxTotal: json["raw_discount_tax_total"] == null ? null : Raw.fromJson(json["raw_discount_tax_total"]),
+    rawTaxTotal: json["raw_tax_total"] == null ? null : Raw.fromJson(json["raw_tax_total"]),
+    rawOriginalTaxTotal: json["raw_original_tax_total"] == null ? null : Raw.fromJson(json["raw_original_tax_total"]),
+    rawRefundableTotalPerUnit: json["raw_refundable_total_per_unit"] == null ? null : Raw.fromJson(json["raw_refundable_total_per_unit"]),
+    rawRefundableTotal: json["raw_refundable_total"] == null ? null : Raw.fromJson(json["raw_refundable_total"]),
+    rawFulfilledTotal: json["raw_fulfilled_total"] == null ? null : Raw.fromJson(json["raw_fulfilled_total"]),
+    rawShippedTotal: json["raw_shipped_total"] == null ? null : Raw.fromJson(json["raw_shipped_total"]),
+    rawReturnRequestedTotal: json["raw_return_requested_total"] == null ? null : Raw.fromJson(json["raw_return_requested_total"]),
+    rawReturnReceivedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
+    rawReturnDismissedTotal: json["raw_return_dismissed_total"] == null ? null : Raw.fromJson(json["raw_return_dismissed_total"]),
+    rawWriteOffTotal: json["raw_write_off_total"] == null ? null : Raw.fromJson(json["raw_write_off_total"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "subtitle": subtitle,
+    "thumbnail": thumbnail,
+    "variant_id": variantId,
+    "product_id": productId,
+    "product_title": productTitle,
+    "product_description": productDescription,
+    "product_subtitle": productSubtitle,
+    "product_collection": productCollection,
+    "product_handle": productHandle,
+    "variant_sku": variantSku,
+    "variant_title": variantTitle,
+    "requires_shipping": requiresShipping,
+    "is_discountable": isDiscountable,
+    "is_tax_inclusive": isTaxInclusive,
+    "raw_unit_price": rawUnitPrice?.toJson(),
+    "is_custom_price": isCustomPrice,
+    "tax_lines": taxLines == null ? [] : List<dynamic>.from(taxLines!.map((x) => x)),
+    "adjustments": adjustments == null ? [] : List<dynamic>.from(adjustments!.map((x) => x.toJson())),
+    "metadata": metadata?.toJson(),
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "product_type": productType,
+    "product_type_id": productTypeId,
+    "variant_barcode": variantBarcode,
+    "variant_option_values": variantOptionValues,
+    "raw_compare_at_unit_price": rawCompareAtUnitPrice?.toJson(),
+    "deleted_at": deletedAt,
+    "compare_at_unit_price": compareAtUnitPrice,
+    "unit_price": unitPrice,
+    "quantity": quantity,
+    "raw_quantity": rawQuantity?.toJson(),
+    "detail": detail?.toJson(),
+    "subtotal": subtotal,
+    "total": total,
+    "original_total": originalTotal,
+    "discount_total": discountTotal,
+    "discount_subtotal": discountSubtotal,
+    "discount_tax_total": discountTaxTotal,
+    "tax_total": taxTotal,
+    "original_tax_total": originalTaxTotal,
+    "refundable_total_per_unit": refundableTotalPerUnit,
+    "refundable_total": refundableTotal,
+    "fulfilled_total": fulfilledTotal,
+    "shipped_total": shippedTotal,
+    "return_requested_total": returnRequestedTotal,
+    "return_received_total": returnReceivedTotal,
+    "return_dismissed_total": returnDismissedTotal,
+    "write_off_total": writeOffTotal,
+    "raw_subtotal": rawSubtotal?.toJson(),
+    "raw_total": rawTotal?.toJson(),
+    "raw_original_total": rawOriginalTotal?.toJson(),
+    "raw_discount_total": rawDiscountTotal?.toJson(),
+    "raw_discount_subtotal": rawDiscountSubtotal?.toJson(),
+    "raw_discount_tax_total": rawDiscountTaxTotal?.toJson(),
+    "raw_tax_total": rawTaxTotal?.toJson(),
+    "raw_original_tax_total": rawOriginalTaxTotal?.toJson(),
+    "raw_refundable_total_per_unit": rawRefundableTotalPerUnit?.toJson(),
+    "raw_refundable_total": rawRefundableTotal?.toJson(),
+    "raw_fulfilled_total": rawFulfilledTotal?.toJson(),
+    "raw_shipped_total": rawShippedTotal?.toJson(),
+    "raw_return_requested_total": rawReturnRequestedTotal?.toJson(),
+    "raw_return_received_total": rawReturnReceivedTotal?.toJson(),
+    "raw_return_dismissed_total": rawReturnDismissedTotal?.toJson(),
+    "raw_write_off_total": rawWriteOffTotal?.toJson(),
+  };
+}
+
+class Adjustment {
+  String? id;
+  dynamic description;
+  String? promotionId;
+  String? code;
+  Raw? rawAmount;
+  String? providerId;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+  String? itemId;
+  num? amount;
+  num? subtotal;
+  num? total;
+  Raw? rawSubtotal;
+  Raw? rawTotal;
+
+  Adjustment({
+    this.id,
+    this.description,
+    this.promotionId,
+    this.code,
+    this.rawAmount,
+    this.providerId,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.itemId,
+    this.amount,
+    this.subtotal,
+    this.total,
+    this.rawSubtotal,
+    this.rawTotal,
+  });
+
+  factory Adjustment.fromJson(Map<String, dynamic> json) => Adjustment(
+    id: json["id"],
+    description: json["description"],
+    promotionId: json["promotion_id"],
+    code: json["code"],
+    rawAmount: json["raw_amount"] == null ? null : Raw.fromJson(json["raw_amount"]),
+    providerId: json["provider_id"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+    itemId: json["item_id"],
+    amount: json["amount"],
+    subtotal: json["subtotal"],
+    total: json["total"],
+    rawSubtotal: json["raw_subtotal"] == null ? null : Raw.fromJson(json["raw_subtotal"]),
+    rawTotal: json["raw_total"] == null ? null : Raw.fromJson(json["raw_total"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "description": description,
+    "promotion_id": promotionId,
+    "code": code,
+    "raw_amount": rawAmount?.toJson(),
+    "provider_id": providerId,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+    "item_id": itemId,
+    "amount": amount,
+    "subtotal": subtotal,
+    "total": total,
+    "raw_subtotal": rawSubtotal?.toJson(),
+    "raw_total": rawTotal?.toJson(),
+  };
+}
+
+class Raw {
+  String? value;
+  num? precision;
+
+  Raw({
+    this.value,
+    this.precision,
+  });
+
+  factory Raw.fromJson(Map<String, dynamic> json) => Raw(
+    value: json["value"],
+    precision: json["precision"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "value": value,
+    "precision": precision,
+  };
+}
+
 class Detail {
   String? id;
   String? orderId;
-  int? version;
+  num? version;
   String? itemId;
   dynamic rawUnitPrice;
   dynamic rawCompareAtUnitPrice;
@@ -135,14 +605,14 @@ class Detail {
   dynamic deletedAt;
   dynamic unitPrice;
   dynamic compareAtUnitPrice;
-  int? quantity;
-  int? fulfilledQuantity;
-  int? deliveredQuantity;
-  int? shippedQuantity;
-  int? returnRequestedQuantity;
-  int? returnReceivedQuantity;
-  int? returnDismissedQuantity;
-  int? writtenOffQuantity;
+  num? quantity;
+  num? fulfilledQuantity;
+  num? deliveredQuantity;
+  num? shippedQuantity;
+  num? returnRequestedQuantity;
+  num? returnReceivedQuantity;
+  num? returnDismissedQuantity;
+  num? writtenOffQuantity;
 
   Detail({
     this.id,
@@ -238,26 +708,6 @@ class Detail {
   };
 }
 
-class Raw {
-  String? value;
-  int? precision;
-
-  Raw({
-    this.value,
-    this.precision,
-  });
-
-  factory Raw.fromJson(Map<String, dynamic> json) => Raw(
-    value: json["value"],
-    precision: json["precision"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "value": value,
-    "precision": precision,
-  };
-}
-
 class Metadata {
   Metadata();
 
@@ -268,90 +718,18 @@ class Metadata {
   };
 }
 
-class TaxLine {
-  String? id;
-  String? description;
-  String? taxRateId;
-  String? code;
-  Raw? rawRate;
-  String? providerId;
-  DateTime? createdAt;
-  DateTime? updatedAt;
-  dynamic deletedAt;
-  String? itemId;
-  int? rate;
-  double? total;
-  double? subtotal;
-  Raw? rawTotal;
-  Raw? rawSubtotal;
-
-  TaxLine({
-    this.id,
-    this.description,
-    this.taxRateId,
-    this.code,
-    this.rawRate,
-    this.providerId,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.itemId,
-    this.rate,
-    this.total,
-    this.subtotal,
-    this.rawTotal,
-    this.rawSubtotal,
-  });
-
-  factory TaxLine.fromJson(Map<String, dynamic> json) => TaxLine(
-    id: json["id"],
-    description: json["description"],
-    taxRateId: json["tax_rate_id"],
-    code: json["code"],
-    rawRate: json["raw_rate"] == null ? null : Raw.fromJson(json["raw_rate"]),
-    providerId: json["provider_id"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-    itemId: json["item_id"],
-    rate: json["rate"],
-    total: json["total"]?.toDouble(),
-    subtotal: json["subtotal"]?.toDouble(),
-    rawTotal: json["raw_total"] == null ? null : Raw.fromJson(json["raw_total"]),
-    rawSubtotal: json["raw_subtotal"] == null ? null : Raw.fromJson(json["raw_subtotal"]),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "description": description,
-    "tax_rate_id": taxRateId,
-    "code": code,
-    "raw_rate": rawRate?.toJson(),
-    "provider_id": providerId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-    "item_id": itemId,
-    "rate": rate,
-    "total": total,
-    "subtotal": subtotal,
-    "raw_total": rawTotal?.toJson(),
-    "raw_subtotal": rawSubtotal?.toJson(),
-  };
-}
-
 class Summary {
-  int? paidTotal;
-  int? differenceSum;
+  num? paidTotal;
+  num? differenceSum;
   Raw? rawPaidTotal;
-  int? refundedTotal;
-  int? creditLineTotal;
-  int? transactionTotal;
-  double? pendingDifference;
+  num? refundedTotal;
+  num? creditLineTotal;
+  num? transactionTotal;
+  num? pendingDifference;
   Raw? rawDifferenceSum;
   Raw? rawRefundedTotal;
-  double? currentOrderTotal;
-  double? originalOrderTotal;
+  num? currentOrderTotal;
+  num? originalOrderTotal;
   Raw? rawCreditLineTotal;
   Raw? rawTransactionTotal;
   Raw? rawPendingDifference;
@@ -384,11 +762,11 @@ class Summary {
     refundedTotal: json["refunded_total"],
     creditLineTotal: json["credit_line_total"],
     transactionTotal: json["transaction_total"],
-    pendingDifference: json["pending_difference"]?.toDouble(),
+    pendingDifference: json["pending_difference"],
     rawDifferenceSum: json["raw_difference_sum"] == null ? null : Raw.fromJson(json["raw_difference_sum"]),
     rawRefundedTotal: json["raw_refunded_total"] == null ? null : Raw.fromJson(json["raw_refunded_total"]),
-    currentOrderTotal: json["current_order_total"]?.toDouble(),
-    originalOrderTotal: json["original_order_total"]?.toDouble(),
+    currentOrderTotal: json["current_order_total"],
+    originalOrderTotal: json["original_order_total"],
     rawCreditLineTotal: json["raw_credit_line_total"] == null ? null : Raw.fromJson(json["raw_credit_line_total"]),
     rawTransactionTotal: json["raw_transaction_total"] == null ? null : Raw.fromJson(json["raw_transaction_total"]),
     rawPendingDifference: json["raw_pending_difference"] == null ? null : Raw.fromJson(json["raw_pending_difference"]),
