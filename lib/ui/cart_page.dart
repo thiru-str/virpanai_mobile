@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/model/product_detail_response.dart';
-import 'package:waioz/model/product_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
-import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
-import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
 import '../utility/currency_util.dart';
@@ -257,6 +253,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
+      emitEvent(cartResponse!);
       setState(() {
         apiLoading = false;
       });
@@ -266,6 +263,10 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       });
       print(e);
     }
+  }
+
+  void emitEvent(CartResponse cartResponse) {
+    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
   void addPromoCode(String promoCode) async {

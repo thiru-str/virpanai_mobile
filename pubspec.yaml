@@ -48,6 +48,7 @@ dependencies:
   cached_network_image: ^3.4.0
   shared_preferences: ^2.0.15
   flutter_rating_bar: ^4.0.1
+  event_bus: ^2.0.1
 
 
 

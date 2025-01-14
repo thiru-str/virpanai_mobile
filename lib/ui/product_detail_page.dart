@@ -1,7 +1,9 @@
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/review_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
@@ -427,6 +429,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         cartResponse = response;
         productPresentInCart = cartResponse?.cart?.items?.any((item) => item.variantId == variantId) ?? false;
         debugPrint('productPresentInCart ${productPresentInCart}');
+        emitEvent(cartResponse!);
       });
     } catch (e) {
       print(e);
@@ -434,6 +437,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         productPresentInCart = false;
       });
     }
+  }
+
+  void emitEvent(CartResponse cartResponse) {
+    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
   Future<void> navigateToCart() async {

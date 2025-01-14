@@ -26,12 +26,10 @@ class BottomNavPage extends StatefulWidget {
 class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
-  bool _isLoading = true; // Loading flag
+  bool _isLoading = true;
 
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
-
-  List<Widget> _pages = []; // Initialize as empty and fill after APIs are successful
 
   @override
   void initState() {
@@ -65,23 +63,31 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
         getCustomerApi(), // Wait for customer API
         getHomePageApi() // Wait for home page API
       ]);
-
-      // Initialize pages only after both APIs are successful
       setState(() {
-        _pages = [
-          const HomePage(), // Pass API response to HomePage
-          const CategoryPage(isFromBottomNav: true),
-          const CartPage(isFromBottomNav: true),
-          const MyFavoritesPage(isFromBottomNav: true),
-          SettingsPage(),
-        ];
-        _isLoading = false; // Stop loading
+        _isLoading = false;
       });
     } catch (e) {
       print("Error initializing pages: $e");
       setState(() {
-        _isLoading = false; // Stop loading even on error
+        _isLoading = false;
       });
+    }
+  }
+
+  Widget _getPage() {
+    switch (_currentIndex) {
+      case 0:
+        return const HomePage(); // Create a new instance
+      case 1:
+        return const CategoryPage(isFromBottomNav: true);
+      case 2:
+        return const CartPage(isFromBottomNav: true);
+      case 3:
+        return const MyFavoritesPage(isFromBottomNav: true);
+      case 4:
+        return SettingsPage();
+      default:
+        return const HomePage();
     }
   }
 
@@ -97,23 +103,11 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       backgroundColor: Colors.white,
       body: _isLoading
           ? const Center(
-        child: CircularProgressIndicator(color: AppColors.primary,), // Show loader until pages are ready
+        child: CircularProgressIndicator(color: AppColors.primary),
       )
-          : Stack(
-        children: List.generate(_pages.length, (index) {
-          return AnimatedOpacity(
-            opacity: _currentIndex == index ? 1.0 : 0.0, // Set opacity
-            duration: const Duration(milliseconds: 300), // Fade duration
-            curve: Curves.easeInOut,
-            child: Offstage(
-              offstage: _currentIndex != index, // Hide other pages
-              child: _pages[index],
-            ),
-          );
-        }),
-      ),
+          : _getPage(), // Dynamically build the current page
       bottomNavigationBar: SlideTransition(
-        position: _slideAnimation, // Slide in from bottom
+        position: _slideAnimation,
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -154,6 +148,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       ),
     );
   }
+
 
   Future<void> getCustomerApi() async {
     try {
