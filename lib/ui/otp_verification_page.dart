@@ -152,11 +152,18 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       }
       else{
         //redirect to create account page
-        PageRouteUtils.push(context, RegisterPage(phoneNo: widget.phoneNo,countryCode: widget.countryCode,token: verifyOtpResponse!.token!,));
+        if(mounted) {
+          PageRouteUtils.pushWithSlide(context, RegisterPage(
+            phoneNo: widget.phoneNo,
+            countryCode: widget.countryCode,
+            token: verifyOtpResponse!.token!,));
+        }
         return;
       }
 
-      PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+      if(mounted) {
+        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+      }
     } catch (e) {
       setState(() {
         apiCalling = false;

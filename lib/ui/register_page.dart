@@ -47,100 +47,98 @@ class _RegisterPageState extends State<RegisterPage> {
           },
         ),
       ),
-      body: Expanded(
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Hello! Register to get started",
-                    style: FontUtils.gabaritoStyle(
-                      fontSize: 24,
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Hello! Register to get started",
+                  style: FontUtils.gabaritoStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                CustomTextField(
+                  hintText: "First Name",
+                  controller: firstNameController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "First name  is required";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  hintText: "Last Name",
+                  controller: lastNameController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "First name  is required";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  hintText: "Email",
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Email is required";
+                    }
+                    if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                        .hasMatch(value)) {
+                      return "Enter a valid email";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  hintText: "Company",
+                  controller: companyController,
+                  isPassword: false,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Company is required";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      // Handle registration logic
+                      print("Form is valid. Proceed to register.");
+                      register();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary, // Button color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    minimumSize: const Size(double.infinity, 60),
+                  ),
+                  child: Text(
+                    'Register',
+                    style: FontUtils.circularStdStyle(
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  CustomTextField(
-                    hintText: "First Name",
-                    controller: firstNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "First name  is required";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: "Last Name",
-                    controller: lastNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "First name  is required";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: "Email",
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Email is required";
-                      }
-                      if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                          .hasMatch(value)) {
-                        return "Enter a valid email";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: "Company",
-                    controller: companyController,
-                    isPassword: false,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Company is required";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Handle registration logic
-                        print("Form is valid. Proceed to register.");
-                        register();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary, // Button color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      minimumSize: const Size(double.infinity, 60),
-                    ),
-                    child: Text(
-                      'Register',
-                      style: FontUtils.circularStdStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
