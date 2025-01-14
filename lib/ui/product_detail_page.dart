@@ -428,7 +428,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       setState(() {
         cartResponse = response;
         productPresentInCart = cartResponse?.cart?.items?.any((item) => item.variantId == variantId) ?? false;
-        debugPrint('productPresentInCart ${productPresentInCart}');
+        AppLogger.print('productPresentInCart', '$productPresentInCart');
         emitEvent(cartResponse!);
       });
     } catch (e) {

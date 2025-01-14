@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
 
   void listenToEvents() {
     eventBus.on<ViewCartModel>().listen((event) {
-      print('Received event: ${event.itemImages}');
       setState(() {
         cartItems = event.totalItems;
         cartItemImages = event.itemImages;

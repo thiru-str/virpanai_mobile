@@ -48,8 +48,8 @@ class ApiService {
     BuildContext context,
   ) async {
     try {
-      debugPrint('API headers: ${_dio.options.headers}');
-      debugPrint('API Request: ${_dio.options.baseUrl}$endpoint');
+      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.print('API Request:', '${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
 
       final response = await _dio.post(endpoint, data: data ?? {},options: Options(
@@ -89,7 +89,7 @@ class ApiService {
           ? '$endpoint/$dynamicPath'
           : endpoint;
 
-      debugPrint('API headers: ${_dio.options.headers}');
+      AppLogger.print('API headers:', '${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
       AppLogger.print('API Params:', '${queryParams ?? {}}');
 
