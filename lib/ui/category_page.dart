@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_categories_response.dart';
+import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -51,36 +52,40 @@ class _CategoryPageState extends State<CategoryPage> {
                   child: Text('All categories',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
                 ),
                 const SizedBox(height: 10,),
-                GridView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount:
-                          productCategoriesResponse!.productCategories!.length,
-                      shrinkWrap: true,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 1,
+                Expanded(
+                  child: GridView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount:
+                            productCategoriesResponse!.productCategories!.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 1,
+                        ),
+                        itemBuilder: (context, index) {
+                          final productCategory = productCategoriesResponse!
+                              .productCategories![index];
+                          return CategoryCard(
+                              imagePath: productCategory.image ?? '',
+                              title: productCategory.name!,
+                              onTap: () {
+                                if (productCategory
+                                    .categoryChildren!.isNotEmpty) {
+                                  PageRouteUtils.pushWithFade(
+                                      context,
+                                      SubCategoryPage(
+                                        categoryTitle: productCategory.name!,
+                                        productCategory:
+                                            productCategory.categoryChildren!,
+                                      ));
+                                }
+                                else{
+                                  PageRouteUtils.pushWithFade(context, ProductPage(categoryId: productCategory.id!,));
+                                }
+                              });
+                        },
                       ),
-                      itemBuilder: (context, index) {
-                        final productCategory = productCategoriesResponse!
-                            .productCategories![index];
-                        return CategoryCard(
-                            imagePath: productCategory.image ?? '',
-                            title: productCategory.name!,
-                            onTap: () {
-                              if (productCategory
-                                  .categoryChildren!.isNotEmpty) {
-                                PageRouteUtils.pushWithFade(
-                                    context,
-                                    SubCategoryPage(
-                                      categoryTitle: productCategory.name!,
-                                      productCategory:
-                                          productCategory.categoryChildren!,
-                                    ));
-                              }
-                            });
-                      },
-                    ),
+                ),
                   ],
             ),
           )

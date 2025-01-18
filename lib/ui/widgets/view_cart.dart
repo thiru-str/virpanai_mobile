@@ -80,7 +80,7 @@ class ViewCartWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                '$totalItems Items',
+                '$totalItems ${totalItems == 1 ? "Item" : "Items"}',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.8),
                   fontSize: 14,
