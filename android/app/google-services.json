@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817601812747",
+    "project_id": "cartel-ba03b",
+    "storage_bucket": "cartel-ba03b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817601812747:android:627a0a26e13ed42e4caa0e",
+        "android_client_info": {
+          "package_name": "com.waioz.cartel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAC0Qom9uji2-JNzQKSj71YX7_VlhJbhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
