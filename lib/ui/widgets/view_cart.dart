@@ -16,7 +16,6 @@ class ViewCartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine if extra items need to be displayed
     final bool hasExtraItems = itemImages.length > 2;
     final int extraItemsCount = itemImages.length - 2;
 
@@ -31,39 +30,50 @@ class ViewCartWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min, // Adjust width to content
         children: [
           // Images Row with Overlapping Effect
-          Row(
-            children: [
-              if (itemImages.isNotEmpty)
-                for (int i = 0; i < itemImages.length && i < 2; i++)
-                  Transform.translate(
-                    offset: Offset(i * -10.0, 0), // Shift each image left
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.white,
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: SizedBox(
+              width: hasExtraItems
+                  ? 100
+                  : (itemImages.length == 1 ? 40 : 70), // Dynamically adjust width
+              child: Stack(
+                clipBehavior: Clip.none, // Allow overflowing content
+                children: [
+                  for (int i = 0; i < itemImages.length && i < 2; i++)
+                    Positioned(
+                      left: i * 30.0, // Position the images with spacing
                       child: CircleAvatar(
-                        radius: 18,
-                        backgroundImage: NetworkImage(itemImages[i]),
+                        radius: 20,
+                        backgroundColor: Colors.white,
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundImage: NetworkImage(itemImages[i]),
+                        ),
                       ),
                     ),
-                  ),
-              if (hasExtraItems)
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white,
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: AppColors.primary,
-                    child: Text(
-                      '+$extraItemsCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                  if (hasExtraItems)
+                    Positioned(
+                      left: 60.0, // Position for the "+X" CircleAvatar
+                      child: CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white,
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: AppColors.primary,
+                          child: Text(
+                            '+$extraItemsCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
           const SizedBox(width: 10), // Space between images and text
           // View cart text
@@ -107,6 +117,10 @@ class ViewCartWidget extends StatelessWidget {
       ),
     );
   }
+
+
+
+
 }
 
 
