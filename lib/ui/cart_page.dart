@@ -95,20 +95,6 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                /*Align(
-                                  alignment: Alignment.topRight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Text(
-                                      'Remove All',
-                                      style: FontUtils.circularStdStyle(
-                                        fontSize: 16,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ),
-                                ),*/
                                 const SizedBox(height: 10),
                                 ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
