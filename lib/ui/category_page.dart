@@ -58,9 +58,10 @@ class _CategoryPageState extends State<CategoryPage> {
                         itemCount:
                             productCategoriesResponse!.productCategories!.length,
                         gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                             SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 1,
+                              childAspectRatio: (MediaQuery.of(context).size.width / 2) /
+                                  (200 + 12 + 12),
                         ),
                         itemBuilder: (context, index) {
                           final productCategory = productCategoriesResponse!

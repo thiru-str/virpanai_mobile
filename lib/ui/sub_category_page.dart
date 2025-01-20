@@ -54,9 +54,10 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                   child: GridView.builder(
                     scrollDirection: Axis.vertical,
                     itemCount: widget.productCategory.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 1,
+                    childAspectRatio: (MediaQuery.of(context).size.width / 2) /
+                        (200 + 12 + 12),
                   ),
                     itemBuilder: (context, index) {
                       final productCategory =  widget.productCategory[index];

@@ -190,10 +190,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                 showPromoCodeBottomSheet(context);
                               },
                               child: Container(
+                                height: 50,
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                                 decoration: BoxDecoration(
                                   color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   children: [
@@ -205,7 +206,10 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                         style: TextStyle(color: Colors.grey[600]),
                                       ),
                                     ),
-                                    const Icon(Icons.arrow_forward, color: Colors.purple),
+                                    Text(
+                                      "Apply",
+                                      style: TextStyle(color: AppColors.primary),
+                                    ),
                                   ],
                                 ),
                               ),
