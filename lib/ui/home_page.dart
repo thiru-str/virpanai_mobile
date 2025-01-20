@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
       case "item8":
         return Item8(content: homePageContent);
       default:
-        return SizedBox();
+        return const SizedBox();
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
 import '../../../utility/app_colors.dart';
+import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/page_route_utils.dart';
 import '../../product_detail_page.dart';
@@ -103,7 +104,7 @@ class Item7 extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        layoutData.subTitle!,
+                        CurrencyUtil.appendCurrency(layoutData.subTitle!),
                         style: FontUtils.circularStdStyle(
                           fontSize: 12,
                           color: Colors.grey,
