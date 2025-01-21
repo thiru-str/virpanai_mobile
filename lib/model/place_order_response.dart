@@ -36,26 +36,26 @@ class Order {
   int? displayId;
   String? regionId;
   String? email;
-  int? total;
-  int? subtotal;
-  int? taxTotal;
-  int? discountTotal;
-  int? discountSubtotal;
-  int? discountTaxTotal;
-  int? originalTotal;
-  int? originalTaxTotal;
-  int? itemTotal;
-  int? itemSubtotal;
-  int? itemTaxTotal;
-  int? originalItemTotal;
-  int? originalItemSubtotal;
-  int? originalItemTaxTotal;
-  int? shippingTotal;
-  int? shippingSubtotal;
-  int? shippingTaxTotal;
-  int? originalShippingTaxTotal;
-  int? originalShippingSubtotal;
-  int? originalShippingTotal;
+  num? total;
+  num? subtotal;
+  num? taxTotal;
+  num? discountTotal;
+  num? discountSubtotal;
+  num? discountTaxTotal;
+  num? originalTotal;
+  num? originalTaxTotal;
+  num? itemTotal;
+  num? itemSubtotal;
+  num? itemTaxTotal;
+  num? originalItemTotal;
+  num? originalItemSubtotal;
+  num? originalItemTaxTotal;
+  num? shippingTotal;
+  num? shippingSubtotal;
+  num? shippingTaxTotal;
+  num? originalShippingTaxTotal;
+  num? originalShippingSubtotal;
+  num? originalShippingTotal;
   DateTime? createdAt;
   DateTime? updatedAt;
   List<Item>? items;
@@ -212,21 +212,21 @@ class Item {
   Raw? rawQuantity;
   Detail? detail;
   int? subtotal;
-  int? total;
-  int? originalTotal;
-  int? discountTotal;
-  int? discountSubtotal;
-  int? discountTaxTotal;
-  int? taxTotal;
-  int? originalTaxTotal;
-  int? refundableTotalPerUnit;
-  int? refundableTotal;
-  int? fulfilledTotal;
-  int? shippedTotal;
-  int? returnRequestedTotal;
-  int? returnReceivedTotal;
-  int? returnDismissedTotal;
-  int? writeOffTotal;
+  num? total;
+  num? originalTotal;
+  num? discountTotal;
+  num? discountSubtotal;
+  num? discountTaxTotal;
+  num? taxTotal;
+  num? originalTaxTotal;
+  num? refundableTotalPerUnit;
+  num? refundableTotal;
+  num? fulfilledTotal;
+  num? shippedTotal;
+  num? returnRequestedTotal;
+  num? returnReceivedTotal;
+  num? returnDismissedTotal;
+  num? writeOffTotal;
   Raw? rawSubtotal;
   Raw? rawTotal;
   Raw? rawOriginalTotal;
@@ -860,10 +860,10 @@ class PaymentCollection {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic deletedAt;
-  int? amount;
-  int? authorizedAmount;
-  int? capturedAmount;
-  int? refundedAmount;
+  num? amount;
+  num? authorizedAmount;
+  num? capturedAmount;
+  num? refundedAmount;
 
   PaymentCollection({
     this.id,
@@ -927,17 +927,17 @@ class PaymentCollection {
 }
 
 class Summary {
-  int? paidTotal;
-  int? differenceSum;
+  num? paidTotal;
+  num? differenceSum;
   Raw? rawPaidTotal;
-  int? refundedTotal;
-  int? creditLineTotal;
-  int? transactionTotal;
-  int? pendingDifference;
+  num? refundedTotal;
+  num? creditLineTotal;
+  num? transactionTotal;
+  num? pendingDifference;
   Raw? rawDifferenceSum;
   Raw? rawRefundedTotal;
-  int? currentOrderTotal;
-  int? originalOrderTotal;
+  num? currentOrderTotal;
+  num? originalOrderTotal;
   Raw? rawCreditLineTotal;
   Raw? rawTransactionTotal;
   Raw? rawPendingDifference;
@@ -1001,3 +1001,4 @@ class Summary {
     "raw_original_order_total": rawOriginalOrderTotal?.toJson(),
   };
 }
+
