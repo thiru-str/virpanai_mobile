@@ -17,37 +17,45 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color baseColor =generateRandomColor();
-    final Color backgroundColor = generateBackgroundColor(baseColor, 0.2);
     return SizedBox(
-      height: 180,
+      height: 200, // Adjusted height to match the image
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           margin: const EdgeInsets.all(8.0),
-          padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(color: baseColor, width: 0.96),
+            color: Colors.white, // Set the background to white
+            borderRadius: BorderRadius.circular(16.0), // Adjusted for rounded corners
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(0.1), // Light shadow
                 spreadRadius: 1,
-                blurRadius: 5,
-                offset: const Offset(0, 2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              imagePath.isNotEmpty?
-              Image.network(
-                imagePath,
-                height: 80,
-                fit: BoxFit.contain,
-              ): const SizedBox(),
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16.0),
+                  topRight: Radius.circular(16.0),
+                ),
+                child: imagePath.isNotEmpty
+                    ? Image.network(
+                  imagePath,
+                  height: 140, // Adjusted image height
+                  width: double.infinity, // Take full width
+                  fit: BoxFit.cover, // Fill the card space
+                )
+                    : Container(
+                  height: 140,
+                  width: double.infinity,
+                  color: Colors.grey[200], // Placeholder background
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 title,
@@ -55,7 +63,7 @@ class CategoryCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: FontUtils.circularStdStyle(
-                  fontSize: 14,
+                  fontSize: 16, // Adjusted for better readability
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -66,6 +74,7 @@ class CategoryCard extends StatelessWidget {
       ),
     );
   }
+
 
   /// Generates a color with the given base color and opacity.
   Color generateBackgroundColor(Color baseColor, double opacity) {

@@ -50,24 +50,26 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                   ),
                 ),
                 const SizedBox(height: 10,),
-                GridView.builder(
-                  scrollDirection: Axis.vertical,
-                  itemCount: widget.productCategory.length,
-                  shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1,
-                ),
-                  itemBuilder: (context, index) {
-                    final productCategory =  widget.productCategory[index];
-                    return GestureDetector(
-                      onTap: () {},
-                      child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (
-                          ){
-                        PageRouteUtils.pushWithFade(context, ProductPage(categoryId: productCategory.id!,));
-                      }),
-                    );
-                  },
+                Expanded(
+                  child: GridView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: widget.productCategory.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: (MediaQuery.of(context).size.width / 2) /
+                        (200 + 12 + 12),
+                  ),
+                    itemBuilder: (context, index) {
+                      final productCategory =  widget.productCategory[index];
+                      return GestureDetector(
+                        onTap: () {},
+                        child: CategoryCard(imagePath: productCategory.image??'', title: productCategory.name!, onTap: (
+                            ){
+                          PageRouteUtils.pushWithFade(context, ProductPage(categoryId: productCategory.id!,));
+                        }),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

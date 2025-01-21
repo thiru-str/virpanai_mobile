@@ -80,14 +80,14 @@ class Item6 extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.grey[300],
-                        child: Image.network(
-                          layoutData.image!,
-                          height: 30,
-                          width: 30,
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          shape: BoxShape.circle,
                         ),
+                        child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
                       ),
                       const SizedBox(width: 8), // Horizontal spacing
                       Flexible( // Constrain the Text widget

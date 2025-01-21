@@ -79,7 +79,7 @@ class Item3 extends StatelessWidget {
                         color: Colors.grey[300],
                         shape: BoxShape.circle,
                       ),
-                      child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.contain,),),
+                      child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
                     ),
                     const SizedBox(height: 8),
                     Text(

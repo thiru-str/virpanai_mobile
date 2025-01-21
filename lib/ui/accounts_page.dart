@@ -5,6 +5,7 @@ import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
+import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
@@ -130,7 +131,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: AppStrings.address,
                     onTap: () {
                       PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address){
-
                       },));
                     },
                   ),
@@ -159,6 +159,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: AppStrings.help,
                     onTap: () {
                       // Handle Address action
+                      PageRouteUtils.pushWithSlide(context, const StaticPage(pageTitle: AppStrings.help));
                     },
                   ),
                 ),
@@ -168,6 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: AppStrings.support,
                     onTap: () {
                       // Handle Address action
+                      PageRouteUtils.pushWithSlide(context, const StaticPage(pageTitle: AppStrings.support));
                     },
                   ),
                 ),

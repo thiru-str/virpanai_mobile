@@ -13,15 +13,15 @@ class OrderPlacedPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Image/Illustration
             Padding(
               padding: const EdgeInsets.all(24),
               child: Container(
-                height: 500,
+                height: MediaQuery.of(context).size.height * 0.4, // Adjust image height
                 decoration: const BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(AppAssets.place_order), // Replace with your image asset
@@ -33,71 +33,78 @@ class OrderPlacedPage extends StatelessWidget {
             const SizedBox(height: 24),
 
             // White Container with Rounded Corners
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+            Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height * 0.5, // Ensure this container fills the space
+              ),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Order Placed Title
-                    const SizedBox(height: 40,),
-                     Text(
-                      "Order Placed \n Successfully",
-                      style:FontUtils.circularStdStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
-                      ),
-                      textAlign: TextAlign.center,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Order Placed Title
+                  const SizedBox(height: 40),
+                  Text(
+                    "Order Placed \n Successfully",
+                    style: FontUtils.circularStdStyle(
+                      fontSize: 28, // Adjusted font size for responsiveness
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
                     ),
-                    const SizedBox(height: 25),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 25),
 
-                    // Subtext
-                    Text(
-                      "You will receive an email confirmation",
-                      style: FontUtils.circularStdStyle(
-                        fontSize: 16,
-                        color: AppColors.textColor50,
-                        fontWeight: FontWeight.w400
-                      ),
-                      textAlign: TextAlign.center,
+                  // Subtext
+                  Text(
+                    "You will receive an email confirmation",
+                    style: FontUtils.circularStdStyle(
+                      fontSize: 14, // Adjusted font size
+                      color: AppColors.textColor50,
+                      fontWeight: FontWeight.w400,
                     ),
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Handle button tap
-                          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary, // Button color
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: const Size(double.infinity, 60),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle button tap
+                        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary, // Button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        child: Text(
-                          "See More Products",
-                          style: FontUtils.circularStdStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                        minimumSize: const Size(double.infinity, 60),
+                      ),
+                      child: Text(
+                        "See More Products",
+                        style: FontUtils.circularStdStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+
+
   }
 }
