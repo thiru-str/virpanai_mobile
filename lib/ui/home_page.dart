@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -39,6 +41,9 @@ class _HomePageState extends State<HomePage> {
   int? cartItems;
   List<String>? cartItemImages;
 
+  late StreamSubscription<ViewCartModel> _eventSubscription;
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -48,12 +53,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void listenToEvents() {
-    eventBus.on<ViewCartModel>().listen((event) {
-      setState(() {
-        cartItems = event.totalItems;
-        cartItemImages = event.itemImages;
-      });
+    _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
+      if (mounted) {
+        setState(() {
+          cartItems = event.totalItems;
+          cartItemImages = event.itemImages;
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    super.dispose();
   }
 
   Future<void> initializePages() async {
@@ -166,5 +179,6 @@ class _HomePageState extends State<HomePage> {
       print(e);
     }
   }
+
 
 }
