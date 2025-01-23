@@ -19,6 +19,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/full_screen_carousel.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -134,13 +135,22 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         itemCount: product?.images?.length ?? 0,
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
-          return Container(
-            width: 160,
-            decoration: BoxDecoration(color: Colors.grey[200]),
-            child: Image.network(
-              product!.images![index].url!,
-              height: 250,
-              fit: BoxFit.cover,
+          return GestureDetector(
+            onTap: () {
+              // Open fullscreen carousel
+                PageRouteUtils.pushWithFade(context, FullscreenImageCarousel(
+                  imageUrls: product!.images!,
+                  initialIndex: index,
+                ));
+            },
+            child: Container(
+              width: 160,
+              decoration: BoxDecoration(color: Colors.grey[200]),
+              child: Image.network(
+                product!.images![index].url!,
+                height: 250,
+                fit: BoxFit.cover,
+              ),
             ),
           );
         },
@@ -176,10 +186,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   Widget buildCartSection() {
-    /*if (productPresentInCart == null) {
-      // Show a placeholder while determining cart state
-      return apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary));
-    }*/
     if (productPresentInCart == null || !productPresentInCart!) return const SizedBox();
     return Column(
       children: [
