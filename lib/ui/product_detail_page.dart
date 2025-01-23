@@ -106,11 +106,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
                     buildProductImages(),
                     const SizedBox(height: 25),
                     buildProductDetails(),
-                    const SizedBox(height: 30),
                     buildCartSection(),
                     const SizedBox(height: 15),
                     buildProductDescription(),
-                    const SizedBox(height: 15),
                     buildShippingAndReturns(),
                     const SizedBox(height: 15),
                     buildReviews(),
@@ -185,6 +183,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     if (productPresentInCart == null || !productPresentInCart!) return const SizedBox();
     return Column(
       children: [
+        const SizedBox(height: 15),
         if (quantityLoading)
           const Center(child: CircularProgressIndicator(color: AppColors.primary))
         else
@@ -214,7 +213,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
               }
             },
           ),
-        const SizedBox(height: 26),
+        const SizedBox(height: 15),
       ],
     );
   }
@@ -234,6 +233,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 10),
         Text(
           'Shipping & returns',
           style: FontUtils.gabaritoStyle(
