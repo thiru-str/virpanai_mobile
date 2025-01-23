@@ -138,10 +138,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           return GestureDetector(
             onTap: () {
               // Open fullscreen carousel
+              if(product!.images!.isNotEmpty) {
                 PageRouteUtils.pushWithFade(context, FullscreenImageCarousel(
                   imageUrls: product!.images!,
                   initialIndex: index,
                 ));
+              }
             },
             child: Container(
               width: 160,
