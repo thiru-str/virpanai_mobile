@@ -76,7 +76,7 @@ class Item3 extends StatelessWidget {
                       width: 70,
                       height: 70,
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: AppColors.secondary,
                         shape: BoxShape.circle,
                       ),
                       child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),

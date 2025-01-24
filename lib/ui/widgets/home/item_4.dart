@@ -74,7 +74,7 @@ class Item4 extends StatelessWidget {
                 child: Container(
                   width: 160,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(

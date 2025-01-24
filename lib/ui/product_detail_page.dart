@@ -147,7 +147,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
             },
             child: Container(
               width: 160,
-              decoration: BoxDecoration(color: Colors.grey[200]),
+              decoration: BoxDecoration(color: AppColors.secondary),
               child: Image.network(
                 product!.images![index].url!,
                 height: 250,

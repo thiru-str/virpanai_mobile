@@ -74,7 +74,7 @@ class Item6 extends StatelessWidget {
                   width: 200,
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -83,8 +83,8 @@ class Item6 extends StatelessWidget {
                       Container(
                         width: 50,
                         height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                        decoration: const BoxDecoration(
+                          color: AppColors.secondary,
                           shape: BoxShape.circle,
                         ),
                         child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),

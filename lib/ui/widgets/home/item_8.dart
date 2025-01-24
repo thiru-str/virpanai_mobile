@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 class Item8 extends StatefulWidget {
   final Content content;
@@ -24,7 +25,7 @@ class _Item8State extends State<Item8> {
   Widget build(BuildContext context) {
     return Container(
       height: widget.height,
-      color: Colors.grey[200], // Background color
+      color: AppColors.secondary, // Background color
       child: PageView.builder(
         itemCount: widget.content.layoutData!.length,
         onPageChanged: (index) {

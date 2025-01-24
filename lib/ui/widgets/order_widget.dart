@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class OrderWidget extends StatelessWidget {
@@ -21,7 +22,7 @@ class OrderWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         margin: const EdgeInsets.symmetric(vertical: 8), // Adds spacing between cards
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: AppColors.secondary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

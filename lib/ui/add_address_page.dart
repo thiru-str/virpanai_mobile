@@ -190,7 +190,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                             controller: otherAddressName,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.grey[200],
+                              fillColor: AppColors.secondary,
                               hintText: 'ex: Friend House',
                               border: InputBorder.none,
                               focusedBorder: UnderlineInputBorder(

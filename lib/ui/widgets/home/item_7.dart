@@ -74,7 +74,7 @@ class Item7 extends StatelessWidget {
                 child: Container(
                   width: 150,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(12),
@@ -85,7 +85,7 @@ class Item7 extends StatelessWidget {
                       Center(
                         child: CircleAvatar(
                           radius: 30,
-                          backgroundColor: Colors.grey[300],
+                          backgroundColor: AppColors.secondary,
                           child: Image.network(
                             layoutData.image!,
                             height: 30,width: 30,
@@ -107,7 +107,7 @@ class Item7 extends StatelessWidget {
                         CurrencyUtil.appendCurrency(layoutData.subTitle!),
                         style: FontUtils.circularStdStyle(
                           fontSize: 12,
-                          color: Colors.grey,
+                          color: AppColors.secondary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

@@ -179,17 +179,17 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                 height: 50,
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: AppColors.secondary,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Row(
+                                child: const Row(
                                   children: [
-                                    const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
-                                    const SizedBox(width: 8),
+                                    ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
+                                    SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         "Enter Promo Code",
-                                        style: TextStyle(color: Colors.grey[600]),
+                                        style: TextStyle(color: AppColors.textColor),
                                       ),
                                     ),
                                     Text(
@@ -330,7 +330,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                   width: 50,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
@@ -349,7 +349,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                   hintText: "Promo Code",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: AppColors.secondary),
                   ),
                 ),
               ),

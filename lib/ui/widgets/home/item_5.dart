@@ -74,7 +74,7 @@ class Item5 extends StatelessWidget {
                 child: Container(
                   width: 160,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -100,7 +100,7 @@ class Item5 extends StatelessWidget {
                             right: 8,
                             child: Icon(
                               Icons.favorite_border,
-                              color: Colors.grey[600],
+                              color: AppColors.secondary,
                             ),
                           ),
                         ],

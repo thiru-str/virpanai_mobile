@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class CommonHeaderAppBar extends StatelessWidget
@@ -33,7 +34,7 @@ class CommonHeaderAppBar extends StatelessWidget
           margin: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.grey[200], // Background color
+            color: AppColors.secondary, // Background color
           ),
           child: Center(
             child: SvgPicture.asset(
@@ -64,7 +65,7 @@ class CommonHeaderAppBar extends StatelessWidget
                 width: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey[200], // Background color
+                  color: AppColors.secondary, // Background color
                 ),
                 child: Center(
                     child: Icon(
