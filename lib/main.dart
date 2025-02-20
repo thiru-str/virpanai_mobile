@@ -4,6 +4,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/push_notification_service.dart';
@@ -35,8 +36,8 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
 
 
-/*  Color? apiPrimaryColor = _parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
-  Color? apiSecondaryColor = _parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
+  /*Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
+  Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
 
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);*/
 
@@ -64,21 +65,6 @@ class HomeScreen extends StatelessWidget {
    );
 
 
-}
-
-// ✅ Helper Function: Convert HEX String to Color
-Color? _parseHexColor(String? hexColor) {
-  if (hexColor == null || hexColor.isEmpty) return null;
-
-  hexColor = hexColor.replaceAll("#", ""); // Remove "#" if present
-
-  if (hexColor.length == 6) {
-    return Color(int.parse("0xFF$hexColor"));
-  } else if (hexColor.length == 8) {
-    return Color(int.parse("0x$hexColor"));
-  }
-
-  return null; // Invalid format
 }
 
 
