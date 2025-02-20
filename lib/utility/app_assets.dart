@@ -17,6 +17,8 @@ class AppAssets {
   static const String place_order = 'images/place_order.png';
   static const String place_order_lottie = 'images/place_order.json';
   static const String ic_discount = 'images/ic_discount.png';
+  static const String ic_no_transaction = 'images/ic_no_transaction.png';
+
 
 // Add more assets as needed
 }
