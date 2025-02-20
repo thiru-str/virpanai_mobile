@@ -47,7 +47,7 @@ class CommonHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
-          _buildIcon(Icons.shopping_cart, onPressed: onCartClick),
+          _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
         ],
       ),
       _buildSearchBar()
@@ -58,28 +58,6 @@ class CommonHeader extends StatelessWidget {
   Widget _buildHeader2() {
     return Column(children: [_buildSearchBar()]);
   }
-
-  /*/// Header 2: Home Text + Search Bar
-  Widget _buildHeader2() {
-    return Column(
-      children: [
-        SizedBox(
-          height: kToolbarHeight, // Matches default AppBar height
-          child: Center(
-            child: Text(
-              "Home",
-              style: FontUtils.gabaritoStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: AppColors.textColor,
-              ),
-            ),
-          ),
-        ),
-        _buildSearchBar(),
-      ],
-    );
-  }*/
 
 
   /// Header 3: Left Icon + Search Bar
@@ -105,7 +83,7 @@ class CommonHeader extends StatelessWidget {
               fontSize: 16,
               color: AppColors.textColor,
             )),
-            _buildIcon(Icons.shopping_cart, onPressed: onCartClick),
+            _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
           ],
         ),
         _buildSearchBar(),
@@ -121,7 +99,7 @@ class CommonHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
-            _buildIcon(Icons.shopping_cart, onPressed: onCartClick),
+            _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
           ],
         ),
         _buildSearchBar(),

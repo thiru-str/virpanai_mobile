@@ -97,7 +97,9 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: CommonHeader(headerType: "Header7",title: headerTitle,onSearchClick: (){
+                    child: CommonHeader(headerType: "Header1",title: headerTitle,onCartClick:(){
+                      PageRouteUtils.pushWithSlide(context, const CartPage());
+                    },onSearchClick: (){
                       PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
                           setState(() {
                             headerTitle = selectedAddress.address1!;
@@ -130,7 +132,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: GestureDetector(
                   onTap: (){
-                    PageRouteUtils.pushWithSlide(context, CartPage());
+                    PageRouteUtils.pushWithSlide(context, const CartPage());
                   },
                   child: ViewCartWidget(
                     totalItems: cartItems!,
