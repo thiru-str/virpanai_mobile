@@ -517,6 +517,12 @@ class _CheckOutPageState extends State<CheckOutPage> {
         });
         completeCart();
         break;
+      case 'pp_neft_neft':
+        setState(() {
+          placeOrderApiLoading = true;
+        });
+        completeCart();
+        break;
     }
   }
 
