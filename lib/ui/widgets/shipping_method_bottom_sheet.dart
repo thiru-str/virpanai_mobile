@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/utility/font_utils.dart';
 
-class PaymentMethodsBottomSheet extends StatelessWidget {
-  final List<PaymentProvider> paymentProviders;
-  final Function(PaymentProvider paymentProvider) onPaymentSelected;
+class ShippingMethodBottomSheet extends StatelessWidget {
+  final List<ShippingOption> shippingOptions;
+  final Function(ShippingOption shippingOption) onShippingSelected;
 
-  const PaymentMethodsBottomSheet({
+  const ShippingMethodBottomSheet({
     Key? key,
-    required this.paymentProviders,
-    required this.onPaymentSelected,
+    required this.shippingOptions,
+    required this.onShippingSelected,
   }) : super(key: key);
 
   @override
@@ -24,14 +25,14 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Payment Methods',
+            'Shipping Methods',
             style: FontUtils.gabaritoStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          ...paymentProviders.map((provider) {
+          ...shippingOptions.map((option) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
@@ -42,11 +43,11 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
                   ),
                 child: ListTile(
                   onTap: () {
-                    onPaymentSelected(provider);
+                    onShippingSelected(option);
                     Navigator.pop(context); // Close the bottom sheet
                   },
                   title: Text(
-                    provider.name!,
+                    option.name!,
                     style: FontUtils.circularStdStyle(fontSize: 16),
                   ),
                   trailing: const Icon(Icons.radio_button_unchecked),

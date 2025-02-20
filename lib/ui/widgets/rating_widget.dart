@@ -37,7 +37,7 @@ class RatingWidget extends StatelessWidget {
             direction: Axis.horizontal,
             allowHalfRating: false,
             itemCount: 5,
-            itemBuilder: (context, _) => const Icon(
+            itemBuilder: (context, _) =>  Icon(
               Icons.star,
               color: AppColors.primary, // Purple color for filled stars
             ),

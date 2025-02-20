@@ -51,7 +51,7 @@ class _AddressListPageState extends State<AddressListPage> {
         },
       ),
       body: apiLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
               ),

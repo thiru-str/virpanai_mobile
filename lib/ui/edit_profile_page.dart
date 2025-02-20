@@ -43,7 +43,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         },
       ),
       body: apiCalling
-          ? const Center(
+          ?  Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
               ),

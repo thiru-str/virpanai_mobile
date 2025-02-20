@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
@@ -12,8 +14,12 @@ import '../utility/font_utils.dart';
 
 class AddAddressPage extends StatefulWidget {
   final Address? selectedAddress; // Optional Address parameter
+  final bool isFromMap;
+  final Placemark? place;
+  final LatLng? currentPosition;
 
-  const AddAddressPage({super.key, this.selectedAddress});
+
+  const AddAddressPage({super.key, this.selectedAddress, this.isFromMap = false,this.place,this.currentPosition});
 
   @override
   State<AddAddressPage> createState() => _AddAddressPage();
@@ -33,6 +39,8 @@ class _AddAddressPage extends State<AddAddressPage> {
   String selectedLocation = AppStrings.home; // Default location selection
   bool apiCalling = true;
   RegisterResponse? registerResponse;
+  double latitude = 0;
+  double longitude = 0;
 
   @override
   void initState() {
@@ -49,12 +57,29 @@ class _AddAddressPage extends State<AddAddressPage> {
       stateController.text = address.province ?? '';
       zipCodeController.text = address.postalCode ?? '';
       selectedLocation = address.addressName ?? AppStrings.home;
-      print(selectedLocation);
       if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
         selectedLocation = AppStrings.others;
         otherAddressName.text = address.addressName ?? '';
       }
     }
+    else if(widget.isFromMap && widget.place!=null)
+      {
+        // Populate the form fields with existing address data
+        final place = widget.place!;
+
+        List<String?> streetAddress = [
+          place.street,
+          place.locality,
+        ].where((element) => element != null && element.isNotEmpty).toList();
+
+        streetAddressController.text = streetAddress.join(", ");
+        cityController.text = place.locality ?? '';
+        stateController.text = place.administrativeArea ?? '';
+        zipCodeController.text = place.postalCode ?? '';
+        latitude = widget.currentPosition!.latitude;
+        longitude = widget.currentPosition!.longitude;
+      }
+
   }
   @override
   Widget build(BuildContext context) {
@@ -343,7 +368,7 @@ class _AddAddressPage extends State<AddAddressPage> {
           stateController.text,
           "India",
           zipCodeController.text,
-          selectedLocation);
+          selectedLocation,latitude.toString(),longitude.toString());
       setState(() {
         apiCalling = false;
       });

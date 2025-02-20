@@ -9,6 +9,7 @@ class AddressCard extends StatelessWidget {
   final String address;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final bool isFromEdit;
 
   const AddressCard({
     Key? key,
@@ -17,6 +18,7 @@ class AddressCard extends StatelessWidget {
     required this.address,
     required this.onDelete,
     required this.onEdit,
+    this.isFromEdit = true,
   }) : super(key: key);
 
   @override
@@ -62,41 +64,45 @@ class AddressCard extends StatelessWidget {
               ),
             ),
           ),
-
-          Container(
-            margin: const EdgeInsets.only(left: 36.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding:  EdgeInsets.zero, // Removes the default padding
-                    minimumSize: const Size(0, 0), // Ensures no extra size is added
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
-                  ),
-                  onPressed: onDelete,
-                  child:  Text(
-                    'DELETE',
-                    style: FontUtils.circularStdStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+          Visibility(
+            visible: isFromEdit,
+            child: Container(
+              margin: const EdgeInsets.only(left: 36.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding:  EdgeInsets.zero, // Removes the default padding
+                      minimumSize: const Size(0, 0), // Ensures no extra size is added
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
+                    ),
+                    onPressed: onDelete,
+                    child:  Text(
+                      'DELETE',
+                      style: FontUtils.circularStdStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                TextButton(
-                  onPressed: onEdit,
-                  child:  Text(
-                    'EDIT',
-                    style: FontUtils.circularStdStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(width: 16),
+                  TextButton(
+                    onPressed: onEdit,
+                    child:  Text(
+                      'EDIT',
+                      style: FontUtils.circularStdStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )
+          ),
+          Visibility(visible: !isFromEdit,child:
+          const SizedBox(height: 10),)
         ],
       ),
     );

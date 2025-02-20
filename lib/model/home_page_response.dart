@@ -114,14 +114,14 @@ class Global {
   });
 
   factory Global.fromJson(Map<String, dynamic> json) => Global(
-    paymentProvider: json["payment_provider"] == null ? [] : List<PaymentProvider>.from(json["payment_provider"]!.map((x) => PaymentProvider.fromJson(x))),
+    paymentProvider: json["payment_providers"] == null ? [] : List<PaymentProvider>.from(json["payment_providers"]!.map((x) => PaymentProvider.fromJson(x))),
     regionId: json["region_id"],
     cartId: json["cart_id"],
     currencySymbol: json["currency_symbol"],
   );
 
   Map<String, dynamic> toJson() => {
-    "payment_provider": paymentProvider == null ? [] : List<dynamic>.from(paymentProvider!.map((x) => x.toJson())),
+    "payment_providers": paymentProvider == null ? [] : List<dynamic>.from(paymentProvider!.map((x) => x.toJson())),
     "region_id": regionId,
     "cart_id": cartId,
     "currency_symbol": currencySymbol,
