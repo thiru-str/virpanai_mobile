@@ -1,45 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/neft_transaction_response.dart';
+import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import 'widgets/common_header_app_bar.dart';
 import 'widgets/neft_transaction_bottom_sheet.dart';
 
 class TransactionDetailsScreen extends StatefulWidget {
+  final String orderID;
+
+  const TransactionDetailsScreen({Key? key, required this.orderID}) : super(key: key);
+
   @override
-  _TransactionDetailsScreenState createState() =>
-      _TransactionDetailsScreenState();
+  _TransactionDetailsScreenState createState() => _TransactionDetailsScreenState();
 }
 
 class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
-  List<String> transactionIds = [
+  BankDetails? bankDetails;
+  NeftTransactionResponse? transactionResponse;
 
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchBankAndTransactionDetails();
+  }
 
-  void _addTransaction(String transactionId) {
-    if (transactionId.isNotEmpty) {
-      setState(() {
-        transactionIds.add(transactionId);
-      });
-    }
+  void handleNEFTTransactionSubmit(Map<String, dynamic> data) async {
+    data['order_id'] = widget.orderID;
+    await ApiService().submitNEFTTransaction(context, data);
+    fetchBankAndTransactionDetails();
+  }
+
+  Future<void> fetchBankAndTransactionDetails() async {
+    final publicDetails = await SharedPreferencesUtil().getPublicDetails();
+    final neftTransactionDetails = await ApiService().getNEFTTransaction(context, widget.orderID);
+    setState(() {
+      bankDetails = publicDetails?.bankDetails;
+      transactionResponse = neftTransactionDetails;
+    });
   }
 
   void _showBottomSheet() {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
       builder: (context) {
-        return NeftTransactionBottomSheet(onSubmit: _addTransaction);
+        return NeftTransactionBottomSheet(onSubmit: handleNEFTTransactionSubmit);
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -47,45 +65,43 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       backgroundColor: Colors.white,
       appBar: CommonHeaderAppBar(
         title: AppStrings.transation_details,
-        onBackTap: () {
-          Navigator.of(context).pop();
-        },
+        onBackTap: () => Navigator.of(context).pop(),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 25.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTransactionInfoCard(),
-            SizedBox(height: 20),
-            (transactionIds.length != 0) ?
-            Expanded(
+            const SizedBox(height: 20),
+            transactionResponse?.neftPayment?.isNotEmpty ?? false
+                ? Expanded(
               child: ListView.builder(
-                itemCount: transactionIds.length,
+                itemCount: transactionResponse?.neftPayment?.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildTransactionStatus(transactionIds[index]),
+                    child: _buildTransactionStatus(transactionResponse?.neftPayment?[index]),
                   );
                 },
               ),
-            ):
-            _buildEmptyState(),
+            )
+                : _buildEmptyState(),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showBottomSheet,
         backgroundColor: AppColors.primary,
-        shape: CircleBorder(), // Ensures the button is round
-        child: Icon(Icons.add, color: Colors.white),
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
   Widget _buildTransactionInfoCard() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         gradient: LinearGradient(
@@ -97,7 +113,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
             blurRadius: 8,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           )
         ],
       ),
@@ -105,17 +121,17 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: _buildInfoRow('Name:', 'Rajesh Kumar')),
-              SizedBox(width: 10),
-              Expanded(child: _buildInfoRow('Bank Name:', 'State Bank of India')),
+              Expanded(child: _buildInfoRow('Name:', bankDetails?.accountHolderName ?? "")),
+              const SizedBox(width: 10),
+              Expanded(child: _buildInfoRow('Bank Name:', bankDetails?.bankName ?? "")),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: _buildInfoRow('Account No:', '123456789012')),
-              SizedBox(width: 10),
-              Expanded(child: _buildInfoRow('IFSC Code:', 'SBIN0000456')),
+              Expanded(child: _buildInfoRow('Account No:', bankDetails?.accountNumber ?? "")),
+              const SizedBox(width: 10),
+              Expanded(child: _buildInfoRow('IFSC Code:', bankDetails?.ifscCode ?? "")),
             ],
           ),
         ],
@@ -127,45 +143,76 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: FontUtils.circularStdStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.0)),
-        SizedBox(height: 2),
-        Text(value,
-            style: FontUtils.circularStdStyle(
-                color: Colors.white, fontSize: 14.0),
-            softWrap: true,
-            overflow: TextOverflow.visible),
+        Text(
+          label,
+          style: FontUtils.circularStdStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: FontUtils.circularStdStyle(color: Colors.white, fontSize: 14.0),
+          softWrap: true,
+          overflow: TextOverflow.visible,
+        ),
       ],
     );
   }
 
-  Widget _buildTransactionStatus(String transactionId) {
+  Widget _buildTransactionStatus(NeftPayment? neftPayment) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[200], // Row background color
-        borderRadius: BorderRadius.circular(12), // Border radius for the entire row
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           Container(
-            color: Colors.white, // Set the image background to white
-            child: Image.asset(
-              'images/welcome_bg.png',
-              width: 60,
-              height: 60,
+            color: Colors.white,
+            child:
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                    backgroundColor: Colors.transparent, // Makes the background transparent
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context), // Close on tap
+                      child: InteractiveViewer(
+                        panEnabled: false, // Disable panning for better UX
+                        boundaryMargin: EdgeInsets.all(0),
+                        child: Image.network(
+                          neftPayment?.image ?? "",
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: Image.network(
+                neftPayment?.image ?? "",
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('NEFT Transaction ID',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
-                Text(transactionId),
+                Text(
+                  'Customer Summary:',
+                  style: FontUtils.circularStdStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 2),
+                Text(neftPayment?.description ?? "", style: FontUtils.circularStdStyle(color: AppColors.textColor),)
               ],
             ),
           ),
@@ -175,16 +222,16 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center( // Ensures both vertical and horizontal centering
+    return Center(
       child: Column(
         children: [
-          SizedBox(height: 50),
+          const SizedBox(height: 50),
           Image.asset(
-            AppAssets.ic_no_transaction, // Your empty state image
+            AppAssets.ic_no_transaction,
             width: 120,
             height: 120,
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             "No Payment Yet",
             style: FontUtils.circularStdStyle(
@@ -197,5 +244,4 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       ),
     );
   }
-
 }

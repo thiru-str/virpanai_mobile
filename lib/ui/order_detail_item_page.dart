@@ -23,6 +23,25 @@ class OrderDetailItemPage extends StatefulWidget {
 }
 
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
+
+  String paymentType = "Unknown"; // Default value
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    Map<String, String> paymentTypeMap = {
+      "pp_system_default": "COD",
+      "pp_stripe_stripe": "Stripe",
+      "pp_razorpay_razorpay": "Razorpay",
+      "pp_neft_neft": "NEFT",
+    };
+    String? paymentId = widget.selectedOrder?.paymentCollections?.first.payments?.first.providerId;
+    print(paymentId);
+    setState(() {
+      paymentType = paymentTypeMap[paymentId] ?? "Unknown";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,9 +70,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 children: [
                   SizedBox(height: 10),
                   CartPaymentMethodWidget(
-                    paymentMethod: "NEFT", // Or any other payment method
+                    paymentMethod: paymentType, // Or any other payment method
                     onTap: () {
-                      PageRouteUtils.pushWithSlide(context, TransactionDetailsScreen());
+                      PageRouteUtils.pushWithSlide(context, TransactionDetailsScreen(orderID: widget.selectedOrder?.id ?? "",));
                     },
                   ),
                   SizedBox(height: 10,),

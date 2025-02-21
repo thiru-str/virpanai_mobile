@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/ui/cart_response.dart';
 
 // To parse this JSON data, do
@@ -58,6 +59,7 @@ class Order {
   num? taxTotal;
   num? version;
   List<Item>? items;
+  List<PaymentCollection>? paymentCollections;
   Cart? cart;
   String? paymentStatus;
   String? fulfillmentStatus;
@@ -76,6 +78,7 @@ class Order {
     this.taxTotal,
     this.version,
     this.items,
+    this.paymentCollections,
     this.cart,
     this.paymentStatus,
     this.fulfillmentStatus,
@@ -95,6 +98,7 @@ class Order {
     taxTotal: json["tax_total"],
     version: json["version"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
+    paymentCollections: json["payment_collections"] == null ? [] : List<PaymentCollection>.from(json["payment_collections"]!.map((x) => PaymentCollection.fromJson(x))),
     cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
     paymentStatus: json["payment_status"],
     fulfillmentStatus: json["fulfillment_status"],
@@ -114,6 +118,7 @@ class Order {
     "tax_total": taxTotal,
     "version": version,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
+    "payment_collections": paymentCollections == null ? [] : List<dynamic>.from(paymentCollections!.map((x) => x.toJson())),
     "cart": cart?.toJson(),
     "payment_status": paymentStatus,
     "fulfillment_status": fulfillmentStatus,
@@ -791,5 +796,113 @@ class Summary {
     "raw_pending_difference": rawPendingDifference?.toJson(),
     "raw_current_order_total": rawCurrentOrderTotal?.toJson(),
     "raw_original_order_total": rawOriginalOrderTotal?.toJson(),
+  };
+}
+
+class PaymentCollection {
+  String? status;
+  int? amount;
+  int? capturedAmount;
+  int? refundedAmount;
+  String? id;
+  List<Payment>? payments;
+
+  PaymentCollection({
+    this.status,
+    this.amount,
+    this.capturedAmount,
+    this.refundedAmount,
+    this.id,
+    this.payments,
+  });
+
+  factory PaymentCollection.fromJson(Map<String, dynamic> json) => PaymentCollection(
+    status: json["status"],
+    amount: json["amount"],
+    capturedAmount: json["captured_amount"],
+    refundedAmount: json["refunded_amount"],
+    id: json["id"],
+    payments: json["payments"] == null ? [] : List<Payment>.from(json["payments"]!.map((x) => Payment.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "status": status,
+    "amount": amount,
+    "captured_amount": capturedAmount,
+    "refunded_amount": refundedAmount,
+    "id": id,
+    "payments": payments == null ? [] : List<dynamic>.from(payments!.map((x) => x.toJson())),
+  };
+}
+
+class Payment {
+  String? id;
+  String? currencyCode;
+  String? providerId;
+  Data? data;
+  dynamic metadata;
+  DateTime? capturedAt;
+  dynamic canceledAt;
+  String? paymentCollectionId;
+  Data? paymentSession;
+  Raw? rawAmount;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+  String? paymentSessionId;
+  int? amount;
+
+  Payment({
+    this.id,
+    this.currencyCode,
+    this.providerId,
+    this.data,
+    this.metadata,
+    this.capturedAt,
+    this.canceledAt,
+    this.paymentCollectionId,
+    this.paymentSession,
+    this.rawAmount,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.paymentSessionId,
+    this.amount,
+  });
+
+  factory Payment.fromJson(Map<String, dynamic> json) => Payment(
+    id: json["id"],
+    currencyCode: json["currency_code"],
+    providerId: json["provider_id"],
+    data: json["data"] == null ? null : Data.fromJson(json["data"]),
+    metadata: json["metadata"],
+    capturedAt: json["captured_at"] == null ? null : DateTime.parse(json["captured_at"]),
+    canceledAt: json["canceled_at"],
+    paymentCollectionId: json["payment_collection_id"],
+    paymentSession: json["payment_session"] == null ? null : Data.fromJson(json["payment_session"]),
+    rawAmount: json["raw_amount"] == null ? null : Raw.fromJson(json["raw_amount"]),
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+    paymentSessionId: json["payment_session_id"],
+    amount: json["amount"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "currency_code": currencyCode,
+    "provider_id": providerId,
+    "data": data?.toJson(),
+    "metadata": metadata,
+    "captured_at": capturedAt?.toIso8601String(),
+    "canceled_at": canceledAt,
+    "payment_collection_id": paymentCollectionId,
+    "payment_session": paymentSession?.toJson(),
+    "raw_amount": rawAmount?.toJson(),
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+    "payment_session_id": paymentSessionId,
+    "amount": amount,
   };
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'dart:io';
 
@@ -7,7 +8,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class NeftTransactionBottomSheet extends StatefulWidget {
-  final Function(String) onSubmit;
+  final Function(Map<String, dynamic>) onSubmit; // Change from String to Map
 
   const NeftTransactionBottomSheet({Key? key, required this.onSubmit}) : super(key: key);
 
@@ -18,6 +19,7 @@ class NeftTransactionBottomSheet extends StatefulWidget {
 class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet> {
   final TextEditingController transactionController = TextEditingController();
   File? _selectedImage;
+  String? _uploadedFileName;
 
   void _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -25,12 +27,41 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
       setState(() {
         _selectedImage = File(pickedFile.path);
       });
+      var response = await ApiService().uploadImage(context, _selectedImage!);
+
+      if (response != null && response['file'] != null) {
+        setState(() {
+          _uploadedFileName = response['file']['path']; // Store file name
+        });
+        print('Uploaded File Name: $_uploadedFileName');
+      } else {
+        print('File upload failed or invalid response');
+      }
     }
   }
 
   void _submit() {
-    widget.onSubmit(transactionController.text);
-    Navigator.pop(context);
+
+    String descriptionTxt = transactionController.text;
+
+    if (descriptionTxt.isEmpty) {
+      print('Transaction ID is required');
+      return;
+    }
+
+    if (_uploadedFileName == null) {
+      print('Please upload an image before submitting');
+      return;
+    }
+
+    var payload = {
+      "description": descriptionTxt,
+      "image": _uploadedFileName,
+    };
+
+    widget.onSubmit(payload); // Pass the entire payload
+    Navigator.pop(context); // Close the bottom sheet
+
   }
 
   @override
@@ -67,7 +98,7 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
                       child: _selectedImage != null
                           ? ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                        child: Image.file(_selectedImage!, fit: BoxFit.contain),
                       )
                           : Icon(Icons.add, size: 45, color: Colors.grey),
                     ),
