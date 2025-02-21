@@ -66,7 +66,7 @@ class _ProductPageState extends State<ProductPage> {
       ),
       backgroundColor: Colors.white,
       body: apiLoading
-          ? const Center(
+          ?  Center(
         child: CircularProgressIndicator(
           color: AppColors.primary,
         ),

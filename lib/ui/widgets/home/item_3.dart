@@ -70,23 +70,28 @@ class Item3 extends StatelessWidget {
                       PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
                   }
                 },
-                child: Column(
-                  children: [
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        shape: BoxShape.circle,
+                child: SizedBox(
+                  width: 100,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 70,
+                        height: 70,
+                        decoration:  BoxDecoration(
+                          color: AppColors.secondary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
                       ),
-                      child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      layoutData.title!,
-                      style: FontUtils.circularStdStyle(fontSize: 12),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        layoutData.title!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.circularStdStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

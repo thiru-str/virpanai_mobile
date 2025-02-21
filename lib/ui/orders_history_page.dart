@@ -52,7 +52,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         },
       ),
       body:  apiLoading
-          ? const Center(
+          ?  Center(
         child: CircularProgressIndicator(
           color: AppColors.primary,
         ),

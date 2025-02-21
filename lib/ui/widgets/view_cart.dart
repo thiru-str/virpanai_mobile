@@ -107,7 +107,7 @@ class ViewCartWidget extends StatelessWidget {
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            child: const Icon(
+            child:  Icon(
               Icons.arrow_forward_ios,
               color: AppColors.primary,
               size: 20,

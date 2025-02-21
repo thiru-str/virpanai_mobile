@@ -92,7 +92,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       ),
       backgroundColor: Colors.white,
       body: apiLoading
-          ? const Center(
+          ?  Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       )
           : Column(
@@ -173,15 +173,34 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           ),
         ),
         const SizedBox(height: 15),
-        Text(
-          product?.variants?.isNotEmpty ?? false
-              ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawCalculatedAmount!.value!)
-              : '',
-          style: FontUtils.gabaritoStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.primary,
-          ),
+        Row(
+          children: [
+            Text(
+              product?.variants?.isNotEmpty ?? false
+                  ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawCalculatedAmount!.value!)
+                  : '',
+              style: FontUtils.gabaritoStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: AppColors.primary,
+              ),
+            ),
+            SizedBox(width: 10,),
+            Visibility(
+              visible: product!.variants!.first.calculatedPrice!.rawCalculatedAmount!.value! != product!.variants!.first.calculatedPrice!.rawOriginalAmount!.value!,
+              child: Text(
+                product?.variants?.isNotEmpty ?? false
+                    ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawOriginalAmount!.value!)
+                    : '',
+                style: FontUtils.gabaritoStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppColors.primary,
+                  decoration: TextDecoration.lineThrough
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -193,7 +212,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         const SizedBox(height: 15),
         if (quantityLoading)
-          const Center(child: CircularProgressIndicator(color: AppColors.primary))
+           Center(child: CircularProgressIndicator(color: AppColors.primary))
         else
           QuantitySelector(
             initialQuantity: cartResponse?.cart?.items
@@ -309,7 +328,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
   Widget buildBottomButton() {
     if (productPresentInCart == null) {
-      return const Center(
+      return Center(
           child: CircularProgressIndicator(color: AppColors.primary));
     }
 

@@ -13,9 +13,11 @@ import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart';
+import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
+import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -31,11 +33,11 @@ class ApiService {
 
   ApiService() {
     // Configure Dio
-    _dio.options.baseUrl = "https://cartel.waioz.com/";
+    //_dio.options.baseUrl = "https://cartel.waioz.com/";
+    _dio.options.baseUrl = "https://dev.cartel.waioz.com/";
     _dio.options.headers = {
       "Content-Type": "application/json",
-      "x-publishable-api-key":
-          "pk_c75b5817e2d0fbd95c46472e3deaccda6cddb11bc8a6c0fccb056a5f2c9211cb",
+      //"x-publishable-api-key": SharedPreferencesUtil().getString('publishable_key'),
     };
     _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
@@ -48,6 +50,8 @@ class ApiService {
     BuildContext context,
   ) async {
     try {
+      await setPublishableKey();
+
       AppLogger.print('API headers:', '${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
@@ -82,8 +86,9 @@ class ApiService {
       String? dynamicPath,
       Map<String, dynamic>? queryParams,
       T Function(Map<String, dynamic>) fromJson,
-      BuildContext context) async {
+      BuildContext? context) async {
     try {
+      await setPublishableKey();
       // Combine endpoint and dynamic path
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath'
@@ -110,7 +115,7 @@ class ApiService {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['error']);
+        await _handleLogout(context!, response.data['error']);
         throw Exception('Unauthorized: ${response.data['error']}');
       }  else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -283,10 +288,9 @@ class ApiService {
 
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
-    return _makeGetRequest<HomePageResponse>(
-      'store/get_home_page/v1',
-      null,
-      null,
+    return _makePostRequest<HomePageResponse>(
+      'store/get_home_page/v3',
+        null,
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -303,7 +307,8 @@ class ApiService {
       String state,
       String country,
       String zipCode,
-      String addressName) async {
+      String addressName,
+      String latitude,String longitude) async {
     await addToken();
     return _makePostRequest(
         addressID != null
@@ -319,7 +324,7 @@ class ApiService {
           "postal_code": zipCode,
           "address_name": addressName,
           "country_code" : "in",
-          "metadata": {}
+          "metadata": {"latitude":latitude,"longitude":longitude}
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -429,7 +434,7 @@ class ApiService {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId',
-      {"shipping_address": address},
+      {"shipping_address": address,"billing_address": address},
       (json) => CartResponse.fromJson(json),
       context,
     );
@@ -525,8 +530,71 @@ class ApiService {
         context);
   }
 
+  Future<ShippingResponse> getShippingInfo(
+      BuildContext context) async {
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeGetRequest<ShippingResponse>(
+      'store/shipping-options',
+      null,
+      {"cart_id": cartId},
+          (json) => ShippingResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> updateShippingMethod(
+      BuildContext context, String optionId) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/carts/$cartId/shipping-methods',
+      {"option_id": optionId},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<dynamic> updatePaymentMethod(
+      BuildContext context, String paymentProviderId,CartResponse cartResponse) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/update-payment-method/$cartId',
+      paymentProviderId == 'pp_razorpay_razorpay'?{"payment_provider_id": paymentProviderId,"context":{"extra":cartResponse.cart}}:{"payment_provider_id": paymentProviderId},
+          (json) => json,
+      context,
+    );
+  }
+
+  Future<dynamic> completeCart(
+      BuildContext context) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/carts/$cartId/complete',
+      null,
+          (json) => json,
+      context,
+    );
+  }
+
+  Future<PublicDetailsResponse> getPublicDetails() async {
+    return _makeGetRequest<PublicDetailsResponse>(
+      '/public/details',
+      null,
+      null,
+          (json) => PublicDetailsResponse.fromJson(json),
+      null,
+    );
+  }
+
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =
         'Bearer ${await SharedPreferencesUtil().getString('token')}';
+  }
+
+  Future<void> setPublishableKey() async {
+    String? publishableKey = await SharedPreferencesUtil().getString('publishable_key');
+    _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
   }
 }

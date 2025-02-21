@@ -27,6 +27,7 @@ class FontUtils {
     double fontSize = 14.0,
     Color color = Colors.black,
     double letterSpacing = 0.0,
+    TextDecoration decoration = TextDecoration.none
   }) {
     return TextStyle(
       fontFamily: gabarito,
@@ -34,7 +35,8 @@ class FontUtils {
       fontSize: fontSize,
       color: color,
       letterSpacing: letterSpacing,
-      height: 1
+      height: 1,
+      decoration: decoration
     );
   }
 }

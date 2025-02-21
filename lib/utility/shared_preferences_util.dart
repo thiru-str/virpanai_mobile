@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waioz/model/public_detail_model.dart';
 
 class SharedPreferencesUtil {
   static final SharedPreferencesUtil _instance = SharedPreferencesUtil._internal();
@@ -73,7 +74,24 @@ class SharedPreferencesUtil {
   // Clear all data in SharedPreferences
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
+
+    PublicDetailsResponse? publicDetailsResponse = await getPublicDetails();
+
+    // Clear all preferences
     await prefs.clear();
+
+    if (publicDetailsResponse != null) {
+      await prefs.setString('public_details', jsonEncode(publicDetailsResponse.toJson()));
+      await prefs.setString('publishable_key', publicDetailsResponse.token!);
+    }
+  }
+
+  Future<PublicDetailsResponse?> getPublicDetails() async {
+    dynamic global = await SharedPreferencesUtil().getMap('public_details');
+    if (global != null) {
+      return PublicDetailsResponse.fromJson(global);
+    }
+    return null;
   }
 
   // Check if a key exists

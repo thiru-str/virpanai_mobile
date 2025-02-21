@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
-import 'package:waioz/model/register_response.dart';
+import 'package:waioz/model/register_response.dart' as RegisterResponse;
+import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -17,6 +20,7 @@ import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
+import 'package:waioz/ui/widgets/shipping_method_bottom_sheet.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -32,6 +36,8 @@ import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
+import '../utility/stripe_service.dart';
+
 class CheckOutPage extends StatefulWidget {
   final CartResponse? cartResponse;
 
@@ -43,19 +49,25 @@ class CheckOutPage extends StatefulWidget {
 
 class _CheckOutPageState extends State<CheckOutPage> {
   CartResponse? cartResponse;
+  ShippingResponse? shippingResponse;
   bool apiLoading = true;
   bool addAddress = false;
   bool addPaymentMethod = false;
-  Address? selectedAddress;
+  bool addShippingOption = false;
+  RegisterResponse.Address? selectedAddress;
   String? pp_id;
   String? pp_title;
   bool placeOrderApiLoading = false;
+  ShippingOption? shippingOption;
+
+  Razorpay razorpay = Razorpay();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     cartResponse = widget.cartResponse;
+    getShippingInfo();
   }
 
   @override
@@ -71,98 +83,241 @@ class _CheckOutPageState extends State<CheckOutPage> {
         /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
         body: Scaffold(
           backgroundColor: Colors.white,
-          body: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CheckoutItemCard(
-                            title: 'Shipping Address',
-                            subtitle: addAddress? selectedAddress!.address1!: 'Add Shipping Address',
-                            onTap: () {
-                              PageRouteUtils.pushWithSlide(context, AddressListPage(isFromCheckout: true,onSelectedAddress: (address){
-                              setState(() {
-                                addAddress = true;
-                                selectedAddress = address;
-                              });
-                              },));
-                            }),
-                        CheckoutItemCard(
-                            title: 'Payment Method',
-                            subtitle: addPaymentMethod? pp_title!: 'Add Payment Method',
-                            onTap: () async {
-                              Global? global  = await getGlobal();
-                              if (global != null) {
-                                showPaymentMethodsBottomSheet(
-                                    context, global.paymentProvider!);
-                              }
-                            })
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          body: apiLoading
+              ? Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Column(
                   children: [
-                    CartCalculation(
-                      keyText: 'Subtotal:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CheckoutItemCard(
+                                  title: 'Shipping Address',
+                                  subtitle: addAddress
+                                      ? selectedAddress!.address1!
+                                      : 'Add Shipping Address',
+                                  onTap: () {
+                                    PageRouteUtils.pushWithSlide(
+                                        context,
+                                        AddressListPage(
+                                          isFromCheckout: true,
+                                          onSelectedAddress: (address) {
+                                            setState(() {
+                                              addAddress = true;
+                                              selectedAddress = address;
+                                              apiLoading = true;
+                                            });
+                                            updateAddress(address);
+                                          },
+                                        ));
+                                  }),
+                              CheckoutItemCard(
+                                  title: 'Shipping Method',
+                                  subtitle: addShippingOption
+                                      ? shippingOption?.name ??
+                                          'Add Shipping Method'
+                                      : 'Add Shipping Method',
+                                  onTap: () async {
+                                    if (!addAddress) {
+                                      AppUtils.showToast(
+                                          'Please choose your Shipping Address');
+                                      return;
+                                    }
+                                    showShippingBottomSheet(context,
+                                        shippingResponse!.shippingOptions!);
+                                  }),
+                              CheckoutItemCard(
+                                  title: 'Payment Method',
+                                  subtitle: addPaymentMethod
+                                      ? pp_title!
+                                      : 'Add Payment Method',
+                                  onTap: () async {
+                                    if (!addAddress) {
+                                      AppUtils.showToast(
+                                          'Please choose your Shipping Address');
+                                      return;
+                                    } else if (!addShippingOption) {
+                                      AppUtils.showToast(
+                                          'Please choose your Shipping Method');
+                                      return;
+                                    }
+                                    Global? global = await getGlobal();
+                                    if (global != null) {
+                                      print(jsonEncode(global
+                                          .toJson())); // Convert and print JSON
+                                      showPaymentMethodsBottomSheet(
+                                          context, global.paymentProvider!);
+                                    }
+                                  }),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    Visibility(
-                        visible: cartResponse!.cart!.discountSubtotal!>0,
-                        child: CartCalculation(
-                          keyText: 'Discount:',
-                          valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                        )),
-                    Visibility(
-                        visible: cartResponse!.cart!.shippingSubtotal!>0,
-                        child: CartCalculation(
-                          keyText: 'Shipping:',
-                          valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2))}',
-                        )),
-                    CartCalculation(
-                      keyText: 'Tax:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                    ),
-                    CartCalculation(
-                      keyText: 'Total:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CartCalculation(
+                            keyText: 'Subtotal:',
+                            valueText: CurrencyUtil.appendCurrency(cartResponse!
+                                .cart!.itemSubtotal!
+                                .toStringAsFixed(2)),
+                          ),
+                          Visibility(
+                              visible:
+                                  cartResponse!.cart!.discountSubtotal! > 0,
+                              child: CartCalculation(
+                                keyText: 'Discount:',
+                                valueText:
+                                    '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                              )),
+                          Visibility(
+                              visible:
+                                  cartResponse!.cart!.shippingSubtotal! > 0,
+                              child: CartCalculation(
+                                keyText: 'Shipping:',
+                                valueText:
+                                    CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
+                              )),
+                          CartCalculation(
+                            keyText: 'Tax:',
+                            valueText: CurrencyUtil.appendCurrency(cartResponse!
+                                .cart!.taxTotal!
+                                .toStringAsFixed(2)),
+                          ),
+                          CartCalculation(
+                            keyText: 'Total:',
+                            valueText: CurrencyUtil.appendCurrency(
+                                cartResponse!.cart!.total!.toStringAsFixed(2)),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: placeOrderApiLoading?  Center(child: Lottie.asset(AppAssets.place_order_lottie,fit: BoxFit.cover)): CartButton(
-                amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
-                title: 'Place Order',
-                onPressed: () {
-                  if (!addAddress) {
-                    AppUtils.showToast('Add Shipping Address');
-                  } else if (!addPaymentMethod) {
-                    AppUtils.showToast('Add Payment Method');
-                  }
-                  else{ // validations done proceed to place order
-                    setState(() {
-                      placeOrderApiLoading = true;
-                    });
-                    updateCart(selectedAddress!);
-                  }
-                }),
+            child: placeOrderApiLoading
+                ? Center(
+                    child: Lottie.asset(AppAssets.place_order_lottie,
+                        fit: BoxFit.cover))
+                : CartButton(
+                    amount: CurrencyUtil.appendCurrency(
+                        cartResponse!.cart!.total!.toStringAsFixed(2)),
+                    title: 'Place Order',
+                    onPressed: () {
+                      if (!addAddress) {
+                        AppUtils.showToast('Add Shipping Address');
+                      } else if (!addShippingOption) {
+                        AppUtils.showToast('Add Shipping Method');
+                      } else if (!addPaymentMethod) {
+                        AppUtils.showToast('Add Payment Method');
+                      } else {
+                        // validations done proceed to place order
+                        updatePaymentMethod(pp_id!);
+                      }
+                    }),
           ),
         ));
+  }
+
+  void makeRazorPayCall(String orderId) {
+    var options = {
+      'key': 'rzp_test_TWZQg4tf6e1Tqs',
+      'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
+      'name': 'Cartel',
+      'description': 'Payment to Cartel Store',
+      'order_id': orderId,
+      'retry': {'enabled': true, 'max_count': 1},
+      'send_sms_hash': true,
+      'prefill': {'contact': '8888888888', 'email': 'test@razorpay.com'},
+      'theme': {'color': '#8E6CEF'},
+      'experiments.upi_turbo': true,
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
+    razorpay.open(options);
+  }
+
+  void handlePaymentErrorResponse(PaymentFailureResponse response) {
+    /*
+    * PaymentFailureResponse contains three values:
+    * 1. Error Code
+    * 2. Error Description
+    * 3. Metadata
+    * */
+    print(
+        "Payment Failed ,Code: ${response.code}\nDescription: ${response.message}\nMetadata:${response.error.toString()}");
+  }
+
+  void handlePaymentSuccessResponse(PaymentSuccessResponse response) {
+    /*
+    * Payment Success Response contains three values:
+    * 1. Order ID
+    * 2. Payment ID
+    * 3. Signature
+    * */
+    print("Payment Successful Payment ID: ${response.paymentId}");
+    setState(() {
+      placeOrderApiLoading = true;
+    });
+    completeCart();
+  }
+
+  void handleExternalWalletSelected(ExternalWalletResponse response) {}
+
+  void makeStripeCall(String clientSecret) async {
+    try {
+      // Initialize the payment sheet with client secret
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'Cartel',
+
+            googlePay: const PaymentSheetGooglePay(
+              merchantCountryCode: 'IN',
+              testEnv: true,
+            ),
+            style: ThemeMode.light,
+            appearance:  PaymentSheetAppearance(
+                /* colors: PaymentSheetAppearanceColors(
+              background: Colors.white,
+              componentBorder: Colors.grey,
+              componentText: Colors.white,
+              componentDivider: Colors.grey,
+              componentBackground: Colors.white,
+            ),*/
+                primaryButton: PaymentSheetPrimaryButtonAppearance(
+                    colors: PaymentSheetPrimaryButtonTheme(
+                        light: PaymentSheetPrimaryButtonThemeColors(
+                            background: AppColors.primary),
+                        dark: PaymentSheetPrimaryButtonThemeColors(
+                            background: AppColors.primary))))),
+      );
+
+      // Present the payment sheet
+      await Stripe.instance.presentPaymentSheet();
+      setState(() {
+        placeOrderApiLoading = true;
+      });
+      completeCart();
+    } catch (e) {
+      print('Payment failed: $e');
+    }
   }
 
   void getCartApi() async {
@@ -176,6 +331,26 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         apiLoading = false;
       });
+      print(e);
+    }
+  }
+
+  void getShippingInfo() async {
+    try {
+      final ApiService apiService = ApiService();
+      var response = await apiService.getShippingInfo(context);
+      if (mounted) {
+        setState(() {
+          apiLoading = false;
+          shippingResponse = response;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          apiLoading = false;
+        });
+      }
       print(e);
     }
   }
@@ -211,14 +386,42 @@ class _CheckOutPageState extends State<CheckOutPage> {
     );
   }
 
-  void updateCart(Address address) async {
+  void showShippingBottomSheet(
+      BuildContext context, List<ShippingOption> shippingOptions) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return ShippingMethodBottomSheet(
+          shippingOptions: shippingOptions,
+          onShippingSelected: (ShippingOption shippingOption) {
+            setState(() {
+              addShippingOption = true;
+              this.shippingOption = shippingOption;
+              apiLoading = true;
+            });
+            updateShippingMethod();
+          },
+        );
+      },
+    );
+  }
+
+  void updateAddress(RegisterResponse.Address address) async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.updateAddress(context,convertToShippingAddress(address));
-      placeOrder();
+      cartResponse = await apiService.updateAddress(
+          context, convertToShippingAddress(address));
+      setState(() {
+        apiLoading = false;
+        cartResponse;
+      });
     } catch (e) {
       setState(() {
-        placeOrderApiLoading = false;
+        apiLoading = false;
       });
       print(e);
     }
@@ -227,7 +430,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void placeOrder() async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.placeOrder(context,pp_id!);
+      await apiService.placeOrder(context, pp_id!);
       setState(() {
         placeOrderApiLoading = false;
       });
@@ -240,12 +443,46 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
-  CheckOut.ShippingAddress convertToShippingAddress(Address address) {
+  void completeCart() async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.completeCart(context);
+      setState(() {
+        placeOrderApiLoading = false;
+      });
+      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+    } catch (e) {
+      setState(() {
+        placeOrderApiLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  void updateShippingMethod() async {
+    try {
+      final ApiService apiService = ApiService();
+      cartResponse =
+          await apiService.updateShippingMethod(context, shippingOption!.id!);
+      setState(() {
+        apiLoading = false;
+        cartResponse;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  CheckOut.ShippingAddress convertToShippingAddress(
+      RegisterResponse.Address address) {
     return CheckOut.ShippingAddress(
       // Map the fields from Address to ShippingAddress
       address1: address.address1 ?? '',
       address2: address.address2 ?? '',
-      firstName: address.firstName ??'',
+      firstName: address.firstName ?? '',
       lastName: address.lastName ?? '',
       phone: address.phone ?? '',
       company: address.company ?? '',
@@ -254,5 +491,58 @@ class _CheckOutPageState extends State<CheckOutPage> {
       province: address.province ?? '',
       city: address.city ?? '',
     );
+  }
+
+  void updatePaymentMethod(String paymentProviderId) async {
+    final ApiService apiService = ApiService();
+    dynamic apiResponse = await apiService.updatePaymentMethod(
+        context, paymentProviderId, cartResponse!);
+
+    switch (paymentProviderId) {
+      case 'pp_razorpay_razorpay':
+        String? orderId = extractOrderId(apiResponse);
+        if (orderId != null) {
+          makeRazorPayCall(orderId);
+        }
+        break;
+      case 'pp_stripe_stripe':
+        String? clientSecret = extractClientSecret(apiResponse);
+        if (clientSecret != null) {
+          makeStripeCall(clientSecret);
+        }
+        break;
+      case 'pp_system_default':
+        setState(() {
+          placeOrderApiLoading = true;
+        });
+        completeCart();
+        break;
+      case 'pp_neft_neft':
+        setState(() {
+          placeOrderApiLoading = true;
+        });
+        completeCart();
+        break;
+    }
+  }
+
+  String? extractOrderId(dynamic response) {
+    try {
+      return response["payment_collection"]["payment_sessions"]?[0]["data"]
+          ["id"];
+    } catch (e) {
+      print("Error extracting order ID: $e");
+      return null;
+    }
+  }
+
+  String? extractClientSecret(dynamic response) {
+    try {
+      return response["payment_collection"]["payment_sessions"]?[0]["data"]
+          ["client_secret"];
+    } catch (e) {
+      print("Error extracting order ID: $e");
+      return null;
+    }
   }
 }

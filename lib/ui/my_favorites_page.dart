@@ -54,7 +54,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
               },
             ),
       body: apiLoading
-          ? const Center(
+          ?  Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
               ),

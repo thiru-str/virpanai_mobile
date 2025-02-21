@@ -83,7 +83,7 @@ class Item6 extends StatelessWidget {
                       Container(
                         width: 50,
                         height: 50,
-                        decoration: const BoxDecoration(
+                        decoration:  BoxDecoration(
                           color: AppColors.secondary,
                           shape: BoxShape.circle,
                         ),

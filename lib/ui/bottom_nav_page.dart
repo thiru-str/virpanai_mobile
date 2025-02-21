@@ -102,7 +102,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     return Scaffold(
       backgroundColor: Colors.white,
       body: _isLoading
-          ? const Center(
+          ?  Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       )
           : _getPage(), // Dynamically build the current page

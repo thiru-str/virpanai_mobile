@@ -78,7 +78,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       backgroundColor: Colors.white,
       /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
       body: apiLoading
-          ? const Center(
+          ?  Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
               ),
@@ -148,7 +148,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                           children: [
                             CartCalculation(
                               keyText: 'Subtotal:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
+                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
                             ),
                             Visibility(
                                 visible: cartResponse!.cart!.discountSubtotal!>0,
@@ -160,7 +160,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                 visible: cartResponse!.cart!.shippingSubtotal!>0,
                                 child: CartCalculation(
                                   keyText: 'Shipping:',
-                                  valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2))}',
+                                  valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
                                 )),
                             CartCalculation(
                               keyText: 'Tax:',
@@ -182,11 +182,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                   color: AppColors.secondary,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Row(
+                                child:  Row(
                                   children: [
-                                    ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
-                                    SizedBox(width: 8),
-                                    Expanded(
+                                    const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
+                                    const SizedBox(width: 8),
+                                    const Expanded(
                                       child: Text(
                                         "Enter Promo Code",
                                         style: TextStyle(color: AppColors.textColor),

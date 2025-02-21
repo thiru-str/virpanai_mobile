@@ -7,7 +7,10 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
+import 'package:waioz/ui/widgets/common_header.dart';
+import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
 import 'package:waioz/ui/widgets/home/item_3.dart';
@@ -23,6 +26,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
+import '../utility/app_utils.dart';
 import 'widgets/common_header_app_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -37,6 +41,7 @@ class _HomePageState extends State<HomePage> {
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
+  String headerTitle = "";
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -86,18 +91,37 @@ class _HomePageState extends State<HomePage> {
       ),
       backgroundColor: Colors.white,
       body: Stack(
-        children:[ apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-            :Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView.separated(
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
-                scrollDirection: Axis.vertical,
-                itemCount: homePageResponse!.content!.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final homePageContent = homePageResponse!.content![index];
-                  return getLayoutWidget(homePageContent);
-                },
+        children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
+            :SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: CommonHeader(headerType: "Header1",title: headerTitle,onCartClick:(){
+                      PageRouteUtils.pushWithSlide(context, const CartPage());
+                    },onSearchClick: (){
+                      PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
+                          setState(() {
+                            headerTitle = selectedAddress.address1!;
+                          });
+                      },));
+                    },),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
+                    child: ListView.separated(
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      scrollDirection: Axis.vertical,
+                      itemCount: homePageResponse!.content!.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final homePageContent = homePageResponse!.content![index];
+                        return getLayoutWidget(homePageContent);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           Visibility(
