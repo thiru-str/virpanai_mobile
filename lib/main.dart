@@ -36,10 +36,10 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
 
 
-  /*Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
+  Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
   Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
 
-  AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);*/
+  AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
   runApp( HomeScreen());

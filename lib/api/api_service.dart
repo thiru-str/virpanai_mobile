@@ -38,6 +38,7 @@ class ApiService {
     _dio.options.headers = {
       "Content-Type": "application/json",
       //"x-publishable-api-key": SharedPreferencesUtil().getString('publishable_key'),
+      //"x-publishable-api-key": 'pk_b1fbb0d9fcd66814d75b9a6688b41bbc4d4a96dd4a715451163f3ccf8cf6d929',
     };
     _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
@@ -136,9 +137,11 @@ class ApiService {
     BuildContext context,
   ) async {
     try {
+      await setPublishableKey();
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath' // Append dynamic path if provided
           : endpoint;
+      AppLogger.print('API headers:', '${_dio.options.headers}');
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
       AppLogger.print('API Params:', '${queryParams ?? {}}');
 
@@ -324,7 +327,7 @@ class ApiService {
           "postal_code": zipCode,
           "address_name": addressName,
           "country_code" : "in",
-          "metadata": {"latitude":latitude,"longitude":longitude}
+          "metadata":{"latitude":latitude,"longitude":longitude}
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -580,7 +583,7 @@ class ApiService {
 
   Future<PublicDetailsResponse> getPublicDetails() async {
     return _makeGetRequest<PublicDetailsResponse>(
-      '/public/details',
+      'public/details',
       null,
       null,
           (json) => PublicDetailsResponse.fromJson(json),
