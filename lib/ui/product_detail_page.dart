@@ -46,6 +46,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   late AnimationController _animationController;
   late Animation<Offset> _animation;
 
+  ProductResponse.Value? selectedColor;
+  ProductResponse.Value? selectedSize;
+
+  String? selectedVariantId;
+  int selectedQuantity = 1;
+
+  bool showVariantSelection = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,9 +86,52 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
 
   Future<void> fetchInitialData() async {
-    getProductsApi();
-    getReviewApi();
+    setState(() => apiLoading = true);
+
+    try {
+      await getProductsApi();
+      await getReviewApi();
+      await getCartApi();
+
+      if (product != null && product!.variants != null && product!.variants!.isNotEmpty) {
+        print("Total Variants: ${product!.variants!.length}");
+
+        if (product!.variants!.length == 1 && product!.variants!.first.title!.toLowerCase() == "default variant") {
+          // ✅ If only a "default variant" exists, preselect it and hide variant selection
+          setState(() {
+            selectedVariantId = product!.variants!.first.id;
+            showVariantSelection = false;
+          });
+        } else {
+          // ✅ Multiple variants available, auto-select first available color & size
+          setState(() {
+            selectedColor = product!.options!.firstWhere((opt) => opt.title!.toLowerCase() == "color").values!.first;
+            selectedSize = product!.options!.firstWhere((opt) => opt.title!.toLowerCase() == "size").values!.first;
+            showVariantSelection = true; // Show variant selection
+          });
+
+          // ✅ Call updateVariant() AFTER setting the default values
+          Future.delayed(Duration.zero, updateVariant);
+        }
+      } else {
+        // ✅ No variants available, show only "Add to Cart" with quantity
+        print("No variants available, using default variant.");
+        setState(() {
+          selectedVariantId = product!.id;
+          showVariantSelection = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching initial data: $e");
+    } finally {
+      setState(() => apiLoading = false);
+    }
   }
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -207,43 +258,75 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   Widget buildCartSection() {
-    if (productPresentInCart == null || !productPresentInCart!) return const SizedBox();
+    if (product == null || product!.variants == null || product!.variants!.isEmpty) {
+      return const SizedBox();
+    }
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 15),
-        if (quantityLoading)
-           Center(child: CircularProgressIndicator(color: AppColors.primary))
-        else
-          QuantitySelector(
-            initialQuantity: cartResponse?.cart?.items
-                ?.firstWhere((item) => item.variantId == variantId, orElse: null)
-                ?.quantity ??
-                1,
-            onQuantityChanged: (quantity) async {
-              if(quantity == 0)
-                {
-                  try {
-                    final cartItem = cartResponse?.cart?.items?.firstWhere(
-                          (item) => item.variantId == variantId,
-                          orElse: null);
-                    setState(() => quantityLoading = true);
-                    removeCart(cartItem!.id!);
-                  } catch (e) {
-                    print(e);
-                    setState(() => quantityLoading = false);
-                  } finally {
-                    //setState(() => quantityLoading = false);
-                  }
-                }
-              else {
-                await updateQuantity(quantity);
-              }
-            },
-          ),
-        const SizedBox(height: 15),
+
+
+        if (showVariantSelection) ...[
+          // ✅ Separate Color and Size selections (No combined title)
+          buildColorSelection(),
+          const SizedBox(height: 15),
+          buildSizeSelection(),
+          const SizedBox(height: 15),
+        ],
+
+        // ✅ Quantity Selector is always visible
+        Text(
+          'Select Qty',
+          style: FontUtils.gabaritoStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        buildQuantitySelector(),
+        const SizedBox(height: 10),
+        // Quantity selector (Dropdown)
+
       ],
     );
   }
+
+  void updateVariant() {
+    if (selectedColor == null || selectedSize == null) {
+      return; // Prevent clearing selection
+    }
+
+    String selectedColorValue = selectedColor?.value ?? "";
+    String selectedSizeValue = selectedSize?.value ?? "";
+
+    print("Selected Color: $selectedColorValue");
+    print("Selected Size: $selectedSizeValue");
+
+    ProductResponse.Variant? variant;
+    try {
+      variant = product!.variants!.firstWhere((v) {
+        bool hasColor = v.options!.any((opt) =>
+        opt.option?.title?.toLowerCase() == "color" && opt.value == selectedColorValue);
+
+        bool hasSize = v.options!.any((opt) =>
+        opt.option?.title?.toLowerCase() == "size" && opt.value == selectedSizeValue);
+
+        return hasColor && hasSize;
+      });
+    } catch (e) {
+      print("No matching variant found for Color: $selectedColorValue, Size: $selectedSizeValue");
+      return; // Prevent resetting selectedVariantId
+    }
+
+    setState(() {
+      if (variant != null) {
+        selectedVariantId = variant.id;
+      }
+    });
+
+    print('Selected Variant ID: ${variant?.id ?? "None"}');
+  }
+
+
 
   Widget buildProductDescription() {
     return Text(
@@ -327,50 +410,146 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   Widget buildBottomButton() {
-    if (productPresentInCart == null) {
-      return Center(
-          child: CircularProgressIndicator(color: AppColors.primary));
-    }
-
-    if(!productPresentInCart!)
-      // Start the animation when the widget is built
-      _animationController.forward();
-
-    return SlideTransition(
-      position: _animation,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-        child: productPresentInCart!
-            ? CartButton(
-          amount: CurrencyUtil.appendCurrency(
-              cartResponse?.cart?.subtotal?.toStringAsFixed(2) ?? ''),
-          title: 'Go to Cart',
-          onPressed: navigateToCart,
-        )
-            : Padding(
-          padding:
-          const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-          child: ElevatedButton(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30)),
+              backgroundColor: selectedVariantId == null ? Colors.grey : AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               minimumSize: const Size(double.infinity, 56),
             ),
-            onPressed: () async {
-              setState(() => productPresentInCart = true);
-              await addCart(1, product?.variants?.first.id ?? '');
+            onPressed: selectedVariantId == null ? null : () async {
+              setState(() => quantityLoading = true);
+              await addCart(selectedQuantity, selectedVariantId!);
+              setState(() => quantityLoading = false);
             },
-            child: Text(
-              'Add to Cart',
-              style: FontUtils.circularStdStyle(
-                  fontSize: 18, color: Colors.white),
+            child: quantityLoading
+                ? CircularProgressIndicator(color: Colors.white)
+                : Text(
+              selectedVariantId == null ? 'Select Variant' : 'Add to Cart',
+              style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
+
+  Widget buildQuantitySelector(){
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<int>(
+        value: selectedQuantity,
+        isExpanded: true,
+        underline: Container(),
+        onChanged: (newValue) {
+          setState(() {
+            selectedQuantity = newValue!;
+          });
+        },
+        items: List.generate(10, (index) => index + 1)
+            .map((qty) => DropdownMenuItem(
+          value: qty,
+          child: Text(qty.toString(), style: FontUtils.gabaritoStyle(fontSize: 16)),
+        ))
+            .toList(),
+      ),
+    );
+  }
+  Widget buildColorSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Color: ${selectedColor?.value ?? 'Select'}",
+          style: FontUtils.gabaritoStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          children: product!.options!
+              .firstWhere((opt) => opt.title!.toLowerCase() == "color")
+              .values!
+              .map((option) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedColor = option;
+                  updateVariant();
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: selectedColor == option ? AppColors.primary : Colors.grey,
+                    width: selectedColor == option ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(option.value!, style: FontUtils.gabaritoStyle(fontSize: 14)),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget buildSizeSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Size: ${selectedSize?.value ?? 'Select'}",
+          style: FontUtils.gabaritoStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          children: product!.options!
+              .firstWhere((opt) => opt.title!.toLowerCase() == "size")
+              .values!
+              .map((option) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedSize = option;
+                  updateVariant();
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: selectedSize == option ? AppColors.primary : Colors.grey,
+                    width: selectedSize == option ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(option.value!, style: FontUtils.gabaritoStyle(fontSize: 14)),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+
+
+
 
 
   Future<void> getProductsApi() async {
@@ -424,14 +603,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     try {
       final apiService = ApiService();
       setState(() => quantityLoading = true);
+
       await apiService.addCart(context, qty, variantId);
-      await getCartApi(); // Fetch updated cart details
+      await getCartApi(); // Refresh cart
+
       setState(() => quantityLoading = false);
     } catch (e) {
       setState(() => quantityLoading = false);
       print(e);
     }
   }
+
 
   Future<void> addFavourite() async {
     if (!isFavorite){
