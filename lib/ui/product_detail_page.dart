@@ -39,7 +39,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   bool apiLoading = true;
   bool quantityLoading = false;
   bool hasVariants = false;
-  String? variantId;
   bool? productPresentInCart; // Changed to nullable to handle loading state
   bool isFavorite = false;
 
@@ -91,47 +90,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     try {
       await getProductsApi();
       await getReviewApi();
-      await getCartApi();
-
-      if (product != null && product!.variants != null && product!.variants!.isNotEmpty) {
-        print("Total Variants: ${product!.variants!.length}");
-
-        if (product!.variants!.length == 1 && product!.variants!.first.title!.toLowerCase() == "default variant") {
-          // ✅ If only a "default variant" exists, preselect it and hide variant selection
-          setState(() {
-            selectedVariantId = product!.variants!.first.id;
-            showVariantSelection = false;
-          });
-        } else {
-          // ✅ Multiple variants available, auto-select first available color & size
-          setState(() {
-            selectedColor = product!.options!.firstWhere((opt) => opt.title!.toLowerCase() == "color").values!.first;
-            selectedSize = product!.options!.firstWhere((opt) => opt.title!.toLowerCase() == "size").values!.first;
-            showVariantSelection = true; // Show variant selection
-          });
-
-          // ✅ Call updateVariant() AFTER setting the default values
-          Future.delayed(Duration.zero, updateVariant);
-        }
-      } else {
-        // ✅ No variants available, show only "Add to Cart" with quantity
-        print("No variants available, using default variant.");
-        setState(() {
-          selectedVariantId = product!.id;
-          showVariantSelection = false;
-        });
-      }
     } catch (e) {
       print("Error fetching initial data: $e");
     } finally {
       setState(() => apiLoading = false);
     }
   }
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -329,13 +293,27 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
 
   Widget buildProductDescription() {
-    return Text(
-      product?.description ?? '',
-      style: FontUtils.circularStdStyle(
-        fontWeight: FontWeight.w400,
-        fontSize: 12,
-        color: AppColors.textColor,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Description',
+          style: FontUtils.gabaritoStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          product?.description ?? '',
+          style: FontUtils.circularStdStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
+            color: AppColors.textColor,
+          ),
+        ),
+      ],
     );
   }
 
@@ -437,6 +415,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
               style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
             ),
           ),
+          SizedBox(height: 20,),
+          Visibility(visible: productPresentInCart!=null && productPresentInCart!,child: CartButton(
+            amount: CurrencyUtil.appendCurrency(
+                cartResponse?.cart?.subtotal?.toStringAsFixed(2) ??
+                    ''),
+            title: 'Go to Cart',
+            onPressed: navigateToCart,
+          ))
         ],
       ),
     );
@@ -550,17 +536,36 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
 
 
-
-
   Future<void> getProductsApi() async {
     try {
       final apiService = ApiService();
       final response = await apiService.productDetail(context, widget.productId);
       setState(() {
         product = response.product;
-        variantId = product?.variants?.first.id;
         apiLoading = false;
       });
+      if (product != null && product!.variants != null && product!.variants!.isNotEmpty) {
+
+        if (product!.variants!.length == 1 && product!.variants!.first.title!.toLowerCase() == "default variant") {
+          setState(() {
+            selectedVariantId = product!.variants!.first.id;
+            showVariantSelection = false;
+          });
+        } else {
+          setState(() {
+            selectedColor = product!.options!.firstWhere((opt) => opt.title!.toLowerCase() == "color").values!.first;
+            selectedSize = product!.options!.firstWhere((opt) => opt.title!.toLowerCase() == "size").values!.first;
+            showVariantSelection = true; // Show variant selection
+          });
+
+          Future.delayed(Duration.zero, updateVariant);
+        }
+      } else {
+        setState(() {
+          selectedVariantId = product!.id;
+          showVariantSelection = false;
+        });
+      }
 
       // Call cart API only after product API succeeds
       await getCartApi();
@@ -585,7 +590,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   Future<void> getProductsInfoApi() async {
     try {
       final apiService = ApiService();
-      final response = await apiService.getProductInfo(context, widget.productId, variantId);
+      final response = await apiService.getProductInfo(context, widget.productId, selectedVariantId);
       setState(() {
         productInfoResponse = response;
         setState(() {
@@ -636,8 +641,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       final response = await apiService.getCart(context);
       setState(() {
         cartResponse = response;
-        productPresentInCart = cartResponse?.cart?.items?.any((item) => item.variantId == variantId) ?? false;
-        AppLogger.print('productPresentInCart', '$productPresentInCart');
+        productPresentInCart = cartResponse?.cart?.items?.any((item) => item.variantId == selectedVariantId) ?? false;
         emitEvent(cartResponse!);
       });
     } catch (e) {
@@ -660,31 +664,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     }
   }
 
-  Future<void> updateQuantity(int newQuantity) async {
-    try {
-      if (variantId == null) return;
-
-      final apiService = ApiService();
-      setState(() => quantityLoading = true);
-
-      // Find the current quantity of the product in the cart
-      final currentQuantity = cartResponse?.cart?.items
-          ?.firstWhere((item) => item.variantId == variantId, orElse: null)
-          ?.quantity ??
-          0;
-
-      // Calculate the difference to adjust the quantity
-      final quantityDifference = newQuantity - currentQuantity;
-      await apiService.addCart(context, quantityDifference, variantId!);
-
-      // Fetch updated cart data
-      await getCartApi();
-    } catch (e) {
-      print(e);
-    } finally {
-      setState(() => quantityLoading = false);
-    }
-  }
 
   void removeCart(String cartItemId) async {
     try {
