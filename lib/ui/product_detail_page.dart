@@ -278,16 +278,24 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       });
     } catch (e) {
       print("No matching variant found for Color: $selectedColorValue, Size: $selectedSizeValue");
-      return; // Prevent resetting selectedVariantId
+      variant = null; // Ensure variant is null if not found
     }
 
     setState(() {
-      if (variant != null) {
+      if (variant != null && isVariantAvailable(variant)) {
         selectedVariantId = variant.id;
+      } else {
+        selectedVariantId = null; // Disable add to cart button
       }
     });
 
-    print('Selected Variant ID: ${variant?.id ?? "None"}');
+    print('Selected Variant ID: ${selectedVariantId ?? "None"}');
+  }
+
+  bool isVariantAvailable(ProductResponse.Variant? variant) {
+    return variant != null && (variant.manageInventory == false ||
+        variant.allowBackorder! ||
+        (variant.inventoryQuantity ?? 0) > 0);
   }
 
 
