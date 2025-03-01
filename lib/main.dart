@@ -34,6 +34,7 @@ Future<void> main() async {
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
+  await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
 
 
   Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;

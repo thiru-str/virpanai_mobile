@@ -15,7 +15,12 @@ class MapPage extends StatefulWidget {
 
   final latitude ;
   final longitude;
-  const MapPage({super.key, this.latitude = 0.0,this.longitude = 0.0});
+  final bool doublePop;
+  const MapPage({super.key, this.latitude = 0.0,this.longitude = 0.0,this.doublePop = false});
+
+  //ScreenFrom
+  // 1-> Home page
+  // 2-> Menu Address page
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -142,7 +147,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        title: 'Location Information',
+        title: 'Address',
         onBackTap: () {
           Navigator.of(context).pop();
         },
@@ -226,6 +231,7 @@ class _MapPageState extends State<MapPage> {
                               isFromMap: true,
                               place: place,
                               currentPosition: _currentPosition,
+                              doublePop: widget.doublePop,
                             ));
                       },
                       child: Text(

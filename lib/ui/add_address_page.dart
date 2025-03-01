@@ -17,9 +17,14 @@ class AddAddressPage extends StatefulWidget {
   final bool isFromMap;
   final Placemark? place;
   final LatLng? currentPosition;
+  final bool doublePop;
 
 
-  const AddAddressPage({super.key, this.selectedAddress, this.isFromMap = false,this.place,this.currentPosition});
+  const AddAddressPage({super.key, this.selectedAddress, this.isFromMap = false,this.place,this.currentPosition,this.doublePop = false});
+
+  //ScreenFrom
+  // 1-> Home page
+  // 2-> Menu Address page
 
   @override
   State<AddAddressPage> createState() => _AddAddressPage();
@@ -372,8 +377,10 @@ class _AddAddressPage extends State<AddAddressPage> {
       setState(() {
         apiCalling = false;
       });
-      print("1111111object");
       Navigator.pop(context, true);
+      if(widget.doublePop) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       setState(() {
         apiCalling = false;

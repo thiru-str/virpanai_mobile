@@ -107,9 +107,11 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
         print("Selected Location: $description");
         print("Latitude: $latitude, Longitude: $longitude");
 
-
         if(mounted) {
-          PageRouteUtils.push(context, MapPage(latitude: latitude, longitude: longitude));
+          final result = await PageRouteUtils.push(context, MapPage(latitude: latitude, longitude: longitude,doublePop: true,));
+          if (result == true) {
+            getAddressListApi();
+          }
         }
       } else {
         print("Failed to fetch place details");
@@ -171,8 +173,13 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
             // Current Location Section (Only Show When Search is Empty)
             if (!_isSearching) ...[
               GestureDetector(
-                onTap: (){
-                  PageRouteUtils.push(context, const MapPage());
+                onTap: () async {
+                  if(mounted) {
+                    final result = await PageRouteUtils.push(context, MapPage(doublePop: true,));
+                    if (result == true) {
+                      getAddressListApi();
+                    }
+                  }
                 },
                 child:  Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -3,6 +3,7 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/add_address_page.dart';
+import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -13,6 +14,7 @@ import 'package:waioz/utility/app_strings.dart';
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
+import '../utility/shared_preferences_util.dart';
 
 class AddressListPage extends StatefulWidget {
 
@@ -105,9 +107,10 @@ class _AddressListPageState extends State<AddressListPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: ElevatedButton(
                             onPressed: () async {
+                              bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage');
                               final result = await PageRouteUtils.pushWithSlide(
                                   context,
-                                  AddAddressPage());
+                                  isGoogleMapUsage!? MapPage(doublePop: true,): AddAddressPage());
                               if (result == true) {
                                 getAddressListApi();
                               }
@@ -125,7 +128,7 @@ class _AddressListPageState extends State<AddressListPage> {
                               style: FontUtils.circularStdStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.secondary,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -139,9 +142,10 @@ class _AddressListPageState extends State<AddressListPage> {
                   buttonText: AppStrings.add_address,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () async {
+                    bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage');
                     final result = await PageRouteUtils.pushWithSlide(
                         context,
-                        AddAddressPage());
+                        isGoogleMapUsage!? MapPage(): AddAddressPage());
                     if (result == true) {
                       getAddressListApi();
                     }
