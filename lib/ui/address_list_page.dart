@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/address_list_response.dart';
@@ -82,9 +84,10 @@ class _AddressListPageState extends State<AddressListPage> {
                                   _showDeleteDialog(context, address?.id);
                                 },
                                 onEdit: () async {
+                                  bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage');
                                   final result = await PageRouteUtils.pushWithSlide(
                                       context,
-                                      AddAddressPage(
+                                      isGoogleMapUsage!? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0):AddAddressPage(
                                         selectedAddress: address,
                                       ));
                                   if (result == true) {

@@ -173,11 +173,22 @@ class Address {
 }
 
 class Metadata {
-  Metadata();
+  String? latitude;
+  String? longitude;
+
+  Metadata({
+    this.latitude,
+    this.longitude,
+  });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    latitude: json["latitude"],
+    longitude: json["longitude"],
   );
 
   Map<String, dynamic> toJson() => {
+    "latitude": latitude,
+    "longitude": longitude,
   };
 }
+
