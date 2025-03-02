@@ -354,6 +354,7 @@ class Variant {
   dynamic upc;
   bool? allowBackorder;
   bool? manageInventory;
+  int? inventoryQuantity;
   dynamic hsCode;
   dynamic originCountry;
   dynamic midCode;
@@ -380,6 +381,7 @@ class Variant {
     this.upc,
     this.allowBackorder,
     this.manageInventory,
+    this.inventoryQuantity,
     this.hsCode,
     this.originCountry,
     this.midCode,
@@ -407,6 +409,7 @@ class Variant {
     upc: json["upc"],
     allowBackorder: json["allow_backorder"],
     manageInventory: json["manage_inventory"],
+    inventoryQuantity: json["inventory_quantity"],
     hsCode: json["hs_code"],
     originCountry: json["origin_country"],
     midCode: json["mid_code"],
@@ -434,6 +437,7 @@ class Variant {
     "upc": upc,
     "allow_backorder": allowBackorder,
     "manage_inventory": manageInventory,
+    "inventory_quantity": inventoryQuantity,
     "hs_code": hsCode,
     "origin_country": originCountry,
     "mid_code": midCode,

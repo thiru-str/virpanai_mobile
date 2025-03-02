@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,6 +10,7 @@ import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
+import '../model/register_response.dart';
 import '../utility/page_route_utils.dart';
 import 'add_address_page.dart';
 
@@ -15,14 +18,22 @@ class MapPage extends StatefulWidget {
 
   final latitude ;
   final longitude;
-  const MapPage({super.key, this.latitude = 0.0,this.longitude = 0.0});
+  final bool doublePop;
+  final bool isEditAddress;
+  final Address? selectedAddress; // Optional Address parameter
+
+  const MapPage({super.key,this.latitude = 0.0,this.longitude = 0.0,this.doublePop = false,this.isEditAddress = false,this.selectedAddress});
+
+  //ScreenFrom
+  // 1-> Home page
+  // 2-> Menu Address page
 
   @override
   _MapPageState createState() => _MapPageState();
 }
 
 class _MapPageState extends State<MapPage> {
-  Completer<GoogleMapController> _controller = Completer();
+  final Completer<GoogleMapController> _controller = Completer();
   LatLng? _currentPosition;
   String _currentAddress = "Fetching address...";
   String _mainAddress = "Fetching address...";
@@ -33,6 +44,10 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     requestLocationPermission();
+    if(widget.isEditAddress)
+      {
+        print("Selected address: ${jsonEncode(widget.selectedAddress)}");
+      }
     if(widget.latitude == 0.0 && widget.longitude == 0.0) {
       _getCurrentLocation();
     }
@@ -142,7 +157,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        title: 'Location Information',
+        title: 'Address',
         onBackTap: () {
           Navigator.of(context).pop();
         },
@@ -226,6 +241,8 @@ class _MapPageState extends State<MapPage> {
                               isFromMap: true,
                               place: place,
                               currentPosition: _currentPosition,
+                              doublePop: widget.doublePop,
+                              selectedAddress: widget.selectedAddress,
                             ));
                       },
                       child: Text(

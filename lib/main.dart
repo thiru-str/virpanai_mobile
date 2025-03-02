@@ -34,12 +34,13 @@ Future<void> main() async {
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
+  await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
 
 
-  /*Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
+  Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
   Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
 
-  AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);*/
+  AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
   runApp( HomeScreen());
