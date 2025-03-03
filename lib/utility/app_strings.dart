@@ -34,5 +34,5 @@ class AppStrings {
   static const String signout_confirm_msg = 'Are you sure you want to log out?';
   static const String yes = 'Yes';
   static const String no = 'No';
-
+  static const String transation_details = 'Transaction details';
 }

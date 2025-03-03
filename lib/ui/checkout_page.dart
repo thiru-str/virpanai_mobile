@@ -16,6 +16,7 @@ import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
@@ -314,6 +315,22 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
+  void makeNEFTPayCall() {
+    CustomPopupWidget.show(
+      context,
+      title: "NEFT Payment Instructions",
+      description:
+      "You've selected NEFT as your payment method. Your order will be placed immediately. Please transfer the amount using the bank details available via the 'NEFT' button on the order details page. After payment, upload a screenshot and provide the receipt number and transfer date for verification.",
+      buttonText: "Place your Order",
+      icon: Icons.info,
+      onConfirm: (){
+        setState(() {
+          placeOrderApiLoading = true;
+        });
+        completeCart();
+      },
+    );
+  }
   void getCartApi() async {
     try {
       final ApiService apiService = ApiService();
@@ -512,10 +529,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         completeCart();
         break;
       case 'pp_neft_neft':
-        setState(() {
-          placeOrderApiLoading = true;
-        });
-        completeCart();
+        makeNEFTPayCall();
         break;
     }
   }

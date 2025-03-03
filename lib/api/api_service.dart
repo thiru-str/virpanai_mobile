@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -155,6 +157,48 @@ class ApiService {
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data); // Parse the response data
+      } else if (response.statusCode == 400) {
+        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        throw Exception('Unexpected status code: ${response.statusCode}');
+      } else {
+        throw Exception('Unexpected status code: ${response.statusCode}');
+      }
+    } catch (e, stacktrace) {
+      AppLogger.print('API Exception:', '$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
+    }
+  }
+
+  Future<T> _uploadFile<T>({
+    required File file,
+    required String apiUrl,
+    required T Function(Map<String, dynamic>) fromJson,
+    required BuildContext context,
+  }) async {
+    try {
+      // Prepare FormData with the image file
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(file.path, filename: file.path.split('/').last),
+      });
+
+      AppLogger.print('API Request:', '${_dio.options.baseUrl}$apiUrl');
+      AppLogger.print('Uploading File:', file.path);
+
+      await setPublishableKey();
+
+      // Make the POST request
+      final response = await _dio.post(
+        '${_dio.options.baseUrl}$apiUrl',
+        data: formData,
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        AppLogger.print('API Response:', '${response.data}');
+        return fromJson(response.data);
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -491,7 +535,7 @@ class ApiService {
   Future<OrderHistoryResponse> getOrderHistory(BuildContext context) async {
     await addToken();
     return _makeGetRequest<OrderHistoryResponse>(
-      'store/orders?fields=+subtotal,+tax_total,+total,+cart.shipping_address.*',
+      'store/orders?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,',
       null,
       null,
       (json) => OrderHistoryResponse.fromJson(json),
@@ -589,6 +633,38 @@ class ApiService {
     );
   }
 
+  Future<dynamic> uploadImage(BuildContext context, File file) async {
+    await addToken();
+    return _uploadFile(
+      file: file,
+      apiUrl: 'store/uploads',
+      fromJson: (json) => json, // Return the response as JSON
+      context: context,
+    );
+  }
+
+  Future<NeftTransactionResponse> getNEFTTransaction(BuildContext context, String? orderID) async {
+    await addToken();
+    return _makeGetRequest<NeftTransactionResponse>(
+      'store/neft-payment-images',
+      orderID,
+      null,
+          (json) => NeftTransactionResponse.fromJson(json),
+      null,
+    );
+  }
+
+  Future<dynamic> submitNEFTTransaction(
+      BuildContext context, Map<String, dynamic> payload) async {
+    await addToken();
+    return _makePostRequest(
+      '/store/neft-payment-images',
+      payload,
+          (json) => ProductInfoResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =
         'Bearer ${await SharedPreferencesUtil().getString('token')}';
@@ -598,4 +674,6 @@ class ApiService {
     String? publishableKey = await SharedPreferencesUtil().getString('publishable_key');
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
   }
+
+
 }

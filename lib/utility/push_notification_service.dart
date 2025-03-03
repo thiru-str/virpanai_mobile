@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:io' show Platform;
 
 class PushNotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -17,7 +18,10 @@ class PushNotificationService {
       print('User declined or has not accepted permission');
     }
 
-    // Get FCM token
+    if (Platform.isIOS && !Platform.isMacOS) {
+      //SKIP for Simulator
+      return;
+    }
     String? token = await _firebaseMessaging.getToken();
     print('FCM Token: $token');
 

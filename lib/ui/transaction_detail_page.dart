@@ -1,0 +1,247 @@
+import 'package:flutter/material.dart';
+import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/neft_transaction_response.dart';
+import 'package:waioz/model/public_detail_model.dart';
+import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
+
+import 'widgets/common_header_app_bar.dart';
+import 'widgets/neft_transaction_bottom_sheet.dart';
+
+class TransactionDetailsScreen extends StatefulWidget {
+  final String orderID;
+
+  const TransactionDetailsScreen({Key? key, required this.orderID}) : super(key: key);
+
+  @override
+  _TransactionDetailsScreenState createState() => _TransactionDetailsScreenState();
+}
+
+class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
+  BankDetails? bankDetails;
+  NeftTransactionResponse? transactionResponse;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchBankAndTransactionDetails();
+  }
+
+  void handleNEFTTransactionSubmit(Map<String, dynamic> data) async {
+    data['order_id'] = widget.orderID;
+    await ApiService().submitNEFTTransaction(context, data);
+    fetchBankAndTransactionDetails();
+  }
+
+  Future<void> fetchBankAndTransactionDetails() async {
+    final publicDetails = await SharedPreferencesUtil().getPublicDetails();
+    final neftTransactionDetails = await ApiService().getNEFTTransaction(context, widget.orderID);
+    setState(() {
+      bankDetails = publicDetails?.bankDetails;
+      transactionResponse = neftTransactionDetails;
+    });
+  }
+
+  void _showBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return NeftTransactionBottomSheet(onSubmit: handleNEFTTransactionSubmit);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: CommonHeaderAppBar(
+        title: AppStrings.transation_details,
+        onBackTap: () => Navigator.of(context).pop(),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTransactionInfoCard(),
+            const SizedBox(height: 20),
+            transactionResponse?.neftPayment?.isNotEmpty ?? false
+                ? Expanded(
+              child: ListView.builder(
+                itemCount: transactionResponse?.neftPayment?.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _buildTransactionStatus(transactionResponse?.neftPayment?[index]),
+                  );
+                },
+              ),
+            )
+                : _buildEmptyState(),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showBottomSheet,
+        backgroundColor: AppColors.primary,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildTransactionInfoCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        gradient: LinearGradient(
+          colors: [AppColors.primary, Colors.deepPurple],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _buildInfoRow('Name:', bankDetails?.accountHolderName ?? "")),
+              const SizedBox(width: 10),
+              Expanded(child: _buildInfoRow('Bank Name:', bankDetails?.bankName ?? "")),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _buildInfoRow('Account No:', bankDetails?.accountNumber ?? "")),
+              const SizedBox(width: 10),
+              Expanded(child: _buildInfoRow('IFSC Code:', bankDetails?.ifscCode ?? "")),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: FontUtils.circularStdStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: FontUtils.circularStdStyle(color: Colors.white, fontSize: 14.0),
+          softWrap: true,
+          overflow: TextOverflow.visible,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTransactionStatus(NeftPayment? neftPayment) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            color: Colors.white,
+            child:
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                    backgroundColor: Colors.transparent, // Makes the background transparent
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context), // Close on tap
+                      child: InteractiveViewer(
+                        panEnabled: false, // Disable panning for better UX
+                        boundaryMargin: EdgeInsets.all(0),
+                        child: Image.network(
+                          neftPayment?.image ?? "",
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: Image.network(
+                neftPayment?.image ?? "",
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Customer Summary:',
+                  style: FontUtils.circularStdStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 2),
+                Text(neftPayment?.description ?? "", style: FontUtils.circularStdStyle(color: AppColors.textColor),)
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        children: [
+          const SizedBox(height: 50),
+          Image.asset(
+            AppAssets.ic_no_transaction,
+            width: 120,
+            height: 120,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "No Payment Yet",
+            style: FontUtils.circularStdStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
