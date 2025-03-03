@@ -63,11 +63,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       ),
       title: Text(
         status,
-        style: FontUtils.circularStdStyle(fontSize: 17),
+        style: FontUtils.primaryFontStyle(fontSize: 17),
       ),
       trailing: Text(
         date,
-        style: FontUtils.circularStdStyle(fontSize: 17),
+        style: FontUtils.primaryFontStyle(fontSize: 17),
       ),
     );
   }
@@ -75,7 +75,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: FontUtils.circularStdStyle(
+      style: FontUtils.primaryFontStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
@@ -95,7 +95,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         leading: Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
         title: Text(
           '4 items',
-          style: FontUtils.circularStdStyle(fontSize: 16.0),
+          style: FontUtils.primaryFontStyle(fontSize: 16.0),
         ),
         trailing: Row(
           mainAxisSize:
@@ -106,7 +106,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 PageRouteUtils.pushWithSlide(context, OrderDetailItemPage());
               },
               child: Text('View All',
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold)),

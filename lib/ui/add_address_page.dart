@@ -206,7 +206,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                       const SizedBox(height: 24),
                       Text(
                         AppStrings.location,
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.primary,
@@ -268,7 +268,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                     widget.selectedAddress != null
                         ? AppStrings.save
                         : AppStrings.add_address,
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.secondary,
@@ -345,7 +345,7 @@ class _AddAddressPage extends State<AddAddressPage> {
           const SizedBox(width: 8),
           Text(
             location,
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: isSelected ? Colors.black87 : AppColors.primary,

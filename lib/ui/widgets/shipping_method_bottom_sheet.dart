@@ -26,7 +26,7 @@ class ShippingMethodBottomSheet extends StatelessWidget {
         children: [
           Text(
             'Shipping Methods',
-            style: FontUtils.gabaritoStyle(
+            style: FontUtils.secondaryFontStyle1(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -48,7 +48,7 @@ class ShippingMethodBottomSheet extends StatelessWidget {
                   },
                   title: Text(
                     option.name!,
-                    style: FontUtils.circularStdStyle(fontSize: 16),
+                    style: FontUtils.primaryFontStyle(fontSize: 16),
                   ),
                   trailing: const Icon(Icons.radio_button_unchecked),
                 ),

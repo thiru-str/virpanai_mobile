@@ -53,7 +53,7 @@ class OrderPlacedPage extends StatelessWidget {
                   const SizedBox(height: 40),
                   Text(
                     "Order Placed \n Successfully",
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 28, // Adjusted font size for responsiveness
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
@@ -65,7 +65,7 @@ class OrderPlacedPage extends StatelessWidget {
                   // Subtext
                   Text(
                     "You will receive an email confirmation",
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 14, // Adjusted font size
                       color: AppColors.textColor50,
                       fontWeight: FontWeight.w400,
@@ -89,7 +89,7 @@ class OrderPlacedPage extends StatelessWidget {
                       ),
                       child: Text(
                         "See More Products",
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

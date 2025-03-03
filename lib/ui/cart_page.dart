@@ -106,7 +106,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     return CartItemCard(
                                       imageUrl: cartItem.thumbnail!,
                                       productName: cartItem.productTitle!,
-                                      size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,,
+                                      size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
                                       color: 'color',
                                       // Replace with actual color
                                       price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
@@ -224,7 +224,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                         },
                         child:  Text(
                           'Checkout',
-                          style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+                          style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
                     ),
@@ -340,7 +340,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
               // Promo Code Input
               Text(
                 "Enter Promo Code",
-                style: FontUtils.circularStdStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -373,7 +373,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 },
                 child: Text(
                   "Apply",
-                  style: FontUtils.circularStdStyle(fontSize: 16, color: Colors.white),
+                  style: FontUtils.primaryFontStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ],

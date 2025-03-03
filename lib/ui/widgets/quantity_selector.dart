@@ -55,7 +55,7 @@ class _QuantitySelectorState extends State<QuantitySelector> {
         children: [
           Text(
             'Quantity',
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: AppColors.textColor,
@@ -83,7 +83,7 @@ class _QuantitySelectorState extends State<QuantitySelector> {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
                   '$quantity',
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textColor,

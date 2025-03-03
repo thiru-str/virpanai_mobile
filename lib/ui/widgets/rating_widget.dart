@@ -24,7 +24,7 @@ class RatingWidget extends StatelessWidget {
         children: [
           Text(
             'Add your rating and review!',
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.bold,
               color: Colors.black87,

@@ -25,7 +25,7 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         children: [
           Text(
             'Payment Methods',
-            style: FontUtils.gabaritoStyle(
+            style: FontUtils.secondaryFontStyle1(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -47,7 +47,7 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
                   },
                   title: Text(
                     provider.name!,
-                    style: FontUtils.circularStdStyle(fontSize: 16),
+                    style: FontUtils.primaryFontStyle(fontSize: 16),
                   ),
                   trailing: const Icon(Icons.radio_button_unchecked),
                 ),

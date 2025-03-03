@@ -27,7 +27,7 @@ class Item6 extends StatelessWidget {
             children: [
               Text(
                 content.layoutTitle!,
-                style: FontUtils.gabaritoStyle(
+                style: FontUtils.secondaryFontStyle1(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor
@@ -40,7 +40,7 @@ class Item6 extends StatelessWidget {
                   },
                   child: Text(
                     content.layoutRedirectTitle!,
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textColor
@@ -95,7 +95,7 @@ class Item6 extends StatelessWidget {
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Text(
                             layoutData.title!,
-                            style: FontUtils.circularStdStyle(
+                            style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),

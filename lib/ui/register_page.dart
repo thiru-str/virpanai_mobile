@@ -57,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 Text(
                   "Hello! Register to get started",
-                  style: FontUtils.gabaritoStyle(
+                  style: FontUtils.secondaryFontStyle1(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -131,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   child: Text(
                     'Register',
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,

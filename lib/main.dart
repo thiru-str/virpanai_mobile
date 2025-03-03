@@ -39,6 +39,11 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
 
 
+  FontUtils.updateFonts(
+    primaryFont: publicDetailsResponse.theme!.titleFont!,
+    secondaryFont: publicDetailsResponse.theme!.contentFont!,
+  );
+
   Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
   Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
 
@@ -62,9 +67,9 @@ class HomeScreen extends StatelessWidget {
 
    ThemeData theme = ThemeData(
      textTheme: TextTheme(
-       displayLarge: FontUtils.circularStdStyle(fontWeight: FontWeight.w800, fontSize: 14.0),
-       displayMedium: FontUtils.gabaritoStyle(fontWeight: FontWeight.w500, fontSize: 14.0),
-       displaySmall: FontUtils.circularStdStyle(fontWeight: FontWeight.w400, fontSize: 24.0),
+       displayLarge: FontUtils.primaryFontStyle(fontWeight: FontWeight.w800, fontSize: 14.0),
+       displayMedium: FontUtils.secondaryFontStyle1(fontWeight: FontWeight.w500, fontSize: 14.0),
+       displaySmall: FontUtils.primaryFontStyle(fontWeight: FontWeight.w400, fontSize: 24.0),
      ),
    );
 

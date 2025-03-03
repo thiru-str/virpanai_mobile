@@ -205,7 +205,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         Text(
           product?.title ?? '',
-          style: FontUtils.gabaritoStyle(
+          style: FontUtils.secondaryFontStyle1(
             fontWeight: FontWeight.bold,
             fontSize: 16,
             color: AppColors.textColor,
@@ -218,7 +218,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
               product?.variants?.isNotEmpty ?? false
                   ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawCalculatedAmount!.value!)
                   : '',
-              style: FontUtils.gabaritoStyle(
+              style: FontUtils.secondaryFontStyle1(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
                 color: AppColors.primary,
@@ -231,7 +231,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
                 product?.variants?.isNotEmpty ?? false
                     ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawOriginalAmount!.value!)
                     : '',
-                style: FontUtils.gabaritoStyle(
+                style: FontUtils.secondaryFontStyle1(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: AppColors.primary,
@@ -267,7 +267,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         // ✅ Quantity Selector is always visible
         Text(
           'Select Qty',
-          style: FontUtils.gabaritoStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: FontUtils.secondaryFontStyle1(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         buildQuantitySelector(),
@@ -330,7 +330,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         Text(
           'Description',
-          style: FontUtils.gabaritoStyle(
+          style: FontUtils.secondaryFontStyle1(
             fontWeight: FontWeight.bold,
             fontSize: 16,
             color: AppColors.textColor,
@@ -339,7 +339,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         const SizedBox(height: 10),
         Text(
           product?.description ?? '',
-          style: FontUtils.circularStdStyle(
+          style: FontUtils.primaryFontStyle(
             fontWeight: FontWeight.w400,
             fontSize: 12,
             color: AppColors.textColor,
@@ -389,16 +389,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         Text(
           'Reviews',
-          style: FontUtils.gabaritoStyle(
+          style: FontUtils.secondaryFontStyle1(
             fontWeight: FontWeight.bold,
             fontSize: 16,
             color: AppColors.textColor,
           ),
         ),
         const SizedBox(height: 12),
-        Text('${reviewResponse?.overallRating?.toString()} Ratings'??'',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.w700,fontSize: 24,color: AppColors.textColor)),
+        Text('${reviewResponse?.overallRating?.toString()} Ratings'??'',style: FontUtils.secondaryFontStyle1(fontWeight: FontWeight.w700,fontSize: 24,color: AppColors.textColor)),
         const SizedBox(height: 12,),
-        Text('${reviewResponse?.count?.toString()} Reviews'??'',style: FontUtils.circularStdStyle(fontWeight: FontWeight.w400,fontSize: 12,color: AppColors.textColor)),
+        Text('${reviewResponse?.count?.toString()} Reviews'??'',style: FontUtils.primaryFontStyle(fontWeight: FontWeight.w400,fontSize: 12,color: AppColors.textColor)),
         const SizedBox(height: 12,),
         ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
@@ -465,7 +465,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
               value: qty,
               child: Text(
                 qty.toString(),
-                style: FontUtils.gabaritoStyle(fontSize: 16),
+                style: FontUtils.secondaryFontStyle1(fontSize: 16),
               ),
             ))
                 .toList(),
@@ -491,7 +491,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
                 ? CircularProgressIndicator(color: Colors.white)
                 : Text(
               selectedVariantId == null ? 'Select Variant' : 'Add to Cart',
-              style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+              style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
             ),
           ),
         ),
@@ -505,7 +505,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         Text(
           "Color: ${selectedColor?.value ?? 'Select'}",
-          style: FontUtils.gabaritoStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: FontUtils.secondaryFontStyle1(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -530,7 +530,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(option.value!, style: FontUtils.gabaritoStyle(fontSize: 14)),
+                child: Text(option.value!, style: FontUtils.secondaryFontStyle1(fontSize: 14)),
               ),
             );
           }).toList(),
@@ -545,7 +545,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         Text(
           "Size: ${selectedSize?.value ?? 'Select'}",
-          style: FontUtils.gabaritoStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: FontUtils.secondaryFontStyle1(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -570,7 +570,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(option.value!, style: FontUtils.gabaritoStyle(fontSize: 14)),
+                child: Text(option.value!, style: FontUtils.secondaryFontStyle1(fontSize: 14)),
               ),
             );
           }).toList(),

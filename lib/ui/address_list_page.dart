@@ -128,7 +128,7 @@ class _AddressListPageState extends State<AddressListPage> {
                             ),
                             child: Text(
                               AppStrings.add_address,
-                              style: FontUtils.circularStdStyle(
+                              style: FontUtils.primaryFontStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white,

@@ -33,7 +33,7 @@ class CheckoutItemCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 14,
                     color: Colors.black54,
                     fontWeight: FontWeight.normal,
@@ -42,7 +42,7 @@ class CheckoutItemCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 16,
                     color: Colors.black87,
                     fontWeight: FontWeight.w500,

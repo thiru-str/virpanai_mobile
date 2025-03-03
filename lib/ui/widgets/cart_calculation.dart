@@ -25,11 +25,11 @@ class CartCalculation extends StatelessWidget {
         children: [
           Text(
             keyText,
-            style: keyStyle ?? FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor50),
+            style: keyStyle ?? FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor50),
           ),
           Text(
             valueText,
-            style: valueStyle ??  FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor),
+            style: valueStyle ??  FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor),
           ),
         ],
       ),
@@ -59,7 +59,7 @@ class CartPaymentMethodWidget extends StatelessWidget {
       children: [
         Text(
           "Payment Method",
-          style: FontUtils.circularStdStyle(
+          style: FontUtils.primaryFontStyle(
               fontSize: 16, color: AppColors.textColor50),
         ),
         GestureDetector(
@@ -72,7 +72,7 @@ class CartPaymentMethodWidget extends StatelessWidget {
             ),
             child: Text(
               paymentMethod,
-              style: FontUtils.circularStdStyle(
+              style: FontUtils.primaryFontStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),

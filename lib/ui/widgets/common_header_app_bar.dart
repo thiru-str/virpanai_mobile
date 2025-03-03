@@ -52,7 +52,7 @@ class CommonHeaderAppBar extends StatelessWidget
       ) : null,
       title: Text(
         title,
-        style: FontUtils.circularStdStyle(
+        style: FontUtils.primaryFontStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: Colors.black87,

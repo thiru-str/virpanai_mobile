@@ -49,7 +49,7 @@ class OrderDetailItemCard extends StatelessWidget {
                 // Product Name
                 Text(
                   productName,
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -61,7 +61,7 @@ class OrderDetailItemCard extends StatelessWidget {
                   children: [
                     Text(
                       size,
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 14,
                         color: Colors.black54,
                       ),
@@ -74,7 +74,7 @@ class OrderDetailItemCard extends StatelessWidget {
           // Product Price
           Text(
             '$price',
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black87,

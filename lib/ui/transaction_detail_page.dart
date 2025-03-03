@@ -145,7 +145,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       children: [
         Text(
           label,
-          style: FontUtils.circularStdStyle(
+          style: FontUtils.primaryFontStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
@@ -154,7 +154,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         const SizedBox(height: 2),
         Text(
           value,
-          style: FontUtils.circularStdStyle(color: Colors.white, fontSize: 14.0),
+          style: FontUtils.primaryFontStyle(color: Colors.white, fontSize: 14.0),
           softWrap: true,
           overflow: TextOverflow.visible,
         ),
@@ -209,10 +209,10 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               children: [
                 Text(
                   'Customer Summary:',
-                  style: FontUtils.circularStdStyle(fontWeight: FontWeight.bold),
+                  style: FontUtils.primaryFontStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 2),
-                Text(neftPayment?.description ?? "", style: FontUtils.circularStdStyle(color: AppColors.textColor),)
+                Text(neftPayment?.description ?? "", style: FontUtils.primaryFontStyle(color: AppColors.textColor),)
               ],
             ),
           ),
@@ -234,7 +234,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           const SizedBox(height: 10),
           Text(
             "No Payment Yet",
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,

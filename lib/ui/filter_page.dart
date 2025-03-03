@@ -31,7 +31,7 @@ class _FilterPageState extends State<FilterPage> {
             child: Text(
               'Clear All',
               style:
-                  FontUtils.circularStdStyle(fontSize: 16, color: Colors.red),
+                  FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
             ),
           ),
         ],
@@ -158,7 +158,7 @@ class _FilterPageState extends State<FilterPage> {
         return RadioListTile<String>(
           title: Text(
             option,
-            style: FontUtils.circularStdStyle(fontSize: 16),
+            style: FontUtils.primaryFontStyle(fontSize: 16),
           ),
           value: option,
           groupValue: sortBy,
@@ -188,7 +188,7 @@ class _FilterPageState extends State<FilterPage> {
               },
               child: Text(
                 'Apply',
-                style: FontUtils.circularStdStyle(
+                style: FontUtils.primaryFontStyle(
                     fontSize: 17,
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold),
@@ -202,7 +202,7 @@ class _FilterPageState extends State<FilterPage> {
                 // Close action
               },
               child: Text('Close',
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                   )),
@@ -253,7 +253,7 @@ class SidebarItem extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         child: Text(
           title,
-          style: FontUtils.circularStdStyle(
+          style: FontUtils.primaryFontStyle(
             fontSize: 16,
           ),
         ),
@@ -293,7 +293,7 @@ class FilterOption extends StatelessWidget {
             const SizedBox(width: 8), // Small gap between checkbox and text
             Text(
               title,
-              style: FontUtils.circularStdStyle(fontSize: 16),
+              style: FontUtils.primaryFontStyle(fontSize: 16),
             ),
           ],
         ),

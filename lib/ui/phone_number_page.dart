@@ -51,7 +51,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             // Title
             Text(
               'Enter your mobile\nnumber',
-              style: FontUtils.circularStdStyle(
+              style: FontUtils.primaryFontStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -67,7 +67,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                   // Label
                   Text(
                     'Mobile Number',
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey[700]!,
@@ -103,7 +103,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                       }
                       return null;
                     },
-                    dropdownTextStyle: FontUtils.circularStdStyle(
+                    dropdownTextStyle: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       color: Colors.black,
                     ),

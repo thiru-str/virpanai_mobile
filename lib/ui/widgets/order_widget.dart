@@ -41,7 +41,7 @@ class OrderWidget extends StatelessWidget {
                   children: [
                     Text(
                       'Order #$orderId',
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -50,7 +50,7 @@ class OrderWidget extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '$itemCount items',
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 14,
                         color: Colors.grey[600]!,
                       ),

@@ -142,8 +142,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
           showUnselectedLabels: true,
           backgroundColor: Colors.white,
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: FontUtils.circularStdStyle(),
-          unselectedLabelStyle: FontUtils.circularStdStyle(),
+          selectedLabelStyle: FontUtils.primaryFontStyle(),
+          unselectedLabelStyle: FontUtils.primaryFontStyle(),
         ),
       ),
     );

@@ -207,7 +207,7 @@ class _MapPageState extends State<MapPage> {
                 children: [
                   Text(
                     _mainAddress, // Static location name or fetched dynamically
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
@@ -216,7 +216,7 @@ class _MapPageState extends State<MapPage> {
                   SizedBox(height: 5),
                   Text(
                     _currentAddress, // Dynamic address fetched from Geocoder
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       color: Colors.grey[600]!,
                     ),
@@ -247,7 +247,7 @@ class _MapPageState extends State<MapPage> {
                       },
                       child: Text(
                         "Confirm & Continue",
-                        style: FontUtils.gabaritoStyle(
+                        style: FontUtils.secondaryFontStyle1(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

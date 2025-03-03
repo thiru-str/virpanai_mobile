@@ -118,7 +118,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       child: Text(
                         'Update',
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
