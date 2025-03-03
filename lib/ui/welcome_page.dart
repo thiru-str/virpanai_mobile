@@ -38,16 +38,16 @@ class WelcomePage extends StatelessWidget {
               children: [
                 // Welcome text
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: Column(
                     children: [
                       Text(
                         AppStrings.welcome_to_store,
                         textAlign: TextAlign.center,
                         style: FontUtils.gabaritoStyle(
-                          fontSize: 40,
+                          fontSize: 30,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.red,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -56,7 +56,7 @@ class WelcomePage extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: FontUtils.circularStdStyle(
                           fontSize: 16,
-                          color: Colors.black,
+                          color: Colors.red,
                         ),
                       ),
                     ],
