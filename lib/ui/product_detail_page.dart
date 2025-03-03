@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_info_response.dart';
@@ -11,6 +13,7 @@ import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
+import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -53,6 +56,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
   bool showVariantSelection = false;
 
+  int? cartItems;
+  List<String>? cartItemImages;
+  late StreamSubscription<ViewCartModel> _eventSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -75,10 +82,23 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
     // Start the animation when the widget is built
     _animationController.forward();
+    listenToEvents();
+  }
+
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
+      if (mounted) {
+        setState(() {
+          cartItems = event.totalItems;
+          cartItemImages = event.itemImages;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
     _animationController.dispose();
     super.dispose();
   }
@@ -104,42 +124,44 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         onBackTap: () => Navigator.pop(context),
         onFavTap: addFavourite,
         isFavorite: isFavorite, // Pass the updated favorite status here
-        onCartTap: goToCart,
-        showCart: true,
       ),
       backgroundColor: Colors.white,
       body: apiLoading
           ?  Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       )
-          : Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          : SafeArea(
+            child: Stack(children: [
+                Column(
                   children: [
-                    buildProductImages(),
-                    const SizedBox(height: 25),
-                    buildProductDetails(),
-                    buildCartSection(),
-                    const SizedBox(height: 15),
-                    buildProductDescription(),
-                    /*buildShippingAndReturns(),
-                    const SizedBox(height: 15),*/
-                    buildReviews(),
-                    const SizedBox(height: 70),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildProductImages(),
+                              const SizedBox(height: 25),
+                              buildProductDetails(),
+                              buildCartSection(),
+                              const SizedBox(height: 15),
+                              buildProductDescription(),
+                              /*buildShippingAndReturns(),
+                        const SizedBox(height: 15),*/
+                              buildReviews(),
+                              const SizedBox(height: 70),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ),
+              buildBottomButton()
+              ]
+                  ),
           ),
-          // Bottom button that sticks to the bottom
-          buildBottomButton(),
-        ],
-      ),
     );
 
   }
@@ -398,22 +420,69 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   Widget buildBottomButton() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+    return Visibility(
+      visible: cartItems!= null && cartItems != 0,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: cartItems!=null ?Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: GestureDetector(
+            onTap: (){
+              PageRouteUtils.pushWithSlide(context, const CartPage());
+            },
+            child: ViewCartWidget(
+                totalItems: cartItems!,
+                itemImages:  cartItemImages!
+            ),
+          ),
+        ): const SizedBox(),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ElevatedButton(
+    );
+  }
+
+  Widget buildQuantitySelector() {
+    return Row(
+      children: [
+        // Quantity Dropdown with a fixed width
+        Container(
+          width: 80, // Adjust the width as needed
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: DropdownButton<int>(
+            value: selectedQuantity,
+            isExpanded: true,
+            underline: Container(),
+            onChanged: (newValue) {
+              setState(() {
+                selectedQuantity = newValue!;
+              });
+            },
+            items: List.generate(10, (index) => index + 1)
+                .map((qty) => DropdownMenuItem(
+              value: qty,
+              child: Text(
+                qty.toString(),
+                style: FontUtils.gabaritoStyle(fontSize: 16),
+              ),
+            ))
+                .toList(),
+          ),
+        ),
+        const SizedBox(width: 10), // Adds spacing between dropdown and button
+        // "Add to Cart" button takes more space
+        Expanded(
+          child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: selectedVariantId == null ? Colors.grey : AppColors.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              minimumSize: const Size(double.infinity, 56),
+              minimumSize: const Size(double.infinity, 56), // Ensures height remains the same
             ),
-            onPressed: selectedVariantId == null ? null : () async {
+            onPressed: selectedVariantId == null
+                ? null
+                : () async {
               setState(() => quantityLoading = true);
               await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
@@ -425,44 +494,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
               style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
             ),
           ),
-          /*SizedBox(height: 20,),
-          Visibility(visible: productPresentInCart!=null && productPresentInCart!,child: CartButton(
-            amount: CurrencyUtil.appendCurrency(
-                cartResponse?.cart?.subtotal?.toStringAsFixed(2) ??
-                    ''),
-            title: 'Go to Cart',
-            onPressed: navigateToCart,
-          ))*/
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget buildQuantitySelector(){
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButton<int>(
-        value: selectedQuantity,
-        isExpanded: true,
-        underline: Container(),
-        onChanged: (newValue) {
-          setState(() {
-            selectedQuantity = newValue!;
-          });
-        },
-        items: List.generate(10, (index) => index + 1)
-            .map((qty) => DropdownMenuItem(
-          value: qty,
-          child: Text(qty.toString(), style: FontUtils.gabaritoStyle(fontSize: 16)),
-        ))
-            .toList(),
-      ),
-    );
-  }
   Widget buildColorSelection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -667,6 +703,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   void emitEvent(CartResponse cartResponse) {
+    setState(() {
+      cartItems = cartResponse.cart!.items!.length;
+      cartItemImages = cartResponse.cart!.items!.map((item) => item.thumbnail!).toList();
+    });
     eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 

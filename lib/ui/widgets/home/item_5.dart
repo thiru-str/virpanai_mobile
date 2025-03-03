@@ -125,8 +125,8 @@ class Item5 extends StatelessWidget {
                         child: Text(
                           CurrencyUtil.appendCurrency(layoutData.subTitle!),
                           style: FontUtils.circularStdStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textColor,
                           ),
                           maxLines: 1,
