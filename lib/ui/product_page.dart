@@ -107,7 +107,7 @@ class _ProductPageState extends State<ProductPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  /*const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
                       // Handle filter functionality here
@@ -122,7 +122,7 @@ class _ProductPageState extends State<ProductPage> {
                       ),
                       child: const Icon(Icons.filter_list, color: Colors.grey),
                     ),
-                  ),
+                  ),*/
                 ],
               ),
               const SizedBox(height: 16),

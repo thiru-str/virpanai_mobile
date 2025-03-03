@@ -57,10 +57,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       body: Center(
         child: ScaleTransition(
           scale: _animation,
-          child: SvgPicture.asset(
-            AppAssets.app_logo,
-            height: 120,
-            width: 158,
+          child: Image.asset(
+            AppAssets.app_icon,
           ),
         ),
       ),

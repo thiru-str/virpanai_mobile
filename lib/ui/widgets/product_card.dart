@@ -83,8 +83,8 @@ class ProductCard extends StatelessWidget {
               child: Text(
                 price,
                 style: FontUtils.gabaritoStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textColor,
                 ),
                 maxLines: 1,
