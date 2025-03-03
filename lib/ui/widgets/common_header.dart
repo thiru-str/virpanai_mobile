@@ -49,7 +49,7 @@ class CommonHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
-          Flexible(child: Text('Kanchipuram Lakshaya Silks',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.w700,fontSize: 18,color: Colors.red),overflow: TextOverflow.ellipsis,maxLines: 1,)),
+          Flexible(child: Text('Kanchipuram Lakshaya Silks',style: FontUtils.primaryFontStyle(fontWeight: FontWeight.w700,fontSize: 18,color: Colors.red),overflow: TextOverflow.ellipsis,maxLines: 1,)),
           _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
         ],
       ),
@@ -80,7 +80,7 @@ class CommonHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Home", style: FontUtils.secondaryFontStyle1(
+            Text("Home", style: FontUtils.secondaryFontStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: AppColors.textColor,
@@ -139,7 +139,7 @@ class CommonHeader extends StatelessWidget {
                           children: [
                             Text(
                               addressType,
-                              style: FontUtils.secondaryFontStyle1(
+                              style: FontUtils.secondaryFontStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                                 color: AppColors.textColor,
@@ -153,7 +153,7 @@ class CommonHeader extends StatelessWidget {
                         // Address (Full Width)
                         Text(
                           title,
-                          style: FontUtils.secondaryFontStyle1(
+                          style: FontUtils.secondaryFontStyle(
                             fontSize: 14,
                             color: AppColors.textColor,
                           ),
@@ -192,11 +192,11 @@ class CommonHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children:  [
                 Text("Lightning-Fast Delivery",
-                    style: FontUtils.secondaryFontStyle1(fontWeight: FontWeight.bold, color: AppColors.textColor)),
+                    style: FontUtils.secondaryFontStyle(fontWeight: FontWeight.bold, color: AppColors.textColor)),
                 Row(
                     mainAxisSize: MainAxisSize.min,
                   children: [Text(title.isEmpty ? "14/1, 3rd Cross Street, P And..." : title,
-                      style: FontUtils.secondaryFontStyle1(color: AppColors.textColor)),
+                      style: FontUtils.secondaryFontStyle(color: AppColors.textColor)),
                     const SizedBox(width: 4),
                     Icon(Icons.keyboard_arrow_down, color: AppColors.textColor, size: 20),
                   ],
@@ -233,10 +233,10 @@ class CommonHeader extends StatelessWidget {
                 onChanged: onSearchTextChanged, // Call only if provided
                 decoration: InputDecoration(
                   hintText: "Search",
-                  hintStyle: FontUtils.secondaryFontStyle1(color: AppColors.textColor),
+                  hintStyle: FontUtils.secondaryFontStyle(color: AppColors.textColor),
                   border: InputBorder.none,
                 ),
-                style: FontUtils.secondaryFontStyle1(color: Colors.white),
+                style: FontUtils.secondaryFontStyle(color: Colors.white),
               ),
             ),
           ],

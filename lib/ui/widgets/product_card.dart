@@ -82,7 +82,7 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
               child: Text(
                 price,
-                style: FontUtils.secondaryFontStyle1(
+                style: FontUtils.secondaryFontStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textColor,

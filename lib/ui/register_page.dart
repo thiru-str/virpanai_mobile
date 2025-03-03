@@ -57,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 Text(
                   "Hello! Register to get started",
-                  style: FontUtils.secondaryFontStyle1(
+                  style: FontUtils.secondaryFontStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,

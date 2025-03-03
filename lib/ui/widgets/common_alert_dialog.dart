@@ -22,7 +22,7 @@ class CommonAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: Colors.white,
-      title: Text(title,style: FontUtils.secondaryFontStyle1(color: AppColors.textColor,fontSize: 16,fontWeight: FontWeight.bold),),
+      title: Text(title,style: FontUtils.secondaryFontStyle(color: AppColors.textColor,fontSize: 16,fontWeight: FontWeight.bold),),
       content: Text(content,style: FontUtils.primaryFontStyle(color: AppColors.textColor,fontSize: 14,fontWeight: FontWeight.w400),),
       actions: [
         TextButton(

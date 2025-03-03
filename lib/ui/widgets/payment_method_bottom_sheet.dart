@@ -25,7 +25,7 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         children: [
           Text(
             'Payment Methods',
-            style: FontUtils.secondaryFontStyle1(
+            style: FontUtils.secondaryFontStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
