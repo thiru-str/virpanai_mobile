@@ -9,16 +9,20 @@ class CommonHeaderAppBar extends StatelessWidget
   final String title;
   final VoidCallback onBackTap;
   final VoidCallback? onFavTap;
+  final VoidCallback? onCartTap;
   final bool leading;
   final bool? isFavorite;
+  final bool? showCart;
 
   const CommonHeaderAppBar({
     Key? key,
     this.title = '',
     required this.onBackTap,
     this.onFavTap,
+    this.onCartTap,
     this.leading = true,
     this.isFavorite = false,
+    this.showCart = false,
   }) : super(key: key);
 
   @override
@@ -55,6 +59,15 @@ class CommonHeaderAppBar extends StatelessWidget
         ),
       ),
       actions: [
+        if (onCartTap != null)
+          GestureDetector(
+            onTap: onCartTap,
+            child: Container(
+              width: 48,
+              height: 48,
+              child: IconButton(onPressed: onCartTap, icon:  Icon(Icons.shopping_cart, color: AppColors.primary, size: 24)),
+            ),
+        ),
         if (onFavTap != null)
           GestureDetector(
             onTap: onFavTap,

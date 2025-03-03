@@ -10,6 +10,7 @@ class CommonHeader extends StatelessWidget {
   final Function(String)? onSearchTextChanged;
   final VoidCallback? onSearchClick;
   final String title;
+  final String addressType;
 
   const CommonHeader({
     Key? key,
@@ -18,6 +19,7 @@ class CommonHeader extends StatelessWidget {
     this.onSearchTextChanged,
     this.onSearchClick,
     this.title = "",
+    this.addressType = "",
   }) : super(key: key);
 
   @override
@@ -135,7 +137,7 @@ class CommonHeader extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Work",
+                              addressType,
                               style: FontUtils.gabaritoStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -149,7 +151,7 @@ class CommonHeader extends StatelessWidget {
 
                         // Address (Full Width)
                         Text(
-                          "14/1, 3rd Cross Street, P And...",
+                          title,
                           style: FontUtils.gabaritoStyle(
                             fontSize: 14,
                             color: AppColors.textColor,

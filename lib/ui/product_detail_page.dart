@@ -104,6 +104,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         onBackTap: () => Navigator.pop(context),
         onFavTap: addFavourite,
         isFavorite: isFavorite, // Pass the updated favorite status here
+        onCartTap: goToCart,
+        showCart: true,
       ),
       backgroundColor: Colors.white,
       body: apiLoading
@@ -423,14 +425,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
               style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
             ),
           ),
-          SizedBox(height: 20,),
+          /*SizedBox(height: 20,),
           Visibility(visible: productPresentInCart!=null && productPresentInCart!,child: CartButton(
             amount: CurrencyUtil.appendCurrency(
                 cartResponse?.cart?.subtotal?.toStringAsFixed(2) ??
                     ''),
             title: 'Go to Cart',
             onPressed: navigateToCart,
-          ))
+          ))*/
         ],
       ),
     );
@@ -640,6 +642,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         print(e);
       }
     }
+
+  }
+
+  Future<void> goToCart() async {
 
   }
 

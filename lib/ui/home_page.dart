@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   CartResponse? cartResponse;
   bool apiLoading = true;
   String headerTitle = "";
+  String addressType = "";
   String appHeader = "header-1";
 
   int? cartItems;
@@ -106,9 +107,10 @@ class _HomePageState extends State<HomePage> {
                         PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
                             setState(() {
                               headerTitle = selectedAddress.address1!;
+                              addressType = selectedAddress.addressName!;
                             });
                         },));
-                      },),
+                      },addressType: addressType,),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
