@@ -22,6 +22,7 @@ import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../utility/app_utils.dart';
@@ -33,12 +34,9 @@ class ApiService {
 
   ApiService() {
     // Configure Dio
-    //_dio.options.baseUrl = "https://cartel.waioz.com/";
-    _dio.options.baseUrl = "https://dev.cartel.waioz.com/";
+    _dio.options.baseUrl = AppConfig.baseUrl;
     _dio.options.headers = {
       "Content-Type": "application/json",
-      //"x-publishable-api-key": SharedPreferencesUtil().getString('publishable_key'),
-      //"x-publishable-api-key": 'pk_b1fbb0d9fcd66814d75b9a6688b41bbc4d4a96dd4a715451163f3ccf8cf6d929',
     };
     _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds

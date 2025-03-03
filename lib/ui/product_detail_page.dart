@@ -125,8 +125,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
                     buildCartSection(),
                     const SizedBox(height: 15),
                     buildProductDescription(),
-                    buildShippingAndReturns(),
-                    const SizedBox(height: 15),
+                    /*buildShippingAndReturns(),
+                    const SizedBox(height: 15),*/
                     buildReviews(),
                     const SizedBox(height: 70),
                   ],
@@ -325,7 +325,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     );
   }
 
-  Widget buildShippingAndReturns() {
+  /*Widget buildShippingAndReturns() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -349,7 +349,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         ),
       ],
     );
-  }
+  }*/
 
   Widget buildRatingSection() {
     return RatingWidget(

@@ -23,6 +23,7 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/shipping_method_bottom_sheet.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/font_utils.dart';
 
@@ -233,10 +234,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void makeRazorPayCall(String orderId) {
     var options = {
-      'key': 'rzp_test_TWZQg4tf6e1Tqs',
+      'key': AppConfig.razorPayKey,
       'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
-      'name': 'Cartel',
-      'description': 'Payment to Cartel Store',
+      'name': AppConfig.appName,
+      'description': 'Payment to ${AppConfig.appName}',
       'order_id': orderId,
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
@@ -286,7 +287,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'Cartel',
+            merchantDisplayName: AppConfig.appName,
 
             googlePay: const PaymentSheetGooglePay(
               merchantCountryCode: 'IN',
@@ -294,13 +295,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
             ),
             style: ThemeMode.light,
             appearance:  PaymentSheetAppearance(
-                /* colors: PaymentSheetAppearanceColors(
-              background: Colors.white,
-              componentBorder: Colors.grey,
-              componentText: Colors.white,
-              componentDivider: Colors.grey,
-              componentBackground: Colors.white,
-            ),*/
                 primaryButton: PaymentSheetPrimaryButtonAppearance(
                     colors: PaymentSheetPrimaryButtonTheme(
                         light: PaymentSheetPrimaryButtonThemeColors(

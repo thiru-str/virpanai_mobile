@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -12,8 +13,6 @@ import '../../model/register_response.dart';
 import '../../utility/location_util.dart';
 import 'address_card.dart';
 import 'common_header_app_bar.dart';
-
-const String googleApiKey = "AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c";
 
 class SearchAddressPage extends StatefulWidget {
 
@@ -73,7 +72,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
 
       final response = await _dio.get(url, queryParameters: {
         "input": query,
-        "key": googleApiKey,
+        "key": AppConfig.googleApiKey,
         if (locationParam != null) "location": locationParam, // Only add if available
         if (locationParam != null) "radius": radius, // Bias the search if available
       });
@@ -96,7 +95,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
     try {
       final response = await _dio.get(detailsUrl, queryParameters: {
         "place_id": placeId,
-        "key": googleApiKey,
+        "key": AppConfig.googleApiKey,
       });
 
       if (response.statusCode == 200) {
