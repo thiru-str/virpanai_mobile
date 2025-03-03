@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
   CartResponse? cartResponse;
   bool apiLoading = true;
   String headerTitle = "";
-  String? appHeader = "header1";
+  String appHeader = "header-1";
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -77,14 +77,14 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> initializePages() async {
     getHomePageApi();
-    appHeader = await SharedPreferencesUtil().getString('app_header');
+    appHeader = (await SharedPreferencesUtil().getString('app_header'))!;
   }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: appHeader == "header2" ? CommonHeaderAppBar(
+        appBar: appHeader == "header-2" ? CommonHeaderAppBar(
           title: "Home",
           leading: false,
           onBackTap: () {
@@ -100,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: CommonHeader(headerType: appHeader!,title: headerTitle,onCartClick:(){
+                      child: CommonHeader(headerType: appHeader,title: headerTitle,onCartClick:(){
                         PageRouteUtils.pushWithSlide(context, const CartPage());
                       },onSearchClick: (){
                         PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){

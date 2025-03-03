@@ -27,13 +27,13 @@ class CommonHeader extends StatelessWidget {
       children: [
         // Render Different Headers Using Switch
         switch (headerType) {
-          "header1" => _buildHeader1(),
-          "header2" => _buildHeader2(),
-          "header3" => _buildHeader3(),
-          "header4" => _buildHeader4(),
-          "header5" => _buildHeader5(),
-          "header6" => _buildHeader6(),
-          "header7" => _buildHeader7(),
+          "header-1" => _buildHeader1(),
+          "header-2" => _buildHeader2(),
+          "header-3" => _buildHeader3(),
+          "header-4" => _buildHeader4(),
+          "header-5" => _buildHeader5(),
+          "header-6" => _buildHeader6(),
+          "header-7" => _buildHeader7(),
           _ => _buildHeader1(), // Default case
         },
       ],
@@ -108,61 +108,67 @@ class CommonHeader extends StatelessWidget {
 
   /// Header 6: Address + Cart Icon + Search Bar
   Widget _buildHeader6() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center, // Ensures vertical alignment
-      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Profile image stays on the right
+    return Column(
       children: [
-        // Left Section: Location Icon + Work + Address
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Location Icon (Height Matching with Text)
-              Align(
-                alignment: Alignment.center,
-                child: Icon(Icons.location_pin, color: Colors.grey, size: 40),
-              ),
-              const SizedBox(width: 4),
-              // Work + Address Column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Work + Dropdown Icon
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center, // Ensures vertical alignment
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Profile image stays on the right
+          children: [
+            // Left Section: Location Icon + Work + Address
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Location Icon (Height Matching with Text)
+                  Align(
+                    alignment: Alignment.center,
+                    child: Icon(Icons.location_pin, color: Colors.grey, size: 40),
+                  ),
+                  const SizedBox(width: 4),
+                  // Work + Address Column
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Work + Dropdown Icon
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Work",
+                              style: FontUtils.gabaritoStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: AppColors.textColor,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.keyboard_arrow_down, color: AppColors.textColor, size: 20),
+                          ],
+                        ),
+
+                        // Address (Full Width)
                         Text(
-                          "Work",
+                          "14/1, 3rd Cross Street, P And...",
                           style: FontUtils.gabaritoStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 14,
                             color: AppColors.textColor,
                           ),
+                          overflow: TextOverflow.ellipsis, // Prevents text overflow
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.keyboard_arrow_down, color: AppColors.textColor, size: 20),
                       ],
                     ),
-
-                    // Address (Full Width)
-                    Text(
-                      "14/1, 3rd Cross Street, P And...",
-                      style: FontUtils.gabaritoStyle(
-                        fontSize: 14,
-                        color: AppColors.textColor,
-                      ),
-                      overflow: TextOverflow.ellipsis, // Prevents text overflow
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
 
-        // Profile Image (Matching Text Height)
-        _buildIcon(Icons.account_circle,color: Colors.grey, size: 40),
+            // Profile Image (Matching Text Height)
+            _buildIcon(Icons.account_circle,color: Colors.grey, size: 40),
+          ],
+        ),
+        const SizedBox(height: 4,),
+        _buildSearchBar(),
       ],
     );
   }
