@@ -27,13 +27,13 @@ class CommonHeader extends StatelessWidget {
       children: [
         // Render Different Headers Using Switch
         switch (headerType) {
-          "Header1" => _buildHeader1(),
-          "Header2" => _buildHeader2(),
-          "Header3" => _buildHeader3(),
-          "Header4" => _buildHeader4(),
-          "Header5" => _buildHeader5(),
-          "Header6" => _buildHeader6(),
-          "Header7" => _buildHeader7(),
+          "header1" => _buildHeader1(),
+          "header2" => _buildHeader2(),
+          "header3" => _buildHeader3(),
+          "header4" => _buildHeader4(),
+          "header5" => _buildHeader5(),
+          "header6" => _buildHeader6(),
+          "header7" => _buildHeader7(),
           _ => _buildHeader1(), // Default case
         },
       ],
@@ -50,7 +50,6 @@ class CommonHeader extends StatelessWidget {
           _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
         ],
       ),
-      _buildSearchBar()
     ]);
   }
 

@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   CartResponse? cartResponse;
   bool apiLoading = true;
   String headerTitle = "";
+  String? appHeader = "header1";
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -76,73 +77,76 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> initializePages() async {
     getHomePageApi();
+    appHeader = await SharedPreferencesUtil().getString('app_header');
   }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:CommonHeaderAppBar(
-        title: "Home",
-        leading: false,
-        onBackTap: () {
-          Navigator.of(context).pop();
-        },
-      ),
+        appBar: appHeader == "header2" ? CommonHeaderAppBar(
+          title: "Home",
+          leading: false,
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
+        ) : null,
       backgroundColor: Colors.white,
-      body: Stack(
-        children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-            :SingleChildScrollView(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: CommonHeader(headerType: "Header1",title: headerTitle,onCartClick:(){
+      body: SafeArea(
+        child: Stack(
+          children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
+              :SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: CommonHeader(headerType: appHeader!,title: headerTitle,onCartClick:(){
+                        PageRouteUtils.pushWithSlide(context, const CartPage());
+                      },onSearchClick: (){
+                        PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
+                            setState(() {
+                              headerTitle = selectedAddress.address1!;
+                            });
+                        },));
+                      },),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) => const SizedBox(height: 16),
+                        scrollDirection: Axis.vertical,
+                        itemCount: homePageResponse!.content!.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final homePageContent = homePageResponse!.content![index];
+                          return getLayoutWidget(homePageContent);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Visibility(
+              visible: cartItems!= null && cartItems != 0,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: cartItems!=null ?Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: GestureDetector(
+                    onTap: (){
                       PageRouteUtils.pushWithSlide(context, const CartPage());
-                    },onSearchClick: (){
-                      PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
-                          setState(() {
-                            headerTitle = selectedAddress.address1!;
-                          });
-                      },));
-                    },),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
-                    child: ListView.separated(
-                      separatorBuilder: (context, index) => const SizedBox(height: 16),
-                      scrollDirection: Axis.vertical,
-                      itemCount: homePageResponse!.content!.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final homePageContent = homePageResponse!.content![index];
-                        return getLayoutWidget(homePageContent);
-                      },
+                    },
+                    child: ViewCartWidget(
+                      totalItems: cartItems!,
+                      itemImages:  cartItemImages!
                     ),
                   ),
-                ],
+                ): const SizedBox(),
               ),
             ),
-          Visibility(
-            visible: cartItems!= null && cartItems != 0,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: cartItems!=null ?Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: GestureDetector(
-                  onTap: (){
-                    PageRouteUtils.pushWithSlide(context, const CartPage());
-                  },
-                  child: ViewCartWidget(
-                    totalItems: cartItems!,
-                    itemImages:  cartItemImages!
-                  ),
-                ),
-              ): const SizedBox(),
-            ),
-          ),
-        ],
+          ],
+        ),
       )
     );
   }
