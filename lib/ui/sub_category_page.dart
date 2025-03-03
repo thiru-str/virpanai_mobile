@@ -44,8 +44,8 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text('All categories > ',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
-                      Text('${widget.categoryTitle}',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.primary)),
+                      Text('All categories > ',style: FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor)),
+                      Text('${widget.categoryTitle}',style: FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.primary)),
                     ],
                   ),
                 ),

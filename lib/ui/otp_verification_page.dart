@@ -64,7 +64,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               // Title
               Text(
                 'Enter Your 6-Digit\nCode',
-                style: FontUtils.circularStdStyle(
+                style: FontUtils.primaryFontStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -74,7 +74,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               // Form for phone input
               Text(
                 'Enter the code from the number we sent to\n ${widget.countryCode} ${widget.phoneNo}',
-                style: FontUtils.circularStdStyle(
+                style: FontUtils.primaryFontStyle(
                   fontSize: 16,
                   color: Colors.grey[700]!,
                 ),
@@ -89,7 +89,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 keyboardType: TextInputType.number,
                 autoFocus: true,
                 animationType: AnimationType.none,
-                textStyle: FontUtils.circularStdStyle(
+                textStyle: FontUtils.primaryFontStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,

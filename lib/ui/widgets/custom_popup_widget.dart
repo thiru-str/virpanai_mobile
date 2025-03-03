@@ -61,12 +61,12 @@ class CustomPopupWidget extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   title,
-                  style: FontUtils.circularStdStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                  style: FontUtils.primaryFontStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   description,
-                  style: FontUtils.circularStdStyle(fontSize: 15.0),
+                  style: FontUtils.primaryFontStyle(fontSize: 15.0),
                   textAlign: TextAlign.justify,
                 ),
                 const SizedBox(height: 20),
@@ -85,7 +85,7 @@ class CustomPopupWidget extends StatelessWidget {
                   ),
                   child: Text(
                     buttonText,
-                    style: FontUtils.circularStdStyle(fontSize: 16.0, color: Colors.white),
+                    style: FontUtils.primaryFontStyle(fontSize: 16.0, color: Colors.white),
                   ),
                 ),
               ],

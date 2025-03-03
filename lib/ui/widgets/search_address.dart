@@ -145,7 +145,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
                 hintText: "Search a new address",
-                hintStyle: FontUtils.circularStdStyle(),
+                hintStyle: FontUtils.primaryFontStyle(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: const BorderSide(color: Colors.grey),
@@ -163,7 +163,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                 )
                     : null,
               ),
-              style: FontUtils.circularStdStyle(),
+              style: FontUtils.primaryFontStyle(),
               onChanged: _onSearchChanged,
             ),
 
@@ -189,7 +189,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                         SizedBox(width: 8.0),
                         Text(
                           "Current location",
-                          style: FontUtils.circularStdStyle(
+                          style: FontUtils.primaryFontStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
                             color: Colors.purple,
@@ -201,7 +201,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                       padding: EdgeInsets.only(left: 32.0),
                       child: Text(
                         "Using GPS",
-                        style: FontUtils.circularStdStyle(color: Colors.grey),
+                        style: FontUtils.primaryFontStyle(color: Colors.grey),
                       ),
                     ),
                     SizedBox(height: 16.0),
@@ -220,7 +220,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                     final prediction = _predictions[index];
                     return ListTile(
                       leading:  Icon(Icons.location_on,color: AppColors.primary,),
-                      title: Text(prediction['description'],style: FontUtils.circularStdStyle(),),
+                      title: Text(prediction['description'],style: FontUtils.primaryFontStyle(),),
                       onTap: () =>
                           _onLocationSelected(prediction['place_id'], prediction['description']),
                     );
@@ -233,7 +233,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
               const SizedBox(height: 16.0),
               Text(
                 "Saved Location",
-                style: FontUtils.circularStdStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                style: FontUtils.primaryFontStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8.0),
               addressListResponse?.addresses?.isNotEmpty ?? false
@@ -304,7 +304,7 @@ class _SavedLocationsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       "No saved locations",
-      style: FontUtils.circularStdStyle(color: Colors.grey),
+      style: FontUtils.primaryFontStyle(color: Colors.grey),
     );
   }
 }

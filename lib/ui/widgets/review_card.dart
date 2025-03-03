@@ -42,7 +42,7 @@ class ReviewCard extends StatelessWidget {
                     child: Center(
                       child: Text(
                           name.isNotEmpty ? name.substring(0,1) : "C",
-                          style: FontUtils.circularStdStyle(
+                          style: FontUtils.primaryFontStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -61,7 +61,7 @@ class ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -91,7 +91,7 @@ class ReviewCard extends StatelessWidget {
           // Review Text
           Text(
             reviewText,
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 14,
               color: Colors.black54,
             ),
@@ -100,7 +100,7 @@ class ReviewCard extends StatelessWidget {
           // Timestamp
           Text(
             timestamp,
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 12,
               color: Colors.grey,
             ),

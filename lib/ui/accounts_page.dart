@@ -52,7 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: Center(
                       child: Text(
                           (customer?.firstName ?? "C").substring(0, 1), // The letter to display
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -79,7 +79,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             customer != null
                                 ? '${customer!.firstName!} ${customer!.lastName}'
                                 : '',
-                            style: FontUtils.circularStdStyle(
+                            style: FontUtils.primaryFontStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
@@ -88,7 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           SizedBox(height: 4),
                           Text(
                             customer != null ? customer!.email! : '',
-                            style: FontUtils.circularStdStyle(
+                            style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               color: Colors.black54,
                             ),
@@ -107,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         },
                         child: Text(
                           AppStrings.edit,
-                          style: FontUtils.circularStdStyle(
+                          style: FontUtils.primaryFontStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
@@ -185,7 +185,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
               child: Text(
                 AppStrings.signout,
-                style: FontUtils.circularStdStyle(
+                style: FontUtils.primaryFontStyle(
                   color: Colors.red,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

@@ -104,7 +104,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: FontUtils.circularStdStyle(
+      style: FontUtils.primaryFontStyle(
         fontSize: 17,
         fontWeight: FontWeight.bold,
       ),

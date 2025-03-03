@@ -132,7 +132,7 @@ class _ProductPageState extends State<ProductPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
                   'All products',
-                  style: FontUtils.circularStdStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 16,
                     color: AppColors.textColor,
                   ),

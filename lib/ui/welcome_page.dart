@@ -44,7 +44,7 @@ class WelcomePage extends StatelessWidget {
                       Text(
                         AppStrings.welcome_to_store,
                         textAlign: TextAlign.center,
-                        style: FontUtils.gabaritoStyle(
+                        style: FontUtils.secondaryFontStyle1(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
@@ -54,7 +54,7 @@ class WelcomePage extends StatelessWidget {
                       Text(
                         AppStrings.get_your_product,
                         textAlign: TextAlign.center,
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 16,
                           color: Colors.red,
                         ),
@@ -84,7 +84,7 @@ class WelcomePage extends StatelessWidget {
                     ),
                     child: Text(
                       AppStrings.get_started,
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

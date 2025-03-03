@@ -35,11 +35,11 @@ class CartButton extends StatelessWidget {
           children: [
             Text(
               amount, // Price
-              style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+              style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
             ),
             Text(
               title, // Button label
-              style: FontUtils.circularStdStyle(fontSize: 18, color: Colors.white),
+              style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
             ),
           ],
         ),

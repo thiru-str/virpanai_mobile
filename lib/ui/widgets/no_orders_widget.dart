@@ -34,7 +34,7 @@ class NoOrdersWidget extends StatelessWidget {
           // Message Section
           Text(
             message,
-            style: FontUtils.circularStdStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -53,7 +53,7 @@ class NoOrdersWidget extends StatelessWidget {
             ),
             child: Text(
               buttonText,
-              style: FontUtils.circularStdStyle(
+              style: FontUtils.primaryFontStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,

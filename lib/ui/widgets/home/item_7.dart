@@ -28,7 +28,7 @@ class Item7 extends StatelessWidget {
             children: [
               Text(
                 content.layoutTitle!,
-                style: FontUtils.gabaritoStyle(
+                style: FontUtils.secondaryFontStyle1(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor
@@ -41,7 +41,7 @@ class Item7 extends StatelessWidget {
                   },
                   child: Text(
                     content.layoutRedirectTitle!,
-                    style: FontUtils.circularStdStyle(
+                    style: FontUtils.primaryFontStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textColor
@@ -95,7 +95,7 @@ class Item7 extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         layoutData.title!,
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -105,7 +105,7 @@ class Item7 extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         CurrencyUtil.appendCurrency(layoutData.subTitle!),
-                        style: FontUtils.circularStdStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 12,
                           color: AppColors.secondary,
                         ),

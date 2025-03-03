@@ -30,12 +30,12 @@ class CustomScrollableTabBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(30.0), // Rounded corners
           ),
           splashFactory: NoSplash.splashFactory,
-          labelStyle: FontUtils.circularStdStyle(
+          labelStyle: FontUtils.primaryFontStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
-          unselectedLabelStyle: FontUtils.circularStdStyle(
+          unselectedLabelStyle: FontUtils.primaryFontStyle(
             fontSize: 15,
             fontWeight: FontWeight.normal,
           ),

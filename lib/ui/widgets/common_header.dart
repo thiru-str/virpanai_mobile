@@ -80,7 +80,7 @@ class CommonHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Home", style: FontUtils.gabaritoStyle(
+            Text("Home", style: FontUtils.secondaryFontStyle1(
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: AppColors.textColor,
@@ -139,7 +139,7 @@ class CommonHeader extends StatelessWidget {
                           children: [
                             Text(
                               addressType,
-                              style: FontUtils.gabaritoStyle(
+                              style: FontUtils.secondaryFontStyle1(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                                 color: AppColors.textColor,
@@ -153,7 +153,7 @@ class CommonHeader extends StatelessWidget {
                         // Address (Full Width)
                         Text(
                           title,
-                          style: FontUtils.gabaritoStyle(
+                          style: FontUtils.secondaryFontStyle1(
                             fontSize: 14,
                             color: AppColors.textColor,
                           ),
@@ -192,11 +192,11 @@ class CommonHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children:  [
                 Text("Lightning-Fast Delivery",
-                    style: FontUtils.gabaritoStyle(fontWeight: FontWeight.bold, color: AppColors.textColor)),
+                    style: FontUtils.secondaryFontStyle1(fontWeight: FontWeight.bold, color: AppColors.textColor)),
                 Row(
                     mainAxisSize: MainAxisSize.min,
                   children: [Text(title.isEmpty ? "14/1, 3rd Cross Street, P And..." : title,
-                      style: FontUtils.gabaritoStyle(color: AppColors.textColor)),
+                      style: FontUtils.secondaryFontStyle1(color: AppColors.textColor)),
                     const SizedBox(width: 4),
                     Icon(Icons.keyboard_arrow_down, color: AppColors.textColor, size: 20),
                   ],
@@ -233,10 +233,10 @@ class CommonHeader extends StatelessWidget {
                 onChanged: onSearchTextChanged, // Call only if provided
                 decoration: InputDecoration(
                   hintText: "Search",
-                  hintStyle: FontUtils.gabaritoStyle(color: AppColors.textColor),
+                  hintStyle: FontUtils.secondaryFontStyle1(color: AppColors.textColor),
                   border: InputBorder.none,
                 ),
-                style: FontUtils.gabaritoStyle(color: Colors.white),
+                style: FontUtils.secondaryFontStyle1(color: Colors.white),
               ),
             ),
           ],

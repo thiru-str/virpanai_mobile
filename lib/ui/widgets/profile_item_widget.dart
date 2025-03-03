@@ -30,7 +30,7 @@ class ProfileItemWidget extends StatelessWidget {
             // Title
             Text(
               title,
-              style: FontUtils.circularStdStyle(
+              style: FontUtils.primaryFontStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,

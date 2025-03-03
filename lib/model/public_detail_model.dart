@@ -102,6 +102,8 @@ class Theme {
   String? secondaryColor;
   String? header;
   String? productView;
+  String? titleFont;
+  String? contentFont;
 
   Theme({
     this.fontFamily,
@@ -109,6 +111,8 @@ class Theme {
     this.secondaryColor,
     this.header,
     this.productView,
+    this.titleFont,
+    this.contentFont,
   });
 
   factory Theme.fromJson(Map<String, dynamic> json) => Theme(
@@ -117,6 +121,8 @@ class Theme {
     secondaryColor: json["secondaryColor"],
     header: json["header"],
     productView: json["productView"],
+    titleFont: json["titleFont"],
+    contentFont: json["contentFont"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -125,6 +131,8 @@ class Theme {
     "secondaryColor": secondaryColor,
     "header": header,
     "productView": productView,
+    "titleFont": titleFont,
+    "contentFont": contentFont,
   };
 }
 

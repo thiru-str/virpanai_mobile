@@ -44,7 +44,7 @@ class AddressCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: FontUtils.circularStdStyle(
+                style: FontUtils.primaryFontStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: AppColors.profileItemArrowColor,
@@ -57,7 +57,7 @@ class AddressCard extends StatelessWidget {
             margin: const EdgeInsets.only(left: 36.0),
             child: Text(
               address,
-              style:  FontUtils.circularStdStyle(
+              style:  FontUtils.primaryFontStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 color: AppColors.profileItemArrowColor,
@@ -80,7 +80,7 @@ class AddressCard extends StatelessWidget {
                     onPressed: onDelete,
                     child:  Text(
                       'DELETE',
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
                       ),
@@ -91,7 +91,7 @@ class AddressCard extends StatelessWidget {
                     onPressed: onEdit,
                     child:  Text(
                       'EDIT',
-                      style: FontUtils.circularStdStyle(
+                      style: FontUtils.primaryFontStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
                       ),
