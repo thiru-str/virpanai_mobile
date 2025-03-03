@@ -477,8 +477,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: selectedVariantId == null ? Colors.grey : AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              minimumSize: const Size(double.infinity, 56), // Ensures height remains the same
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              minimumSize: const Size(double.infinity, 50), // Ensures height remains the same
             ),
             onPressed: selectedVariantId == null
                 ? null
