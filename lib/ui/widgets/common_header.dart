@@ -49,6 +49,7 @@ class CommonHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
+          Flexible(child: Text('Kanchipuram Lakshaya Silks',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.w700,fontSize: 18,color: Colors.red),overflow: TextOverflow.ellipsis,maxLines: 1,)),
           _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
         ],
       ),
