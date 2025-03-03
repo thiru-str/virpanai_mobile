@@ -106,7 +106,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     return CartItemCard(
                                       imageUrl: cartItem.thumbnail!,
                                       productName: cartItem.productTitle!,
-                                      size: cartItem.variantTitle!,
+                                      size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
                                       color: 'color',
                                       // Replace with actual color
                                       price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
