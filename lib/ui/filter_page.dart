@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class FilterPage extends StatefulWidget {
@@ -14,9 +15,9 @@ class _FilterPageState extends State<FilterPage> {
   Set<String> selectedBrands = {};
   double minPrice = 500;
   double maxPrice = 10000;
-  String sortBy = 'Recommended';
+  String sortBy = AppStrings.recommended;
 
-  String selectedSidebar = 'Categories';
+  String selectedSidebar = AppStrings.categories;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class _FilterPageState extends State<FilterPage> {
           TextButton(
             onPressed: _clearAllFilters,
             child: Text(
-              'Clear All',
+              AppStrings.clear_all,
               style:
                   FontUtils.circularStdStyle(fontSize: 16, color: Colors.red),
             ),
@@ -54,12 +55,12 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildSidebar() {
-    const sidebarItems = ['Categories', 'Brand', 'Price', 'Sort by'];
+   
     return Container(
       width: 120,
       color: AppColors.secondary,
       child: ListView(
-        children: sidebarItems.map((item) {
+        children: AppStrings.sidebarItems.map((item) {
           return SidebarItem(
             title: item,
             selected: selectedSidebar == item,
@@ -74,19 +75,19 @@ class _FilterPageState extends State<FilterPage> {
 
   Widget _buildFilterContent() {
     switch (selectedSidebar) {
-      case 'Categories':
+      case AppStrings.categories:
         return _buildFilterList(
-          ['Eggs', 'Noodles & Pasta', 'Chips & Crisps', 'Fast Food'],
+          AppStrings.category_list,
           selectedCategories,
         );
-      case 'Brand':
+      case AppStrings.brand:
         return _buildFilterList(
-          ['Cocoa', 'Ifad', 'Kazi Farmas'],
+          AppStrings.brand_list,
           selectedBrands,
         );
-      case 'Price':
+      case AppStrings.price:
         return _buildPriceFilter();
-      case 'Sort by':
+      case AppStrings.sort_by:
         return _buildSortByFilter();
       default:
         return const SizedBox();
@@ -116,12 +117,12 @@ class _FilterPageState extends State<FilterPage> {
   Widget _buildPriceFilter() {
     return Column(
       children: [
-        _buildPriceInput('Min: ', minPrice, (value) {
+        _buildPriceInput('${AppStrings.min}: ', minPrice, (value) {
           setState(() {
             minPrice = double.tryParse(value) ?? minPrice;
           });
         }),
-        _buildPriceInput('Max: ', maxPrice, (value) {
+        _buildPriceInput('${AppStrings.max}:', maxPrice, (value) {
           setState(() {
             maxPrice = double.tryParse(value) ?? maxPrice;
           });
@@ -147,14 +148,9 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildSortByFilter() {
-    const sortOptions = [
-      'Recommended',
-      'Newest',
-      'Lowest - Highest Price',
-      'Highest - Lowest Price'
-    ];
+   
     return Column(
-      children: sortOptions.map((option) {
+      children: AppStrings.sortOptions.map((option) {
         return RadioListTile<String>(
           title: Text(
             option,
@@ -187,7 +183,7 @@ class _FilterPageState extends State<FilterPage> {
                 // Apply action
               },
               child: Text(
-                'Apply',
+                AppStrings.apply,
                 style: FontUtils.circularStdStyle(
                     fontSize: 17,
                     color: AppColors.primary,
@@ -219,7 +215,7 @@ class _FilterPageState extends State<FilterPage> {
       selectedBrands.clear();
       minPrice = 500;
       maxPrice = 10000;
-      sortBy = 'Recommended';
+      sortBy = AppStrings.recommended;
     });
   }
 }

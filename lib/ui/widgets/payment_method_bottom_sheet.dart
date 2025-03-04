@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class PaymentMethodsBottomSheet extends StatelessWidget {
@@ -24,7 +25,8 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Payment Methods',
+            AppStrings.payemnt_method,
+            
             style: FontUtils.gabaritoStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

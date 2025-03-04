@@ -13,6 +13,7 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -30,7 +31,8 @@ class ProductDetailPage extends StatefulWidget {
   State<ProductDetailPage> createState() => _ProductDetailPageState();
 }
 
-class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTickerProviderStateMixin {
+class _ProductDetailPageState extends State<ProductDetailPage>
+    with SingleTickerProviderStateMixin {
   ProductResponse.Product? product;
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
@@ -76,7 +78,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     super.dispose();
   }
 
-
   Future<void> fetchInitialData() async {
     getProductsApi();
     getReviewApi();
@@ -93,38 +94,37 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       backgroundColor: Colors.white,
       body: apiLoading
           ? const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    buildProductImages(),
-                    const SizedBox(height: 25),
-                    buildProductDetails(),
-                    buildCartSection(),
-                    const SizedBox(height: 15),
-                    buildProductDescription(),
-                    buildShippingAndReturns(),
-                    const SizedBox(height: 15),
-                    buildReviews(),
-                    const SizedBox(height: 70),
-                  ],
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          buildProductImages(),
+                          const SizedBox(height: 25),
+                          buildProductDetails(),
+                          buildCartSection(),
+                          const SizedBox(height: 15),
+                          buildProductDescription(),
+                          buildShippingAndReturns(),
+                          const SizedBox(height: 15),
+                          buildReviews(),
+                          const SizedBox(height: 70),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                // Bottom button that sticks to the bottom
+                buildBottomButton(),
+              ],
             ),
-          ),
-          // Bottom button that sticks to the bottom
-          buildBottomButton(),
-        ],
-      ),
     );
-
   }
 
   Widget buildProductImages() {
@@ -138,11 +138,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           return GestureDetector(
             onTap: () {
               // Open fullscreen carousel
-              if(product!.images!.isNotEmpty) {
-                PageRouteUtils.pushWithFade(context, FullscreenImageCarousel(
-                  imageUrls: product!.images!,
-                  initialIndex: index,
-                ));
+              if (product!.images!.isNotEmpty) {
+                PageRouteUtils.pushWithFade(
+                    context,
+                    FullscreenImageCarousel(
+                      imageUrls: product!.images!,
+                      initialIndex: index,
+                    ));
               }
             },
             child: Container(
@@ -175,7 +177,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         const SizedBox(height: 15),
         Text(
           product?.variants?.isNotEmpty ?? false
-              ? CurrencyUtil.appendCurrency(product!.variants!.first.calculatedPrice!.rawCalculatedAmount!.value!)
+              ? CurrencyUtil.appendCurrency(product!
+                  .variants!.first.calculatedPrice!.rawCalculatedAmount!.value!)
               : '',
           style: FontUtils.gabaritoStyle(
             fontWeight: FontWeight.bold,
@@ -188,35 +191,36 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   Widget buildCartSection() {
-    if (productPresentInCart == null || !productPresentInCart!) return const SizedBox();
+    if (productPresentInCart == null || !productPresentInCart!)
+      return const SizedBox();
     return Column(
       children: [
         const SizedBox(height: 15),
         if (quantityLoading)
-          const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          const Center(
+              child: CircularProgressIndicator(color: AppColors.primary))
         else
           QuantitySelector(
             initialQuantity: cartResponse?.cart?.items
-                ?.firstWhere((item) => item.variantId == variantId, orElse: null)
-                ?.quantity ??
+                    ?.firstWhere((item) => item.variantId == variantId,
+                        orElse: null)
+                    ?.quantity ??
                 1,
             onQuantityChanged: (quantity) async {
-              if(quantity == 0)
-                {
-                  try {
-                    final cartItem = cartResponse?.cart?.items?.firstWhere(
-                          (item) => item.variantId == variantId,
-                          orElse: null);
-                    setState(() => quantityLoading = true);
-                    removeCart(cartItem!.id!);
-                  } catch (e) {
-                    print(e);
-                    setState(() => quantityLoading = false);
-                  } finally {
-                    //setState(() => quantityLoading = false);
-                  }
+              if (quantity == 0) {
+                try {
+                  final cartItem = cartResponse?.cart?.items?.firstWhere(
+                      (item) => item.variantId == variantId,
+                      orElse: null);
+                  setState(() => quantityLoading = true);
+                  removeCart(cartItem!.id!);
+                } catch (e) {
+                  print(e);
+                  setState(() => quantityLoading = false);
+                } finally {
+                  //setState(() => quantityLoading = false);
                 }
-              else {
+              } else {
                 await updateQuantity(quantity);
               }
             },
@@ -243,7 +247,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       children: [
         const SizedBox(height: 10),
         Text(
-          'Shipping & returns',
+          AppStrings.shipping_and_returns,
           style: FontUtils.gabaritoStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -252,7 +256,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         ),
         const SizedBox(height: 10),
         Text(
-          'Free standard shipping on all orders within the continental U.S. Expedited shipping options are available at an additional cost. Orders typically ship within 3-5 business days \n \n We offer a 30-day return policy. If you are not completely satisfied with your purchase, you can return the chair for a full refund or exchange, provided it is in its original condition and packaging.',
+          AppStrings.msg,
+          //'Free standard shipping on all orders within the continental U.S. Expedited shipping options are available at an additional cost. Orders typically ship within 3-5 business days \n \n We offer a 30-day return policy. If you are not completely satisfied with your purchase, you can return the chair for a full refund or exchange, provided it is in its original condition and packaging.',
           style: FontUtils.circularStdStyle(
             fontWeight: FontWeight.w400,
             fontSize: 12,
@@ -265,18 +270,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
   Widget buildRatingSection() {
     return RatingWidget(
-      onRatingChanged: (rating) => print('Rating: $rating'),
-      onSubmit: () => print('Review submitted!'),
+      onRatingChanged: (rating) => print('${AppStrings.rating}: $rating'),
+      onSubmit: () => print(AppStrings.review_submitted),
     );
   }
 
   Widget buildReviews() {
-    if (reviewResponse == null || reviewResponse!.productReviews!.isEmpty) return const SizedBox();
+    if (reviewResponse == null || reviewResponse!.productReviews!.isEmpty)
+      return const SizedBox();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Reviews',
+          AppStrings.reviews,
           style: FontUtils.gabaritoStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -284,10 +290,24 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           ),
         ),
         const SizedBox(height: 12),
-        Text('${reviewResponse?.overallRating?.toString()} Ratings'??'',style: FontUtils.gabaritoStyle(fontWeight: FontWeight.w700,fontSize: 24,color: AppColors.textColor)),
-        const SizedBox(height: 12,),
-        Text('${reviewResponse?.count?.toString()} Reviews'??'',style: FontUtils.circularStdStyle(fontWeight: FontWeight.w400,fontSize: 12,color: AppColors.textColor)),
-        const SizedBox(height: 12,),
+        Text(
+            '${reviewResponse?.overallRating?.toString()} ${AppStrings.rating}' ??
+                '',
+            style: FontUtils.gabaritoStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 24,
+                color: AppColors.textColor)),
+        const SizedBox(
+          height: 12,
+        ),
+        Text('${reviewResponse?.count?.toString()} ${AppStrings.reviews}' ?? '',
+            style: FontUtils.circularStdStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 12,
+                color: AppColors.textColor)),
+        const SizedBox(
+          height: 12,
+        ),
         ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
@@ -295,7 +315,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           itemBuilder: (context, index) {
             final review = reviewResponse!.productReviews![index];
             return ReviewCard(
-              profileImageUrl: 'profileImageUrl',
+              profileImageUrl: AppStrings.profileImageUrl,
               name: review.customer?.firstName ?? '',
               reviewText: review.description!,
               rating: double.parse(review.rating!),
@@ -313,7 +333,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
           child: CircularProgressIndicator(color: AppColors.primary));
     }
 
-    if(!productPresentInCart!)
+    if (!productPresentInCart!)
       // Start the animation when the widget is built
       _animationController.forward();
 
@@ -323,41 +343,41 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
         child: productPresentInCart!
             ? CartButton(
-          amount: CurrencyUtil.appendCurrency(
-              cartResponse?.cart?.subtotal?.toStringAsFixed(2) ?? ''),
-          title: 'Go to Cart',
-          onPressed: navigateToCart,
-        )
+                amount: CurrencyUtil.appendCurrency(
+                    cartResponse?.cart?.subtotal?.toStringAsFixed(2) ?? ''),
+                title: 'Go to Cart',
+                onPressed: navigateToCart,
+              )
             : Padding(
-          padding:
-          const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30)),
-              minimumSize: const Size(double.infinity, 56),
-            ),
-            onPressed: () async {
-              setState(() => productPresentInCart = true);
-              await addCart(1, product?.variants?.first.id ?? '');
-            },
-            child: Text(
-              'Add to Cart',
-              style: FontUtils.circularStdStyle(
-                  fontSize: 18, color: Colors.white),
-            ),
-          ),
-        ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    minimumSize: const Size(double.infinity, 56),
+                  ),
+                  onPressed: () async {
+                    setState(() => productPresentInCart = true);
+                    await addCart(1, product?.variants?.first.id ?? '');
+                  },
+                  child: Text(
+                    AppStrings.add_to_cart,
+                    style: FontUtils.circularStdStyle(
+                        fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
       ),
     );
   }
 
-
   Future<void> getProductsApi() async {
     try {
       final apiService = ApiService();
-      final response = await apiService.productDetail(context, widget.productId);
+      final response =
+          await apiService.productDetail(context, widget.productId);
       setState(() {
         product = response.product;
         variantId = product?.variants?.first.id;
@@ -372,12 +392,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
     }
   }
 
-
-
   Future<void> getReviewApi() async {
     try {
       final apiService = ApiService();
-      final response = await apiService.getProductReviews(context, widget.productId);
+      final response =
+          await apiService.getProductReviews(context, widget.productId);
       setState(() => reviewResponse = response);
     } catch (e) {
       print(e);
@@ -387,7 +406,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   Future<void> getProductsInfoApi() async {
     try {
       final apiService = ApiService();
-      final response = await apiService.getProductInfo(context, widget.productId, variantId);
+      final response =
+          await apiService.getProductInfo(context, widget.productId, variantId);
       setState(() {
         productInfoResponse = response;
         setState(() {
@@ -415,7 +435,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   Future<void> addFavourite() async {
-    if (!isFavorite){
+    if (!isFavorite) {
       try {
         final apiService = ApiService();
         await apiService.addFavourite(context, widget.productId);
@@ -426,7 +446,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
         print(e);
       }
     }
-
   }
 
   Future<void> getCartApi() async {
@@ -435,8 +454,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
       final response = await apiService.getCart(context);
       setState(() {
         cartResponse = response;
-        productPresentInCart = cartResponse?.cart?.items?.any((item) => item.variantId == variantId) ?? false;
-        AppLogger.print('productPresentInCart', '$productPresentInCart');
+        productPresentInCart = cartResponse?.cart?.items
+                ?.any((item) => item.variantId == variantId) ??
+            false;
+        AppLogger.print(
+            AppStrings.product_present_cart, '$productPresentInCart');
         emitEvent(cartResponse!);
       });
     } catch (e) {
@@ -448,7 +470,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   }
 
   void emitEvent(CartResponse cartResponse) {
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,
+        cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
   Future<void> navigateToCart() async {
@@ -468,8 +491,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
 
       // Find the current quantity of the product in the cart
       final currentQuantity = cartResponse?.cart?.items
-          ?.firstWhere((item) => item.variantId == variantId, orElse: null)
-          ?.quantity ??
+              ?.firstWhere((item) => item.variantId == variantId, orElse: null)
+              ?.quantity ??
           0;
 
       // Calculate the difference to adjust the quantity
@@ -488,15 +511,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>  with SingleTicke
   void removeCart(String cartItemId) async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.removeCart(context,cartItemId);
+      await apiService.removeCart(context, cartItemId);
       await getCartApi();
     } catch (e) {
-      setState(() {
-
-      });
+      setState(() {});
       print(e);
     }
   }
-
 }
-

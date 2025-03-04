@@ -9,6 +9,7 @@ import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../api/api_service.dart';
@@ -23,7 +24,8 @@ class BottomNavPage extends StatefulWidget {
   _BottomNavPageState createState() => _BottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
+class _BottomNavPageState extends State<BottomNavPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
   bool _isLoading = true;
@@ -67,7 +69,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
         _isLoading = false;
       });
     } catch (e) {
-      print("Error initializing pages: $e");
+      print("${AppStrings.error_init_pages}: $e");
       setState(() {
         _isLoading = false;
       });
@@ -103,8 +105,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       backgroundColor: Colors.white,
       body: _isLoading
           ? const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _getPage(), // Dynamically build the current page
       bottomNavigationBar: SlideTransition(
         position: _slideAnimation,
@@ -118,23 +120,23 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
           items: const [
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-              label: 'Shop',
+              label: AppStrings.shop,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-              label: 'Categories',
+              label: AppStrings.categories,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-              label: 'Cart',
+              label: AppStrings.cart,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-              label: 'Favourite',
+              label: AppStrings.favourite,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-              label: 'Account',
+              label: AppStrings.account,
             ),
           ],
           selectedItemColor: AppColors.primary,
@@ -149,22 +151,24 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     );
   }
 
-
   Future<void> getCustomerApi() async {
     try {
       Customer? customer = await getCustomerResponse();
       if (customer == null) {
         final ApiService apiService = ApiService();
-        CustomerResponse customerResponse = await apiService.getCustomer(context);
-        await SharedPreferencesUtil().saveMap('customer', customerResponse.customer!.toJson());
+        CustomerResponse customerResponse =
+            await apiService.getCustomer(context);
+        await SharedPreferencesUtil()
+            .saveMap(AppStrings.customer, customerResponse.customer!.toJson());
       }
     } catch (e) {
-      print("Error fetching customer: $e");
+      print("${AppStrings.error_fetching_customer}  : $e");
     }
   }
 
   Future<Customer?> getCustomerResponse() async {
-    dynamic userData = await SharedPreferencesUtil().getMap('customer');
+    dynamic userData =
+        await SharedPreferencesUtil().getMap(AppStrings.customer);
     if (userData != null) {
       return Customer.fromJson(userData);
     }
@@ -175,15 +179,16 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      await SharedPreferencesUtil().saveString(
+          AppStrings.region_id, homePageResponse!.global!.regionId!);
+      await SharedPreferencesUtil()
+          .saveString(AppStrings.cart_id, homePageResponse!.global!.cartId!);
+      await SharedPreferencesUtil().saveString(AppStrings.currency_symbol,
+          homePageResponse!.global!.currencySymbol!);
+      await SharedPreferencesUtil()
+          .saveMap(AppStrings.global, homePageResponse!.global!.toJson());
     } catch (e) {
-      print("Error fetching home page: $e");
+      print("${AppStrings.error_fetching_homepage}: $e");
     }
   }
 }
-
-
-

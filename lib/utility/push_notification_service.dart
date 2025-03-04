@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 class PushNotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -12,14 +13,14 @@ class PushNotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
+      print(AppStrings.user_granted_permission);
     } else {
-      print('User declined or has not accepted permission');
+      print(AppStrings.user_declined_or_has_not_accepted_permission);
     }
 
     // Get FCM token
     String? token = await _firebaseMessaging.getToken();
-    print('FCM Token: $token');
+    print('${AppStrings.FCM_Token}: $token');
 
     // Send token to your server
     if (token != null) {
@@ -28,16 +29,15 @@ class PushNotificationService {
 
     // Listen to foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a message in the foreground: ${message.notification?.title}');
+      print(
+          '${AppStrings.received_a_message_in_the_foreground}: ${message.notification?.title}');
     });
 
     // Handle message interactions
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification clicked!');
+      print(AppStrings.notification_clicked);
     });
   }
 
-  Future<void> sendTokenToServer(String token) async {
-
-  }
+  Future<void> sendTokenToServer(String token) async {}
 }

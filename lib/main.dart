@@ -1,5 +1,6 @@
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/push_notification_service.dart';
@@ -11,7 +12,7 @@ import 'package:flutter/material.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  String? currencySymbol = await SharedPreferencesUtil().getString('currency_symbol') ?? '₹';
+  String? currencySymbol = await SharedPreferencesUtil().getString(AppStrings.currency_symbol) ?? '₹';
 
   // Initialize the currency symbol cache
   await CurrencyUtil.initializeCurrencySymbol(currencySymbol);

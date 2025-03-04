@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 class FontUtils {
   // Font families
-  static const String circularStd = 'CircularStd';
-  static const String gabarito = 'Gabarito';
+  static const String circularStd =AppStrings.circularStd;
+
+  static const String gabarito =AppStrings.gabarito;
+
 
   /// Get TextStyle for CircularStd font
   static TextStyle circularStdStyle({

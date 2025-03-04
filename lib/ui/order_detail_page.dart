@@ -27,16 +27,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusTile('Delivered', false, '28 May'),
-            _buildStatusTile('Shipped', true, '28 May'),
-            _buildStatusTile('Order Confirmed', true, '28 May'),
-            _buildStatusTile('Order Placed', true, '28 May'),
+            _buildStatusTile(AppStrings.delivered, false, '28 May'),
+            _buildStatusTile(AppStrings.shipped, true, '28 May'),
+            _buildStatusTile(AppStrings.order_confirmed, true, '28 May'),
+            _buildStatusTile(AppStrings.order_placed, true, '28 May'),
             const SizedBox(height: 20),
-            _buildSectionTitle('Order Items'),
+            _buildSectionTitle(AppStrings.order_items),
             const SizedBox(height: 15),
             _buildOrderItemTile(),
             const SizedBox(height: 20),
-            _buildSectionTitle('Shipping details'),
+            _buildSectionTitle(AppStrings.shipping_details),
             const SizedBox(height: 20),
             _buildShippingDetailsCard(),
           ],
@@ -94,7 +94,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       child: ListTile(
         leading: Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
         title: Text(
-          '4 items',
+          AppStrings.four_items,
           style: FontUtils.circularStdStyle(fontSize: 16.0),
         ),
         trailing: Row(
@@ -105,7 +105,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               onPressed: () {
                 PageRouteUtils.pushWithSlide(context, OrderDetailItemPage());
               },
-              child: Text('View All',
+              child: Text(AppStrings.view_all,
                   style: FontUtils.circularStdStyle(
                       fontSize: 16,
                       color: AppColors.primary,

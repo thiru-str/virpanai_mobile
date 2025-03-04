@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../../model/home_page_response.dart';
@@ -62,11 +63,11 @@ class Item3 extends StatelessWidget {
               return GestureDetector(
                 onTap: () {
                   switch (content.layoutOption!) {
-                    case "Category":
+                    case AppStrings.category:
                       PageRouteUtils.pushWithFade(context, ProductPage(categoryId: layoutData.id!));
-                    case "Product":
+                    case AppStrings.product:
                       PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: layoutData.id!));
-                    case "Brand":
+                    case AppStrings.brand:
                       PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
                   }
                 },

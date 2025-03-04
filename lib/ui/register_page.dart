@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 import '../api/api_service.dart';
 import '../utility/app_assets.dart';
@@ -15,7 +16,11 @@ class RegisterPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
   final String token;
-  const RegisterPage({super.key,required this.countryCode,required this.phoneNo,required this.token});
+  const RegisterPage(
+      {super.key,
+      required this.countryCode,
+      required this.phoneNo,
+      required this.token});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -29,7 +34,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
 
-
   bool apiCalling = true;
   RegisterResponse? registerResponse;
 
@@ -37,11 +41,11 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar:AppBar(
+      appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: SvgPicture.asset(AppAssets.ic_arrow_svg,height: 16,width: 16),
+          icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -56,7 +60,8 @@ class _RegisterPageState extends State<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Hello! Register to get started",
+                  AppStrings.register_msg,
+                
                   style: FontUtils.gabaritoStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -65,50 +70,50 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 32),
                 CustomTextField(
-                  hintText: "First Name",
+                  hintText: AppStrings.firstname,
                   controller: firstNameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "First name  is required";
+                      return AppStrings.firstname_required;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: "Last Name",
+                  hintText: AppStrings.lastname,
                   controller: lastNameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "First name  is required";
+                      return AppStrings.lastname_required;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: "Email",
+                  hintText: AppStrings.email,
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Email is required";
+                      return AppStrings.email_required;
                     }
                     if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                         .hasMatch(value)) {
-                      return "Enter a valid email";
+                      return AppStrings.enter_valid_email;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: "Company",
+                  hintText: AppStrings.company,
                   controller: companyController,
                   isPassword: false,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Company is required";
+                      return AppStrings.company_required;
                     }
                     return null;
                   },
@@ -149,13 +154,21 @@ class _RegisterPageState extends State<RegisterPage> {
   void register() async {
     try {
       final ApiService apiService = ApiService();
-      registerResponse = await apiService.register(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text,widget.phoneNo,widget.token);
+      registerResponse = await apiService.register(
+          context,
+          emailController.text,
+          companyController.text,
+          firstNameController.text,
+          lastNameController.text,
+          widget.phoneNo,
+          widget.token);
       setState(() {
         apiCalling = false;
       });
 
-      SharedPreferencesUtil().saveString('token', widget.token);
-      SharedPreferencesUtil().saveMap('customer', registerResponse!.customer!.toJson());
+      SharedPreferencesUtil().saveString(AppStrings.token, widget.token);
+      SharedPreferencesUtil()
+          .saveMap(AppStrings.customer, registerResponse!.customer!.toJson());
 
       PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
     } catch (e) {

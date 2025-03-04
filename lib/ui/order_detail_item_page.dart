@@ -36,7 +36,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildOrdersList(),
-            _buildSectionTitle('Billing details'),
+            _buildSectionTitle(AppStrings.billing_details),
             const SizedBox(height: 10),// List of order items
             Container(
               padding: const EdgeInsets.all(0.0),
@@ -47,22 +47,22 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CartCalculation(
-                    keyText: 'Subtotal:',
+                    keyText: '${AppStrings.subTotal}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.subtotal ?? 0).toString()),
                   ),
                   CartCalculation(
-                    keyText: 'Tax:',
+                    keyText: '${AppStrings.tax}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.taxTotal ?? 0).toString()),
                   ),
                   CartCalculation(
-                    keyText: 'Total:',
+                    keyText: '${AppStrings.total}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.total ?? 0).toString())
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            _buildSectionTitle('Shipping details'),
+            _buildSectionTitle(AppStrings.shipping_details),
             const SizedBox(height: 20),// List of order items
             _buildShippingDetailsCard(),  // Shipping details card
           ],

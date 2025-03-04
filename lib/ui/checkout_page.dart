@@ -20,6 +20,7 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import 'package:lottie/lottie.dart';
@@ -62,7 +63,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CommonHeaderAppBar(
-          title: 'Checkout',
+          title: AppStrings.check_out,
           onBackTap: () {
             Navigator.of(context).pop();
           },
@@ -81,8 +82,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CheckoutItemCard(
-                            title: 'Shipping Address',
-                            subtitle: addAddress? selectedAddress!.address1!: 'Add Shipping Address',
+                            title: AppStrings.shipping_address,
+                            subtitle: addAddress? selectedAddress!.address1!: AppStrings.add_shipping_address,
                             onTap: () {
                               PageRouteUtils.pushWithSlide(context, AddressListPage(isFromCheckout: true,onSelectedAddress: (address){
                               setState(() {
@@ -92,8 +93,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               },));
                             }),
                         CheckoutItemCard(
-                            title: 'Payment Method',
-                            subtitle: addPaymentMethod? pp_title!: 'Add Payment Method',
+                            title: AppStrings.payemnt_method,
+                            subtitle: addPaymentMethod? pp_title!: AppStrings.add_payment_method,
                             onTap: () async {
                               Global? global  = await getGlobal();
                               if (global != null) {
@@ -115,27 +116,27 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CartCalculation(
-                      keyText: 'Subtotal:',
+                      keyText: '${AppStrings.subTotal}:',
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
                     ),
                     Visibility(
                         visible: cartResponse!.cart!.discountSubtotal!>0,
                         child: CartCalculation(
-                          keyText: 'Discount:',
+                          keyText: '${AppStrings.discount}:',
                           valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
                         )),
                     Visibility(
                         visible: cartResponse!.cart!.shippingSubtotal!>0,
                         child: CartCalculation(
-                          keyText: 'Shipping:',
+                          keyText: '${AppStrings.shipping}:',
                           valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2))}',
                         )),
                     CartCalculation(
-                      keyText: 'Tax:',
+                      keyText: '${AppStrings.tax}:',
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
                     ),
                     CartCalculation(
-                      keyText: 'Total:',
+                      keyText: '${AppStrings.total}:',
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                     ),
                   ],
@@ -147,12 +148,12 @@ class _CheckOutPageState extends State<CheckOutPage> {
             padding: const EdgeInsets.all(16.0),
             child: placeOrderApiLoading?  Center(child: Lottie.asset(AppAssets.place_order_lottie,fit: BoxFit.cover)): CartButton(
                 amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
-                title: 'Place Order',
+                title: AppStrings.place_order,
                 onPressed: () {
                   if (!addAddress) {
-                    AppUtils.showToast('Add Shipping Address');
+                    AppUtils.showToast(AppStrings.add_shipping_address);
                   } else if (!addPaymentMethod) {
-                    AppUtils.showToast('Add Payment Method');
+                    AppUtils.showToast(AppStrings.add_payment_method);
                   }
                   else{ // validations done proceed to place order
                     setState(() {
@@ -181,7 +182,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   Future<Global?> getGlobal() async {
-    dynamic global = await SharedPreferencesUtil().getMap('global');
+    dynamic global = await SharedPreferencesUtil().getMap(AppStrings.global);
     if (global != null) {
       return Global.fromJson(global);
     }

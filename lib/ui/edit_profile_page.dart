@@ -57,45 +57,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   children: [
                     const SizedBox(height: 32),
                     CustomTextField(
-                      hintText: "First Name",
+                      hintText: AppStrings.firstname,
                       controller: firstNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "First name  is required";
+                          return AppStrings.firstname_required;
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
-                      hintText: "Last Name",
+                      hintText:AppStrings.lastname,
                       controller: lastNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "First name  is required";
+                          return AppStrings.lastname_required;
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
-                      hintText: "Phone number",
+                      hintText: AppStrings.phone_number,
                       controller: phoneNoController,
                       keyboardType: TextInputType.phone,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Phone number is required";
+                          return AppStrings.phone_number_required;
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
-                      hintText: "Company",
+                      hintText: AppStrings.company,
                       controller: companyController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Company is required";
+                          return AppStrings.company_required;
                         }
                         return null;
                       },
@@ -105,7 +105,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           // Handle registration logic
-                          print("Form is valid. Proceed to register.");
+                          print(AppStrings.proceed_register);
                           updateUser();
                         }
                       },
@@ -117,7 +117,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         minimumSize: const Size(double.infinity, 60),
                       ),
                       child: Text(
-                        'Update',
+                        AppStrings.Upadte,
                         style: FontUtils.circularStdStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -144,7 +144,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         });
       }
     } catch (e) {
-      print("Error fetching customer info: $e");
+      print("${AppStrings.error_fetching_customer_info}: $e");
     } finally {
       setState(() {
         apiCalling = false; // Hide the loading spinner when done
@@ -153,7 +153,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<Customer?> getCustomerResponse() async {
-    dynamic userData = await SharedPreferencesUtil().getMap('customer');
+    dynamic userData = await SharedPreferencesUtil().getMap(AppStrings.customer);
     if (userData != null) {
       return Customer.fromJson(userData);
     }
@@ -173,7 +173,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         apiCalling = false;
       });
       SharedPreferencesUtil()
-          .saveMap('customer', registerResponse!.customer!.toJson());
+          .saveMap(AppStrings.customer, registerResponse!.customer!.toJson());
       Navigator.pop(context, true);
     } catch (e) {
       setState(() {

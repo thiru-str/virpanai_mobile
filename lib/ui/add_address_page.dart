@@ -50,12 +50,14 @@ class _AddAddressPage extends State<AddAddressPage> {
       zipCodeController.text = address.postalCode ?? '';
       selectedLocation = address.addressName ?? AppStrings.home;
       print(selectedLocation);
-      if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
+      if (selectedLocation != AppStrings.home &&
+          selectedLocation != AppStrings.work) {
         selectedLocation = AppStrings.others;
         otherAddressName.text = address.addressName ?? '';
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +73,8 @@ class _AddAddressPage extends State<AddAddressPage> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView( // Makes the body scrollable
+              child: SingleChildScrollView(
+                // Makes the body scrollable
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -100,7 +103,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                               controller: lastNameController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "Lastname is required";
+                                  return AppStrings.lastname_required;
                                 }
                                 return null;
                               },
@@ -121,23 +124,23 @@ class _AddAddressPage extends State<AddAddressPage> {
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
-                        hintText: "Phone Number",
+                        hintText: AppStrings.phone_number,
                         controller: phoneNumberController,
                         keyboardType: TextInputType.phone,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "Phone number is required";
+                            return AppStrings.phone_number_required;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
-                        hintText: "City",
+                        hintText: AppStrings.city,
                         controller: cityController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "City is required";
+                            return AppStrings.city_required;
                           }
                           return null;
                         },
@@ -147,11 +150,11 @@ class _AddAddressPage extends State<AddAddressPage> {
                         children: [
                           Expanded(
                             child: CustomTextField(
-                              hintText: "State",
+                              hintText: AppStrings.state,
                               controller: stateController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "State is required";
+                                  return AppStrings.state_required;
                                 }
                                 return null;
                               },
@@ -160,12 +163,12 @@ class _AddAddressPage extends State<AddAddressPage> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: CustomTextField(
-                              hintText: "Zip Code",
+                              hintText: AppStrings.zip_code,
                               controller: zipCodeController,
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "Zip code is required";
+                                  return AppStrings.zip_code_required;
                                 }
                                 return null;
                               },
@@ -191,7 +194,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: AppColors.secondary,
-                              hintText: 'ex: Friend House',
+                              hintText: AppStrings.ex_friend_house,
                               border: InputBorder.none,
                               focusedBorder: UnderlineInputBorder(
                                 borderSide: BorderSide(
@@ -208,7 +211,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter an address name';
+                                return AppStrings.enter_address;
                               }
                               return null;
                             }),
@@ -223,7 +226,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      print("Form is valid. Proceed to Create Address.");
+                      print(AppStrings.proceed_create_address);
                       createOrUpdateAddress();
                     }
                   },
@@ -251,33 +254,31 @@ class _AddAddressPage extends State<AddAddressPage> {
         ),
       ),
     );
-
-
   }
-
 
   Widget _buildHorizontalLocationList() {
     return SizedBox(
       height: 40, // Adjust height based on your design needs
       child: ListView.builder(
-        scrollDirection: Axis.horizontal, // Makes the ListView scroll horizontally
+        scrollDirection:
+            Axis.horizontal, // Makes the ListView scroll horizontally
         itemCount: locationItems.length, // The total number of items
         itemBuilder: (context, index) {
           final location = locationItems[index]; // Get the location data
-          final isSelected = selectedLocation == location['name']; // Selection logic
+          final isSelected =
+              selectedLocation == location['name']; // Selection logic
           return Padding(
-            padding: const EdgeInsets.only(right: 8.0), // Add spacing between items
+            padding:
+                const EdgeInsets.only(right: 8.0), // Add spacing between items
             child: GestureDetector(
               onTap: () {
                 setState(() {
-                  selectedLocation = location['name']; // Update selected location
+                  selectedLocation =
+                      location['name']; // Update selected location
                 });
               },
               child: _buildLocationButton(
-                  location['name'],
-                  location['icon'],
-                  isSelected
-              ),
+                  location['name'], location['icon'], isSelected),
             ),
           );
         },
@@ -290,7 +291,6 @@ class _AddAddressPage extends State<AddAddressPage> {
     {'name': AppStrings.work, 'icon': Icons.work},
     {'name': AppStrings.others, 'icon': Icons.location_pin},
   ];
-
 
   Widget _buildLocationButton(String location, IconData icon, bool isSelected) {
     return Container(
@@ -310,8 +310,7 @@ class _AddAddressPage extends State<AddAddressPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              color: isSelected ? Colors.black87 : Colors.grey[400],
-              size: 20),
+              color: isSelected ? Colors.black87 : Colors.grey[400], size: 20),
           const SizedBox(width: 8),
           Text(
             location,
@@ -326,12 +325,12 @@ class _AddAddressPage extends State<AddAddressPage> {
     );
   }
 
-
-
   void createOrUpdateAddress() async {
     try {
       final ApiService apiService = ApiService();
-      selectedLocation = selectedLocation == AppStrings.others ? otherAddressName.text : selectedLocation;
+      selectedLocation = selectedLocation == AppStrings.others
+          ? otherAddressName.text
+          : selectedLocation;
       registerResponse = await apiService.createOrUpdateAddress(
           context,
           firstNameController.text,

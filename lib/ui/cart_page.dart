@@ -8,6 +8,7 @@ import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -69,7 +70,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-              title: "Cart",
+              title: AppStrings.cart,
               leading: widget.isFromBottomNav ? false : true,
               onBackTap: () {
                 Navigator.pop(context,true);
@@ -107,7 +108,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                       imageUrl: cartItem.thumbnail!,
                                       productName: cartItem.productTitle!,
                                       size: cartItem.variantTitle!,
-                                      color: 'color',
+                                      color: AppStrings.color,
                                       // Replace with actual color
                                       price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
                                       quantity: cartItem.quantity!,
@@ -147,27 +148,27 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CartCalculation(
-                              keyText: 'Subtotal:',
+                              keyText: '${AppStrings.subTotal}:',
                               valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.subtotal!.toStringAsFixed(2)),
                             ),
                             Visibility(
                                 visible: cartResponse!.cart!.discountSubtotal!>0,
                                 child: CartCalculation(
-                                  keyText: 'Discount:',
+                                  keyText: '${AppStrings.discount}:',
                                   valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
                                 )),
                             Visibility(
                                 visible: cartResponse!.cart!.shippingSubtotal!>0,
                                 child: CartCalculation(
-                                  keyText: 'Shipping:',
+                                  keyText: '${AppStrings.shipping}:',
                                   valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2))}',
                                 )),
                             CartCalculation(
-                              keyText: 'Tax:',
+                              keyText: '${AppStrings.tax}:',
                               valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
                             ),
                             CartCalculation(
-                              keyText: 'Total:',
+                              keyText: '${AppStrings.total}:',
                               valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                             ),
                             const SizedBox(height: 10,),
@@ -188,12 +189,12 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        "Enter Promo Code",
+                                        AppStrings.enter_promo_code,
                                         style: TextStyle(color: AppColors.textColor),
                                       ),
                                     ),
                                     Text(
-                                      "Apply",
+                                     AppStrings.apply,
                                       style: TextStyle(color: AppColors.primary),
                                     ),
                                   ],
@@ -232,8 +233,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 )
               : Center(
                   child: NoOrdersWidget(
-                      message: 'Your Cart is Empty',
-                      buttonText: 'Explore Categories',
+                      message: AppStrings.cart_empty,
+                      buttonText: AppStrings.explore_categories,
                       iconPath: AppAssets.ic_cart_empty,
                       onButtonTap: () {})),
     );
@@ -339,14 +340,14 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
               // Promo Code Input
               Text(
-                "Enter Promo Code",
+                AppStrings.enter_promo_code,
                 style: FontUtils.circularStdStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: promoCodeController,
                 decoration: InputDecoration(
-                  hintText: "Promo Code",
+                  hintText: AppStrings.promo_code,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: AppColors.secondary),
@@ -372,7 +373,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                   }
                 },
                 child: Text(
-                  "Apply",
+                  AppStrings.apply,
                   style: FontUtils.circularStdStyle(fontSize: 16, color: Colors.white),
                 ),
               ),

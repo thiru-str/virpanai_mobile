@@ -5,6 +5,7 @@ import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -59,7 +60,7 @@ class _ProductPageState extends State<ProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        title: "Products",
+        title: AppStrings.product,
         onBackTap: () {
           Navigator.of(context).pop();
         },
@@ -91,7 +92,7 @@ class _ProductPageState extends State<ProductPage> {
                         controller: searchController,
                         textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
-                          hintText: "Search products...",
+                          hintText:AppStrings.search_product,
                           border: InputBorder.none,
                           prefixIcon: const Icon(Icons.search, color: Colors.grey),
                           suffixIcon: searchController.text.isNotEmpty
@@ -131,7 +132,7 @@ class _ProductPageState extends State<ProductPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  'All products',
+                 AppStrings.all_product,
                   style: FontUtils.circularStdStyle(
                     fontSize: 16,
                     color: AppColors.textColor,
@@ -174,8 +175,8 @@ class _ProductPageState extends State<ProductPage> {
               )
                   : Center(
                 child: NoOrdersWidget(
-                  message: 'No Products found',
-                  buttonText: 'Explore Categories',
+                  message: AppStrings.no_product,
+                  buttonText: AppStrings.explore_categories,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () {},
                 ),

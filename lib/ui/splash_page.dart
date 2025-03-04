@@ -8,6 +8,7 @@ import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../utility/shared_preferences_util.dart';
@@ -68,7 +69,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 
   void navToNextPage() async {
-    String? token = await SharedPreferencesUtil().getString('token');
+    String? token = await SharedPreferencesUtil().getString(AppStrings.token);
     Widget nextPage = token == null ? WelcomePage() : const BottomNavPage();
 
     // Delay navigation until the animation completes

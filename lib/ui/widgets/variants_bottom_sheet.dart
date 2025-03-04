@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_colors.dart';
@@ -79,7 +80,7 @@ class VariantsBottomSheet extends StatelessWidget {
                     size: 24,
                   )
                       : null,
-                  leading: title == 'Color'
+                  leading: title == AppStrings.color
                       ? CircleAvatar(
                     backgroundColor: _getColor(option),
                     radius: 12,

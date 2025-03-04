@@ -18,6 +18,7 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -33,7 +34,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
@@ -42,7 +42,6 @@ class _HomePageState extends State<HomePage> {
   List<String>? cartItemImages;
 
   late StreamSubscription<ViewCartModel> _eventSubscription;
-
 
   @override
   void initState() {
@@ -65,7 +64,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription
+        .cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
@@ -73,54 +73,62 @@ class _HomePageState extends State<HomePage> {
     getHomePageApi();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:CommonHeaderAppBar(
-        title: "Home",
-        leading: false,
-        onBackTap: () {
-          Navigator.of(context).pop();
-        },
-      ),
-      backgroundColor: Colors.white,
-      body: Stack(
-        children:[ apiLoading? const Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-            :Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView.separated(
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
-                scrollDirection: Axis.vertical,
-                itemCount: homePageResponse!.content!.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final homePageContent = homePageResponse!.content![index];
-                  return getLayoutWidget(homePageContent);
-                },
+        appBar: CommonHeaderAppBar(
+          title: AppStrings.home,
+          leading: false,
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            apiLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ListView.separated(
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
+                      scrollDirection: Axis.vertical,
+                      itemCount: homePageResponse!.content!.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        final homePageContent =
+                            homePageResponse!.content![index];
+                        return getLayoutWidget(homePageContent);
+                      },
+                    ),
+                  ),
+            Visibility(
+              visible: cartItems != null && cartItems != 0,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: cartItems != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            PageRouteUtils.pushWithSlide(
+                                context, const CartPage());
+                          },
+                          child: ViewCartWidget(
+                              totalItems: cartItems!,
+                              itemImages: cartItemImages!),
+                        ),
+                      )
+                    : const SizedBox(),
               ),
             ),
-          Visibility(
-            visible: cartItems!= null && cartItems != 0,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: cartItems!=null ?Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: GestureDetector(
-                  onTap: (){
-                    PageRouteUtils.pushWithSlide(context, const CartPage());
-                  },
-                  child: ViewCartWidget(
-                    totalItems: cartItems!,
-                    itemImages:  cartItemImages!
-                  ),
-                ),
-              ): const SizedBox(),
-            ),
-          ),
-        ],
-      )
-    );
+          ],
+        ));
   }
 
   Widget getLayoutWidget(Content homePageContent) {
@@ -150,10 +158,14 @@ class _HomePageState extends State<HomePage> {
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
-      SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      SharedPreferencesUtil().saveString(
+          AppStrings.region_id, homePageResponse!.global!.regionId!);
+      SharedPreferencesUtil()
+          .saveString(AppStrings.cart_id, homePageResponse!.global!.cartId!);
+      SharedPreferencesUtil().saveString(AppStrings.currency_symbol,
+          homePageResponse!.global!.currencySymbol!);
+      SharedPreferencesUtil()
+          .saveMap(AppStrings.global, homePageResponse!.global!.toJson());
       setState(() {
         apiLoading = false;
         homePageResponse;
@@ -173,12 +185,11 @@ class _HomePageState extends State<HomePage> {
       cartResponse = await apiService.getCart(context);
       setState(() {
         cartItems = cartResponse!.cart!.items!.length;
-        cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
+        cartItemImages =
+            cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
       });
     } catch (e) {
       print(e);
     }
   }
-
-
 }

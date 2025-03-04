@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class RatingWidget extends StatelessWidget {
@@ -8,7 +9,8 @@ class RatingWidget extends StatelessWidget {
   final TextEditingController reviewController = TextEditingController();
   final VoidCallback onSubmit;
 
-  RatingWidget({Key? key, required this.onSubmit, this.onRatingChanged}) : super(key: key);
+  RatingWidget({Key? key, required this.onSubmit, this.onRatingChanged})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class RatingWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Add your rating and review!',
+            AppStrings.add_your_rating_and_review,
             style: FontUtils.circularStdStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.bold,
@@ -55,7 +57,8 @@ class RatingWidget extends StatelessWidget {
             controller: reviewController,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Write your review',
+              hintText: AppStrings.write_your_review,
+             
               fillColor: Colors.grey.shade300,
               filled: true,
               border: OutlineInputBorder(
@@ -72,10 +75,12 @@ class RatingWidget extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
             ),
             child: const Text(
-              'Submit Review',
+              AppStrings.submit_review,
+             
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,

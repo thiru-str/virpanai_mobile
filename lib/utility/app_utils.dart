@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 class AppUtils {
   // Private constructor to prevent instantiation
   AppUtils._();
 
   // Static method to show a toast message
-  static void showToast(String message, {Color backgroundColor = Colors.white}) {
+  static void showToast(String message,
+      {Color backgroundColor = Colors.white}) {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
@@ -28,12 +30,11 @@ class AppUtils {
     int differenceInDays = now.difference(inputDate).inDays;
 
     if (differenceInDays == 0) {
-      return "Today";
+      return AppStrings.Today;
     } else if (differenceInDays == 1) {
-      return "Yesterday";
+      return AppStrings.Yesterday;
     } else {
-      return "$differenceInDays days ago";
+      return "$differenceInDays ${AppStrings.days_ago}";
     }
   }
-
 }

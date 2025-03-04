@@ -15,10 +15,12 @@ import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 
 class AddressListPage extends StatefulWidget {
-
   final Function(Address address) onSelectedAddress;
   final bool isFromCheckout;
-  const AddressListPage({super.key,required this.onSelectedAddress,this.isFromCheckout = false});
+  const AddressListPage(
+      {super.key,
+      required this.onSelectedAddress,
+      this.isFromCheckout = false});
 
   @override
   State<AddressListPage> createState() => _AddressListPageState();
@@ -72,26 +74,33 @@ class _AddressListPageState extends State<AddressListPage> {
                             return GestureDetector(
                               child: AddressCard(
                                 title: address?.addressName ??
-                                    'Others', // If address name is null, show 'Untitled'
+                                    AppStrings
+                                        .others, // If address name is null, show 'Untitled'
                                 address:
                                     '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                                icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
+                                icon: address?.addressName == AppStrings.home
+                                    ? Icons.home
+                                    : address?.addressName == AppStrings.work
+                                        ? Icons.work
+                                        : Icons
+                                            .location_pin, // Or choose another icon based on address data
                                 onDelete: () {
                                   _showDeleteDialog(context, address?.id);
                                 },
                                 onEdit: () async {
-                                  final result = await PageRouteUtils.pushWithSlide(
-                                      context,
-                                      AddAddressPage(
-                                        selectedAddress: address,
-                                      ));
+                                  final result =
+                                      await PageRouteUtils.pushWithSlide(
+                                          context,
+                                          AddAddressPage(
+                                            selectedAddress: address,
+                                          ));
                                   if (result == true) {
                                     getAddressListApi();
                                   }
                                 },
                               ),
-                              onTap: (){
-                                if(widget.isFromCheckout) {
+                              onTap: () {
+                                if (widget.isFromCheckout) {
                                   widget.onSelectedAddress(address!);
                                   Navigator.pop(context);
                                 }
@@ -106,8 +115,7 @@ class _AddressListPageState extends State<AddressListPage> {
                           child: ElevatedButton(
                             onPressed: () async {
                               final result = await PageRouteUtils.pushWithSlide(
-                                  context,
-                                  AddAddressPage());
+                                  context, AddAddressPage());
                               if (result == true) {
                                 getAddressListApi();
                               }
@@ -140,8 +148,7 @@ class _AddressListPageState extends State<AddressListPage> {
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () async {
                     final result = await PageRouteUtils.pushWithSlide(
-                        context,
-                        AddAddressPage());
+                        context, AddAddressPage());
                     if (result == true) {
                       getAddressListApi();
                     }
@@ -175,12 +182,12 @@ class _AddressListPageState extends State<AddressListPage> {
       context: context,
       builder: (context) {
         return CommonAlertDialog(
-          title: "Confirm Deletion",
-          content: "Are you sure you want to delete this address?",
-          contentOk: "Yes",
-          contentCancel: "No",
+          title: AppStrings.confirm_deletion,
+          content: AppStrings.sure_delete_address,
+          contentOk: AppStrings.yes,
+          contentCancel: AppStrings.no,
           onTapOk: () {
-            print("OK");
+            print(AppStrings.ok);
             Navigator.pop(context);
             deleteAddress(addressID); // Call deleteAddress when confirmed
           },

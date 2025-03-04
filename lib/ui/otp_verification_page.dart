@@ -4,6 +4,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/register_page.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -17,7 +18,11 @@ class OtpVerificationPage extends StatefulWidget {
   final String phoneNo;
   final String otp;
 
-  const OtpVerificationPage({super.key,required this.countryCode,required this.phoneNo,this.otp = ''});
+  const OtpVerificationPage(
+      {super.key,
+      required this.countryCode,
+      required this.phoneNo,
+      this.otp = ''});
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -63,7 +68,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               const SizedBox(height: 16),
               // Title
               Text(
-                'Enter Your 6-Digit\nCode',
+                AppStrings.enter_otp_digit,
                 style: FontUtils.circularStdStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -73,7 +78,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               const SizedBox(height: 24),
               // Form for phone input
               Text(
-                'Enter the code from the number we sent to\n ${widget.countryCode} ${widget.phoneNo}',
+                '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
                 style: FontUtils.circularStdStyle(
                   fontSize: 16,
                   color: Colors.grey[700]!,
@@ -108,7 +113,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 ),
                 enableActiveFill: true,
                 onCompleted: (value) {
-                  print("OTP Entered: $value");
+                  print("${AppStrings.OTP_entered}: $value");
                 },
                 onChanged: (value) {
                   print(value);
@@ -125,43 +130,45 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           shape: const CircleBorder(),
           onPressed: () {
             // Validate OTP and proceed
-            print('Submitted OTP: ${_otpController.text}');
+            print('${AppStrings.submitted_otp}: ${_otpController.text}');
             verifyOtp();
           },
           backgroundColor: AppColors.primary,
           child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
         ),
       ),
-      resizeToAvoidBottomInset: true, // Ensures keyboard does not cause overflow
+      resizeToAvoidBottomInset:
+          true, // Ensures keyboard does not cause overflow
     );
   }
-
-
-
 
   void verifyOtp() async {
     try {
       final ApiService apiService = ApiService();
-      verifyOtpResponse = await apiService.verifyOtp(context,widget.phoneNo,_otpController.text);
+      verifyOtpResponse = await apiService.verifyOtp(
+          context, widget.phoneNo, _otpController.text);
       setState(() {
         apiCalling = false;
       });
 
-      if(!verifyOtpResponse!.newUser!) {
-        SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
-      }
-      else{
+      if (!verifyOtpResponse!.newUser!) {
+        SharedPreferencesUtil()
+            .saveString(AppStrings.token, verifyOtpResponse!.token!);
+      } else {
         //redirect to create account page
-        if(mounted) {
-          PageRouteUtils.pushWithSlide(context, RegisterPage(
-            phoneNo: widget.phoneNo,
-            countryCode: widget.countryCode,
-            token: verifyOtpResponse!.token!,));
+        if (mounted) {
+          PageRouteUtils.pushWithSlide(
+              context,
+              RegisterPage(
+                phoneNo: widget.phoneNo,
+                countryCode: widget.countryCode,
+                token: verifyOtpResponse!.token!,
+              ));
         }
         return;
       }
 
-      if(mounted) {
+      if (mounted) {
         PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
       }
     } catch (e) {

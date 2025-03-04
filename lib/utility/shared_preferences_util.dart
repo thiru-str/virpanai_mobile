@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 class SharedPreferencesUtil {
   static final SharedPreferencesUtil _instance = SharedPreferencesUtil._internal();
@@ -85,18 +86,18 @@ class SharedPreferencesUtil {
   // Static method to save the user ID to SharedPreferences
   static Future<void> saveUserId(int userId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('user_id', userId);
+    await prefs.setInt(AppStrings.user_id, userId);
   }
 
   // Static method to retrieve the user ID from SharedPreferences
   static Future<int?> getUserId() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('user_id');
+    return prefs.getInt(AppStrings.user_id);
   }
 
   // Static method to remove the user ID from SharedPreferences (e.g., on logout)
   static Future<void> removeUserId() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user_id');
+    await prefs.remove(AppStrings.user_id);
   }
 }

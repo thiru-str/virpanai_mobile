@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 
 class ViewCartWidget extends StatelessWidget {
@@ -82,7 +83,8 @@ class ViewCartWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'View Cart',
+                AppStrings.view_cart,
+               
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -90,7 +92,7 @@ class ViewCartWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                '$totalItems ${totalItems == 1 ? "Item" : "Items"}',
+                '$totalItems ${totalItems == 1 ? AppStrings.item : AppStrings.items}',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.8),
                   fontSize: 14,

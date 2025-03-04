@@ -4,6 +4,7 @@ import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -34,7 +35,7 @@ class _CategoryPageState extends State<CategoryPage> {
     return Scaffold(
       appBar:
       CommonHeaderAppBar(
-        title: "Categories",
+        title: AppStrings.categories,
         leading: widget.isFromBottomNav ? false : true,
         onBackTap: () {
           Navigator.pop(context,true);
@@ -49,7 +50,7 @@ class _CategoryPageState extends State<CategoryPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text('All categories',style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
+                  child: Text(AppStrings.all_category,style: FontUtils.circularStdStyle(fontSize: 16,color: AppColors.textColor)),
                 ),
                 const SizedBox(height: 10,),
                 Expanded(

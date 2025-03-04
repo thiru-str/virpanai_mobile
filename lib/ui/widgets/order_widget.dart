@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class OrderWidget extends StatelessWidget {
@@ -40,7 +41,7 @@ class OrderWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Order #$orderId',
+                      '${AppStrings.order} #$orderId',
                       style: FontUtils.circularStdStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -49,7 +50,7 @@ class OrderWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$itemCount items',
+                      '$itemCount ${AppStrings.items}',
                       style: FontUtils.circularStdStyle(
                         fontSize: 14,
                         color: Colors.grey[600]!,

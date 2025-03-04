@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_colors.dart';
@@ -23,7 +24,7 @@ class AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: AppColors.secondary,
         borderRadius: BorderRadius.circular(12.0),
@@ -31,7 +32,9 @@ class AddressCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 10,),
+          const SizedBox(
+            height: 10,
+          ),
           Row(
             children: [
               Icon(
@@ -55,14 +58,13 @@ class AddressCard extends StatelessWidget {
             margin: const EdgeInsets.only(left: 36.0),
             child: Text(
               address,
-              style:  FontUtils.circularStdStyle(
+              style: FontUtils.circularStdStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 color: AppColors.profileItemArrowColor,
               ),
             ),
           ),
-
           Container(
             margin: const EdgeInsets.only(left: 36.0),
             child: Row(
@@ -70,13 +72,15 @@ class AddressCard extends StatelessWidget {
               children: [
                 TextButton(
                   style: TextButton.styleFrom(
-                    padding:  EdgeInsets.zero, // Removes the default padding
-                    minimumSize: const Size(0, 0), // Ensures no extra size is added
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
+                    padding: EdgeInsets.zero, // Removes the default padding
+                    minimumSize:
+                        const Size(0, 0), // Ensures no extra size is added
+                    tapTargetSize: MaterialTapTargetSize
+                        .shrinkWrap, // Shrinks the tap area
                   ),
                   onPressed: onDelete,
-                  child:  Text(
-                    'DELETE',
+                  child: Text(
+                    AppStrings.delete,
                     style: FontUtils.circularStdStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -86,8 +90,8 @@ class AddressCard extends StatelessWidget {
                 const SizedBox(width: 16),
                 TextButton(
                   onPressed: onEdit,
-                  child:  Text(
-                    'EDIT',
+                  child: Text(
+                    AppStrings.edit,
                     style: FontUtils.circularStdStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
