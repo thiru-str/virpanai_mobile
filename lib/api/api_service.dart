@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -662,6 +663,16 @@ class ApiService {
       payload,
           (json) => ProductInfoResponse.fromJson(json),
       context,
+    );
+  }
+
+  Future<StoreContentResponse> getStoreContent(BuildContext context) async {
+    return _makeGetRequest<StoreContentResponse>(
+      '/store/content',
+      null,
+      null,
+          (json) => StoreContentResponse.fromJson(json),
+      null,
     );
   }
 
