@@ -186,15 +186,15 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                   children: [
                                     const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
                                     const SizedBox(width: 8),
-                                    const Expanded(
+                                    Expanded(
                                       child: Text(
                                         "Enter Promo Code",
-                                        style: TextStyle(color: AppColors.textColor),
+                                        style: FontUtils.primaryFontStyle(color: AppColors.textColor),
                                       ),
                                     ),
                                     Text(
                                       "Apply",
-                                      style: TextStyle(color: AppColors.primary),
+                                      style: FontUtils.secondaryFontStyle(color: AppColors.primary),
                                     ),
                                   ],
                                 ),

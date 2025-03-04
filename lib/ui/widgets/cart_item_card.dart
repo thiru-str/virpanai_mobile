@@ -64,7 +64,7 @@ class CartItemCard extends StatelessWidget {
                     Text(
                       productName,
                       maxLines: 2,
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         overflow: TextOverflow.ellipsis,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class CartItemCard extends StatelessWidget {
                     Text(
                       size,
                       maxLines: 1,
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         overflow: TextOverflow.ellipsis,
                         fontSize: 14,
                         color: Colors.black54,
@@ -91,7 +91,7 @@ class CartItemCard extends StatelessWidget {
                 children: [
                   Text(
                     price,
-                    style: TextStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -118,7 +118,7 @@ class CartItemCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         '$quantity',
-                        style: TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
