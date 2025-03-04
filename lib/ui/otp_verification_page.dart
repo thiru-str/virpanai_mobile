@@ -142,7 +142,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void verifyOtp() async {
     try {
       final ApiService apiService = ApiService();
-      verifyOtpResponse = await apiService.verifyOtp(context,widget.phoneNo,_otpController.text);
+      verifyOtpResponse = await apiService.verifyOtp(context,widget.countryCode,widget.phoneNo,_otpController.text);
       setState(() {
         apiCalling = false;
       });
