@@ -42,6 +42,8 @@ class CheckoutItemCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: FontUtils.primaryFontStyle(
                     fontSize: 16,
                     color: Colors.black87,

@@ -22,7 +22,6 @@ class FontUtils {
     Color color = Colors.black,
     double letterSpacing = 0.0,
     TextDecoration decoration = TextDecoration.none,
-    TextOverflow overflow = TextOverflow.visible,
   }) {
     if (apiPrimaryFont != null && GoogleFonts.asMap().containsKey(apiPrimaryFont)) {
       return GoogleFonts.getFont(
@@ -51,7 +50,6 @@ class FontUtils {
     Color color = Colors.black,
     double letterSpacing = 0.0,
     TextDecoration decoration = TextDecoration.none,
-    TextOverflow overflow = TextOverflow.visible,
   }) {
     if (apiSecondaryFont != null && GoogleFonts.asMap().containsKey(apiSecondaryFont)) {
       return GoogleFonts.getFont(

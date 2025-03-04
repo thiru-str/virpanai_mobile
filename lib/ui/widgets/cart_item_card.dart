@@ -64,8 +64,8 @@ class CartItemCard extends StatelessWidget {
                     Text(
                       productName,
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        overflow: TextOverflow.ellipsis,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -75,8 +75,8 @@ class CartItemCard extends StatelessWidget {
                     Text(
                       size,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        overflow: TextOverflow.ellipsis,
                         fontSize: 14,
                         color: Colors.black54,
                       ),
