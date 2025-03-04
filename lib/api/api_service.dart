@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -225,16 +226,16 @@ class ApiService {
     PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
   }
 
-  Future<SendOtpResponse> sendOtp(BuildContext context, String phone) async {
-    return _makePostRequest("store/customers/send-otp", {"phone": phone},
+  Future<SendOtpResponse> sendOtp(BuildContext context, String countryCode,String phone) async {
+    return _makePostRequest("store/customers/send-otp", {"country_code":countryCode,"phone": phone},
         (data) => SendOtpResponse.fromJson(data), context);
   }
 
   Future<VerifyOtpResponse> verifyOtp(
-      BuildContext context, String phone, String otp) async {
+      BuildContext context, String countryCode,String phone, String otp) async {
     return _makePostRequest(
         "store/customers/verify-otp",
-        {"phone": phone, "otp": otp},
+        {"country_code":countryCode,"phone": phone, "otp": otp},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
   }
@@ -245,6 +246,7 @@ class ApiService {
       String companyName,
       String firstName,
       String lastName,
+      String countryCode,
       String phone,
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
@@ -256,7 +258,9 @@ class ApiService {
           "first_name": firstName,
           "last_name": lastName,
           "phone": phone,
-          "metadata": {}
+          "metadata": {
+            "country_code":countryCode
+          }
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -662,6 +666,16 @@ class ApiService {
       payload,
           (json) => ProductInfoResponse.fromJson(json),
       context,
+    );
+  }
+
+  Future<StoreContentResponse> getStoreContent(BuildContext context) async {
+    return _makeGetRequest<StoreContentResponse>(
+      '/store/content',
+      null,
+      null,
+          (json) => StoreContentResponse.fromJson(json),
+      null,
     );
   }
 

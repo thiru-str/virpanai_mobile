@@ -143,7 +143,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
   void sendOtp() async {
     try {
       final ApiService apiService = ApiService();
-      sendOtpResponse = await apiService.sendOtp(context,_phoneNumber!);
+      sendOtpResponse = await apiService.sendOtp(context,_countryCode!,_phoneNumber!);
       /*if (kDebugMode) {
         AppUtils.showToast(sendOtpResponse!.otp!);
       }*/

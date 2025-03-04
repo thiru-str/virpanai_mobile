@@ -74,9 +74,9 @@ class RatingWidget extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
             ),
-            child: const Text(
+            child: Text(
               'Submit Review',
-              style: TextStyle(
+              style: FontUtils.primaryFontStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,

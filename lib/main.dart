@@ -27,10 +27,10 @@ Future<void> main() async {
   // Initialize the currency symbol cache
   await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
-  await Firebase.initializeApp();
+  /*await Firebase.initializeApp();
 
   final pushNotificationService = PushNotificationService();
-  await pushNotificationService.initializeFCM();
+  await pushNotificationService.initializeFCM();*/
 
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());

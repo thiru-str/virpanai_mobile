@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
@@ -23,12 +25,14 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
+  List<ContentData> storeContentList = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCustomerInfo();
+    fetchStoreContentAPI();
   }
 
   @override
@@ -38,13 +42,10 @@ class _SettingsPageState extends State<SettingsPage> {
       body: SafeArea(
           child: Column(
         children: [
-          // Profile Section
-
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Profile Image
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: AppColors.primary,
@@ -62,7 +63,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                // Name and Email
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -125,54 +125,23 @@ class _SettingsPageState extends State<SettingsPage> {
           Expanded(
             child: ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ProfileItemWidget(
-                    title: AppStrings.address,
-                    onTap: () {
-                      PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address){
-                      },));
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ProfileItemWidget(
-                    title: AppStrings.favourites,
-                    onTap: () {
-                      PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ProfileItemWidget(
-                    title: AppStrings.orders,
-                    onTap: () {
-                      PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ProfileItemWidget(
-                    title: AppStrings.help,
-                    onTap: () {
-                      // Handle Address action
-                      PageRouteUtils.pushWithSlide(context, const StaticPage(pageTitle: AppStrings.help));
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ProfileItemWidget(
-                    title: AppStrings.support,
-                    onTap: () {
-                      // Handle Address action
-                      PageRouteUtils.pushWithSlide(context, const StaticPage(pageTitle: AppStrings.support));
-                    },
-                  ),
-                ),
+                _buildProfileItem(AppStrings.address, () {
+                  PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address) {}));
+                }),
+                _buildProfileItem(AppStrings.favourites, () {
+                  PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
+                }),
+                _buildProfileItem(AppStrings.orders, () {
+                  PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
+                }),
+                ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
+                  if (contentItem.content?.data != null) {
+                    PageRouteUtils.pushWithSlide(
+                      context,
+                      StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
+                    );
+                  }
+                }))
               ],
             ),
           ),
@@ -198,6 +167,16 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildProfileItem(String title, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: ProfileItemWidget(
+        title: title,
+        onTap: onTap,
+      ),
+    );
+  }
+
   Future<void> getCustomerInfo() async {
     customer = await getCustomerResponse();
     if (customer != null) {
@@ -205,6 +184,13 @@ class _SettingsPageState extends State<SettingsPage> {
         customer;
       });
     }
+  }
+
+  Future<void> fetchStoreContentAPI() async {
+    final storeContent = await ApiService().getStoreContent(context);
+    setState(() {
+      storeContentList = storeContent.data ?? [];
+    });
   }
 
   Future<Customer?> getCustomerResponse() async {
