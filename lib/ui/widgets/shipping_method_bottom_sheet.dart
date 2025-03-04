@@ -26,7 +26,7 @@ class ShippingMethodBottomSheet extends StatelessWidget {
         children: [
           Text(
             'Shipping Methods',
-            style: FontUtils.secondaryFontStyle1(
+            style: FontUtils.secondaryFontStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),

@@ -44,7 +44,7 @@ class WelcomePage extends StatelessWidget {
                       Text(
                         AppStrings.welcome_to_store,
                         textAlign: TextAlign.center,
-                        style: FontUtils.secondaryFontStyle1(
+                        style: FontUtils.secondaryFontStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,

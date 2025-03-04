@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
    ThemeData theme = ThemeData(
      textTheme: TextTheme(
        displayLarge: FontUtils.primaryFontStyle(fontWeight: FontWeight.w800, fontSize: 14.0),
-       displayMedium: FontUtils.secondaryFontStyle1(fontWeight: FontWeight.w500, fontSize: 14.0),
+       displayMedium: FontUtils.secondaryFontStyle(fontWeight: FontWeight.w500, fontSize: 14.0),
        displaySmall: FontUtils.primaryFontStyle(fontWeight: FontWeight.w400, fontSize: 24.0),
      ),
    );
