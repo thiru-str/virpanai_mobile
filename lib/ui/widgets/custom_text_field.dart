@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final bool isPassword;
   final TextInputType keyboardType;
   final int maxLines; // Optional: Allows multi-line input
+  final bool enabled; // Optional: Allows multi-line input
 
 
   const CustomTextField({
@@ -18,11 +19,13 @@ class CustomTextField extends StatelessWidget {
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.maxLines = 1, // Default single-line, can be changed
+    this.enabled = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      enabled: enabled,
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType,
