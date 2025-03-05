@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class CartCalculation extends StatelessWidget {
@@ -58,7 +59,7 @@ class CartPaymentMethodWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "Payment Method",
+         AppStrings.payemnt_method,
           style: FontUtils.primaryFontStyle(
               fontSize: 16, color: AppColors.textColor50),
         ),

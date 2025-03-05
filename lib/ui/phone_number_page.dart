@@ -6,6 +6,7 @@ import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -30,12 +31,16 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:Colors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: SvgPicture.asset(AppAssets.ic_arrow_svg,height: 16,width: 16,),
+          icon: SvgPicture.asset(
+            AppAssets.ic_arrow_svg,
+            height: 16,
+            width: 16,
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -50,7 +55,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             const SizedBox(height: 16),
             // Title
             Text(
-              'Enter your mobile\nnumber',
+              AppStrings.enter_mob_no,
               style: FontUtils.primaryFontStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -66,7 +71,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                 children: [
                   // Label
                   Text(
-                    'Mobile Number',
+                    AppStrings.mobile_number,
                     style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -80,13 +85,15 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                       filled: true,
                       fillColor: AppColors.secondary, // Full background color
                       contentPadding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 12), // Adjust content padding
+                          vertical: 16,
+                          horizontal: 12), // Adjust content padding
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
                         borderSide: BorderSide.none, // Remove border
                       ),
                     ),
-                    initialCountryCode: 'IN', // Default country code
+                    initialCountryCode:
+                        AppStrings.country_code, // Default country code
                     showDropdownIcon: true,
                     onChanged: (phone) {
                       setState(() {
@@ -96,10 +103,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     },
                     validator: (value) {
                       if (value == null || value.number.isEmpty) {
-                        return 'Please enter a valid phone number';
+                        return AppStrings.enter_valid_mob_no;
                       } else if (value.number.length < 10 ||
                           value.number.length > 15) {
-                        return 'Phone number must be between 10 to 15 digits';
+                        return AppStrings.digit_range;
                       }
                       return null;
                     },
@@ -114,8 +121,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             ),
             const Spacer(),
             // Submit button
-              Align(
-                alignment: Alignment.bottomRight,
+            Align(
+              alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 elevation: 0,
                 shape: const CircleBorder(),
@@ -125,7 +132,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     if (_phoneNumber != null) {
                       sendOtp();
                     } else {
-                      AppUtils.showToast('Enter Phone Number');
+                      AppUtils.showToast(AppStrings.enter_mob_no);
                     }
                   }
                 },
@@ -143,7 +150,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
   void sendOtp() async {
     try {
       final ApiService apiService = ApiService();
-      sendOtpResponse = await apiService.sendOtp(context,_countryCode!,_phoneNumber!);
+      sendOtpResponse =
+          await apiService.sendOtp(context, _countryCode!, _phoneNumber!);
       /*if (kDebugMode) {
         AppUtils.showToast(sendOtpResponse!.otp!);
       }*/
@@ -151,7 +159,13 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         apiCalling = false;
       });
 
-      PageRouteUtils.pushWithSlide(context, OtpVerificationPage(countryCode:_countryCode!,phoneNo: _phoneNumber!,otp: sendOtpResponse!.otp!,));
+      PageRouteUtils.pushWithSlide(
+          context,
+          OtpVerificationPage(
+            countryCode: _countryCode!,
+            phoneNo: _phoneNumber!,
+            otp: sendOtpResponse!.otp!,
+          ));
     } catch (e) {
       setState(() {
         apiCalling = false;

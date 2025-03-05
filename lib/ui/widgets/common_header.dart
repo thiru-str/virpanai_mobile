@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_assets.dart';
@@ -79,7 +80,7 @@ class CommonHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Home", style: FontUtils.secondaryFontStyle(
+            Text(AppStrings.home, style: FontUtils.secondaryFontStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: AppColors.textColor,
@@ -190,7 +191,7 @@ class CommonHeader extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children:  [
-                Text("Lightning-Fast Delivery",
+                Text(AppStrings.fast_delivery,
                     style: FontUtils.secondaryFontStyle(fontWeight: FontWeight.bold, color: AppColors.textColor)),
                 Row(
                     mainAxisSize: MainAxisSize.min,
@@ -231,7 +232,7 @@ class CommonHeader extends StatelessWidget {
                 enabled: false,
                 onChanged: onSearchTextChanged, // Call only if provided
                 decoration: InputDecoration(
-                  hintText: "Search",
+                  hintText: AppStrings.search,
                   hintStyle: FontUtils.secondaryFontStyle(color: AppColors.textColor),
                   border: InputBorder.none,
                 ),

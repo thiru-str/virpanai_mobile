@@ -26,6 +26,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import 'package:lottie/lottie.dart';
@@ -76,7 +77,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CommonHeaderAppBar(
-          title: 'Checkout',
+          title: AppStrings.check_out,
           onBackTap: () {
             Navigator.of(context).pop();
           },
@@ -99,10 +100,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CheckoutItemCard(
-                                  title: 'Shipping Address',
+                                  title: AppStrings.shipping_address,
                                   subtitle: addAddress
                                       ? selectedAddress!.address1!
-                                      : 'Add Shipping Address',
+                                      : AppStrings.add_shipping_address,
                                   onTap: () {
                                     PageRouteUtils.pushWithSlide(
                                         context,
@@ -119,33 +120,33 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                         ));
                                   }),
                               CheckoutItemCard(
-                                  title: 'Shipping Method',
+                                  title:  AppStrings.shipping_method,
                                   subtitle: addShippingOption
                                       ? shippingOption?.name ??
-                                          'Add Shipping Method'
-                                      : 'Add Shipping Method',
+                                           AppStrings.add_shipping_method
+                                      :  AppStrings.add_shipping_method,
                                   onTap: () async {
                                     if (!addAddress) {
                                       AppUtils.showToast(
-                                          'Please choose your Shipping Address');
+                                          AppStrings.choose_shipping_address);
                                       return;
                                     }
                                     showShippingBottomSheet(context,
                                         shippingResponse!.shippingOptions!);
                                   }),
                               CheckoutItemCard(
-                                  title: 'Payment Method',
+                                  title: AppStrings.payemnt_method,
                                   subtitle: addPaymentMethod
                                       ? pp_title!
-                                      : 'Add Payment Method',
+                                      :  AppStrings.add_shipping_address,
                                   onTap: () async {
                                     if (!addAddress) {
                                       AppUtils.showToast(
-                                          'Please choose your Shipping Address');
+                                         AppStrings.choose_shipping_address);
                                       return;
                                     } else if (!addShippingOption) {
                                       AppUtils.showToast(
-                                          'Please choose your Shipping Method');
+                                            AppStrings.choose_shipping_address);
                                       return;
                                     }
                                     Global? global = await getGlobal();
@@ -170,7 +171,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CartCalculation(
-                            keyText: 'Subtotal:',
+                            keyText: '${AppStrings.subTotal}:',
                             valueText: CurrencyUtil.appendCurrency(cartResponse!
                                 .cart!.itemSubtotal!
                                 .toStringAsFixed(2)),
@@ -179,7 +180,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               visible:
                                   cartResponse!.cart!.discountSubtotal! > 0,
                               child: CartCalculation(
-                                keyText: 'Discount:',
+                                keyText: '${AppStrings.discount}:',
                                 valueText:
                                     '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
                               )),
@@ -187,18 +188,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               visible:
                                   cartResponse!.cart!.shippingSubtotal! > 0,
                               child: CartCalculation(
-                                keyText: 'Shipping:',
+                                keyText: '${AppStrings.shipping}:',
                                 valueText:
                                     CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
                               )),
                           CartCalculation(
-                            keyText: 'Tax:',
+                            keyText: '${AppStrings.tax}:',
                             valueText: CurrencyUtil.appendCurrency(cartResponse!
                                 .cart!.taxTotal!
                                 .toStringAsFixed(2)),
                           ),
                           CartCalculation(
-                            keyText: 'Total:',
+                            keyText: '${AppStrings.total}:',
                             valueText: CurrencyUtil.appendCurrency(
                                 cartResponse!.cart!.total!.toStringAsFixed(2)),
                           ),
@@ -216,14 +217,14 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 : CartButton(
                     amount: CurrencyUtil.appendCurrency(
                         cartResponse!.cart!.total!.toStringAsFixed(2)),
-                    title: 'Place Order',
+                    title:AppStrings.place_order,
                     onPressed: () {
                       if (!addAddress) {
-                        AppUtils.showToast('Add Shipping Address');
+                        AppUtils.showToast(AppStrings.add_shipping_address);
                       } else if (!addShippingOption) {
-                        AppUtils.showToast('Add Shipping Method');
+                        AppUtils.showToast(AppStrings.add_shipping_address);
                       } else if (!addPaymentMethod) {
-                        AppUtils.showToast('Add Payment Method');
+                        AppUtils.showToast(AppStrings.add_shipping_address);
                       } else {
                         // validations done proceed to place order
                         updatePaymentMethod(pp_id!);
@@ -291,7 +292,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
             merchantDisplayName: AppConfig.appName,
 
             googlePay: const PaymentSheetGooglePay(
-              merchantCountryCode: 'IN',
+              merchantCountryCode: AppStrings.country_code,
               testEnv: true,
             ),
             style: ThemeMode.light,
@@ -318,10 +319,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void makeNEFTPayCall() {
     CustomPopupWidget.show(
       context,
-      title: "NEFT Payment Instructions",
-      description:
-      "You've selected NEFT as your payment method. Your order will be placed immediately. Please transfer the amount using the bank details available via the 'NEFT' button on the order details page. After payment, upload a screenshot and provide the receipt number and transfer date for verification.",
-      buttonText: "Place your Order",
+      title:AppStrings.neft_payment_instruct,
+      
+      description:AppStrings.neft_payment_desc,
+      
+      buttonText:AppStrings.place_your_order,
       icon: Icons.info,
       onConfirm: (){
         setState(() {

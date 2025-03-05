@@ -21,6 +21,7 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -86,7 +87,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: appHeader == "header-2" ? CommonHeaderAppBar(
-          title: "Home",
+          title: AppStrings.home,
           leading: false,
           onBackTap: () {
             Navigator.of(context).pop();

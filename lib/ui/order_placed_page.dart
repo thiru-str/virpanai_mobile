@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../utility/app_assets.dart';
@@ -52,7 +53,7 @@ class OrderPlacedPage extends StatelessWidget {
                   // Order Placed Title
                   const SizedBox(height: 40),
                   Text(
-                    "Order Placed \n Successfully",
+                    AppStrings.order_placed_success,
                     style: FontUtils.primaryFontStyle(
                       fontSize: 28, // Adjusted font size for responsiveness
                       fontWeight: FontWeight.bold,
@@ -64,7 +65,7 @@ class OrderPlacedPage extends StatelessWidget {
 
                   // Subtext
                   Text(
-                    "You will receive an email confirmation",
+                 AppStrings.email_confirmation,
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14, // Adjusted font size
                       color: AppColors.textColor50,
@@ -88,7 +89,7 @@ class OrderPlacedPage extends StatelessWidget {
                         minimumSize: const Size(double.infinity, 60),
                       ),
                       child: Text(
-                        "See More Products",
+                        AppStrings.see_more_product,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

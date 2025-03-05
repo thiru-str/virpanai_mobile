@@ -77,15 +77,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                   ),
                   SizedBox(height: 10,),
                   CartCalculation(
-                    keyText: 'Subtotal:',
+                    keyText: '${AppStrings.subTotal}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.subtotal ?? 0).toString()),
                   ),
                   CartCalculation(
-                    keyText: 'Tax:',
+                    keyText: '${AppStrings.tax}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.taxTotal ?? 0).toString()),
                   ),
                   CartCalculation(
-                    keyText: 'Total:',
+                    keyText: '${AppStrings.total}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.total ?? 0).toString())
                   ),
                 ],

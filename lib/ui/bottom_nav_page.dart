@@ -9,6 +9,7 @@ import 'package:waioz/ui/widgets/address_card.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../api/api_service.dart';
@@ -118,23 +119,23 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
           items: const [
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-              label: 'Shop',
+              label: AppStrings.shop,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-              label: 'Categories',
+              label: AppStrings.categories,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-              label: 'Cart',
+              label: AppStrings.cart,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-              label: 'Favourite',
+              label: AppStrings.favourite,
             ),
             BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-              label: 'Account',
+              label: AppStrings.account,
             ),
           ],
           selectedItemColor: AppColors.primary,

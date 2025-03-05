@@ -94,7 +94,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       child: ListTile(
         leading: Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
         title: Text(
-          '4 items',
+          AppStrings.four_items,
           style: FontUtils.primaryFontStyle(fontSize: 16.0),
         ),
         trailing: Row(
@@ -105,7 +105,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               onPressed: () {
                 PageRouteUtils.pushWithSlide(context, OrderDetailItemPage());
               },
-              child: Text('View All',
+              child: Text(AppStrings.view_all,
                   style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       color: AppColors.primary,

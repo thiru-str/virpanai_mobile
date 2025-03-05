@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/shipping_response.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class ShippingMethodBottomSheet extends StatelessWidget {
@@ -25,7 +26,7 @@ class ShippingMethodBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Shipping Methods',
+            AppStrings.shipping_method,
             style: FontUtils.secondaryFontStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

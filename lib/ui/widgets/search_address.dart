@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -129,7 +130,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CommonHeaderAppBar(
-        title: 'Your Location',
+        title: AppStrings.your_location,
         onBackTap: () {
           Navigator.of(context).pop();
         },
@@ -144,7 +145,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
               controller: _searchController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                hintText: "Search a new address",
+                hintText: AppStrings.show_new_address,
                 hintStyle: FontUtils.primaryFontStyle(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -188,7 +189,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                         Icon(Icons.my_location, color: Colors.purple),
                         SizedBox(width: 8.0),
                         Text(
-                          "Current location",
+                          AppStrings.current_location,
                           style: FontUtils.primaryFontStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
@@ -200,7 +201,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                     Padding(
                       padding: EdgeInsets.only(left: 32.0),
                       child: Text(
-                        "Using GPS",
+                       AppStrings.location_mode,
                         style: FontUtils.primaryFontStyle(color: Colors.grey),
                       ),
                     ),
@@ -232,7 +233,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
             if (!_isSearching) ...[
               const SizedBox(height: 16.0),
               Text(
-                "Saved Location",
+               AppStrings.saved_location,
                 style: FontUtils.primaryFontStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8.0),
@@ -249,7 +250,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                       child: AddressCard(
                         isFromEdit: false,
                         title: address?.addressName ??
-                            'Others', // If address name is null, show 'Untitled'
+                            AppStrings.others, // If address name is null, show 'Untitled'
                         address:
                         '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
                         icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
@@ -303,7 +304,7 @@ class _SavedLocationsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      "No saved locations",
+      AppStrings.no_saved_location,
       style: FontUtils.primaryFontStyle(color: Colors.grey),
     );
   }

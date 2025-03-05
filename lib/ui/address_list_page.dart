@@ -182,10 +182,10 @@ class _AddressListPageState extends State<AddressListPage> {
       context: context,
       builder: (context) {
         return CommonAlertDialog(
-          title: "Confirm Deletion",
-          content: "Are you sure you want to delete this address?",
-          contentOk: "Yes",
-          contentCancel: "No",
+          title: AppStrings.confirm_deletion,
+          content: AppStrings.sure_delete_address,
+          contentOk: AppStrings.yes,
+          contentCancel:  AppStrings.no,
           onTapOk: () {
             print("OK");
             Navigator.pop(context);

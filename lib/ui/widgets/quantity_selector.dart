@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class QuantitySelector extends StatefulWidget {
@@ -54,7 +55,7 @@ class _QuantitySelectorState extends State<QuantitySelector> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Quantity',
+            AppStrings.quantity,
             style: FontUtils.primaryFontStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
