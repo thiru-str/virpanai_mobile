@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class FilterPage extends StatefulWidget {
@@ -14,7 +15,7 @@ class _FilterPageState extends State<FilterPage> {
   Set<String> selectedBrands = {};
   double minPrice = 500;
   double maxPrice = 10000;
-  String sortBy = 'Recommended';
+  String sortBy = AppStrings.recommended;
 
   String selectedSidebar = 'Categories';
 
@@ -29,7 +30,7 @@ class _FilterPageState extends State<FilterPage> {
           TextButton(
             onPressed: _clearAllFilters,
             child: Text(
-              'Clear All',
+            AppStrings.clear_all,
               style:
                   FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
             ),
@@ -187,7 +188,7 @@ class _FilterPageState extends State<FilterPage> {
                 // Apply action
               },
               child: Text(
-                'Apply',
+                AppStrings.apply,
                 style: FontUtils.primaryFontStyle(
                     fontSize: 17,
                     color: AppColors.primary,
@@ -201,7 +202,7 @@ class _FilterPageState extends State<FilterPage> {
               onPressed: () {
                 // Close action
               },
-              child: Text('Close',
+              child: Text(AppStrings.close,
                   style: FontUtils.primaryFontStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,

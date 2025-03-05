@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_colors.dart';
@@ -79,7 +80,7 @@ class AddressCard extends StatelessWidget {
                     ),
                     onPressed: onDelete,
                     child:  Text(
-                      'DELETE',
+                     AppStrings.delete,
                       style: FontUtils.primaryFontStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -90,7 +91,7 @@ class AddressCard extends StatelessWidget {
                   TextButton(
                     onPressed: onEdit,
                     child:  Text(
-                      'EDIT',
+                      AppStrings.edit,
                       style: FontUtils.primaryFontStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,

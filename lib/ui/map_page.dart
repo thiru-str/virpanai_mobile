@@ -8,6 +8,7 @@ import 'dart:async';
 
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../model/register_response.dart';
@@ -157,7 +158,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        title: 'Address',
+        title: AppStrings.address,
         onBackTap: () {
           Navigator.of(context).pop();
         },
@@ -246,7 +247,7 @@ class _MapPageState extends State<MapPage> {
                             ));
                       },
                       child: Text(
-                        "Confirm & Continue",
+                       AppStrings.confirm_continue,
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

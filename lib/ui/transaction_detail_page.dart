@@ -15,10 +15,12 @@ import 'widgets/neft_transaction_bottom_sheet.dart';
 class TransactionDetailsScreen extends StatefulWidget {
   final String orderID;
 
-  const TransactionDetailsScreen({Key? key, required this.orderID}) : super(key: key);
+  const TransactionDetailsScreen({Key? key, required this.orderID})
+      : super(key: key);
 
   @override
-  _TransactionDetailsScreenState createState() => _TransactionDetailsScreenState();
+  _TransactionDetailsScreenState createState() =>
+      _TransactionDetailsScreenState();
 }
 
 class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
@@ -39,7 +41,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
 
   Future<void> fetchBankAndTransactionDetails() async {
     final publicDetails = await SharedPreferencesUtil().getPublicDetails();
-    final neftTransactionDetails = await ApiService().getNEFTTransaction(context, widget.orderID);
+    final neftTransactionDetails =
+        await ApiService().getNEFTTransaction(context, widget.orderID);
     setState(() {
       bankDetails = publicDetails?.bankDetails;
       transactionResponse = neftTransactionDetails;
@@ -54,7 +57,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       ),
       isScrollControlled: true,
       builder: (context) {
-        return NeftTransactionBottomSheet(onSubmit: handleNEFTTransactionSubmit);
+        return NeftTransactionBottomSheet(
+            onSubmit: handleNEFTTransactionSubmit);
       },
     );
   }
@@ -76,16 +80,17 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
             const SizedBox(height: 20),
             transactionResponse?.neftPayment?.isNotEmpty ?? false
                 ? Expanded(
-              child: ListView.builder(
-                itemCount: transactionResponse?.neftPayment?.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildTransactionStatus(transactionResponse?.neftPayment?[index]),
-                  );
-                },
-              ),
-            )
+                    child: ListView.builder(
+                      itemCount: transactionResponse?.neftPayment?.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _buildTransactionStatus(
+                              transactionResponse?.neftPayment?[index]),
+                        );
+                      },
+                    ),
+                  )
                 : _buildEmptyState(),
           ],
         ),
@@ -121,17 +126,25 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: _buildInfoRow('Name:', bankDetails?.accountHolderName ?? "")),
+              Expanded(
+                  child: _buildInfoRow('${AppStrings.name}:',
+                      bankDetails?.accountHolderName ?? "")),
               const SizedBox(width: 10),
-              Expanded(child: _buildInfoRow('Bank Name:', bankDetails?.bankName ?? "")),
+              Expanded(
+                  child: _buildInfoRow(
+                      '${AppStrings.bank_name}:', bankDetails?.bankName ?? "")),
             ],
           ),
           const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: _buildInfoRow('Account No:', bankDetails?.accountNumber ?? "")),
+              Expanded(
+                  child: _buildInfoRow('${AppStrings.account_no}:',
+                      bankDetails?.accountNumber ?? "")),
               const SizedBox(width: 10),
-              Expanded(child: _buildInfoRow('IFSC Code:', bankDetails?.ifscCode ?? "")),
+              Expanded(
+                  child: _buildInfoRow(
+                      '${AppStrings.IFSC_code}:', bankDetails?.ifscCode ?? "")),
             ],
           ),
         ],
@@ -154,7 +167,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         const SizedBox(height: 2),
         Text(
           value,
-          style: FontUtils.primaryFontStyle(color: Colors.white, fontSize: 14.0),
+          style:
+              FontUtils.primaryFontStyle(color: Colors.white, fontSize: 14.0),
           softWrap: true,
           overflow: TextOverflow.visible,
         ),
@@ -173,13 +187,13 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         children: [
           Container(
             color: Colors.white,
-            child:
-            GestureDetector(
+            child: GestureDetector(
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (context) => Dialog(
-                    backgroundColor: Colors.transparent, // Makes the background transparent
+                    backgroundColor:
+                        Colors.transparent, // Makes the background transparent
                     child: GestureDetector(
                       onTap: () => Navigator.pop(context), // Close on tap
                       child: InteractiveViewer(
@@ -208,11 +222,15 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Customer Summary:',
-                  style: FontUtils.primaryFontStyle(fontWeight: FontWeight.bold),
+                  AppStrings.customer_summery,
+                  style:
+                      FontUtils.primaryFontStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 2),
-                Text(neftPayment?.description ?? "", style: FontUtils.primaryFontStyle(color: AppColors.textColor),)
+                Text(
+                  neftPayment?.description ?? "",
+                  style: FontUtils.primaryFontStyle(color: AppColors.textColor),
+                )
               ],
             ),
           ),
@@ -233,7 +251,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            "No Payment Yet",
+            AppStrings.no_payment_yet,
             style: FontUtils.primaryFontStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

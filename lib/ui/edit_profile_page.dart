@@ -57,22 +57,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   children: [
                     const SizedBox(height: 32),
                     CustomTextField(
-                      hintText: "First Name",
+                      hintText:AppStrings.firstname,
                       controller: firstNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "First name  is required";
+                          return AppStrings.firstname_required;
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
-                      hintText: "Last Name",
+                      hintText: AppStrings.lastname,
                       controller: lastNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "First name  is required";
+                          return AppStrings.lastname_required;
                         }
                         return null;
                       },
@@ -80,23 +80,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: 16),
                     CustomTextField(
                       enabled: false,
-                      hintText: "Phone number",
+                      hintText: AppStrings.phone_number,
                       controller: phoneNoController,
                       keyboardType: TextInputType.phone,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Phone number is required";
+                          return AppStrings.phone_number_required;
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
-                      hintText: "Company",
+                      hintText:AppStrings.company,
                       controller: companyController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Company is required";
+                          return AppStrings.company_required;
                         }
                         return null;
                       },
@@ -118,7 +118,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         minimumSize: const Size(double.infinity, 60),
                       ),
                       child: Text(
-                        'Update',
+                        AppStrings.Upadte,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

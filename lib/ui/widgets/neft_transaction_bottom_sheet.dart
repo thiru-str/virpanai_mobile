@@ -5,6 +5,7 @@ import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'dart:io';
 
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class NeftTransactionBottomSheet extends StatefulWidget {
@@ -82,7 +83,7 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
                 children: [
                   SizedBox(height: 10), // Ensures space below close button
                   Text(
-                    "Upload Image",
+                   AppStrings.upload_image,
                     style: FontUtils.secondaryFontStyle(fontSize: 17.0),
                   ),
                   SizedBox(height: 10),
@@ -105,12 +106,13 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
                   ),
                   SizedBox(height: 25),
                   Text(
-                    "Enter Description",
+                    AppStrings.enter_desc,
                     style: FontUtils.secondaryFontStyle(fontSize: 17.0),
                   ),
                   SizedBox(height: 10),
                   CustomTextField(
-                    hintText: "Enter transaction ID / Any description",
+                    hintText: AppStrings.enter_transaction_id,
+                    
                     controller: transactionController,
                     validator: (value) {
                       return null;
@@ -126,7 +128,7 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
                       minimumSize: Size(double.infinity, 50),
                     ),
                     child: Text(
-                      "Submit",
+                      AppStrings.submit,
                       style: FontUtils.primaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
