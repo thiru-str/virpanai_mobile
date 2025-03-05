@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/model/refresh_token_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -150,11 +151,15 @@ class _RegisterPageState extends State<RegisterPage> {
           widget.countryCode,
           widget.phoneNo,
           widget.token);
+
+      RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
+        context,widget.token);
+
       setState(() {
         apiCalling = false;
       });
 
-      SharedPreferencesUtil().saveString('token', widget.token);
+      SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
 

@@ -28,6 +28,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -263,6 +264,18 @@ class ApiService {
           }
         },
         (data) => RegisterResponse.fromJson(data),
+        context);
+  }
+
+  Future<RefreshTokenResponse> refreshToken(
+      BuildContext context,
+      String token,
+      ) async {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+    return _makePostRequest(
+        "auth/token/refresh",
+        null,
+        (data) => RefreshTokenResponse.fromJson(data),
         context);
   }
 
