@@ -84,10 +84,10 @@ class _AddressListPageState extends State<AddressListPage> {
                                   _showDeleteDialog(context, address?.id);
                                 },
                                 onEdit: () async {
-                                  bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage');
+                                  bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                                   final result = await PageRouteUtils.pushWithSlide(
                                       context,
-                                      isGoogleMapUsage!? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0):AddAddressPage(
+                                      isGoogleMapUsage? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0):AddAddressPage(
                                         selectedAddress: address,
                                       ));
                                   if (result == true) {
@@ -110,10 +110,10 @@ class _AddressListPageState extends State<AddressListPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: ElevatedButton(
                             onPressed: () async {
-                              bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage');
+                              bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                               final result = await PageRouteUtils.pushWithSlide(
                                   context,
-                                  isGoogleMapUsage!? MapPage(doublePop: true,): AddAddressPage());
+                                  isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
                               if (result == true) {
                                 getAddressListApi();
                               }
@@ -145,10 +145,10 @@ class _AddressListPageState extends State<AddressListPage> {
                   buttonText: AppStrings.add_address,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () async {
-                    bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage');
+                    bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                     final result = await PageRouteUtils.pushWithSlide(
                         context,
-                        isGoogleMapUsage!? MapPage(): AddAddressPage());
+                        isGoogleMapUsage? MapPage(): AddAddressPage());
                     if (result == true) {
                       getAddressListApi();
                     }

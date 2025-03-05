@@ -83,7 +83,7 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
                   SizedBox(height: 10), // Ensures space below close button
                   Text(
                     "Upload Image",
-                    style: FontUtils.secondaryFontStyle1(fontSize: 17.0),
+                    style: FontUtils.secondaryFontStyle(fontSize: 17.0),
                   ),
                   SizedBox(height: 10),
                   GestureDetector(
@@ -106,7 +106,7 @@ class _NeftTransactionBottomSheetState extends State<NeftTransactionBottomSheet>
                   SizedBox(height: 25),
                   Text(
                     "Enter Description",
-                    style: FontUtils.secondaryFontStyle1(fontSize: 17.0),
+                    style: FontUtils.secondaryFontStyle(fontSize: 17.0),
                   ),
                   SizedBox(height: 10),
                   CustomTextField(

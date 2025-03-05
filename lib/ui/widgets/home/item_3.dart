@@ -27,7 +27,7 @@ class Item3 extends StatelessWidget {
             children: [
               Text(
                 content.layoutTitle!,
-                style: FontUtils.secondaryFontStyle1(
+                style: FontUtils.secondaryFontStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textColor

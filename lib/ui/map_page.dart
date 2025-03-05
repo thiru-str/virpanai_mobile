@@ -247,7 +247,7 @@ class _MapPageState extends State<MapPage> {
                       },
                       child: Text(
                         "Confirm & Continue",
-                        style: FontUtils.secondaryFontStyle1(
+                        style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

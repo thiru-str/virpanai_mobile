@@ -57,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 Text(
                   "Hello! Register to get started",
-                  style: FontUtils.secondaryFontStyle1(
+                  style: FontUtils.secondaryFontStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -102,18 +102,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                CustomTextField(
-                  hintText: "Company",
-                  controller: companyController,
-                  isPassword: false,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Company is required";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
@@ -149,7 +137,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void register() async {
     try {
       final ApiService apiService = ApiService();
-      registerResponse = await apiService.register(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text,widget.phoneNo,widget.token);
+      registerResponse = await apiService.register(context,emailController.text,companyController.text,firstNameController.text,lastNameController.text,widget.countryCode,widget.phoneNo,widget.token);
       setState(() {
         apiCalling = false;
       });

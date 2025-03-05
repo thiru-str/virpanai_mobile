@@ -44,7 +44,7 @@ class FontUtils {
   }
 
   /// Get TextStyle for Secondary Font (Google Font if available, else default)
-  static TextStyle secondaryFontStyle1({
+  static TextStyle secondaryFontStyle({
     FontWeight fontWeight = FontWeight.normal,
     double fontSize = 14.0,
     Color color = Colors.black,
