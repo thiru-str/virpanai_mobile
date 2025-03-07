@@ -55,11 +55,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: Center(
-        child: ScaleTransition(
-          scale: _animation,
-          child: Image.asset(
-            AppAssets.app_icon,
-          ),
+        child: Image.asset(
+          AppAssets.app_icon,
         ),
       ),
     );
