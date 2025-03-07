@@ -138,7 +138,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                   title: AppStrings.payemnt_method,
                                   subtitle: addPaymentMethod
                                       ? pp_title!
-                                      :  AppStrings.add_shipping_address,
+                                      :  AppStrings.add_payment_method,
                                   onTap: () async {
                                     if (!addAddress) {
                                       AppUtils.showToast(
