@@ -76,7 +76,7 @@ class AppStrings {
 
   static const String state = "state";
   static const String city = "city";
-  static const String zip_code = "zip_code";
+  static const String zip_code = "Postal Code";
   static const String phone_number = "phone number";
 
   static const String phone_number_required = "phone numer is required";
