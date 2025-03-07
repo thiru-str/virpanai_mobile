@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 
 class AppUtils {
@@ -14,8 +15,8 @@ class AppUtils {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: backgroundColor,
-      textColor: Colors.black,
+      backgroundColor: AppColors.primary,
+      textColor: Colors.white,
     );
   }
 

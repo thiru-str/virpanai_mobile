@@ -148,7 +148,7 @@ class _AddressListPageState extends State<AddressListPage> {
                     bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                     final result = await PageRouteUtils.pushWithSlide(
                         context,
-                        isGoogleMapUsage? MapPage(): AddAddressPage());
+                        isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
                     if (result == true) {
                       getAddressListApi();
                     }
