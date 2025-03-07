@@ -18,6 +18,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
+import 'package:waioz/utility/common_html.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -348,12 +349,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 10),
-        Text(
-          product?.description ?? '',
-          style: FontUtils.primaryFontStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-            color: AppColors.textColor,
+        Visibility(
+          visible: (product?.metadata?['additional_description'] ?? "").isNotEmpty,
+          child: CommonHtmlWidget(htmlContent: product?.metadata?['additional_description'] ?? ""),
+        ),
+        Visibility(
+          visible: product?.metadata == null,
+          child: Text(
+            product?.description ?? '',
+            style: FontUtils.primaryFontStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 12,
+              color: AppColors.textColor,
+            ),
           ),
         ),
       ],
