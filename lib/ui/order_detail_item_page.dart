@@ -80,9 +80,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                     keyText: '${AppStrings.subTotal}:',
                     valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.subtotal ?? 0).toString()),
                   ),
-                  CartCalculation(
-                    keyText: '${AppStrings.tax}:',
-                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.taxTotal ?? 0).toString()),
+                  Visibility(
+                    visible: (widget.selectedOrder?.taxTotal?? 0) > 0,
+                    child: CartCalculation(
+                      keyText: '${AppStrings.tax}:',
+                      valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.taxTotal ?? 0).toString()),
+                    ),
                   ),
                   CartCalculation(
                     keyText: '${AppStrings.total}:',
