@@ -181,4 +181,9 @@ class AppStrings {
   static const String IFSC_code = 'IFSC Code';
   static const String account_no = 'Account No';
   static const String bank_name = 'Bank Name';
+  static const String cancel = 'Cancel';
+
+  static const String bill_amount_low = 'Bill Amount Too Low';
+  static const String bill_amount_low_disc = 'You can only check the bill if the total is above ';
+  static const String back_to_cart = 'Back To Cart';
 }

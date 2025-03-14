@@ -7,6 +7,7 @@ class CustomPopupWidget extends StatelessWidget {
   final String description;
   final String buttonText;
   final IconData icon;
+  final Color iconBackgroundColor; // Dynamic background color
   final VoidCallback onConfirm;
 
   const CustomPopupWidget({
@@ -15,6 +16,7 @@ class CustomPopupWidget extends StatelessWidget {
     required this.description,
     required this.buttonText,
     required this.icon,
+    required this.iconBackgroundColor, // New parameter
     required this.onConfirm,
   });
 
@@ -24,6 +26,7 @@ class CustomPopupWidget extends StatelessWidget {
         required String description,
         required String buttonText,
         required IconData icon,
+        required Color iconBackgroundColor, // New parameter
         required VoidCallback onConfirm,
       }) {
     showDialog(
@@ -35,6 +38,7 @@ class CustomPopupWidget extends StatelessWidget {
           description: description,
           buttonText: buttonText,
           icon: icon,
+          iconBackgroundColor: iconBackgroundColor, // Pass the color
           onConfirm: onConfirm,
         );
       },
@@ -44,20 +48,29 @@ class CustomPopupWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
       child: Stack(
-        alignment: Alignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, size: 50, color: AppColors.primary),
+                Container(
+                  width: 50, // Adjust size as needed
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: iconBackgroundColor.withOpacity(0.2), // Dynamic color
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(icon, size: 42, color: iconBackgroundColor),
+                  ),
+                ),
                 const SizedBox(height: 10),
                 Text(
                   title,
@@ -77,15 +90,17 @@ class CustomPopupWidget extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 25),
                   ),
                   child: Text(
                     buttonText,
-                    style: FontUtils.primaryFontStyle(fontSize: 16.0, color: Colors.white),
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 16.0,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],

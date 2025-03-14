@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
@@ -11,9 +12,11 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
 import '../utility/currency_util.dart';
+import 'widgets/custom_popup_widget.dart';
 
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
@@ -26,6 +29,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
+  Global? globalSettingsModel;
   bool apiLoading = true;
   bool isAnimating = false;
 
@@ -36,7 +40,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     // TODO: implement initState
     super.initState();
     getCartApi();
-
+    loadGlobalSettings();
     // Initialize the animation controller
     _animationController = AnimationController(
       vsync: this,
@@ -56,8 +60,6 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     Future.delayed(const Duration(milliseconds: 500), () {
       _animationController.forward();
     });
-
-
   }
 
   @override
@@ -219,10 +221,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                           minimumSize: const Size(
                               double.infinity, 56), // Full width button
                         ),
-                        onPressed: () {
-                          // Add checkout logic here
-                          PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
-                        },
+                        onPressed: () => _validateAndProceed(context),
                         child:  Text(
                           AppStrings.check_out,
                           style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
@@ -253,6 +252,31 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         apiLoading = false;
       });
       print(e);
+    }
+  }
+
+  Future<void> loadGlobalSettings() async {
+    final globalData = await SharedPreferencesUtil().getMap('global');
+    globalSettingsModel = globalData != null ? Global.fromJson(globalData) : null;
+  }
+
+  void _validateAndProceed(BuildContext context) {
+    final minOrderValue = globalSettingsModel?.minimumOrderValue ?? 0;
+    final cartTotal = cartResponse?.cart?.total ?? 0;
+
+    if (cartTotal < minOrderValue) {
+      CustomPopupWidget.show(
+        context,
+        title: AppStrings.bill_amount_low,
+        description: "${AppStrings.bill_amount_low_disc} ${globalSettingsModel?.currencySymbol}${globalSettingsModel?.minimumOrderValue ?? 0}",
+        buttonText: AppStrings.back_to_cart,
+        icon: Icons.info,
+        onConfirm: () {
+        },
+        iconBackgroundColor: Colors.orangeAccent,
+      );
+    } else {
+      PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse));
     }
   }
 
