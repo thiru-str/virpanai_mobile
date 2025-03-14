@@ -47,22 +47,28 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-    <key>FirebaseAppDelegateProxyEnabled</key>
-    <false/>
-    <key>UIApplicationSceneManifest</key>
-    <dict>
-      <key>UIBackgroundModes</key>
-      <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-      </array>
-    </dict>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key>
-      <true/>
-    </dict>
-    <key>UIUserNotificationSettings</key>
-    <true/>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+		</array>
+	</dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>UIUserNotificationSettings</key>
+	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to save the delivery address for your orders</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location to save the delivery address for your orders</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We access you libray for upload the photos(payment proof, etc.,)</string>
 </dict>
 </plist>
