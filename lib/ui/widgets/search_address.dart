@@ -186,14 +186,14 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.my_location, color: Colors.purple),
+                        Icon(Icons.my_location, color: AppColors.primary),
                         SizedBox(width: 8.0),
                         Text(
                           AppStrings.current_location,
                           style: FontUtils.primaryFontStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
-                            color: Colors.purple,
+                            color: AppColors.primary,
                           ),
                         ),
                       ],
