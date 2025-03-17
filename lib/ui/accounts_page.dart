@@ -213,7 +213,7 @@ class _SettingsPageState extends State<SettingsPage> {
           onTapOk: () {
             // Handle sign out action
             SharedPreferencesUtil().clear();
-            PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+            PageRouteUtils.pushAndRemoveUntil(context, PhoneNumberPage());
           },
         );
       },

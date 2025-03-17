@@ -29,6 +29,7 @@ import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/refresh_token_response.dart';
+import '../ui/phone_number_page.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -224,7 +225,7 @@ class ApiService {
     await SharedPreferencesUtil().clear();
 
     // Navigate to the login screen and clear all navigation history
-    PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+    PageRouteUtils.pushAndRemoveUntil(context, PhoneNumberPage());
   }
 
   Future<SendOtpResponse> sendOtp(BuildContext context, String countryCode,String phone) async {

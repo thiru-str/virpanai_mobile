@@ -50,15 +50,6 @@ class WelcomePage extends StatelessWidget {
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppStrings.get_your_product,
-                        textAlign: TextAlign.center,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                      ),
                     ],
                   ),
                 ),
