@@ -30,7 +30,7 @@ class Item4 extends StatelessWidget {
               Text(
                 content.layoutTitle!,
                 style: FontUtils.secondaryFontStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor
                 ),
@@ -54,7 +54,7 @@ class Item4 extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 300,
+          height: 310,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: content.layoutData!.length,
@@ -122,11 +122,11 @@ class Item4 extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 4),
                         child: Text(
                           CurrencyUtil.appendCurrency(layoutData.subTitle!),
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
+                            fontSize: 21,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textColor,
                           ),

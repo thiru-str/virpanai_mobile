@@ -109,21 +109,21 @@ class _ProductPageState extends State<ProductPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      // Handle filter functionality here
-                      PageRouteUtils.push(context, const FilterPage());
-                    },
-                    child: Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Icon(Icons.filter_list, color: Colors.grey),
-                    ),
-                  ),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     // Handle filter functionality here
+                  //     PageRouteUtils.push(context, const FilterPage());
+                  //   },
+                  //   child: Container(
+                  //     height: 48,
+                  //     width: 48,
+                  //     decoration: BoxDecoration(
+                  //       color: AppColors.secondary,
+                  //       borderRadius: BorderRadius.circular(24),
+                  //     ),
+                  //     child: const Icon(Icons.filter_list, color: Colors.grey),
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -152,7 +152,7 @@ class _ProductPageState extends State<ProductPage> {
                   mainAxisSpacing: 16, // Space between rows
                   childAspectRatio:
                   (MediaQuery.of(context).size.width / 2) /
-                      (230 + 16 + 16 + 32 + 20), // Dynamically calculate aspect ratio
+                      (240 + 16 + 16 + 32 + 20), // Dynamically calculate aspect ratio
                 ),
                 itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
