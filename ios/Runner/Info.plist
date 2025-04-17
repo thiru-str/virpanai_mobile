@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Cartel</string>
+	<string>Millet Guru</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,22 +47,22 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-    <key>FirebaseAppDelegateProxyEnabled</key>
-    <false/>
-    <key>UIApplicationSceneManifest</key>
-    <dict>
-      <key>UIBackgroundModes</key>
-      <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-      </array>
-    </dict>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key>
-      <true/>
-    </dict>
-    <key>UIUserNotificationSettings</key>
-    <true/>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+		</array>
+	</dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>UIUserNotificationSettings</key>
+	<true/>
 </dict>
 </plist>
