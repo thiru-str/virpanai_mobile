@@ -100,6 +100,7 @@ class AppStrings {
   static const String cart = "Cart";
   static const String account = "Account";
   static const String categories = "Categories";
+  static const String collections = "Collections";
   static const String favourite = "Favourite";
   static const String customer = "customer";
 

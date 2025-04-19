@@ -34,7 +34,7 @@ class ProductCategory {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic metadata;
-  dynamic parentCategory;
+  CategoryChild? parentCategory;
   List<CategoryChild>? categoryChildren;
 
   ProductCategory({
@@ -61,7 +61,7 @@ class ProductCategory {
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     metadata: json["metadata"],
-    parentCategory: json["parent_category"],
+    parentCategory: json["parent_category"] == null ? null : CategoryChild.fromJson(json["parent_category"]),
     categoryChildren: json["category_children"] == null ? [] : List<CategoryChild>.from(json["category_children"]!.map((x) => CategoryChild.fromJson(x))),
   );
 

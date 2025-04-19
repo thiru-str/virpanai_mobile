@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
@@ -280,12 +282,24 @@ class ApiService {
   }
 
   Future<ProductsResponse> listProducts(
-      BuildContext context, String categoryId) async {
+      BuildContext context, String categoryId, String collectionId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
+    final queryParams = <String, String>{};
+    if (regionId != null && regionId.isNotEmpty) {
+      queryParams['region_id'] = regionId;
+    }
+
+    if (categoryId.trim().isNotEmpty) {
+      queryParams['category_id[]'] = categoryId;
+    }
+
+    if (collectionId.isNotEmpty) {
+      queryParams['collection_id[]'] = collectionId;
+    }
     return _makeGetRequest<ProductsResponse>(
       'store/products',
       null,
-      {"region_id": regionId, "category_id": categoryId},
+      queryParams,
       (json) => ProductsResponse.fromJson(json),
       context,
     );
@@ -689,6 +703,30 @@ class ApiService {
       null,
           (json) => StoreContentResponse.fromJson(json),
       null,
+    );
+  }
+
+  Future<CollectionsResponse> listCollections(BuildContext context) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+
+    return _makeGetRequest<CollectionsResponse>(
+      'store/collections',
+      null,
+      null,
+          (json) => CollectionsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<FilterCategoryResponse> listCategories(BuildContext context, String parentId) async {
+    return _makeGetRequest<FilterCategoryResponse>(
+      'store/product-categories',
+      null,
+      {
+        "parent_category_id": parentId,
+      },
+          (json) => FilterCategoryResponse.fromJson(json),
+      context,
     );
   }
 
