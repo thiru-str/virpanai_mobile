@@ -461,11 +461,11 @@ class CalculatedPrice {
   String? id;
   bool? isCalculatedPricePriceList;
   bool? isCalculatedPriceTaxInclusive;
-  int? calculatedAmount;
+  num? calculatedAmount;
   RawAmount? rawCalculatedAmount;
   bool? isOriginalPricePriceList;
   bool? isOriginalPriceTaxInclusive;
-  int? originalAmount;
+  num? originalAmount;
   RawAmount? rawOriginalAmount;
   String? currencyCode;
   Price? calculatedPrice;

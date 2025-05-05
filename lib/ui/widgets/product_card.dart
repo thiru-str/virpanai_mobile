@@ -70,9 +70,9 @@ class ProductCard extends StatelessWidget {
               child: Text(
                 title,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textColor
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -82,9 +82,9 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
               child: Text(
                 price,
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textColor,
                 ),
                 maxLines: 1,

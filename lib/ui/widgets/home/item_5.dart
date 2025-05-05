@@ -30,7 +30,7 @@ class Item5 extends StatelessWidget {
               Text(
                 content.layoutTitle!,
                 style: FontUtils.secondaryFontStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor
                 ),
@@ -54,7 +54,7 @@ class Item5 extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 350,
+          height: 360,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: content.layoutData!.length,
@@ -73,7 +73,7 @@ class Item5 extends StatelessWidget {
                   }
                 },
                 child: Container(
-                  width: 160,
+                  width: 200,
                   decoration: BoxDecoration(
                     color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
@@ -113,7 +113,7 @@ class Item5 extends StatelessWidget {
                           layoutData.title!,
                           style: FontUtils.primaryFontStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w400,
                               color: AppColors.textColor
                           ),
                           maxLines: 1,
@@ -122,11 +122,11 @@ class Item5 extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 4),
                         child: Text(
                           CurrencyUtil.appendCurrency(layoutData.subTitle!),
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
+                            fontSize: 21,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textColor,
                           ),

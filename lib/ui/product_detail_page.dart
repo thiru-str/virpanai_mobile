@@ -187,7 +187,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               }
             },
             child: Container(
-              width: 160,
+              width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
               child: Image.network(
                 product!.images![index].url!,
