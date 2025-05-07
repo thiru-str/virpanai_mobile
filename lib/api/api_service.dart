@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
+import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
@@ -727,6 +728,17 @@ class ApiService {
         "parent_category_id": parentId,
       },
           (json) => FilterCategoryResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<RelatedProductsResponse> relatedProducts(
+      BuildContext context, String productId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makePostRequest<RelatedProductsResponse>(
+      'store/related-product/${productId}',
+      {"region_id": regionId},
+          (json) => RelatedProductsResponse.fromJson(json),
       context,
     );
   }

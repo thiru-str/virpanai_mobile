@@ -10,6 +10,12 @@ class AppLogger {
     }
   }
 
+  static void printInt(String title,int message) {
+    if (_isDebugMode) {
+      debugPrint('$title: $message');
+    }
+  }
+
   /// Logs an info message
   static void info(String title,String message) {
     if (_isDebugMode) {

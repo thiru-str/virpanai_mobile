@@ -182,4 +182,5 @@ class AppStrings {
   static const String IFSC_code = 'IFSC Code';
   static const String account_no = 'Account No';
   static const String bank_name = 'Bank Name';
+  static const String related_products = 'Related Products';
 }
