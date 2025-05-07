@@ -70,13 +70,11 @@ class ApiService {
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
-      } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
-        throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
         await _handleLogout(context, response.data['error']);
         throw Exception('Unauthorized: ${response.data['error']}');
       } else {
+        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
