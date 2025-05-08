@@ -747,6 +747,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getProductsInfoApi() async {
     try {
+      if(selectedVariantId!=null)
+        {
       final apiService = ApiService();
       final response = await apiService.getProductInfo(
           context, widget.productId, selectedVariantId);
@@ -758,9 +760,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         apiLoading = false;
       });
       getCartApi();
+        }
     } catch (e) {
       setState(() => apiLoading = false);
     }
+
   }
 
   Future<void> addCart(int qty, String variantId) async {
