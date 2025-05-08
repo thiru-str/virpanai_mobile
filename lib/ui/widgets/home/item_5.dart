@@ -122,16 +122,38 @@ class Item5 extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 4),
-                        child: Text(
-                          CurrencyUtil.appendCurrency(layoutData.subTitle!),
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              CurrencyUtil.appendCurrency(layoutData.prices!.sellingPrice!),
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Visibility(
+                              visible: layoutData.prices != null &&
+                                  layoutData.prices!.discountedPrice != null &&
+                                  layoutData.prices!.discountedPrice != "0",
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Text(
+                                  CurrencyUtil.appendCurrency(layoutData.prices!.originalPrice!),
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.textColor.withOpacity(0.6),
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
