@@ -104,6 +104,34 @@ class Item5 extends StatelessWidget {
                               color: AppColors.secondary,
                             ),
                           ),
+                          Visibility(
+                            visible: layoutData.prices != null &&
+                                layoutData.prices!.discountedPrice != null &&
+                                layoutData.prices!.discountedPrice != "0",
+                            child: Positioned(
+                              top: 0,
+                              left: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                                decoration: const BoxDecoration(
+                                  color: Colors.pink,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                  ),
+                                ),
+                                child: RotatedBox(
+                                  quarterTurns: -1,
+                                  child: Text('${layoutData.prices!.discountPercentage!} OFF',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),

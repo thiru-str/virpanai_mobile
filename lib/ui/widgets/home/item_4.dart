@@ -96,14 +96,34 @@ class Item4 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          /*Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Icon(
-                              Icons.favorite_border,
-                              color: Colors.grey[600],
+                          Visibility(
+                            visible: layoutData.prices != null &&
+                                layoutData.prices!.discountedPrice != null &&
+                                layoutData.prices!.discountedPrice != "0",
+                            child: Positioned(
+                              top: 0,
+                              left: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                                decoration: const BoxDecoration(
+                                  color: Colors.pink,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                  ),
+                                ),
+                                child: RotatedBox(
+                                  quarterTurns: -1,
+                                  child: Text(layoutData.prices!.discountPercentage!,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),*/
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -112,9 +132,9 @@ class Item4 extends StatelessWidget {
                         child: Text(
                           layoutData.title!,
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textColor
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textColor
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
