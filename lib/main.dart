@@ -44,11 +44,11 @@ Future<void> main() async {
     secondaryFont: publicDetailsResponse.theme!.contentFont!,
   );
 
-  Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
-  Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
-
-
-  AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
+  // Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
+  // Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
+  //
+  //
+  // AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
   runApp( HomeScreen());

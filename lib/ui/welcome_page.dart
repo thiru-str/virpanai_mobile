@@ -8,8 +8,6 @@ import 'package:waioz/utility/font_utils.dart';
 
 import '../utility/page_route_utils.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class WelcomePage extends StatelessWidget {
   @override
@@ -32,69 +30,62 @@ class WelcomePage extends StatelessWidget {
               ),
             ),
             // Content
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Welcome text
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        AppStrings.welcome_to_store,
-                        textAlign: TextAlign.center,
-                        style: FontUtils.secondaryFontStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppStrings.get_your_product,
-                        textAlign: TextAlign.center,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.25), // Semi-transparent overlay
                 ),
-                const SizedBox(height: 40),
-                // Get Started button
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    bottom: 24,
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Handle button tap
-                      PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary, // Button color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      minimumSize: const Size(double.infinity, 60),
-                    ),
-                    child: Text(
-                      AppStrings.get_started,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 18,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      AppStrings.welcome_to_store,
+                      textAlign: TextAlign.center,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 40,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppStrings.get_your_product,
+                      textAlign: TextAlign.center,
+                      style: FontUtils.primaryFontStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    ElevatedButton(
+                      onPressed: () {
+                        PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        minimumSize: const Size(double.infinity, 60),
+                      ),
+                      child: Text(
+                        AppStrings.get_started,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
+              ),
+            )
+
           ],
         ),
       ),

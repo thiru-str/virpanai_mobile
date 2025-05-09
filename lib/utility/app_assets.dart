@@ -19,5 +19,6 @@ class AppAssets {
   static const String ic_discount = 'images/ic_discount.png';
   static const String ic_no_transaction = 'images/ic_no_transaction.png';
   static const String app_icon = 'images/app_icon.png';
+  static const String splash_logo = 'images/splash_logo.png';
 // Add more assets as needed
 }

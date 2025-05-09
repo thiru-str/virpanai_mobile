@@ -10,10 +10,11 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../utility/app_strings.dart';
+import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
 
-import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashPage extends StatefulWidget {
@@ -53,14 +54,43 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Center(
-        child: ScaleTransition(
-          scale: _animation,
-          child: SvgPicture.asset(
-            AppAssets.app_logo,
-            height: 120,
-            width: 158,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF124B5C), // dark blue
+              Color(0xFF63C132), // green
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipOval(
+                child: Container(
+                  color: Colors.white,
+                  child: ClipOval(
+                    child: Image.asset(
+                      AppAssets.app_icon,
+                      height: 100,
+                      width: 100,
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                AppStrings.welcome_to_store,
+                textAlign: TextAlign.center,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              )
+            ],
           ),
         ),
       ),
@@ -75,17 +105,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     await Future.delayed(const Duration(seconds: 3));
 
     if (mounted) {
-      /*Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => nextPage,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return ScaleTransition(
-              scale: animation,
-              child: child,
-            );
-          },
-        ),
-      );*/
       PageRouteUtils.pushWithZoom(context, nextPage);
     }
   }
