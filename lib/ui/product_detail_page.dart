@@ -4,12 +4,14 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
+import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
@@ -40,6 +42,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   ProductResponse.Product? product;
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
+  RelatedProductsResponse? relatedProductsResponse;
   CartResponse? cartResponse;
 
   bool apiLoading = true;
@@ -150,10 +153,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               buildCartSection(),
                               const SizedBox(height: 15),
                               buildProductDescription(),
+                              buildRelatedProducts(),
                               /*buildShippingAndReturns(),
                         const SizedBox(height: 15),*/
                               buildReviews(),
-                              const SizedBox(height: 70),
+                              const SizedBox(height: 90),
+
                             ],
                           ),
                         ),
@@ -188,7 +193,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               }
             },
             child: Container(
-              width: 160,
+              width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
               child: Image.network(
                 product!.images![index].url!,
@@ -199,6 +204,55 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           );
         },
       ),
+    );
+  }
+
+  Widget buildRelatedProducts() {
+
+    if((relatedProductsResponse?.products?.length?? 0) == 0) {
+      return const SizedBox();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          AppStrings.related_products,
+          style: FontUtils.secondaryFontStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 290,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: relatedProductsResponse?.products?.length?? 0,
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final product =  relatedProductsResponse?.products![index];
+              return ProductCard(
+                  imageUrl: product?.thumbnail??'',
+                  title: product?.title??'',
+                  price: product!.variants!.isNotEmpty
+                      ? CurrencyUtil.appendCurrency(
+                      product.variants![0].calculatedPrice!.rawCalculatedAmount!.value!)
+                      : '',
+                onTapCard: () {
+                  PageRouteUtils.pushWithSlide(
+                    context,
+                    ProductDetailPage(productId: product.id?? ''),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -669,10 +723,22 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       }
 
       // Call cart API only after product API succeeds
+      await getRelatedProductsApi();
       await getCartApi();
       await getProductsInfoApi();
+
     } catch (e) {
       setState(() => apiLoading = false);
+    }
+  }
+
+  Future<void> getRelatedProductsApi() async {
+    try {
+      final apiService = ApiService();
+      final response = await apiService.relatedProducts(context, widget.productId);
+      setState(() => relatedProductsResponse = response);
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -689,6 +755,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getProductsInfoApi() async {
     try {
+      if(selectedVariantId!=null)
+        {
       final apiService = ApiService();
       final response = await apiService.getProductInfo(
           context, widget.productId, selectedVariantId);
@@ -700,9 +768,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         apiLoading = false;
       });
       getCartApi();
+        }
     } catch (e) {
       setState(() => apiLoading = false);
     }
+
   }
 
   Future<void> addCart(int qty, String variantId) async {

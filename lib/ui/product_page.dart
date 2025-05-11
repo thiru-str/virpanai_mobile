@@ -28,11 +28,13 @@ class _ProductPageState extends State<ProductPage> {
   bool apiLoading = true;
   TextEditingController searchController = TextEditingController();
   List<Product> filteredProducts = [];
+  List<String> selectedCollectionsList = [];
+  List<String> selectedCategoriesList = [];
 
   @override
   void initState() {
     super.initState();
-    getProductsApi();
+    getProductsApi(categoryIds: widget.categoryId);
     searchController.addListener(onSearchChanged);
   }
 
@@ -110,9 +112,30 @@ class _ProductPageState extends State<ProductPage> {
                   ),
                   /*const SizedBox(width: 8),
                   GestureDetector(
-                    onTap: () {
-                      // Handle filter functionality here
-                      PageRouteUtils.push(context, const FilterPage());
+                    onTap: () async {
+                      final result = await PageRouteUtils.push(
+                        context,
+                        FilterPage(
+                          parentCategoryId: widget.categoryId,
+                          preSelectedCollections: selectedCollectionsList, // ← from your state
+                          preSelectedCategories: selectedCategoriesList,   // ← from your state
+                        ),
+                      );
+                      if (result != null && mounted) {
+                          print(result);
+                          final data = result as Map<String, dynamic>;
+                          selectedCategoriesList = List<String>.from(data['selectedCategories'] ?? []);
+                          selectedCollectionsList = List<String>.from(data['selectedCollections'] ?? []);
+                          final categoryIds = selectedCategoriesList.isNotEmpty
+                              ? selectedCategoriesList.join(',')
+                              : widget.categoryId;
+
+                          final collectionIds = selectedCollectionsList.join(',');
+                          getProductsApi(
+                            categoryIds: categoryIds,
+                            collectionIds: collectionIds,
+                          );
+                      }
                     },
                     child: Container(
                       height: 48,
@@ -152,7 +175,7 @@ class _ProductPageState extends State<ProductPage> {
                   mainAxisSpacing: 16, // Space between rows
                   childAspectRatio:
                   (MediaQuery.of(context).size.width / 2) /
-                      (230 + 16 + 16 + 32 + 20), // Dynamically calculate aspect ratio
+                      (240 + 16 + 16 + 32 + 20), // Dynamically calculate aspect ratio
                 ),
                 itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
@@ -188,12 +211,12 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  void getProductsApi() async {
+  void getProductsApi({ String? categoryIds, String? collectionIds,}) async {
     try {
       final ApiService apiService = ApiService();
       productsResponse = widget.isFromBrand
           ? await apiService.listBrands(context, widget.categoryId)
-          : await apiService.listProducts(context, widget.categoryId);
+          : await apiService.listProducts(context, categoryIds ?? "", collectionIds ?? "");
       setState(() {
         apiLoading = false;
         filteredProducts = productsResponse?.products ?? [];

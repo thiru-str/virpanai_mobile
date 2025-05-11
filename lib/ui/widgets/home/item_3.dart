@@ -29,9 +29,9 @@ class Item3 extends StatelessWidget {
               Text(
                 content.layoutTitle!,
                 style: FontUtils.secondaryFontStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor
                 ),
               ),
               if (content.layoutRedirectTitle!.isNotEmpty)
@@ -72,7 +72,7 @@ class Item3 extends StatelessWidget {
                   }
                 },
                 child: SizedBox(
-                  width: 100,
+                  width: 70,
                   child: Column(
                     children: [
                       Container(

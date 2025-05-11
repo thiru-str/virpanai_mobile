@@ -77,12 +77,14 @@ class LayoutDatum {
   String? image;
   String? title;
   String? subTitle;
+  Prices? prices;
 
   LayoutDatum({
     this.id,
     this.image,
     this.title,
     this.subTitle,
+    this.prices,
   });
 
   factory LayoutDatum.fromJson(Map<String, dynamic> json) => LayoutDatum(
@@ -90,6 +92,7 @@ class LayoutDatum {
     image: json["image"],
     title: json["title"],
     subTitle: json["sub_title"],
+    prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]), // <-- Deserialize
   );
 
   Map<String, dynamic> toJson() => {
@@ -97,8 +100,39 @@ class LayoutDatum {
     "image": image,
     "title": title,
     "sub_title": subTitle,
+    "prices": prices?.toJson(), // <-- Serialize
   };
 }
+
+class Prices {
+  String? sellingPrice;
+  String? originalPrice;
+  String? discountedPrice;
+  String? discountPercentage;
+
+  Prices({
+    this.sellingPrice,
+    this.originalPrice,
+    this.discountedPrice,
+    this.discountPercentage,
+  });
+
+  factory Prices.fromJson(Map<String, dynamic> json) => Prices(
+    sellingPrice: json["selling_price"],
+    originalPrice: json["original_price"],
+    discountedPrice: json["discounted_price"],
+    discountPercentage: json["discount_Percentage"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "selling_price": sellingPrice,
+    "original_price": originalPrice,
+    "discounted_price": discountedPrice,
+    "discount_Percentage": discountPercentage,
+  };
+}
+
+
 
 class Global {
   List<PaymentProvider>? paymentProvider;

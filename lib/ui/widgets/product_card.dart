@@ -25,6 +25,7 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTapCard,
       child: Container(
+        width: 180,
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(12),
@@ -70,9 +71,9 @@ class ProductCard extends StatelessWidget {
               child: Text(
                 title,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textColor
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -82,8 +83,8 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
               child: Text(
                 price,
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 15,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 21,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textColor,
                 ),

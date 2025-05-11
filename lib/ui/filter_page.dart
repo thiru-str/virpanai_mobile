@@ -1,23 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
+enum FilterSection {
+  collections,
+  categories,
+  price,
+  sortBy,
+}
+
 class FilterPage extends StatefulWidget {
-  const FilterPage({super.key});
+  final String parentCategoryId;
+  final List<String> preSelectedCollections;
+  final List<String> preSelectedCategories;
+  const FilterPage({
+    super.key,
+    required this.parentCategoryId,
+    this.preSelectedCollections = const [],
+    this.preSelectedCategories = const [],
+  });
 
   @override
   State<FilterPage> createState() => _FilterPageState();
 }
 
 class _FilterPageState extends State<FilterPage> {
+  Set<String> selectedCollections = {};
   Set<String> selectedCategories = {};
-  Set<String> selectedBrands = {};
   double minPrice = 500;
   double maxPrice = 10000;
   String sortBy = AppStrings.recommended;
 
-  String selectedSidebar = 'Categories';
+  FilterSection selectedSection = FilterSection.collections;
+  bool isLoadingCollections = true;
+  bool isLoadingCategories = true;
+
+  List<Collection> collectionsList = [];
+  List<ProductCategory> categoryList = [];
+
+  static const sortOptions = [
+    'Recommended',
+    'Newest',
+    'Lowest - Highest Price',
+    'Highest - Lowest Price'
+  ];
+
+  final sidebarItems = [
+    {'label': AppStrings.collections, 'section': FilterSection.collections},
+    {'label': AppStrings.categories, 'section': FilterSection.categories},
+    {'label': AppStrings.price, 'section': FilterSection.price},
+    {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedCollections = widget.preSelectedCollections.toSet();
+    selectedCategories = widget.preSelectedCategories.toSet();
+    _fetchInitialData();
+  }
+
+  void _fetchInitialData() {
+    _loadCollections();
+    _loadCategories();
+  }
+
+  Future<void> _loadCollections() async {
+    try {
+      final response = await ApiService().listCollections(context);
+      setState(() {
+        collectionsList = response.collections ?? [];
+        isLoadingCollections = false;
+      });
+    } catch (e) {
+      print('Error loading collections: $e');
+      setState(() => isLoadingCollections = false);
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final response = await ApiService().listCategories(
+        context,
+        widget.parentCategoryId,
+      );
+      setState(() {
+        categoryList = response.productCategories ?? [];
+        isLoadingCategories = false;
+      });
+    } catch (e) {
+      print('Error loading categories: $e');
+      setState(() => isLoadingCategories = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,27 +105,42 @@ class _FilterPageState extends State<FilterPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey.shade300,
+            height: 1,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: _clearAllFilters,
             child: Text(
-            AppStrings.clear_all,
+              AppStrings.clear_all,
               style:
                   FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
             ),
           ),
         ],
       ),
-      body: Row(
+      body: Column(
         children: [
-          // Sidebar
-          _buildSidebar(),
-          // Filter Options
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildFilterContent(),
+            child: Row(
+              children: [
+                _buildSidebar(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildFilterContent(),
+                  ),
+                ),
+              ],
             ),
+          ),
+          Container(
+            height: 1,
+            color: Colors.grey.shade300,
           ),
         ],
       ),
@@ -55,18 +149,17 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildSidebar() {
-    const sidebarItems = ['Categories', 'Brand', 'Price', 'Sort by'];
     return Container(
-      width: 120,
+      width: 140,
       color: AppColors.secondary,
       child: ListView(
         children: sidebarItems.map((item) {
+          final label = item['label'] as String;
+          final section = item['section'] as FilterSection;
           return SidebarItem(
-            title: item,
-            selected: selectedSidebar == item,
-            onTap: () => setState(() {
-              selectedSidebar = item;
-            }),
+            title: label,
+            selected: selectedSection == section,
+            onTap: () => setState(() => selectedSection = section),
           );
         }).toList(),
       ),
@@ -74,41 +167,49 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildFilterContent() {
-    switch (selectedSidebar) {
-      case 'Categories':
-        return _buildFilterList(
-          ['Eggs', 'Noodles & Pasta', 'Chips & Crisps', 'Fast Food'],
-          selectedCategories,
-        );
-      case 'Brand':
-        return _buildFilterList(
-          ['Cocoa', 'Ifad', 'Kazi Farmas'],
-          selectedBrands,
-        );
-      case 'Price':
+    switch (selectedSection) {
+      case FilterSection.collections:
+        return isLoadingCollections
+            ? const Center(child: CircularProgressIndicator())
+            : _buildFilterList(
+                collectionsList.map((e) => e.id ?? '').toList(),
+                selectedCollections,
+                labelMap: Map.fromEntries(collectionsList
+                    .where((e) => e.id != null && e.title != null)
+                    .map((e) => MapEntry(e.id!, e.title!))),
+              );
+      case FilterSection.categories:
+        return isLoadingCategories
+            ? const Center(child: CircularProgressIndicator())
+            : _buildFilterList(
+                categoryList.map((e) => e.id ?? '').toList(),
+                selectedCategories,
+                labelMap: Map.fromEntries(categoryList
+                    .where((e) => e.id != null && e.name != null)
+                    .map((e) => MapEntry(e.id!, e.name!))),
+              );
+      case FilterSection.price:
         return _buildPriceFilter();
-      case 'Sort by':
+      case FilterSection.sortBy:
         return _buildSortByFilter();
-      default:
-        return const SizedBox();
     }
   }
 
-  Widget _buildFilterList(List<String> items, Set<String> selectedSet) {
+  Widget _buildFilterList(
+    List<String> items,
+    Set<String> selectedSet, {
+    Map<String, String>? labelMap,
+  }) {
     return ListView(
-      children: items.map((item) {
+      children: items.map((id) {
+        final isSelected = selectedSet.contains(id);
+        final displayName = labelMap?[id] ?? id;
         return FilterOption(
-          title: item,
-          selected: selectedSet.contains(item),
-          onSelected: () {
-            setState(() {
-              if (selectedSet.contains(item)) {
-                selectedSet.remove(item);
-              } else {
-                selectedSet.add(item);
-              }
-            });
-          },
+          title: displayName,
+          selected: isSelected,
+          onSelected: () => setState(() {
+            isSelected ? selectedSet.remove(id) : selectedSet.add(id);
+          }),
         );
       }).toList(),
     );
@@ -118,14 +219,10 @@ class _FilterPageState extends State<FilterPage> {
     return Column(
       children: [
         _buildPriceInput('Min: ', minPrice, (value) {
-          setState(() {
-            minPrice = double.tryParse(value) ?? minPrice;
-          });
+          setState(() => minPrice = double.tryParse(value) ?? minPrice);
         }),
         _buildPriceInput('Max: ', maxPrice, (value) {
-          setState(() {
-            maxPrice = double.tryParse(value) ?? maxPrice;
-          });
+          setState(() => maxPrice = double.tryParse(value) ?? maxPrice);
         }),
       ],
     );
@@ -136,6 +233,7 @@ class _FilterPageState extends State<FilterPage> {
     return Row(
       children: [
         Text(label),
+        const SizedBox(width: 8),
         Expanded(
           child: TextField(
             keyboardType: TextInputType.number,
@@ -148,30 +246,15 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildSortByFilter() {
-    const sortOptions = [
-      'Recommended',
-      'Newest',
-      'Lowest - Highest Price',
-      'Highest - Lowest Price'
-    ];
     return Column(
       children: sortOptions.map((option) {
         return RadioListTile<String>(
-          title: Text(
-            option,
-            style: FontUtils.primaryFontStyle(fontSize: 16),
-          ),
+          title: Text(option, style: FontUtils.primaryFontStyle(fontSize: 16)),
           value: option,
           groupValue: sortBy,
-          onChanged: (value) {
-            setState(() {
-              sortBy = value!;
-            });
-          },
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 05), // Reduce horizontal padding
-          visualDensity: VisualDensity.compact, // Reduces the space
-          // dense: true, // Brings the radio button and text closer
+          onChanged: (value) => setState(() => sortBy = value!),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 5),
+          visualDensity: VisualDensity.compact,
         );
       }).toList(),
     );
@@ -179,37 +262,36 @@ class _FilterPageState extends State<FilterPage> {
 
   Widget _buildBottomAppBar() {
     return BottomAppBar(
-      color: Colors.white, // Set the background color to white
+      color: Colors.white,
       child: Row(
         children: [
-          Expanded(
-            child: TextButton(
-              onPressed: () {
-                // Apply action
-              },
-              child: Text(
-                AppStrings.apply,
-                style: FontUtils.primaryFontStyle(
-                    fontSize: 17,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          VerticalDivider(width: 1, color: Colors.grey.shade300,),
-          Expanded(
-            child: TextButton(
-              onPressed: () {
-                // Close action
-              },
-              child: Text(AppStrings.close,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ),
-          ),
+          _buildBottomButton(AppStrings.apply, AppColors.primary, () {
+            Navigator.pop(context, {
+              'selectedCollections': selectedCollections.toList(),
+              'selectedCategories': selectedCategories.toList(),
+            });
+          }),
+          VerticalDivider(width: 1, color: Colors.grey.shade300),
+          _buildBottomButton(AppStrings.close, Colors.black, () {
+            // Close action
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomButton(String label, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: TextButton(
+        onPressed: onTap,
+        child: Text(
+          label,
+          style: FontUtils.primaryFontStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ),
     );
   }
@@ -217,10 +299,10 @@ class _FilterPageState extends State<FilterPage> {
   void _clearAllFilters() {
     setState(() {
       selectedCategories.clear();
-      selectedBrands.clear();
+      selectedCollections.clear();
       minPrice = 500;
       maxPrice = 10000;
-      sortBy = 'Recommended';
+      sortBy = sortOptions.first;
     });
   }
 }
@@ -241,22 +323,20 @@ class SidebarItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
+        padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
           color:
               selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
           border: Border(
             left: BorderSide(
               color: selected ? AppColors.primary : Colors.transparent,
-              width: 4, // Width of the left line
+              width: 4,
             ),
           ),
         ),
-        padding: const EdgeInsets.all(15.0),
         child: Text(
           title,
-          style: FontUtils.primaryFontStyle(
-            fontSize: 16,
-          ),
+          style: FontUtils.primaryFontStyle(fontSize: 16),
         ),
       ),
     );
@@ -279,23 +359,18 @@ class FilterOption extends StatelessWidget {
     return InkWell(
       onTap: onSelected,
       child: Padding(
-        padding: const EdgeInsets.all(8.0), // Adjust vertical spacing
+        padding: const EdgeInsets.all(8.0),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Checkbox(
               value: selected,
               onChanged: (_) => onSelected(),
               activeColor: AppColors.primary,
-              visualDensity: VisualDensity.compact, // Reduces checkbox size
-              materialTapTargetSize:
-                  MaterialTapTargetSize.shrinkWrap, // Reduces padding
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            const SizedBox(width: 8), // Small gap between checkbox and text
-            Text(
-              title,
-              style: FontUtils.primaryFontStyle(fontSize: 16),
-            ),
+            const SizedBox(width: 8),
+            Text(title, style: FontUtils.primaryFontStyle(fontSize: 16)),
           ],
         ),
       ),
