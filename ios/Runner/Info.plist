@@ -22,12 +22,48 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>id.waioz.cartel</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>comwaiozcartel</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We access camera permission for take and upload a photo of your payment proof for verification.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location to ensure accurate delivery to your current address.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>We use your location to ensure accurate delivery to your current address.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to ensure accurate delivery to your current address.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+		</array>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -47,22 +83,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-    <key>FirebaseAppDelegateProxyEnabled</key>
-    <false/>
-    <key>UIApplicationSceneManifest</key>
-    <dict>
-      <key>UIBackgroundModes</key>
-      <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-      </array>
-    </dict>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key>
-      <true/>
-    </dict>
-    <key>UIUserNotificationSettings</key>
-    <true/>
+	<key>UIUserNotificationSettings</key>
+	<true/>
 </dict>
 </plist>

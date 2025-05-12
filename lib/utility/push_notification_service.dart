@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:io' show Platform;
 
+import 'package:waioz/utility/shared_preferences_util.dart';
+
 class PushNotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
@@ -22,12 +24,13 @@ class PushNotificationService {
       //SKIP for Simulator
       return;
     }
-    String? token = await _firebaseMessaging.getToken();
-    print('FCM Token: $token');
+    String? fcmToken = await _firebaseMessaging.getToken();
+    print('FCM Token: $fcmToken');
 
     // Send token to your server
-    if (token != null) {
-      await sendTokenToServer(token);
+    if (fcmToken != null) {
+      SharedPreferencesUtil().saveString('fcm_token', fcmToken);
+      //await sendTokenToServer(token);
     }
 
     // Listen to foreground messages

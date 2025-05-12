@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: CommonHeader(headerType: appHeader,title: headerTitle,onCartClick:(){
+                      child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
                         PageRouteUtils.pushWithSlide(context, const CartPage());
                       },onSearchClick: (){
                         PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
@@ -206,6 +206,9 @@ class _HomePageState extends State<HomePage> {
         cartItems = cartResponse!.cart!.items!.length;
         cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
       });
+      if((cartResponse?.cart?.items?.length?? 0) > 0) {
+        eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
+      }
     } catch (e) {
       print(e);
     }
