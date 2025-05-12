@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/model/customer_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
@@ -32,6 +35,9 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
 
+  int? cartItems;
+  late StreamSubscription<ViewCartModel> _eventSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +62,17 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     });
 
     initializePages();
+    listenToEvents();
+  }
+
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
+      if (mounted) {
+        setState(() {
+          cartItems = event.totalItems;
+        });
+      }
+    });
   }
 
   Future<void> initializePages() async {
@@ -95,6 +112,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   @override
   void dispose() {
     _animationController.dispose();
+    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
@@ -116,24 +134,52 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
               _currentIndex = index; // Update selected tab
             });
           },
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
               label: AppStrings.shop,
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
               label: AppStrings.categories,
             ),
             BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+              icon: Stack(
+                children: [
+                  const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                  if ((cartItems?? 0) > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          cartItems!.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               label: AppStrings.cart,
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
               label: AppStrings.favourite,
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
               label: AppStrings.account,
             ),

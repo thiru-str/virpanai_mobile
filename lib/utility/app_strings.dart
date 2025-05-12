@@ -100,6 +100,7 @@ class AppStrings {
   static const String cart = "Cart";
   static const String account = "Account";
   static const String categories = "Categories";
+  static const String collections = "Collections";
   static const String favourite = "Favourite";
   static const String customer = "customer";
 
@@ -181,4 +182,5 @@ class AppStrings {
   static const String IFSC_code = 'IFSC Code';
   static const String account_no = 'Account No';
   static const String bank_name = 'Bank Name';
+  static const String related_products = 'Related Products';
 }

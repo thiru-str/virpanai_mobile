@@ -114,6 +114,8 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         return OrderWidget(
           orderId: (orderHistoryResponse?.orders?[index].displayId ?? 1).toString(),
           itemCount: (orderHistoryResponse?.orders?[index].items?.length ?? 1).toString(),
+          createdAt: (orderHistoryResponse?.orders?[index].createdAt??DateTime.now()),
+          itemPrice: (orderHistoryResponse?.orders?[index].total?? 0),
           onTap: () {
             // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
             PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(selectedOrder: orderHistoryResponse?.orders?[index],));

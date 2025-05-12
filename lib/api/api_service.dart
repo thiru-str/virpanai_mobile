@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/filter_category_response.dart';
+import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
@@ -68,13 +71,11 @@ class ApiService {
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
-      } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
-        throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
         await _handleLogout(context, response.data['error']);
         throw Exception('Unauthorized: ${response.data['error']}');
       } else {
+        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -233,10 +234,11 @@ class ApiService {
   }
 
   Future<VerifyOtpResponse> verifyOtp(
-      BuildContext context, String countryCode,String phone, String otp) async {
+      BuildContext context,String countryCode,String phone, String otp) async {
+    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
     return _makePostRequest(
         "store/customers/verify-otp",
-        {"country_code":countryCode,"phone": phone, "otp": otp},
+        {"device_id": deviceId,"country_code":countryCode,"phone": phone, "otp": otp},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
   }
@@ -251,6 +253,7 @@ class ApiService {
       String phone,
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
+    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
     return _makePostRequest(
         "store/customers",
         {
@@ -260,7 +263,8 @@ class ApiService {
           "last_name": lastName,
           "phone": phone,
           "metadata": {
-            "country_code":countryCode
+            "country_code":countryCode,
+            "device_id":deviceId
           }
         },
         (data) => RegisterResponse.fromJson(data),
@@ -280,12 +284,24 @@ class ApiService {
   }
 
   Future<ProductsResponse> listProducts(
-      BuildContext context, String categoryId) async {
+      BuildContext context, String categoryId, String collectionId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
+    final queryParams = <String, String>{};
+    if (regionId != null && regionId.isNotEmpty) {
+      queryParams['region_id'] = regionId;
+    }
+
+    if (categoryId.trim().isNotEmpty) {
+      queryParams['category_id[]'] = categoryId;
+    }
+
+    if (collectionId.isNotEmpty) {
+      queryParams['collection_id[]'] = collectionId;
+    }
     return _makeGetRequest<ProductsResponse>(
       'store/products',
       null,
-      {"region_id": regionId, "category_id": categoryId},
+      queryParams,
       (json) => ProductsResponse.fromJson(json),
       context,
     );
@@ -351,7 +367,7 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v3',
+      'store/get_home_page/v4',
         null,
       (json) => HomePageResponse.fromJson(json),
       context,
@@ -689,6 +705,41 @@ class ApiService {
       null,
           (json) => StoreContentResponse.fromJson(json),
       null,
+    );
+  }
+
+  Future<CollectionsResponse> listCollections(BuildContext context) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+
+    return _makeGetRequest<CollectionsResponse>(
+      'store/collections',
+      null,
+      null,
+          (json) => CollectionsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<FilterCategoryResponse> listCategories(BuildContext context, String parentId) async {
+    return _makeGetRequest<FilterCategoryResponse>(
+      'store/product-categories',
+      null,
+      {
+        "parent_category_id": parentId,
+      },
+          (json) => FilterCategoryResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<RelatedProductsResponse> relatedProducts(
+      BuildContext context, String productId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makePostRequest<RelatedProductsResponse>(
+      'store/related-product/${productId}',
+      {"region_id": regionId},
+          (json) => RelatedProductsResponse.fromJson(json),
+      context,
     );
   }
 
