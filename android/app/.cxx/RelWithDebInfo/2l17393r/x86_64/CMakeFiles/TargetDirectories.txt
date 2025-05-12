@@ -1,0 +1,2 @@
+/Users/apple/Documents/Myn/cartel_mobile/android/app/.cxx/RelWithDebInfo/2l17393r/x86_64/CMakeFiles/edit_cache.dir
+/Users/apple/Documents/Myn/cartel_mobile/android/app/.cxx/RelWithDebInfo/2l17393r/x86_64/CMakeFiles/rebuild_cache.dir
