@@ -58,3 +58,7 @@ ios/Flutter/Release.xcconfig
 macos/Flutter/Flutter-Debug.xcconfig
 macos/Flutter/Flutter-Release.xcconfig
 macos/Podfile
+/android/app/.cxx/Debug/5q212o6u/arm64-v8a/.cmake/api/v1/reply/index-2025-05-12T10-20-47-0078.json
+/android/app/.cxx/Debug/5q212o6u/armeabi-v7a/.cmake/api/v1/reply/index-2025-05-12T10-20-47-0943.json
+/android/app/.cxx/Debug/5q212o6u/x86/.cmake/api/v1/reply/index-2025-05-12T10-20-48-0957.json
+/android/app/.cxx/Debug/5q212o6u/x86_64/.cmake/api/v1/reply/index-2025-05-12T10-20-49-0595.json
