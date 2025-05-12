@@ -90,17 +90,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      hintText:AppStrings.company,
-                      controller: companyController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppStrings.company_required;
-                        }
-                        return null;
-                      },
-                    ),
                     const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () {

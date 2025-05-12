@@ -30,7 +30,7 @@ class Item5 extends StatelessWidget {
               Text(
                 content.layoutTitle!,
                 style: FontUtils.secondaryFontStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor
                 ),
@@ -54,7 +54,7 @@ class Item5 extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 350,
+          height: 360,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: content.layoutData!.length,
@@ -73,7 +73,7 @@ class Item5 extends StatelessWidget {
                   }
                 },
                 child: Container(
-                  width: 160,
+                  width: 200,
                   decoration: BoxDecoration(
                     color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
@@ -104,6 +104,34 @@ class Item5 extends StatelessWidget {
                               color: AppColors.secondary,
                             ),
                           ),
+                          Visibility(
+                            visible: layoutData.prices != null &&
+                                layoutData.prices!.discountedPrice != null &&
+                                layoutData.prices!.discountedPrice != "0",
+                            child: Positioned(
+                              top: 0,
+                              left: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                                decoration: const BoxDecoration(
+                                  color: Colors.pink,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                  ),
+                                ),
+                                child: RotatedBox(
+                                  quarterTurns: -1,
+                                  child: Text('${layoutData.prices!.discountPercentage!} OFF',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -113,7 +141,7 @@ class Item5 extends StatelessWidget {
                           layoutData.title!,
                           style: FontUtils.primaryFontStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w400,
                               color: AppColors.textColor
                           ),
                           maxLines: 1,
@@ -122,16 +150,38 @@ class Item5 extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          CurrencyUtil.appendCurrency(layoutData.subTitle!),
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              CurrencyUtil.appendCurrency(layoutData.prices!.sellingPrice!),
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Visibility(
+                              visible: layoutData.prices != null &&
+                                  layoutData.prices!.discountedPrice != null &&
+                                  layoutData.prices!.discountedPrice != "0",
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Text(
+                                  CurrencyUtil.appendCurrency(layoutData.prices!.originalPrice!),
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.textColor.withOpacity(0.6),
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

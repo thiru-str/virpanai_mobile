@@ -12,6 +12,7 @@ class CommonHeader extends StatelessWidget {
   final VoidCallback? onSearchClick;
   final String title;
   final String addressType;
+  final int cartCount;
 
   const CommonHeader({
     Key? key,
@@ -21,7 +22,9 @@ class CommonHeader extends StatelessWidget {
     this.onSearchClick,
     this.title = "",
     this.addressType = "",
+    this.cartCount = 0
   }) : super(key: key);
+
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class CommonHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
-          _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
+          _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick,cartCount: cartCount),
         ],
       ),
     ]);
@@ -85,7 +88,7 @@ class CommonHeader extends StatelessWidget {
               fontSize: 16,
               color: AppColors.textColor,
             )),
-            _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
+            _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick,cartCount: cartCount),
           ],
         ),
         _buildSearchBar(),
@@ -101,7 +104,7 @@ class CommonHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
-            _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick),
+            _buildIcon(Icons.shopping_cart, color:AppColors.primary,onPressed: onCartClick,cartCount: cartCount),
           ],
         ),
         _buildSearchBar(),
@@ -246,32 +249,89 @@ class CommonHeader extends StatelessWidget {
   }
 
   /// Common Icon Widget (Optional Clickable)
+  // Widget _buildIcon(
+  //     IconData? icon, {
+  //       String? assetPath, // Optional asset icon path
+  //       VoidCallback? onPressed,
+  //       double? size, // Icon size
+  //       double? width, // Width of container
+  //       double? height, // Height of container
+  //       Color? color, // Icon color
+  //     }) {
+  //   return Container(
+  //     width: width ?? 48, // Default width
+  //     height: height ?? 48, // Default height
+  //     alignment: Alignment.center,
+  //     child: IconButton(
+  //       icon: assetPath != null
+  //           ? Image.asset(
+  //         assetPath,
+  //         width: size ?? 24,
+  //         height: size ?? 24,
+  //         color: color, // Applies tint if needed
+  //       )
+  //           : Icon(icon, color: color ?? Colors.black, size: size), // Uses default icon if no asset
+  //       onPressed: onPressed,
+  //     ),
+  //   );
+  // }
+
   Widget _buildIcon(
       IconData? icon, {
-        String? assetPath, // Optional asset icon path
+        String? assetPath,
         VoidCallback? onPressed,
-        double? size, // Icon size
-        double? width, // Width of container
-        double? height, // Height of container
-        Color? color, // Icon color
+        double? size,
+        double? width,
+        double? height,
+        Color? color,
+        int cartCount = 0,
       }) {
+    Widget iconWidget = assetPath != null
+        ? Image.asset(
+      assetPath,
+      width: size ?? 24,
+      height: size ?? 24,
+      color: color,
+    )
+        : Icon(icon, color: color ?? Colors.black, size: size);
+
+    // Wrap with Stack only if it's the cart icon and cartCount > 0
+    if (icon == Icons.shopping_cart && cartCount > 0) {
+      iconWidget = Stack(
+        children: [
+          iconWidget,
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+              child: Text(
+                '$cartCount',
+                style: const TextStyle(color: Colors.white, fontSize: 10),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Container(
-      width: width ?? 48, // Default width
-      height: height ?? 48, // Default height
+      width: width ?? 48,
+      height: height ?? 48,
       alignment: Alignment.center,
       child: IconButton(
-        icon: assetPath != null
-            ? Image.asset(
-          assetPath,
-          width: size ?? 24,
-          height: size ?? 24,
-          color: color, // Applies tint if needed
-        )
-            : Icon(icon, color: color ?? Colors.black, size: size), // Uses default icon if no asset
+        icon: iconWidget,
         onPressed: onPressed,
       ),
     );
   }
+
 
 
 

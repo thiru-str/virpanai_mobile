@@ -40,7 +40,6 @@ class _Item2State extends State<Item2> {
                 borderRadius: BorderRadius.circular(15),
                 child: Image.network(
                   layoutdata.image!,
-                  fit: BoxFit.cover,
                   width: double.infinity,
                 ),
               );
