@@ -11,20 +11,24 @@ String wishlistResponseToJson(WishlistResponse data) => json.encode(data.toJson(
 class WishlistResponse {
   bool? success;
   List<Product>? products;
+  ProductWishlistElement? wishlistElement;
 
   WishlistResponse({
     this.success,
     this.products,
+    this.wishlistElement,
   });
 
   factory WishlistResponse.fromJson(Map<String, dynamic> json) => WishlistResponse(
     success: json["success"],
     products: json["products"] == null ? [] : List<Product>.from(json["products"]!.map((x) => Product.fromJson(x))),
+    wishlistElement: json["product_wishlist"] == null ? null : ProductWishlistElement.fromJson(json["product_wishlist"]),
   );
 
   Map<String, dynamic> toJson() => {
     "success": success,
     "products": products == null ? [] : List<dynamic>.from(products!.map((x) => x.toJson())),
+    "product_wishlist": wishlistElement?.toJson(),
   };
 }
 
