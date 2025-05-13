@@ -75,7 +75,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                         crossAxisSpacing: 16, // Space between columns
                         mainAxisSpacing: 16, // Space between rows
                         childAspectRatio: (MediaQuery.of(context).size.width / 2) /
-                        (240 + 16 + 16 + 32 + 20), // Adjust this for proper card proportions
+                        (240 + 16 + 16 + 32 + 24), // Adjust this for proper card proportions
                       ),
                       itemBuilder: (context, index) {
                         final product = wishListResponse!.products?[index];
