@@ -58,4 +58,4 @@ ios/Flutter/Release.xcconfig
 macos/Flutter/Flutter-Debug.xcconfig
 macos/Flutter/Flutter-Release.xcconfig
 macos/Podfile
-/android/app/.cxx/
+android/app/.cxx/
