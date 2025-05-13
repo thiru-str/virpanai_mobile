@@ -56,24 +56,22 @@ class _AddAddressPage extends State<AddAddressPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     if (widget.selectedAddress != null) {
-      // Populate the form fields with existing address data
       final address = widget.selectedAddress!;
       firstNameController.text = address.firstName ?? '';
       lastNameController.text = address.lastName ?? '';
-      streetAddressController.text = address.address1 ?? '';
       phoneNumberController.text = address.phone ?? '';
-      cityController.text = address.city ?? '';
-      stateController.text = address.province ?? '';
-      zipCodeController.text = address.postalCode ?? '';
       selectedLocation = address.addressName ?? AppStrings.home;
-      if (selectedLocation != AppStrings.home &&
-          selectedLocation != AppStrings.work) {
+
+      if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
         selectedLocation = AppStrings.others;
         otherAddressName.text = address.addressName ?? '';
       }
-    } else if (widget.isFromMap && widget.place != null) {
-      // Populate the form fields with existing address data
+    }
+
+    // If map data is available, always update the address part
+    if (widget.isFromMap && widget.place != null) {
       final place = widget.place!;
 
       List<String?> streetAddress = [
@@ -88,6 +86,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       latitude = widget.currentPosition!.latitude;
       longitude = widget.currentPosition!.longitude;
     }
+
   }
 
   @override
