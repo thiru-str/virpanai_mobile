@@ -116,7 +116,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                               apiLoading = true;
                                             });
                                             updateAddress(address);
-                                          },
+                                            },
                                         ));
                                   }),
                               CheckoutItemCard(
@@ -222,9 +222,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       if (!addAddress) {
                         AppUtils.showToast(AppStrings.add_shipping_address);
                       } else if (!addShippingOption) {
-                        AppUtils.showToast(AppStrings.add_shipping_address);
+                        AppUtils.showToast(AppStrings.add_shipping_method);
                       } else if (!addPaymentMethod) {
-                        AppUtils.showToast(AppStrings.add_shipping_address);
+                        AppUtils.showToast(AppStrings.add_payment_method);
                       } else {
                         // validations done proceed to place order
                         updatePaymentMethod(pp_id!);
