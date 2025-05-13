@@ -72,28 +72,31 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            customer != null
-                                ? '${customer!.firstName!} ${customer!.lastName}'
-                                : '',
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              customer != null
+                                  ? '${customer!.firstName!} ${customer!.lastName}'
+                                  : '',
+                              overflow: TextOverflow.ellipsis,
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            customer != null ? customer!.email! : '',
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
+                            SizedBox(height: 4),
+                            Text(
+                              customer != null ? customer!.email! : '',
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       // Edit Button
                       TextButton(

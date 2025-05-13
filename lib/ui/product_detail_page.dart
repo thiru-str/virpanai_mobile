@@ -7,6 +7,7 @@ import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
@@ -49,6 +50,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   bool hasVariants = false;
   bool? productPresentInCart; // Changed to nullable to handle loading state
   bool isFavorite = false;
+  String? wishlistId = '';
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
@@ -756,6 +758,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         productInfoResponse = response;
         setState(() {
           isFavorite = productInfoResponse?.productOnWishlist ?? false;
+          wishlistId = productInfoResponse?.productWishlistId ?? '';
         });
         apiLoading = false;
       });
@@ -786,13 +789,33 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     if (!isFavorite) {
       try {
         final apiService = ApiService();
-        await apiService.addFavourite(context, widget.productId);
+        WishlistResponse wishlistResponse = await apiService.addFavourite(context, widget.productId);
         setState(() {
+          wishlistId = wishlistResponse.wishlistElement?.id;
           isFavorite = true;
         });
       } catch (e) {
         print(e);
       }
+    }
+    else{
+      if (wishlistId != null && wishlistId!.isNotEmpty) {
+        removeFavourite(widget.productId, wishlistId!);
+      }
+    }
+  }
+
+  void removeFavourite(String? productId, String? wishlistId) async {
+    try {
+      final ApiService apiService = ApiService();
+      await apiService.deleteFavourite(context, productId, wishlistId);
+      if (mounted) {
+        setState(() {
+          isFavorite = false;
+        });
+      }
+    } catch (e) {
+      print(e);
     }
   }
 
