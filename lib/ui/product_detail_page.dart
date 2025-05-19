@@ -55,8 +55,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   late AnimationController _animationController;
   late Animation<Offset> _animation;
 
-  ProductResponse.Value? selectedColor;
-  ProductResponse.Value? selectedSize;
+  //ProductResponse.Value? selectedColor;
+  //ProductResponse.Value? selectedSize;
+  Map<String, ProductResponse.Value?> selectedOptions = {};
+
 
   String? selectedVariantId;
   int selectedQuantity = 1;
@@ -135,41 +137,41 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       backgroundColor: Colors.white,
       body: apiLoading
           ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+        child: CircularProgressIndicator(color: AppColors.primary),
+      )
           : SafeArea(
-              child: Stack(children: [
-                Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              buildProductImages(),
-                              const SizedBox(height: 25),
-                              buildProductDetails(),
-                              buildCartSection(),
-                              const SizedBox(height: 15),
-                              buildProductDescription(),
-                              buildRelatedProducts(),
-                              /*buildShippingAndReturns(),
+        child: Stack(children: [
+          Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildProductImages(),
+                        const SizedBox(height: 25),
+                        buildProductDetails(),
+                        buildCartSection(),
+                        const SizedBox(height: 15),
+                        buildProductDescription(),
+                        buildRelatedProducts(),
+                        /*buildShippingAndReturns(),
                         const SizedBox(height: 15),*/
-                              buildReviews(),
-                              const SizedBox(height: 90),
+                        buildReviews(),
+                        const SizedBox(height: 90),
 
-                            ],
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                buildBottomButton()
-              ]),
-            ),
+              ),
+            ],
+          ),
+          buildBottomButton()
+        ]),
+      ),
     );
   }
 
@@ -237,12 +239,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             itemBuilder: (context, index) {
               final product =  relatedProductsResponse?.products![index];
               return ProductCard(
-                  imageUrl: product?.thumbnail??'',
-                  title: product?.title??'',
-                  price: product!.variants!.isNotEmpty
-                      ? CurrencyUtil.appendCurrency(
-                      product.variants![0].calculatedPrice!.rawCalculatedAmount!.value!)
-                      : '',
+                imageUrl: product?.thumbnail??'',
+                title: product?.title??'',
+                price: product!.variants!.isNotEmpty
+                    ? CurrencyUtil.appendCurrency(
+                    product.variants![0].calculatedPrice!.rawCalculatedAmount!.value!)
+                    : '',
                 onTapCard: () {
                   PageRouteUtils.pushWithSlide(
                     context,
@@ -273,10 +275,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         Row(
           children: [
             Text(
-              product?.variants?.isNotEmpty ?? false
-                  ? CurrencyUtil.appendCurrency(product!.variants!.first
-                      .calculatedPrice!.rawCalculatedAmount!.value!)
-                  : '',
+              getSelectedVariantPrice(),
               style: FontUtils.secondaryFontStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -288,13 +287,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             ),
             Visibility(
               visible: product!.variants!.first.calculatedPrice!
-                      .rawCalculatedAmount!.value! !=
+                  .rawCalculatedAmount!.value! !=
                   product!.variants!.first.calculatedPrice!.rawOriginalAmount!
                       .value!,
               child: Text(
                 product?.variants?.isNotEmpty ?? false
                     ? CurrencyUtil.appendCurrency(product!.variants!.first
-                        .calculatedPrice!.rawOriginalAmount!.value!)
+                    .calculatedPrice!.rawOriginalAmount!.value!)
                     : '',
                 style: FontUtils.secondaryFontStyle(
                     fontWeight: FontWeight.bold,
@@ -309,6 +308,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
+  String getSelectedVariantPrice() {
+    if (product == null || selectedVariantId == null) {
+      return  '';
+    }
+
+    final selectedVariant = product!.variants!
+        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
+
+    final price = selectedVariant.calculatedPrice?.rawCalculatedAmount?.value;
+
+    return price != null ? CurrencyUtil.appendCurrency(price) : '';
+  }
+
+
   Widget buildCartSection() {
     if (product == null ||
         product!.variants == null ||
@@ -320,16 +333,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 15),
-
-        if (showVariantSelection) ...[
-          // ✅ Separate Color and Size selections (No combined title)
-          buildColorSelection(),
-          const SizedBox(height: 15),
-          buildSizeSelection(),
-          const SizedBox(height: 15),
-        ],
-
-        // ✅ Quantity Selector is always visible
+        if (showVariantSelection) buildDynamicVariantSelection(),
         Text(
           AppStrings.select_qty,
           style: FontUtils.secondaryFontStyle(
@@ -338,51 +342,109 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         const SizedBox(height: 10),
         buildQuantitySelector(),
         const SizedBox(height: 10),
-        // Quantity selector (Dropdown)
       ],
     );
   }
 
-  void updateVariant() {
-    if (selectedColor == null || selectedSize == null) {
-      return; // Prevent clearing selection
+  Widget buildDynamicVariantSelection() {
+    if (product?.options == null) return const SizedBox();
+
+    List<Widget> sections = [];
+
+    for (var option in product!.options!) {
+      final title = option.title ?? '';
+      final key = title.toLowerCase();
+
+      sections.add(Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$title: ${selectedOptions[key]?.value ?? 'Select'}",
+            style: FontUtils.secondaryFontStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: option.values!.map((optionValue) {
+              final isSelected = selectedOptions[key]?.id == optionValue.id;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedOptions[key] = optionValue;
+                    updateVariant();
+                  });
+                },
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected ? Colors.black : Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                    color: isSelected ? Colors.black : Colors.white,
+                  ),
+                  child: Text(
+                    optionValue.value ?? '',
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 15),
+        ],
+      ));
     }
 
-    String selectedColorValue = selectedColor?.value ?? "";
-    String selectedSizeValue = selectedSize?.value ?? "";
+    return Column(children: sections);
+  }
 
-    print("Selected Color: $selectedColorValue");
-    print("Selected Size: $selectedSizeValue");
+
+
+
+
+  void updateVariant() {
+    // If any option is unselected, do not proceed
+    if (selectedOptions.values.any((v) => v == null)) {
+      return;
+    }
 
     ProductResponse.Variant? variant;
     try {
       variant = product!.variants!.firstWhere((v) {
-        bool hasColor = v.options!.any((opt) =>
-            opt.option?.title?.toLowerCase() == "color" &&
-            opt.value == selectedColorValue);
-
-        bool hasSize = v.options!.any((opt) =>
-            opt.option?.title?.toLowerCase() == "size" &&
-            opt.value == selectedSizeValue);
-
-        return hasColor && hasSize;
+        return selectedOptions.entries.every((entry) {
+          final selectedTitle = entry.key.toLowerCase();
+          final selectedValue = entry.value?.value;
+          return v.options!.any((opt) =>
+          opt.option?.title?.toLowerCase() == selectedTitle &&
+              opt.value == selectedValue);
+        });
       });
     } catch (e) {
-      print(
-          "No matching variant found for Color: $selectedColorValue, Size: $selectedSizeValue");
-      variant = null; // Ensure variant is null if not found
+      print("No matching variant found for selected options: $selectedOptions");
+      variant = null;
     }
 
     setState(() {
       if (variant != null && isVariantAvailable(variant)) {
         selectedVariantId = variant.id;
       } else {
-        selectedVariantId = null; // Disable add to cart button
+        selectedVariantId = null;
       }
     });
 
     print('Selected Variant ID: ${selectedVariantId ?? "None"}');
   }
+
 
   bool isVariantAvailable(ProductResponse.Variant? variant) {
     return variant != null &&
@@ -506,15 +568,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         alignment: Alignment.bottomCenter,
         child: cartItems != null
             ? Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    PageRouteUtils.pushWithSlide(context, const CartPage());
-                  },
-                  child: ViewCartWidget(
-                      totalItems: cartItems!, itemImages: cartItemImages!),
-                ),
-              )
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: GestureDetector(
+            onTap: () {
+              PageRouteUtils.pushWithSlide(context, const CartPage());
+            },
+            child: ViewCartWidget(
+                totalItems: cartItems!, itemImages: cartItemImages!),
+          ),
+        )
             : const SizedBox(),
       ),
     );
@@ -542,12 +604,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             },
             items: List.generate(10, (index) => index + 1)
                 .map((qty) => DropdownMenuItem(
-                      value: qty,
-                      child: Text(
-                        qty.toString(),
-                        style: FontUtils.secondaryFontStyle(fontSize: 16),
-                      ),
-                    ))
+              value: qty,
+              child: Text(
+                qty.toString(),
+                style: FontUtils.secondaryFontStyle(fontSize: 16),
+              ),
+            ))
                 .toList(),
           ),
         ),
@@ -557,7 +619,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  selectedVariantId == null ? Colors.grey : AppColors.primary,
+              selectedVariantId == null ? Colors.grey : AppColors.primary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
               minimumSize: const Size(
@@ -566,120 +628,31 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             onPressed: selectedVariantId == null
                 ? null
                 : () async {
-                    setState(() => quantityLoading = true);
-                    await addCart(selectedQuantity, selectedVariantId!);
-                    setState(() => quantityLoading = false);
-                  },
+              setState(() => quantityLoading = true);
+              await addCart(selectedQuantity, selectedVariantId!);
+              setState(() => quantityLoading = false);
+            },
             child: quantityLoading
                 ? CircularProgressIndicator(color: Colors.white)
                 : Text(
-                    selectedVariantId == null
-                        ? 'Select Variant'
-                        : 'Add to Cart',
-                    style: FontUtils.primaryFontStyle(
-                        fontSize: 18, color: Colors.white),
-                  ),
+              selectedVariantId == null
+                  ? 'Select Variant'
+                  : 'Add to Cart',
+              style: FontUtils.primaryFontStyle(
+                  fontSize: 18, color: Colors.white),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget buildColorSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Color: ${selectedColor?.value ?? 'Select'}",
-          style: FontUtils.secondaryFontStyle(
-              fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          children: product!.options!
-              .firstWhere((opt) => opt.title!.toLowerCase() == "color")
-              .values!
-              .map((option) {
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedColor = option;
-                  updateVariant();
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: selectedColor == option
-                        ? AppColors.primary
-                        : Colors.grey,
-                    width: selectedColor == option ? 2 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(option.value!,
-                    style: FontUtils.secondaryFontStyle(fontSize: 14)),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget buildSizeSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Size: ${selectedSize?.value ?? 'Select'}",
-          style: FontUtils.secondaryFontStyle(
-              fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          children: product!.options!
-              .firstWhere((opt) => opt.title!.toLowerCase() == "size")
-              .values!
-              .map((option) {
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedSize = option;
-                  updateVariant();
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: selectedSize == option
-                        ? AppColors.primary
-                        : Colors.grey,
-                    width: selectedSize == option ? 2 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(option.value!,
-                    style: FontUtils.secondaryFontStyle(fontSize: 14)),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
 
   Future<void> getProductsApi() async {
     try {
       final apiService = ApiService();
       final response =
-          await apiService.productDetail(context, widget.productId);
+      await apiService.productDetail(context, widget.productId);
       setState(() {
         product = response.product;
         apiLoading = false;
@@ -696,15 +669,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           });
         } else {
           setState(() {
-            selectedColor = product!.options!
-                .firstWhere((opt) => opt.title!.toLowerCase() == "color")
-                .values!
-                .first;
-            selectedSize = product!.options!
-                .firstWhere((opt) => opt.title!.toLowerCase() == "size")
-                .values!
-                .first;
-            showVariantSelection = true; // Show variant selection
+            selectedOptions = {};
+            for (var option in product!.options ?? []) {
+              final title = option.title?.toLowerCase();
+              final firstValue = option.values?.first;
+              if (title != null && firstValue != null) {
+                selectedOptions[title] = firstValue;
+              }
+            }
+
+            showVariantSelection = true;
           });
 
           Future.delayed(Duration.zero, updateVariant);
@@ -740,7 +714,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     try {
       final apiService = ApiService();
       final response =
-          await apiService.getProductReviews(context, widget.productId);
+      await apiService.getProductReviews(context, widget.productId);
       setState(() => reviewResponse = response);
     } catch (e) {
       print(e);
@@ -750,20 +724,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   Future<void> getProductsInfoApi() async {
     try {
       if(selectedVariantId!=null)
-        {
-      final apiService = ApiService();
-      final response = await apiService.getProductInfo(
-          context, widget.productId, selectedVariantId);
-      setState(() {
-        productInfoResponse = response;
+      {
+        final apiService = ApiService();
+        final response = await apiService.getProductInfo(
+            context, widget.productId, selectedVariantId);
         setState(() {
-          isFavorite = productInfoResponse?.productOnWishlist ?? false;
-          wishlistId = productInfoResponse?.productWishlistId ?? '';
+          productInfoResponse = response;
+          setState(() {
+            isFavorite = productInfoResponse?.productOnWishlist ?? false;
+            wishlistId = productInfoResponse?.productWishlistId ?? '';
+          });
+          apiLoading = false;
         });
-        apiLoading = false;
-      });
-      getCartApi();
-        }
+        getCartApi();
+      }
     } catch (e) {
       setState(() => apiLoading = false);
     }
@@ -828,7 +802,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       setState(() {
         cartResponse = response;
         productPresentInCart = cartResponse?.cart?.items
-                ?.any((item) => item.variantId == selectedVariantId) ??
+            ?.any((item) => item.variantId == selectedVariantId) ??
             false;
         emitEvent(cartResponse!);
       });
