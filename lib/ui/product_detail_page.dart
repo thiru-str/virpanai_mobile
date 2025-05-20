@@ -276,10 +276,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         Row(
           children: [
             Text(
-              selectedVariant != null
-                  ? CurrencyUtil.appendCurrency(
-                  selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value ?? '0')
-                  : '',
+              getDisplayedPrice(),
               style: FontUtils.secondaryFontStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -310,18 +307,28 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
-  String getSelectedVariantPrice() {
-    if (product == null || selectedVariantId == null) {
-      return  '';
+  String getDisplayedPrice() {
+    if (selectedVariant != null) {
+      return CurrencyUtil.appendCurrency(
+          selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value ?? '0');
     }
 
-    final selectedVariant = product!.variants!
-        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
+    // fallback: show lowest variant price if product is loaded
+    if (product?.variants?.isNotEmpty ?? false) {
+      final prices = product!.variants!
+          .map((v) => double.tryParse(v.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999'))
+          .whereType<double>()
+          .toList();
 
-    final price = selectedVariant.calculatedPrice?.rawCalculatedAmount?.value;
+      if (prices.isNotEmpty) {
+        final lowest = prices.reduce((a, b) => a < b ? a : b);
+        return "From ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
+      }
+    }
 
-    return price != null ? CurrencyUtil.appendCurrency(price) : '';
+    return '';
   }
+
 
   ProductResponse.Variant? getSelectedVariant() {
     if (product == null || selectedOptions.isEmpty) return null;
