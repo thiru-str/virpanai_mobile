@@ -286,20 +286,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               width: 10,
             ),
             Visibility(
-              visible: product!.variants!.first.calculatedPrice!
-                  .rawCalculatedAmount!.value! !=
-                  product!.variants!.first.calculatedPrice!.rawOriginalAmount!
-                      .value!,
+              visible: isProductHasDiscount(),
               child: Text(
-                product?.variants?.isNotEmpty ?? false
-                    ? CurrencyUtil.appendCurrency(product!.variants!.first
-                    .calculatedPrice!.rawOriginalAmount!.value!)
-                    : '',
+                getDiscountedPrice(),
                 style: FontUtils.secondaryFontStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppColors.primary,
-                    decoration: TextDecoration.lineThrough),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppColors.primary,
+                  decoration: TextDecoration.lineThrough,
+                ),
               ),
             ),
           ],
@@ -320,6 +315,31 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     return price != null ? CurrencyUtil.appendCurrency(price) : '';
   }
+
+  bool isProductHasDiscount() {
+    if (product == null || selectedVariantId == null) return false;
+
+    final variant = product!.variants!
+        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
+
+    final calculated = variant.calculatedPrice;
+    final current = calculated?.rawCalculatedAmount?.value;
+    final original = calculated?.rawOriginalAmount?.value;
+
+    return current != null && original != null && current != original;
+  }
+
+  String getDiscountedPrice() {
+    if (product == null || selectedVariantId == null) return '';
+
+    final selectedVariant = product!.variants!
+        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
+
+    final price = selectedVariant.calculatedPrice?.rawOriginalAmount?.value;
+
+    return price != null ? CurrencyUtil.appendCurrency(price) : '';
+  }
+
 
 
   Widget buildCartSection() {
@@ -366,39 +386,42 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             ),
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: option.values!.map((optionValue) {
-              final isSelected = selectedOptions[key]?.id == optionValue.id;
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: option.values!.map((optionValue) {
+                final isSelected = selectedOptions[key]?.id == optionValue.id;
 
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedOptions[key] = optionValue;
-                    updateVariant();
-                  });
-                },
-                child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isSelected ? Colors.black : Colors.grey,
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedOptions[key] = optionValue;
+                      updateVariant();
+                    });
+                  },
+                  child: Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isSelected ? Colors.black : Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
+                      color: isSelected ? Colors.black : Colors.white,
                     ),
-                    borderRadius: BorderRadius.circular(5),
-                    color: isSelected ? Colors.black : Colors.white,
-                  ),
-                  child: Text(
-                    optionValue.value ?? '',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w500,
+                    child: Text(
+                      optionValue.value ?? '',
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
           const SizedBox(height: 15),
         ],
