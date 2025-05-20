@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_info_response.dart';
@@ -59,7 +60,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   //ProductResponse.Value? selectedSize;
   Map<String, ProductResponse.Value?> selectedOptions = {};
 
-
+  ProductResponse.Variant? selectedVariant;
   String? selectedVariantId;
   int selectedQuantity = 1;
 
@@ -275,7 +276,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         Row(
           children: [
             Text(
-              getSelectedVariantPrice(),
+              getDisplayedPrice(),
               style: FontUtils.secondaryFontStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -286,59 +287,71 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               width: 10,
             ),
             Visibility(
-              visible: isProductHasDiscount(),
+              visible: selectedVariant != null &&
+                  selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value !=
+                      selectedVariant!.calculatedPrice?.rawOriginalAmount?.value,
               child: Text(
-                getDiscountedPrice(),
+                CurrencyUtil.appendCurrency(
+                    selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '0'),
                 style: FontUtils.secondaryFontStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: AppColors.primary,
+                  color: Colors.grey,
                   decoration: TextDecoration.lineThrough,
                 ),
               ),
-            ),
+            )
           ],
         ),
       ],
     );
   }
 
-  String getSelectedVariantPrice() {
-    if (product == null || selectedVariantId == null) {
-      return  '';
+  String getDisplayedPrice() {
+    if (selectedVariant != null) {
+      return CurrencyUtil.appendCurrency(
+          selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value ?? '0');
     }
 
-    final selectedVariant = product!.variants!
-        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
+    // fallback: show lowest variant price if product is loaded
+    if (product?.variants?.isNotEmpty ?? false) {
+      final prices = product!.variants!
+          .map((v) => double.tryParse(v.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999'))
+          .whereType<double>()
+          .toList();
 
-    final price = selectedVariant.calculatedPrice?.rawCalculatedAmount?.value;
+      if (prices.isNotEmpty) {
+        final lowest = prices.reduce((a, b) => a < b ? a : b);
+        return "From ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
+      }
+    }
 
-    return price != null ? CurrencyUtil.appendCurrency(price) : '';
+    return '';
   }
 
-  bool isProductHasDiscount() {
-    if (product == null || selectedVariantId == null) return false;
 
-    final variant = product!.variants!
-        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
+  ProductResponse.Variant? getSelectedVariant() {
+    if (product == null || selectedOptions.isEmpty) return null;
 
-    final calculated = variant.calculatedPrice;
-    final current = calculated?.rawCalculatedAmount?.value;
-    final original = calculated?.rawOriginalAmount?.value;
+    for (final variant in product!.variants!) {
+      final variantOptionIds = variant.options!
+          .map((opt) => opt.id)
+          .toSet();
 
-    return current != null && original != null && current != original;
+      final selectedOptionIds = selectedOptions.values
+          .map((optVal) => optVal?.id)
+          .toSet();
+
+      final isMatch = selectedOptionIds.length == variantOptionIds.length &&
+          variantOptionIds.containsAll(selectedOptionIds);
+
+      if (isMatch) return variant;
+    }
+
+    return null;
   }
 
-  String getDiscountedPrice() {
-    if (product == null || selectedVariantId == null) return '';
 
-    final selectedVariant = product!.variants!
-        .firstWhere((v) => v.id == selectedVariantId, orElse: () => product!.variants!.first);
-
-    final price = selectedVariant.calculatedPrice?.rawOriginalAmount?.value;
-
-    return price != null ? CurrencyUtil.appendCurrency(price) : '';
-  }
 
 
 
@@ -373,13 +386,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     for (var option in product!.options!) {
       final title = option.title ?? '';
-      final key = title.toLowerCase();
 
       sections.add(Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$title: ${selectedOptions[key]?.value ?? 'Select'}",
+            "$title: ${selectedOptions[option.id!]?.value ?? 'Select'}",
             style: FontUtils.secondaryFontStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -392,18 +404,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               spacing: 10,
               runSpacing: 10,
               children: option.values!.map((optionValue) {
-                final isSelected = selectedOptions[key]?.id == optionValue.id;
+                final isSelected =
+                    selectedOptions[option.id!]?.id == optionValue.id;
 
                 return GestureDetector(
                   onTap: () {
                     setState(() {
-                      selectedOptions[key] = optionValue;
+                      selectedOptions[option.id!] = optionValue;
                       updateVariant();
                     });
                   },
                   child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: isSelected ? Colors.black : Colors.grey,
@@ -432,40 +444,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
 
-
-
-
   void updateVariant() {
-    // If any option is unselected, do not proceed
     if (selectedOptions.values.any((v) => v == null)) {
+      setState(() => selectedVariant = null);
       return;
     }
 
-    ProductResponse.Variant? variant;
-    try {
-      variant = product!.variants!.firstWhere((v) {
-        return selectedOptions.entries.every((entry) {
-          final selectedTitle = entry.key.toLowerCase();
-          final selectedValue = entry.value?.value;
-          return v.options!.any((opt) =>
-          opt.option?.title?.toLowerCase() == selectedTitle &&
-              opt.value == selectedValue);
-        });
-      });
-    } catch (e) {
-      print("No matching variant found for selected options: $selectedOptions");
-      variant = null;
-    }
+    final matchedVariant = getSelectedVariant();
 
     setState(() {
-      if (variant != null && isVariantAvailable(variant)) {
-        selectedVariantId = variant.id;
-      } else {
-        selectedVariantId = null;
-      }
+      selectedVariant = matchedVariant;
+      selectedVariantId = matchedVariant?.id;
     });
 
-    print('Selected Variant ID: ${selectedVariantId ?? "None"}');
+    print("Selected Variant ID: ${selectedVariant?.id}");
   }
 
 
@@ -694,13 +686,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           setState(() {
             selectedOptions = {};
             for (var option in product!.options ?? []) {
-              final title = option.title?.toLowerCase();
-              final firstValue = option.values?.first;
-              if (title != null && firstValue != null) {
-                selectedOptions[title] = firstValue;
+              if ((option.values?.isNotEmpty ?? false)) {
+                selectedOptions[option.id!] = option.values!.first;
               }
             }
-
             showVariantSelection = true;
           });
 
