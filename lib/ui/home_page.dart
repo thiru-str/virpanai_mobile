@@ -128,6 +128,7 @@ class _HomePageState extends State<HomePage> {
                         },
                       ),
                     ),
+                    Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
                   ],
                 ),
               ),
