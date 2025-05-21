@@ -84,13 +84,14 @@ class Item7 extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Center(
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: AppColors.secondary,
-                          child: Image.network(
-                            layoutData.image!,
-                            height: 30,width: 30,
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration:  BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
                           ),
+                          child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -108,7 +109,6 @@ class Item7 extends StatelessWidget {
                         CurrencyUtil.appendCurrency(layoutData.subTitle!),
                         style: FontUtils.primaryFontStyle(
                           fontSize: 12,
-                          color: AppColors.secondary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
