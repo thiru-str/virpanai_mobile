@@ -185,7 +185,7 @@ class _ProductPageState extends State<ProductPage> {
                     title: product.title!,
                     price: product.variants!.isNotEmpty
                         ? CurrencyUtil.appendCurrency(
-                        product.variants![0].calculatedPrice!.rawCalculatedAmount!.value!)
+                        product.variants?[0].calculatedPrice?.rawCalculatedAmount?.value?? '')
                         : '',
                     onTapCard: () {
                       PageRouteUtils.pushWithSlide(
