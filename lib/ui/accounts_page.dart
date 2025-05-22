@@ -20,6 +20,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }

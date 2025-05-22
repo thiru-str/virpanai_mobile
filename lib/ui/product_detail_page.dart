@@ -8,8 +8,9 @@ import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
-import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/events/event_utils.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -34,8 +35,9 @@ import '../utility/full_screen_carousel.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
+  final bool isFromLogin;
 
-  const ProductDetailPage({super.key, required this.productId});
+  const ProductDetailPage({super.key, required this.productId,this.isFromLogin = false});
 
   @override
   State<ProductDetailPage> createState() => _ProductDetailPageState();
@@ -71,7 +73,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   int? cartItems;
   List<String>? cartItemImages;
-  late StreamSubscription<ViewCartModel> _eventSubscription;
+  late StreamSubscription<ViewCartEvent> _eventSubscription;
 
   bool isLoggedIn = false;
 
@@ -108,7 +110,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   void listenToEvents() {
-    _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
+    _eventSubscription = eventBus.on<ViewCartEvent>().listen((event) {
       if (mounted) {
         setState(() {
           cartItems = event.totalItems;
@@ -143,7 +145,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        onBackTap: () => Navigator.pop(context),
+        onBackTap:() {
+          if(!widget.isFromLogin) {
+            Navigator.pop(context);
+          }
+          else{
+            PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          }
+        },
         onFavTap: addFavourite,
         isFavorite: isFavorite, // Pass the updated favorite status here
       ),
@@ -664,7 +673,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 : () async {
               if (!isLoggedIn) {
                 AppUtils.showToast('Please login to Continue');
-                PageRouteUtils.pushAndRemoveUntil(context, const PhoneNumberPage());
+                PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
                 return;
               }
               setState(() => quantityLoading = true);
@@ -866,7 +875,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       cartItemImages =
           cartResponse.cart!.items!.map((item) => item.thumbnail!).toList();
     });
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,
+    eventBus.fire(ViewCartEvent(cartResponse.cart!.items!.length,
         cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 

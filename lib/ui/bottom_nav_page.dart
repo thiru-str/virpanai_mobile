@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:waioz/model/customer_response.dart';
-import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/events/event_utils.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
@@ -37,7 +37,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   late Animation<Offset> _slideAnimation;
 
   int? cartItems;
-  late StreamSubscription<ViewCartModel> _eventSubscription;
+  late StreamSubscription<ViewCartEvent> _eventSubscription;
+  late StreamSubscription<TabSwitchEvent> _tabSwitchSub;
 
   bool isLoggedIn = false;
 
@@ -76,10 +77,18 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   }
 
   void listenToEvents() {
-    _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
+    _eventSubscription = eventBus.on<ViewCartEvent>().listen((event) {
       if (mounted) {
         setState(() {
           cartItems = event.totalItems;
+        });
+      }
+    });
+
+    _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          _currentIndex = event.tabIndex;
         });
       }
     });
@@ -124,6 +133,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   void dispose() {
     _animationController.dispose();
     _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 

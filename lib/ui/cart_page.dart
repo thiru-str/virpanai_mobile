@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/events/event_utils.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
@@ -240,7 +240,9 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                       message: AppStrings.cart_empty,
                       buttonText: AppStrings.explore_categories,
                       iconPath: AppAssets.ic_cart_empty,
-                      onButtonTap: () {})),
+                      onButtonTap: () {
+                        eventBus.fire(TabSwitchEvent(1));
+                      })),
     );
   }
 
@@ -268,7 +270,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void emitEvent(CartResponse cartResponse) {
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    eventBus.fire(ViewCartEvent(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
   void addPromoCode(String promoCode) async {

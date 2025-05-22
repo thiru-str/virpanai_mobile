@@ -17,11 +17,13 @@ class RegisterPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
   final String token;
+  final Widget? redirectPage;
   const RegisterPage(
       {super.key,
       required this.countryCode,
       required this.phoneNo,
-      required this.token});
+      required this.token,
+        this.redirectPage});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -163,7 +165,18 @@ class _RegisterPageState extends State<RegisterPage> {
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
 
-      PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+      if (widget.redirectPage != null) {
+        setState(() {
+          apiCalling = true;
+        });
+        getHomePageApi();
+        setState(() {
+          apiCalling = false;
+        });
+        PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+      } else {
+        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+      }
     } catch (e) {
       setState(() {
         apiCalling = false;
@@ -171,4 +184,18 @@ class _RegisterPageState extends State<RegisterPage> {
       print(e);
     }
   }
+
+  void getHomePageApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      final response= await apiService.getHomePage(context);
+      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
+      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
+      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
+      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+    } catch (e) {
+      print(e);
+    }
+  }
+
 }

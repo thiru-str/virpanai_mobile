@@ -4,7 +4,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
-import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/events/event_utils.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/map_page.dart';
@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
   int? cartItems;
   List<String>? cartItemImages;
 
-  late StreamSubscription<ViewCartModel> _eventSubscription;
+  late StreamSubscription<ViewCartEvent> _eventSubscription;
 
 
   @override
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void listenToEvents() {
-    _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
+    _eventSubscription = eventBus.on<ViewCartEvent>().listen((event) {
       if (mounted) {
         setState(() {
           cartItems = event.totalItems;
@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
         cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
       });
       if((cartResponse?.cart?.items?.length?? 0) > 0) {
-        eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
+        eventBus.fire(ViewCartEvent(cartItems!, cartItemImages!));
       }
     } catch (e) {
       print(e);
