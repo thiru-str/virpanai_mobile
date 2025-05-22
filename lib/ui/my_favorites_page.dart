@@ -40,6 +40,11 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
     if (customer != null) {
       getWishListApi(customer?.id);
     }
+    else{
+      setState(() {
+        apiLoading = false;
+      });
+    }
   }
 
   @override

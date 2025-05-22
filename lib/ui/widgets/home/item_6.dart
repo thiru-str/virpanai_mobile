@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -88,7 +89,7 @@ class Item6 extends StatelessWidget {
                           color: AppColors.secondary,
                           shape: BoxShape.circle,
                         ),
-                        child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
+                        child: ClipOval(child: CachedNetworkImage(imageUrl: layoutData.image!,fit: BoxFit.cover,),),
                       ),
                       const SizedBox(width: 8), // Horizontal spacing
                       Flexible( // Constrain the Text widget

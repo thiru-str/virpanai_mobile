@@ -13,6 +13,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/app_utils.dart';
 import '../utility/currency_util.dart';
 
 class CartPage extends StatefulWidget {
@@ -84,7 +85,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 color: AppColors.primary,
               ),
             )
-          : cartResponse!.cart!.items!.isNotEmpty
+          : cartResponse?.cart?.items?.isNotEmpty?? false
               ? Scaffold(
                   backgroundColor: Colors.white,
                   body: Column(
@@ -245,6 +246,13 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void getCartApi() async {
     try {
+      bool loggedIn = await AppUtils.isLoggedIn();
+      if(!loggedIn) {
+        setState(() {
+          apiLoading = false;
+        });
+        return null;
+      }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);

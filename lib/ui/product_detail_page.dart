@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
@@ -71,9 +73,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   List<String>? cartItemImages;
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
+  bool isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
+
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+    });
+
     fetchInitialData();
 
     // Initialize the animation controller
@@ -200,8 +211,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: Image.network(
-                product!.images![index].url!,
+              child: CachedNetworkImage(
+                imageUrl: product!.images![index].url!,
                 height: 250,
                 fit: BoxFit.cover,
               ),
@@ -651,6 +662,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             onPressed: selectedVariantId == null
                 ? null
                 : () async {
+              if (!isLoggedIn) {
+                AppUtils.showToast('Please login to Continue');
+                PageRouteUtils.pushAndRemoveUntil(context, const PhoneNumberPage());
+                return;
+              }
               setState(() => quantityLoading = true);
               await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
@@ -732,6 +748,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getReviewApi() async {
     try {
+      if(!isLoggedIn) {
+        return;
+      }
+
       final apiService = ApiService();
       final response =
       await apiService.getProductReviews(context, widget.productId);
@@ -780,6 +800,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Future<void> addFavourite() async {
+    if (!isLoggedIn) {
+      return;
+    }
     if (!isFavorite) {
       try {
         final apiService = ApiService();
@@ -813,10 +836,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
-  Future<void> goToCart() async {}
 
   Future<void> getCartApi() async {
     try {
+      if(!isLoggedIn) {
+        return;
+      }
+
       final apiService = ApiService();
       final response = await apiService.getCart(context);
       setState(() {

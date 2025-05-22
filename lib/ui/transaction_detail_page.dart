@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
@@ -199,8 +200,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                       child: InteractiveViewer(
                         panEnabled: false, // Disable panning for better UX
                         boundaryMargin: EdgeInsets.all(0),
-                        child: Image.network(
-                          neftPayment?.image ?? "",
+                        child: CachedNetworkImage(
+                          imageUrl: neftPayment?.image ?? "",
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -208,8 +209,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                   ),
                 );
               },
-              child: Image.network(
-                neftPayment?.image ?? "",
+              child: CachedNetworkImage(
+                imageUrl: neftPayment?.image ?? "",
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/font_utils.dart';
 
@@ -44,8 +45,8 @@ class CategoryCard extends StatelessWidget {
                   topRight: Radius.circular(16.0),
                 ),
                 child: imagePath.isNotEmpty
-                    ? Image.network(
-                  imagePath,
+                    ? CachedNetworkImage(
+                  imageUrl: imagePath,
                   height: 140, // Adjusted image height
                   width: double.infinity, // Take full width
                   fit: BoxFit.cover, // Fill the card space
