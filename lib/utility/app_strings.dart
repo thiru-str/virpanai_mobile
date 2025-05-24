@@ -1,7 +1,7 @@
 // lib/assets.dart
 
 class AppStrings {
-  static const String welcome_to_store = 'Kanchipuram Lakshaya Silks';
+  static const String welcome_to_store = 'Lakshaya Fashion Shopping';
   static const String get_your_product = 'Online Shopping | Manufacturer | Wholesale';
 
   static const String transation_details = 'Transaction details';
@@ -59,6 +59,7 @@ class AppStrings {
   static const String product = 'Product';
   static const String category = 'Category';
   static const String brand = 'Brand';
+  static const String custom = 'Custom';
   static const String delete = 'DELETE';
   static const String order = 'ORDER';
 

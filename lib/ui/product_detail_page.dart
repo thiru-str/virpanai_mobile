@@ -197,37 +197,106 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
+  // Widget buildProductImages() {
+  //   return SizedBox(
+  //     height: 250,
+  //     child: ListView.separated(
+  //       scrollDirection: Axis.horizontal,
+  //       itemCount: product?.images?.length ?? 0,
+  //       separatorBuilder: (context, index) => const SizedBox(width: 10),
+  //       itemBuilder: (context, index) {
+  //         return GestureDetector(
+  //           onTap: () {
+  //             // Open fullscreen carousel
+  //             if (product!.images!.isNotEmpty) {
+  //               PageRouteUtils.pushWithFade(
+  //                   context,
+  //                   FullscreenImageCarousel(
+  //                     imageUrls: product!.images!,
+  //                     initialIndex: index,
+  //                   ));
+  //             }
+  //           },
+  //           child: Container(
+  //             width: 180,
+  //             decoration: BoxDecoration(color: AppColors.secondary),
+  //             child: CachedNetworkImage(
+  //               imageUrl: product!.images![index].url!,
+  //               height: 250,
+  //               fit: BoxFit.cover,
+  //             ),
+  //           ),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
+
+  int _currentIndex = 0;
   Widget buildProductImages() {
+    final screenHeight = MediaQuery.of(context).size.height;
     return SizedBox(
-      height: 250,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: product?.images?.length ?? 0,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              // Open fullscreen carousel
-              if (product!.images!.isNotEmpty) {
-                PageRouteUtils.pushWithFade(
-                    context,
-                    FullscreenImageCarousel(
-                      imageUrls: product!.images!,
-                      initialIndex: index,
-                    ));
-              }
-            },
-            child: Container(
-              width: 180,
-              decoration: BoxDecoration(color: AppColors.secondary),
-              child: CachedNetworkImage(
-                imageUrl: product!.images![index].url!,
-                height: 250,
-                fit: BoxFit.cover,
-              ),
+      height: screenHeight * 0.6,
+      child: Column(
+        children: [
+          // PageView takes up full height (minus indicator space)
+          Expanded(
+            child: PageView.builder(
+              itemCount: product?.images?.length ?? 0,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    // Open fullscreen carousel
+                    if (product?.images?.isNotEmpty ?? false) {
+                      PageRouteUtils.pushWithFade(
+                        context,
+                        FullscreenImageCarousel(
+                          imageUrls: product!.images!,
+                          initialIndex: index,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    color: AppColors.secondary,
+                    child: CachedNetworkImage(
+                      imageUrl: product!.images![index].url!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          // Page indicators
+          SizedBox(height: 5,),
+          Container(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(product?.images?.length ?? 0, (index) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                  width: 8, // You can adjust indicator size
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary,width: 1),
+                    color: _currentIndex == index
+                        ? AppColors.primary
+                        : Colors.transparent,
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }

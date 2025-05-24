@@ -75,7 +75,7 @@ class Item4 extends StatelessWidget {
                 child: Container(
                   width: 160,
                   decoration: BoxDecoration(
-                    color: AppColors.secondary,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -84,11 +84,11 @@ class Item4 extends StatelessWidget {
                       Stack(
                         children: [
                           Container(
-                            height: 230,
+                            height: 210,
                             width: double.infinity,
                             decoration: BoxDecoration(
                               borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12),
+                                top: Radius.circular(0),
                               ),
                               image: DecorationImage(
                                 image: NetworkImage(layoutData.image!),
@@ -108,7 +108,7 @@ class Item4 extends StatelessWidget {
                                 decoration: const BoxDecoration(
                                   color: Colors.pink,
                                   borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(12),
+                                    topLeft: Radius.circular(0),
                                   ),
                                 ),
                                 child: RotatedBox(
@@ -136,7 +136,7 @@ class Item4 extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                               color: AppColors.textColor
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

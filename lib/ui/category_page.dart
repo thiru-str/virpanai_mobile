@@ -54,16 +54,10 @@ class _CategoryPageState extends State<CategoryPage> {
                 ),
                 const SizedBox(height: 10,),
                 Expanded(
-                  child: GridView.builder(
+                  child: ListView.builder(
                         scrollDirection: Axis.vertical,
                         itemCount:
                             productCategoriesResponse!.productCategories!.length,
-                        gridDelegate:
-                             SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                              childAspectRatio: (MediaQuery.of(context).size.width / 2) /
-                                  (200 + 12 + 12),
-                        ),
                         itemBuilder: (context, index) {
                           final productCategory = productCategoriesResponse!
                               .productCategories![index];

@@ -94,64 +94,96 @@ class _HomePageState extends State<HomePage> {
           },
         ) : null,
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-              :SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                        PageRouteUtils.pushWithSlide(context, const CartPage());
-                      },onSearchClick: (){
-                        PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
-                            setState(() {
-                              headerTitle = selectedAddress.address1!;
-                              addressType = selectedAddress.addressName!;
-                            });
-                        },));
-                      },addressType: addressType,),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
-                      child: ListView.separated(
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        scrollDirection: Axis.vertical,
-                        itemCount: homePageResponse!.content!.length,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final homePageContent = homePageResponse!.content![index];
-                          return getLayoutWidget(homePageContent);
-                        },
-                      ),
-                    ),
-                    Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
-                  ],
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // Background layer for the sticky header
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  color: Colors.white, // Match your header background
+                  height: kToolbarHeight + MediaQuery.of(context).padding.top,
                 ),
               ),
-            Visibility(
-              visible: cartItems!= null && cartItems != 0,
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: cartItems!=null ?Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: GestureDetector(
-                    onTap: (){
-                      PageRouteUtils.pushWithSlide(context, const CartPage());
-                    },
-                    child: ViewCartWidget(
-                      totalItems: cartItems!,
-                      itemImages:  cartItemImages!
+
+              Column(
+                children: [
+                  // Sticky CommonHeader
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: CommonHeader(
+                      headerType: appHeader,
+                      title: headerTitle,
+                      cartCount: cartItems ?? 0,
+                      onCartClick: () {
+                        PageRouteUtils.pushWithSlide(context, const CartPage());
+                      },
+                      onSearchClick: () {
+                        PageRouteUtils.pushWithSlide(
+                          context,
+                          SearchAddressPage(
+                            onTapAddress: (selectedAddress) {
+                              setState(() {
+                                headerTitle = selectedAddress.address1!;
+                                addressType = selectedAddress.addressName!;
+                              });
+                            },
+                          ),
+                        );
+                      },
+                      addressType: addressType,
                     ),
                   ),
-                ): const SizedBox(),
+
+                  // Scrollable content area
+                  Expanded(
+                    child: apiLoading
+                        ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                        : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16), // Space below sticky header
+                          ListView.separated(
+                            separatorBuilder: (context, index) => const SizedBox(height: 16),
+                            scrollDirection: Axis.vertical,
+                            itemCount: homePageResponse!.content!.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final homePageContent = homePageResponse!.content![index];
+                              return getLayoutWidget(homePageContent);
+                            },
+                          ),
+                          const SizedBox(height: 80), // Space for bottom cart
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      )
+
+              // Floating cart button (unchanged from your original)
+              if (cartItems != null && cartItems != 0)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        PageRouteUtils.pushWithSlide(context, const CartPage());
+                      },
+                      child: ViewCartWidget(
+                        totalItems: cartItems!,
+                        itemImages: cartItemImages!,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        )
     );
   }
 
@@ -160,19 +192,40 @@ class _HomePageState extends State<HomePage> {
       case "item1":
         return Item1(content: homePageContent);
       case "item2":
-        return Item2(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item2(content: homePageContent),
+        );
       case "item3":
-        return Item3(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item3(content: homePageContent),
+        );
       case "item4":
-        return Item4(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item4(content: homePageContent),
+        );
       case "item5":
-        return Item5(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item5(content: homePageContent),
+        );
       case "item6":
-        return Item6(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item6(content: homePageContent),
+        );
       case "item7":
-        return Item7(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item7(content: homePageContent),
+        );
       case "item8":
-        return Item8(content: homePageContent);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Item8(content: homePageContent),
+        );
       default:
         return const SizedBox();
     }

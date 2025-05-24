@@ -54,7 +54,7 @@ class Item3 extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 100,
+          height: 130,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: content.layoutData!.length,
@@ -63,32 +63,41 @@ class Item3 extends StatelessWidget {
               LayoutDatum layoutData = content.layoutData![index];
               return GestureDetector(
                 onTap: () {
-                  switch (content.layoutOption!) {
-                    case AppStrings.category:
-                      PageRouteUtils.pushWithFade(context, ProductPage(categoryId: layoutData.id!));
-                    case AppStrings.product:
-                      PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: layoutData.id!));
-                    case AppStrings.brand:
-                      PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
+                  if ((content.layoutOption== 'Custom') && layoutData.redirectData?.redirectType == 'Search') {
+                    PageRouteUtils.pushWithSlide(
+                      context,
+                      ProductPage(
+                        categoryId: layoutData.redirectData?.redirectSearchData?.category ?? '',
+                      ),
+                    );
+                  }
+                  else {
+                    switch (content.layoutOption!) {
+                      case AppStrings.category:
+                        PageRouteUtils.pushWithFade(
+                            context, ProductPage(categoryId: layoutData.id!));
+                      case AppStrings.product:
+                        PageRouteUtils.pushWithSlide(context,
+                            ProductDetailPage(productId: layoutData.id!));
+                      case AppStrings.brand:
+                        PageRouteUtils.pushWithSlide(context, ProductPage(
+                          categoryId: layoutData.id!, isFromBrand: true,));
+                    }
                   }
                 },
                 child: SizedBox(
                   width: 70,
                   child: Column(
                     children: [
-                      Container(
+                      SizedBox(
                         width: 70,
-                        height: 70,
-                        decoration:  BoxDecoration(
-                          color: AppColors.secondary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: ClipOval(child: CachedNetworkImage(imageUrl: layoutData.image!,fit: BoxFit.cover,),),
+                        height: 80,
+                        child: CachedNetworkImage(imageUrl: layoutData.image!,fit: BoxFit.cover,),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         layoutData.title!,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(fontSize: 12),
                       ),

@@ -11,7 +11,7 @@ class Item1 extends StatefulWidget {
   const Item1({
     Key? key,
     required this.content,
-    this.height = 200,
+    this.height = 320,
     this.indicatorSize = 8.0,
   }) : super(key: key);
 
@@ -26,40 +26,45 @@ class _Item1State extends State<Item1> {
   Widget build(BuildContext context) {
     return Container(
       height: widget.height,
-      color: AppColors.secondary, // Background color
-      child: Stack(
-        alignment: Alignment.bottomCenter,
+      color: Colors.transparent, // Background color
+      child: Column(
         children: [
-          PageView.builder(
-            itemCount: widget.content.layoutData!.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              LayoutDatum layoutdata = widget.content.layoutData![index];
-              return CachedNetworkImage(
-                imageUrl: layoutdata.image!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              );
-            },
+          // PageView takes up most of the space
+          Expanded(
+            child: PageView.builder(
+              itemCount: widget.content.layoutData!.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                LayoutDatum layoutdata = widget.content.layoutData![index];
+                return CachedNetworkImage(
+                  imageUrl: layoutdata.image!,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                );
+              },
+            ),
           ),
-          Positioned(
-            bottom: 16.0,
+          // Indicators container with some padding
+          const SizedBox(height: 5,),
+          Container(
+            padding: const EdgeInsets.only(bottom: 16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(widget.content.layoutData!.length, (index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
                   width: widget.indicatorSize,
                   height: widget.indicatorSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary,width: 1),
                     color: _currentIndex == index
-                        ? Colors.black
-                        : Colors.black.withOpacity(0.3),
+                        ? AppColors.primary
+                        : Colors.transparent,
                   ),
                 );
               }),

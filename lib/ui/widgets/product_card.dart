@@ -24,12 +24,8 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTapCard,
-      child: Container(
+      child: SizedBox(
         width: 180,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min, // Ensures the height wraps around its children
@@ -37,11 +33,11 @@ class ProductCard extends StatelessWidget {
             Stack(
               children: [
                 Container(
-                  height: 210, // Fixed height for the image
+                  height: 190, // Fixed height for the image
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
+                      top: Radius.circular(0),
                     ),
                     image: DecorationImage(
                       image: NetworkImage(imageUrl),
@@ -75,7 +71,7 @@ class ProductCard extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                     color: AppColors.textColor
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
