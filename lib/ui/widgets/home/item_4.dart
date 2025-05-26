@@ -6,6 +6,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/page_route_utils.dart';
+import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
@@ -35,17 +36,19 @@ class Item4 extends StatelessWidget {
                     color: AppColors.textColor
                 ),
               ),
-              if (content.layoutRedirectTitle!.isNotEmpty)
-                GestureDetector(
-                  onTap: (){
+                Visibility(
+                  visible: content.layoutRedirectTitle!.isNotEmpty,
+                  child: GestureDetector(
+                    onTap: (){
 
-                  },
-                  child: Text(
-                    content.layoutRedirectTitle!,
-                    style: FontUtils.primaryFontStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor
+                    },
+                    child: Text(
+                      content.layoutRedirectTitle!,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor
+                      ),
                     ),
                   ),
                 ),
@@ -63,14 +66,11 @@ class Item4 extends StatelessWidget {
               LayoutDatum layoutData = content.layoutData![index];
               return GestureDetector(
                 onTap: () {
-                  switch (content.layoutOption!) {
-                    case AppStrings.category:
-                      PageRouteUtils.pushWithFade(context, ProductPage(categoryId: layoutData.id!));
-                    case AppStrings.product:
-                      PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: layoutData.id!));
-                    case AppStrings.brand:
-                      PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
-                  }
+                  RedirectUtils.handleContentRedirect(
+                    context: context,
+                    layoutOption: content.layoutOption!,
+                    layoutData: layoutData,
+                  );
                 },
                 child: Container(
                   width: 160,

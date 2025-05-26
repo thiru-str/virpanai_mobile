@@ -78,6 +78,7 @@ class LayoutDatum {
   String? title;
   String? subTitle;
   Prices? prices;
+  RedirectData? redirectData;
 
   LayoutDatum({
     this.id,
@@ -85,6 +86,7 @@ class LayoutDatum {
     this.title,
     this.subTitle,
     this.prices,
+    this.redirectData,
   });
 
   factory LayoutDatum.fromJson(Map<String, dynamic> json) => LayoutDatum(
@@ -93,6 +95,7 @@ class LayoutDatum {
     title: json["title"],
     subTitle: json["sub_title"],
     prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]), // <-- Deserialize
+    redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -131,6 +134,109 @@ class Prices {
     "discount_Percentage": discountPercentage,
   };
 }
+
+class RedirectData {
+  final String? redirectType;
+  final RedirectProductData? redirectProductData;
+  final RedirectSearchData? redirectSearchData;
+  final RedirectUrlData? redirectUrlData;
+
+  RedirectData({
+    this.redirectType,
+    this.redirectProductData,
+    this.redirectSearchData,
+    this.redirectUrlData,
+  });
+
+  factory RedirectData.fromJson(Map<String, dynamic> json) {
+    return RedirectData(
+      redirectType: json['redirect_type'],
+      redirectProductData: json['redirect_product_data'] != null
+          ? RedirectProductData.fromJson(json['redirect_product_data'])
+          : null,
+      redirectSearchData: json['redirect_search_data'] != null
+          ? RedirectSearchData.fromJson(json['redirect_search_data'])
+          : null,
+      redirectUrlData: json['redirect_url_data'] != null
+          ? RedirectUrlData.fromJson(json['redirect_url_data'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'redirect_type': redirectType,
+    'redirect_product_data': redirectProductData?.toJson(),
+    'redirect_search_data': redirectSearchData?.toJson(),
+    'redirect_url_data': redirectUrlData?.toJson(),
+  };
+}
+
+class RedirectProductData {
+  final String? productId;
+  final String? variantId;
+
+  RedirectProductData({this.productId, this.variantId});
+
+  factory RedirectProductData.fromJson(Map<String, dynamic> json) {
+    return RedirectProductData(
+      productId: json['product_id'],
+      variantId: json['variant_id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'product_id': productId,
+    'variant_id': variantId,
+  };
+}
+
+class RedirectSearchData {
+  final String? category;
+  final String? brand;
+  final String? minPrice;
+  final String? maxPrice;
+
+  RedirectSearchData({
+    this.category,
+    this.brand,
+    this.minPrice,
+    this.maxPrice,
+  });
+
+  factory RedirectSearchData.fromJson(Map<String, dynamic> json) {
+    return RedirectSearchData(
+      category: json['category'],
+      brand: json['brand'],
+      minPrice: json['min_price'],
+      maxPrice: json['max_price'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'category': category,
+    'brand': brand,
+    'min_price': minPrice,
+    'max_price': maxPrice,
+  };
+}
+
+class RedirectUrlData {
+  final String? url;
+
+  RedirectUrlData({this.url});
+
+  factory RedirectUrlData.fromJson(Map<String, dynamic> json) {
+    return RedirectUrlData(
+      url: json['url'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'url': url,
+  };
+}
+
+
 
 
 
