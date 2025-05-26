@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/verify_otp_response.dart';
+import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/register_page.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -158,9 +159,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         if (mounted) {
           PageRouteUtils.pushWithSlide(
               context,
-              RegisterPage(
-                phoneNo: widget.phoneNo,
+              UserDetailsPage(
                 countryCode: widget.countryCode,
+                phoneNo: widget.phoneNo,
                 token: verifyOtpResponse!.token!,
               ));
         }

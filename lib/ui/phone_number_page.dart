@@ -84,14 +84,21 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                   IntlPhoneField(
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: AppColors.secondary, // Full background color
+                      fillColor:Colors.transparent, // Full background color
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 16,
                           horizontal: 12), // Adjust content padding
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide.none, // Remove border
+                        borderSide: BorderSide(color: AppColors.primary,width: 1.5), // Remove border
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: AppColors.primary,width: 1.5), // Remove border
+                      ),focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: AppColors.primary,width: 1.5), // Remove border
+                      )
                     ),
                     initialCountryCode:
                         AppStrings.country_code, // Default country code
@@ -160,17 +167,14 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         apiCalling = false;
       });
 
-      // PageRouteUtils.pushWithSlide(
-      //     context,
-      //     OtpVerificationPage(
-      //       countryCode: _countryCode!,
-      //       phoneNo: _phoneNumber!,
-      //       otp: sendOtpResponse!.otp!,
-      //     ));
       PageRouteUtils.pushWithSlide(
           context,
-          UserDetailsPage(
+          OtpVerificationPage(
+            countryCode: _countryCode!,
+            phoneNo: _phoneNumber!,
+            otp: sendOtpResponse!.otp!,
           ));
+
     } catch (e) {
       setState(() {
         apiCalling = false;

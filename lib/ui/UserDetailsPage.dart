@@ -2,10 +2,21 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 
 class UserDetailsPage extends StatefulWidget {
-  const UserDetailsPage({super.key});
+  final String countryCode;
+  final String phoneNo;
+  final String token;
+
+  const UserDetailsPage(
+      {super.key,
+        required this.countryCode,
+        required this.phoneNo,
+        required this.token});
+
 
   @override
   State<UserDetailsPage> createState() => _UserDetailsPageState();
@@ -23,7 +34,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   // Step 2 Controllers
   final _shopNameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _countryController = TextEditingController();
+  final _stateController = TextEditingController();
   final _cityController = TextEditingController();
   final _postalCodeController = TextEditingController();
   final _gstNumberController = TextEditingController();
@@ -118,8 +129,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             validator: (val) => val == null || val.isEmpty ? 'Please enter address' : null,
           ),
           buildLabeledTextField(
-            label: "Country",
-            controller: _countryController,
+            label: "State",
+            controller: _stateController,
             validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
           ),
           Row(
@@ -209,6 +220,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       } else {
         // Submit
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
+        PageRouteUtils.push(context, ApprovalPage());
         // Navigate or trigger next logic
       }
     }
@@ -216,6 +228,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      _phoneController.text = '${widget.countryCode} ${widget.phoneNo}';
+    });
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(

@@ -66,32 +66,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipOval(
-                child: Container(
-                  color: Colors.white,
-                  child: ClipOval(
-                    child: Image.asset(
-                      AppAssets.app_icon,
-                      height: 100,
-                      width: 100,
-                    ),
-                  ),
-                ),
-              ),
-              Text(
-                AppStrings.welcome_to_store,
-                textAlign: TextAlign.center,
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              )
-            ],
-          ),
+          child: SvgPicture.asset(AppAssets.app_logo),
         ),
       ),
     );
