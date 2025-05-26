@@ -167,25 +167,29 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildProductImages(),
-                        const SizedBox(height: 25),
-                        buildProductDetails(),
-                        buildCartSection(),
-                        const SizedBox(height: 15),
-                        buildProductDescription(),
-                        buildRelatedProducts(),
-                        /*buildShippingAndReturns(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      buildProductImages(),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            buildProductDetails(),
+                            buildCartSection(),
+                            const SizedBox(height: 15),
+                            buildProductDescription(),
+                            buildRelatedProducts(),
+                            /*buildShippingAndReturns(),
                         const SizedBox(height: 15),*/
-                        buildReviews(),
-                        const SizedBox(height: 90),
+                            buildReviews(),
+                            const SizedBox(height: 90),
+                          ],
+                        ),
+                      ),
 
-                      ],
-                    ),
+
+                    ],
                   ),
                 ),
               ),
