@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -82,6 +83,29 @@ class Item3 extends StatelessWidget {
                       case AppStrings.brand:
                         PageRouteUtils.pushWithSlide(context, ProductPage(
                           categoryId: layoutData.id!, isFromBrand: true,));
+                      case AppStrings.custom:
+                        switch (layoutData.redirectData?.redirectType) {
+                          case AppStrings.reDirectSearch:
+                            PageRouteUtils.pushWithSlide(
+                              context,
+                              ProductPage(
+                                categoryId: layoutData.redirectData
+                                        ?.redirectSearchData?.category ??
+                                    '',
+                              ),
+                            );
+                          case AppStrings.reDirectProduct:
+                            PageRouteUtils.pushWithSlide(
+                              context,
+                              ProductDetailPage(
+                                productId: layoutData.redirectData
+                                        ?.redirectProductData?.productId ??
+                                    '',
+                              ),
+                            );
+                          case AppStrings.reDirectLink:
+                            launchExternalBrowser(layoutData.redirectData?.redirectUrlData?.url??'');
+                        }
                     }
                   }
                 },
@@ -110,5 +134,16 @@ class Item3 extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> launchExternalBrowser(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (!await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication, // This opens in external browser
+    )) {
+      throw Exception('Could not launch $url');
+    }
   }
 }
