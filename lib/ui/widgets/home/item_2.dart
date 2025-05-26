@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
@@ -38,8 +39,8 @@ class _Item2State extends State<Item2> {
               LayoutDatum layoutdata = widget.content.layoutData![index];
               return ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: Image.network(
-                  layoutdata.image!,
+                child: CachedNetworkImage(
+                  imageUrl: layoutdata.image!,
                   width: double.infinity,
                 ),
               );

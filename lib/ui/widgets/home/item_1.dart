@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -38,8 +39,8 @@ class _Item1State extends State<Item1> {
             },
             itemBuilder: (context, index) {
               LayoutDatum layoutdata = widget.content.layoutData![index];
-              return Image.network(
-                layoutdata.image!,
+              return CachedNetworkImage(
+                imageUrl: layoutdata.image!,
                 fit: BoxFit.cover,
                 width: double.infinity,
               );

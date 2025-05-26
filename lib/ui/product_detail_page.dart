@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
@@ -199,8 +200,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: Image.network(
-                product!.images![index].url!,
+              child: CachedNetworkImage(
+                imageUrl: product!.images![index].url!,
                 height: 250,
                 fit: BoxFit.cover,
               ),
