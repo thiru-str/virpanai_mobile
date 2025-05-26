@@ -1,0 +1,388 @@
+import 'dart:io';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:waioz/utility/app_colors.dart';
+
+class UserDetailsPage extends StatefulWidget {
+  const UserDetailsPage({super.key});
+
+  @override
+  State<UserDetailsPage> createState() => _UserDetailsPageState();
+}
+
+class _UserDetailsPageState extends State<UserDetailsPage> {
+  final _formKey = GlobalKey<FormState>();
+  int _currentStep = 0;
+
+  // Step 1 Controllers
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+
+  // Step 2 Controllers
+  final _shopNameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _gstNumberController = TextEditingController();
+
+  bool _isGstRegistered = true;
+  File? _gstImage;
+  File? _shopFrontImage;
+  File? _shopInteriorImage;
+  File? _shopCounterImage;
+
+  Widget buildLabeledTextField({
+    required String label,
+    required TextEditingController controller,
+    TextInputType inputType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: inputType,
+            validator: validator,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.teal),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.teal),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.teal.shade100),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildStepContent() {
+    if (_currentStep == 0) {
+      // Step 1: Owner Details
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Owner Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          buildLabeledTextField(
+            label: "Name",
+            controller: _nameController,
+            validator: (val) => val == null || val.isEmpty ? 'Please enter your name' : null,
+          ),
+          buildLabeledTextField(
+            label: "Email Address",
+            controller: _emailController,
+            inputType: TextInputType.emailAddress,
+            validator: (val) => val == null || !val.contains('@') ? 'Enter valid email' : null,
+          ),
+          buildLabeledTextField(
+            label: "Phone Number",
+            controller: _phoneController,
+            inputType: TextInputType.phone,
+            validator: (val) => val == null || val.length < 10 ? 'Enter valid phone number' : null,
+          ),
+        ],
+      );
+    } else if (_currentStep == 1){
+      // Step 2: Shop Details
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Shop Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          buildLabeledTextField(
+            label: "Shop Name",
+            controller: _shopNameController,
+            validator: (val) => val == null || val.isEmpty ? 'Please enter shop name' : null,
+          ),
+          buildLabeledTextField(
+            label: "Address",
+            controller: _addressController,
+            validator: (val) => val == null || val.isEmpty ? 'Please enter address' : null,
+          ),
+          buildLabeledTextField(
+            label: "Country",
+            controller: _countryController,
+            validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: buildLabeledTextField(
+                  label: "City",
+                  controller: _cityController,
+                  validator: (val) => val == null || val.isEmpty ? 'Enter city' : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: buildLabeledTextField(
+                  label: "Postal Code",
+                  controller: _postalCodeController,
+                  inputType: TextInputType.number,
+                  validator: (val) => val == null || val.isEmpty ? 'Enter postal code' : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Text("Is your shop GST-registered?", style: TextStyle(fontSize: 16)),
+              const Spacer(),
+              Switch(
+                activeColor: AppColors.primary,
+                value: _isGstRegistered,
+                onChanged: (value) => setState(() => _isGstRegistered = value),
+              ),
+            ],
+          ),
+          if (_isGstRegistered) ...[
+            buildLabeledTextField(
+              label: "GST Number",
+              controller: _gstNumberController,
+              validator: (val) => val == null || val.isEmpty ? 'Enter GST Number' : null,
+            ),
+            const SizedBox(height: 6),
+            buildImageUploader(
+              label: "GST Image",
+              imageFile: _gstImage,
+              onUploadTap: () => pickImage((img) => setState(() => _gstImage = img)),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ],
+      );
+    }
+    else{
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Shop Images", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            buildImageUploader(
+              label: "Shop Front With Name Board",
+              imageFile: _shopFrontImage,
+              onUploadTap: () => pickImage((img) => setState(() => _shopFrontImage = img)),
+            ),
+            buildImageUploader(
+              label: "Shop Interior",
+              imageFile: _shopInteriorImage,
+              onUploadTap: () => pickImage((img) => setState(() => _shopInteriorImage = img)),
+            ),
+            buildImageUploader(
+              label: "Shop Counter",
+              imageFile: _shopCounterImage,
+              onUploadTap: () => pickImage((img) => setState(() => _shopCounterImage = img)),
+            ),
+          ],
+        );
+
+    }
+  }
+
+
+  void _handleNext() {
+    if (_formKey.currentState?.validate() ?? false) {
+      if (_currentStep == 0) {
+        setState(() => _currentStep = 1);
+      }
+      else if (_currentStep == 1) {
+        setState(() => _currentStep = 2);
+      } else {
+        // Submit
+        debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
+        // Navigate or trigger next logic
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // Step Indicators
+                _buildStepper(),
+                const SizedBox(height: 20),
+                Expanded(child: SingleChildScrollView(child: buildStepContent())),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _handleNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text(_currentStep < 1 ? "Next" : "Submit", style: const TextStyle(fontSize: 18,color: Colors.white)),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepper() {
+    List<String> titles = ["Step 1", "Step 2", "Step 3"];
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: List.generate(titles.length * 2 - 1, (index) {
+        if (index.isOdd) {
+          // Connector line
+          int stepIndex = (index - 1) ~/ 2;
+          bool isLineActive = _currentStep > stepIndex;
+
+          return Expanded(
+            child: Container(
+              height: 36, // Match circle height
+              alignment: Alignment.center,
+              child: Container(
+                height: 2,
+                color: isLineActive ? AppColors.primary : AppColors.primary.withOpacity(0.2),
+              ),
+            ),
+          );
+        } else {
+          // Step circle
+          int stepIndex = index ~/ 2;
+          bool isActive = _currentStep == stepIndex;
+          bool isCompleted = _currentStep > stepIndex;
+
+          return Column(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isActive || isCompleted ? AppColors.primary : Colors.white,
+                  border: Border.all(
+                    color: isActive || isCompleted ? AppColors.primary : Colors.grey.shade400,
+                    width: 2,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  "${stepIndex + 1}",
+                  style: TextStyle(
+                    color: isActive || isCompleted ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                titles[stepIndex],
+                style: TextStyle(
+                  color: isActive || isCompleted ? AppColors.primary : Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          );
+        }
+      }),
+    );
+  }
+
+
+
+
+
+
+
+  Widget _buildStepIndicator(int step, String title) {
+    bool isActive = _currentStep == step;
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: isActive ? AppColors.primary : AppColors.primary.withValues(alpha: 0.5),
+          child: Text("${step + 1}", style: const TextStyle(color: Colors.white)),
+        ),
+        const SizedBox(height: 4),
+        Text(title, style: TextStyle(color: isActive ? AppColors.primary : Colors.grey)),
+      ],
+    );
+  }
+
+  Widget buildImageUploader({
+    required String label,
+    required File? imageFile,
+    required VoidCallback onUploadTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: onUploadTap,
+          child: DottedBorder(
+            color: AppColors.primary,
+            strokeWidth: 1.5,
+            dashPattern: const [6, 3],
+            borderType: BorderType.RRect,
+            radius: const Radius.circular(10),
+            child: Container(
+              width: double.infinity,
+              height: 150,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.all(10),
+              child: imageFile != null
+                  ? Image.file(imageFile, fit: BoxFit.cover)
+                  : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.cloud_upload_outlined, size: 40, color: AppColors.primary),
+                  SizedBox(height: 10),
+                  Text("Click to Upload", style: TextStyle(color: AppColors.primary)),
+                  Text("(Max. File size: 5 MB)", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Future<void> pickImage(Function(File) onImagePicked) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      onImagePicked(File(picked.path));
+    }
+  }
+
+
+}

@@ -61,6 +61,7 @@ dependencies:
   permission_handler: ^11.0.1
   image_picker: ^1.1.2
   collection: ^1.18.0
+  dotted_border: ^2.0.0+3
 
 
 

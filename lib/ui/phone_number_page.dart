@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
+import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -159,12 +160,16 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         apiCalling = false;
       });
 
+      // PageRouteUtils.pushWithSlide(
+      //     context,
+      //     OtpVerificationPage(
+      //       countryCode: _countryCode!,
+      //       phoneNo: _phoneNumber!,
+      //       otp: sendOtpResponse!.otp!,
+      //     ));
       PageRouteUtils.pushWithSlide(
           context,
-          OtpVerificationPage(
-            countryCode: _countryCode!,
-            phoneNo: _phoneNumber!,
-            otp: sendOtpResponse!.otp!,
+          UserDetailsPage(
           ));
     } catch (e) {
       setState(() {
