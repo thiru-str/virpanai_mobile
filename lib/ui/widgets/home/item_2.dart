@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
+import '../../../utility/redirect_utils.dart';
+
 class Item2 extends StatefulWidget {
   final Content content;
   final double height;
@@ -37,11 +39,20 @@ class _Item2State extends State<Item2> {
             },
             itemBuilder: (context, index) {
               LayoutDatum layoutdata = widget.content.layoutData![index];
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: CachedNetworkImage(
-                  imageUrl: layoutdata.image!,
-                  width: double.infinity,
+              return GestureDetector(
+                onTap: (){
+                  RedirectUtils.handleContentRedirect(
+                    context: context,
+                    layoutOption: widget.content.layoutOption!,
+                    layoutData: layoutdata,
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: CachedNetworkImage(
+                    imageUrl: layoutdata.image!,
+                    width: double.infinity,
+                  ),
                 ),
               );
             },

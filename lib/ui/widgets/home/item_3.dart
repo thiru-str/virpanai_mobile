@@ -7,6 +7,7 @@ import 'package:waioz/utility/font_utils.dart';
 
 import '../../../model/home_page_response.dart';
 import '../../../utility/page_route_utils.dart';
+import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
@@ -63,51 +64,12 @@ class Item3 extends StatelessWidget {
             itemBuilder: (context, index) {
               LayoutDatum layoutData = content.layoutData![index];
               return GestureDetector(
-                onTap: () {
-                  if ((content.layoutOption== 'Custom') && layoutData.redirectData?.redirectType == 'Search') {
-                    PageRouteUtils.pushWithSlide(
-                      context,
-                      ProductPage(
-                        categoryId: layoutData.redirectData?.redirectSearchData?.category ?? '',
-                      ),
-                    );
-                  }
-                  else {
-                    switch (content.layoutOption!) {
-                      case AppStrings.category:
-                        PageRouteUtils.pushWithFade(
-                            context, ProductPage(categoryId: layoutData.id!));
-                      case AppStrings.product:
-                        PageRouteUtils.pushWithSlide(context,
-                            ProductDetailPage(productId: layoutData.id!));
-                      case AppStrings.brand:
-                        PageRouteUtils.pushWithSlide(context, ProductPage(
-                          categoryId: layoutData.id!, isFromBrand: true,));
-                      case AppStrings.custom:
-                        switch (layoutData.redirectData?.redirectType) {
-                          case AppStrings.reDirectSearch:
-                            PageRouteUtils.pushWithSlide(
-                              context,
-                              ProductPage(
-                                categoryId: layoutData.redirectData
-                                        ?.redirectSearchData?.category ??
-                                    '',
-                              ),
-                            );
-                          case AppStrings.reDirectProduct:
-                            PageRouteUtils.pushWithSlide(
-                              context,
-                              ProductDetailPage(
-                                productId: layoutData.redirectData
-                                        ?.redirectProductData?.productId ??
-                                    '',
-                              ),
-                            );
-                          case AppStrings.reDirectLink:
-                            launchExternalBrowser(layoutData.redirectData?.redirectUrlData?.url??'');
-                        }
-                    }
-                  }
+                onTap: (){
+                  RedirectUtils.handleContentRedirect(
+                    context: context,
+                    layoutOption: content.layoutOption!,
+                    layoutData: layoutData,
+                  );
                 },
                 child: SizedBox(
                   width: 70,
@@ -136,14 +98,4 @@ class Item3 extends StatelessWidget {
     );
   }
 
-  Future<void> launchExternalBrowser(String url) async {
-    final Uri uri = Uri.parse(url);
-
-    if (!await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication, // This opens in external browser
-    )) {
-      throw Exception('Could not launch $url');
-    }
-  }
 }

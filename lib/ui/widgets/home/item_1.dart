@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import '../../../utility/redirect_utils.dart';
 
 class Item1 extends StatefulWidget {
   final Content content;
@@ -40,10 +41,19 @@ class _Item1State extends State<Item1> {
               },
               itemBuilder: (context, index) {
                 LayoutDatum layoutdata = widget.content.layoutData![index];
-                return CachedNetworkImage(
-                  imageUrl: layoutdata.image!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
+                return GestureDetector(
+                  onTap: (){
+                    RedirectUtils.handleContentRedirect(
+                      context: context,
+                      layoutOption: widget.content.layoutOption!,
+                      layoutData: layoutdata,
+                    );
+                  },
+                  child: CachedNetworkImage(
+                    imageUrl: layoutdata.image!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
                 );
               },
             ),
