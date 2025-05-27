@@ -75,29 +75,38 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   List<String>? cartItemImages;
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
+  bool isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
-    fetchInitialData();
 
-    // Initialize the animation controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+      fetchInitialData();
 
-    // Define the animation's starting and ending positions
-    _animation = Tween<Offset>(
-      begin: const Offset(0, 1), // Start just below the screen
-      end: Offset.zero, // End at its natural position
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+      // Initialize the animation controller
+      _animationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1000),
+      );
 
-    // Start the animation when the widget is built
-    _animationController.forward();
-    listenToEvents();
+      // Define the animation's starting and ending positions
+      _animation = Tween<Offset>(
+        begin: const Offset(0, 1), // Start just below the screen
+        end: Offset.zero, // End at its natural position
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+
+      // Start the animation when the widget is built
+      _animationController.forward();
+      listenToEvents();
+    });
+
   }
 
   void listenToEvents() {
