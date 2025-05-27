@@ -182,6 +182,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
               ),
               label: AppStrings.cart,
             ),
+            if(isLoggedIn)
             const BottomNavigationBarItem(
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
               label: AppStrings.favourite,

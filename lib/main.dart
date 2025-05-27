@@ -53,7 +53,7 @@ Future<void> main() async {
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
-  runApp( HomeScreen());
+  runApp(HomeScreen(skipLogin: true,));
 }
 
 class HomeScreen extends StatelessWidget {
@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return  MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: skipLogin? const BottomNavPage() : const SplashPage(),
+      home: SplashPage(skipLogin: skipLogin),
     );
   }
 
