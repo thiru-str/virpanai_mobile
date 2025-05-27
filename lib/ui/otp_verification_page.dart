@@ -165,7 +165,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 countryCode: widget.countryCode,
                 phoneNo: widget.phoneNo,
                 token: verifyOtpResponse!.token!,
-                redirectPage: widget.redirectPage,
               ));
         }
         return;
