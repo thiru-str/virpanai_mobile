@@ -10,6 +10,9 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
+import 'package:waioz/ui/widgets/home/item_10.dart';
+import 'package:waioz/ui/widgets/home/item_11.dart';
+import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
@@ -175,6 +178,12 @@ class _HomePageState extends State<HomePage> {
         return Item7(content: homePageContent);
       case "item8":
         return Item8(content: homePageContent);
+      case "item9":
+        return Item9(content: homePageContent);
+      case "item10":
+        return Item10(content: homePageContent);
+      case "item11":
+        return Item11(content: homePageContent);
       default:
         return const SizedBox();
     }

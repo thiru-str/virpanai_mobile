@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -6,6 +7,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/page_route_utils.dart';
+import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
@@ -35,8 +37,9 @@ class Item7 extends StatelessWidget {
                     color: AppColors.textColor
                 ),
               ),
-              if (content.layoutRedirectTitle!.isNotEmpty)
-                GestureDetector(
+              Visibility(
+                visible: content.layoutRedirectTitle!.isNotEmpty,
+                child: GestureDetector(
                   onTap: (){
 
                   },
@@ -49,6 +52,7 @@ class Item7 extends StatelessWidget {
                     ),
                   ),
                 ),
+              )
             ],
           ),
         ),
@@ -63,14 +67,11 @@ class Item7 extends StatelessWidget {
               final layoutData = content.layoutData![index];
               return GestureDetector(
                 onTap: () {
-                  switch (content.layoutOption!) {
-                    case  AppStrings.category:
-                      PageRouteUtils.pushWithFade(context, ProductPage(categoryId: layoutData.id!));
-                    case AppStrings.product:
-                      PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: layoutData.id!));
-                    case AppStrings.brand:
-                      PageRouteUtils.pushWithSlide(context, ProductPage(categoryId: layoutData.id!,isFromBrand: true,));
-                  }
+                  RedirectUtils.handleContentRedirect(
+                    context: context,
+                    layoutOption: content.layoutOption!,
+                    layoutData: layoutData,
+                  );
                 },
                 child: Container(
                   width: 150,
@@ -91,7 +92,7 @@ class Item7 extends StatelessWidget {
                             color: AppColors.secondary,
                             shape: BoxShape.circle,
                           ),
-                          child: ClipOval(child: Image.network(layoutData.image!,fit: BoxFit.cover,),),
+                          child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
                         ),
                       ),
                       const SizedBox(height: 12),

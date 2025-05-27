@@ -59,6 +59,7 @@ class AppStrings {
   static const String product = 'Product';
   static const String category = 'Category';
   static const String brand = 'Brand';
+  static const String custom = 'Custom';
   static const String delete = 'DELETE';
   static const String order = 'ORDER';
 
@@ -183,4 +184,8 @@ class AppStrings {
   static const String account_no = 'Account No';
   static const String bank_name = 'Bank Name';
   static const String related_products = 'Related Products';
+
+  static const String reDirectSearch = 'Search';
+  static const String reDirectProduct = 'Product';
+  static const String reDirectLink = 'Link';
 }

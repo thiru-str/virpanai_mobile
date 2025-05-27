@@ -18,12 +18,14 @@ class OtpVerificationPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
   final String otp;
+  final Widget? redirectPage;
 
   const OtpVerificationPage(
       {super.key,
       required this.countryCode,
       required this.phoneNo,
-      this.otp = ''});
+      this.otp = '',
+      this.redirectPage});
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -163,18 +165,43 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 countryCode: widget.countryCode,
                 phoneNo: widget.phoneNo,
                 token: verifyOtpResponse!.token!,
+                redirectPage: widget.redirectPage,
               ));
         }
         return;
       }
 
       if (mounted) {
-        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+        if (widget.redirectPage != null) {
+          setState(() {
+            apiCalling = true;
+          });
+          getHomePageApi();
+          setState(() {
+            apiCalling = false;
+          });
+          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+        } else {
+          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+        }
       }
     } catch (e) {
       setState(() {
         apiCalling = false;
       });
+      print(e);
+    }
+  }
+
+  void getHomePageApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      final response= await apiService.getHomePage(context);
+      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
+      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
+      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
+      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+    } catch (e) {
       print(e);
     }
   }

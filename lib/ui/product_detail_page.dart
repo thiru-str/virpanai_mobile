@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
@@ -27,12 +29,15 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
+import 'bottom_nav_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
+  final bool isFromLogin;
 
-  const ProductDetailPage({super.key, required this.productId});
+  const ProductDetailPage({super.key, required this.productId,this.isFromLogin = false});
 
   @override
   State<ProductDetailPage> createState() => _ProductDetailPageState();
@@ -70,29 +75,38 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   List<String>? cartItemImages;
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
+  bool isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
-    fetchInitialData();
 
-    // Initialize the animation controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+      fetchInitialData();
 
-    // Define the animation's starting and ending positions
-    _animation = Tween<Offset>(
-      begin: const Offset(0, 1), // Start just below the screen
-      end: Offset.zero, // End at its natural position
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+      // Initialize the animation controller
+      _animationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1000),
+      );
 
-    // Start the animation when the widget is built
-    _animationController.forward();
-    listenToEvents();
+      // Define the animation's starting and ending positions
+      _animation = Tween<Offset>(
+        begin: const Offset(0, 1), // Start just below the screen
+        end: Offset.zero, // End at its natural position
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+
+      // Start the animation when the widget is built
+      _animationController.forward();
+      listenToEvents();
+    });
+
   }
 
   void listenToEvents() {
@@ -131,7 +145,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        onBackTap: () => Navigator.pop(context),
+        onBackTap: () {
+          if(!widget.isFromLogin) {
+            Navigator.pop(context);
+          }
+          else{
+            PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          }
+        },
         onFavTap: addFavourite,
         isFavorite: isFavorite, // Pass the updated favorite status here
       ),
@@ -199,8 +220,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: Image.network(
-                product!.images![index].url!,
+              child: CachedNetworkImage(
+                imageUrl: product!.images![index].url!,
                 height: 250,
                 fit: BoxFit.cover,
               ),
@@ -481,12 +502,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 10),
-        Text(
-          product?.description ?? '',
-          style: FontUtils.primaryFontStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-            color: AppColors.textColor,
+        Visibility(
+          visible: (product?.metadata?['additional_description'] ?? "").isNotEmpty,
+          child: CommonHtmlWidget(htmlContent: product?.metadata?['additional_description'] ?? ""),
+        ),
+        Visibility(
+          visible: product?.metadata == null,
+          child: Text(
+            product?.description ?? '',
+            style: FontUtils.primaryFontStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 12,
+              color: AppColors.textColor,
+            ),
           ),
         ),
       ],
@@ -644,6 +672,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ? null
                 : () async {
               setState(() => quantityLoading = true);
+              if (!isLoggedIn) {
+                AppUtils.showToast('Please login to Continue');
+                PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
+                return;
+              }
               await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
             },
@@ -724,6 +757,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getReviewApi() async {
     try {
+      if (!isLoggedIn) {
+        return;
+      }
       final apiService = ApiService();
       final response =
       await apiService.getProductReviews(context, widget.productId);
@@ -772,6 +808,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Future<void> addFavourite() async {
+    if (!isLoggedIn) {
+      return;
+    }
+
     if (!isFavorite) {
       try {
         final apiService = ApiService();
@@ -805,10 +845,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
-  Future<void> goToCart() async {}
-
   Future<void> getCartApi() async {
     try {
+      if (!isLoggedIn) {
+        return;
+      }
       final apiService = ApiService();
       final response = await apiService.getCart(context);
       setState(() {

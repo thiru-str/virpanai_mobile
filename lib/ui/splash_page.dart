@@ -18,7 +18,8 @@ import '../utility/shared_preferences_util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key});
+  final bool skipLogin;
+  const SplashPage({super.key,this.skipLogin = false});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -74,7 +75,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   void navToNextPage() async {
     String? token = await SharedPreferencesUtil().getString('token');
-    Widget nextPage = token == null ? WelcomePage() : const BottomNavPage();
+    Widget nextPage = token == null ? widget.skipLogin ? const BottomNavPage():  WelcomePage() : const BottomNavPage();
 
     // Delay navigation until the animation completes
     await Future.delayed(const Duration(seconds: 3));
