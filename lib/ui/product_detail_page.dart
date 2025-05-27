@@ -31,11 +31,13 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
+import 'bottom_nav_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
+  final bool isFromLogin;
 
-  const ProductDetailPage({super.key, required this.productId});
+  const ProductDetailPage({super.key, required this.productId,this.isFromLogin = false});
 
   @override
   State<ProductDetailPage> createState() => _ProductDetailPageState();
@@ -134,7 +136,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-        onBackTap: () => Navigator.pop(context),
+        onBackTap: () {
+          if(!widget.isFromLogin) {
+            Navigator.pop(context);
+          }
+          else{
+            PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          }
+        },
         onFavTap: addFavourite,
         isFavorite: isFavorite, // Pass the updated favorite status here
       ),
