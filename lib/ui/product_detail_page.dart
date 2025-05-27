@@ -677,6 +677,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
                 return;
               }
+              await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
             },
             child: quantityLoading
@@ -756,6 +757,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getReviewApi() async {
     try {
+      if (!isLoggedIn) {
+        return;
+      }
       final apiService = ApiService();
       final response =
       await apiService.getProductReviews(context, widget.productId);
@@ -804,6 +808,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Future<void> addFavourite() async {
+    if (!isLoggedIn) {
+      return;
+    }
+
     if (!isFavorite) {
       try {
         final apiService = ApiService();
@@ -837,10 +845,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
-  Future<void> goToCart() async {}
-
   Future<void> getCartApi() async {
     try {
+      if (!isLoggedIn) {
+        return;
+      }
       final apiService = ApiService();
       final response = await apiService.getCart(context);
       setState(() {

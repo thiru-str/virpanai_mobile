@@ -38,7 +38,7 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
   await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
   await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
-  await SharedPreferencesUtil().saveBool('skip_login', true);
+  await SharedPreferencesUtil().saveBool('skip_login', false);
 
 
   FontUtils.updateFonts(
@@ -53,7 +53,7 @@ Future<void> main() async {
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
-  runApp(HomeScreen(skipLogin: true,));
+  runApp(HomeScreen(skipLogin: false,));
 }
 
 class HomeScreen extends StatelessWidget {
