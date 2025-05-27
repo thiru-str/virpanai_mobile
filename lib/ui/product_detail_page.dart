@@ -85,28 +85,28 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       setState(() {
         isLoggedIn = value;
       });
+      fetchInitialData();
+
+      // Initialize the animation controller
+      _animationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1000),
+      );
+
+      // Define the animation's starting and ending positions
+      _animation = Tween<Offset>(
+        begin: const Offset(0, 1), // Start just below the screen
+        end: Offset.zero, // End at its natural position
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+
+      // Start the animation when the widget is built
+      _animationController.forward();
+      listenToEvents();
     });
 
-    fetchInitialData();
-
-    // Initialize the animation controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-
-    // Define the animation's starting and ending positions
-    _animation = Tween<Offset>(
-      begin: const Offset(0, 1), // Start just below the screen
-      end: Offset.zero, // End at its natural position
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    // Start the animation when the widget is built
-    _animationController.forward();
-    listenToEvents();
   }
 
   void listenToEvents() {
