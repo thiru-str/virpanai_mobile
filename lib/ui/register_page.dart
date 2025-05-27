@@ -17,11 +17,13 @@ class RegisterPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
   final String token;
+  final Widget? redirectPage;
   const RegisterPage(
       {super.key,
       required this.countryCode,
       required this.phoneNo,
-      required this.token});
+      required this.token,
+      required this.redirectPage});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -163,7 +165,20 @@ class _RegisterPageState extends State<RegisterPage> {
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
 
-      PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+      if (mounted) {
+        if (widget.redirectPage != null) {
+          setState(() {
+            apiCalling = true;
+          });
+          getHomePageApi();
+          setState(() {
+            apiCalling = false;
+          });
+          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+        } else {
+          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+        }
+      }
     } catch (e) {
       setState(() {
         apiCalling = false;

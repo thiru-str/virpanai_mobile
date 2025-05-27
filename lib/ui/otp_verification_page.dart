@@ -17,12 +17,14 @@ class OtpVerificationPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
   final String otp;
+  final Widget? redirectPage;
 
   const OtpVerificationPage(
       {super.key,
       required this.countryCode,
       required this.phoneNo,
-      this.otp = ''});
+      this.otp = '',
+      this.redirectPage});
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -168,7 +170,18 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       }
 
       if (mounted) {
-        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+        if (widget.redirectPage != null) {
+          setState(() {
+            apiCalling = true;
+          });
+          getHomePageApi();
+          setState(() {
+            apiCalling = false;
+          });
+          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+        } else {
+          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+        }
       }
     } catch (e) {
       setState(() {

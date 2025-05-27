@@ -14,7 +14,8 @@ import '../api/api_service.dart';
 import '../utility/app_utils.dart';
 
 class PhoneNumberPage extends StatefulWidget {
-  const PhoneNumberPage({super.key});
+  final Widget? redirectPage;
+  const PhoneNumberPage({super.key,this.redirectPage});
 
   @override
   _PhoneNumberPageState createState() => _PhoneNumberPageState();
@@ -171,6 +172,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             countryCode: _countryCode!,
             phoneNo: _phoneNumber!,
             otp: sendOtpResponse!.otp!,
+            redirectPage:widget.redirectPage,
           ));
     } catch (e) {
       setState(() {
