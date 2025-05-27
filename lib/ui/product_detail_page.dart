@@ -482,12 +482,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 10),
-        Text(
-          product?.description ?? '',
-          style: FontUtils.primaryFontStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-            color: AppColors.textColor,
+        Visibility(
+          visible: (product?.metadata?['additional_description'] ?? "").isNotEmpty,
+          child: CommonHtmlWidget(htmlContent: product?.metadata?['additional_description'] ?? ""),
+        ),
+        Visibility(
+          visible: product?.metadata == null,
+          child: Text(
+            product?.description ?? '',
+            style: FontUtils.primaryFontStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 12,
+              color: AppColors.textColor,
+            ),
           ),
         ),
       ],
