@@ -28,6 +28,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 
 class ProductDetailPage extends StatefulWidget {
