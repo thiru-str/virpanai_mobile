@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -37,6 +38,7 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
   await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
   await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
+  await SharedPreferencesUtil().saveBool('skip_login', true);
 
 
   FontUtils.updateFonts(
@@ -55,13 +57,14 @@ Future<void> main() async {
 }
 
 class HomeScreen extends StatelessWidget {
-   HomeScreen({super.key});
+   final bool skipLogin;
+   HomeScreen({super.key,this.skipLogin = false});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return  MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashPage(),
+      home: skipLogin? const BottomNavPage() : const SplashPage(),
     );
   }
 

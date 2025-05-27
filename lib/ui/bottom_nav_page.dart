@@ -18,6 +18,7 @@ import 'package:waioz/utility/font_utils.dart';
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart';
+import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
 class BottomNavPage extends StatefulWidget {
@@ -37,6 +38,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
 
   int? cartItems;
   late StreamSubscription<ViewCartModel> _eventSubscription;
+  bool isLoggedIn = false;
 
   @override
   void initState() {
@@ -61,8 +63,13 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       _animationController.forward();
     });
 
-    initializePages();
-    listenToEvents();
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+      initializePages();
+      listenToEvents();
+    });
   }
 
   void listenToEvents() {
@@ -103,7 +110,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       case 3:
         return const MyFavoritesPage(isFromBottomNav: true);
       case 4:
-        return SettingsPage();
+        return isLoggedIn ? SettingsPage() : const HomePage();
       default:
         return const HomePage();
     }
@@ -179,10 +186,11 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
               icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
               label: AppStrings.favourite,
             ),
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-              label: AppStrings.account,
-            ),
+            if(isLoggedIn)
+              const BottomNavigationBarItem(
+                icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                label: AppStrings.account,
+              ),
           ],
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.tabInActivecolor,
@@ -199,6 +207,12 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
 
   Future<void> getCustomerApi() async {
     try {
+
+      if(!isLoggedIn) {
+        debugPrint('calling here');
+        return;
+      }
+
       Customer? customer = await getCustomerResponse();
       if (customer == null) {
         final ApiService apiService = ApiService();

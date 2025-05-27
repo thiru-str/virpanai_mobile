@@ -12,6 +12,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
@@ -653,7 +654,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ? null
                 : () async {
               setState(() => quantityLoading = true);
-              await addCart(selectedQuantity, selectedVariantId!);
+              if (!isLoggedIn) {
+                AppUtils.showToast('Please login to Continue');
+                PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
+                return;
+              }
               setState(() => quantityLoading = false);
             },
             child: quantityLoading

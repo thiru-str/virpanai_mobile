@@ -164,6 +164,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 phoneNo: widget.phoneNo,
                 countryCode: widget.countryCode,
                 token: verifyOtpResponse!.token!,
+                redirectPage: widget.redirectPage,
               ));
         }
         return;
@@ -187,6 +188,19 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       setState(() {
         apiCalling = false;
       });
+      print(e);
+    }
+  }
+
+  void getHomePageApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      final response= await apiService.getHomePage(context);
+      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
+      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
+      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
+      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+    } catch (e) {
       print(e);
     }
   }
