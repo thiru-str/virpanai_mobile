@@ -3,6 +3,7 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
@@ -214,10 +215,11 @@ class _SettingsPageState extends State<SettingsPage> {
           content: AppStrings.signout_confirm_msg,
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
-          onTapOk: () {
+          onTapOk: () async {
             // Handle sign out action
             SharedPreferencesUtil().clear();
-            PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+            bool skipLogin = await SharedPreferencesUtil().getBool('skip_login')?? false;
+            PageRouteUtils.pushAndRemoveUntil(context, skipLogin? const BottomNavPage(): WelcomePage());
           },
         );
       },
