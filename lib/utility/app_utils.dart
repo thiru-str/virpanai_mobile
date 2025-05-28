@@ -65,10 +65,10 @@ class AppUtils {
   }
 
   static Future<bool> isLoggedIn() async {
-    final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
-    if (skipLogin == false) {
-      return true;
-    }
+    // final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
+    // if (skipLogin == false) {
+    //   return true;
+    // }
 
     final token = await SharedPreferencesUtil().getString('token');
     return token != null && token.isNotEmpty;
