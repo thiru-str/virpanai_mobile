@@ -671,12 +671,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             onPressed: selectedVariantId == null
                 ? null
                 : () async {
-              setState(() => quantityLoading = true);
               if (!isLoggedIn) {
                 AppUtils.showToast('Please login to Continue');
                 PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
                 return;
               }
+              setState(() => quantityLoading = true);
               await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
             },
