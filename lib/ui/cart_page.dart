@@ -90,7 +90,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 color: AppColors.primary,
               ),
             )
-          : cartResponse!.cart!.items!.isNotEmpty
+          : cartResponse?.cart?.items?.isNotEmpty?? false
               ? Scaffold(
                   backgroundColor: Colors.white,
                   body: Column(
@@ -249,6 +249,9 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   void getCartApi() async {
     try {
       if (!isLoggedIn) {
+        setState(() {
+          apiLoading = false;
+        });
         return;
       }
       final ApiService apiService = ApiService();
