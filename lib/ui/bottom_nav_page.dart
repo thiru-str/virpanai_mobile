@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
@@ -125,81 +126,111 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _isLoading
-          ?  Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
-          : _getPage(), // Dynamically build the current page
-      bottomNavigationBar: SlideTransition(
-        position: _slideAnimation,
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index; // Update selected tab
-            });
-          },
-          items: [
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-              label: AppStrings.shop,
-            ),
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-              label: AppStrings.categories,
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                  if ((cartItems?? 0) > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          cartItems!.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
+    return PopScope(
+      canPop: false, // Disable default back behavior
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+
+        final shouldExit = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text(AppStrings.exitApp),
+            content: const Text(AppStrings.exitDescription),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text(AppStrings.no),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(AppStrings.yes),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldExit == true) {
+          if (mounted) {
+            SystemNavigator.pop(); // Close the app
+          }
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: _isLoading
+            ?  Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        )
+            : _getPage(), // Dynamically build the current page
+        bottomNavigationBar: SlideTransition(
+          position: _slideAnimation,
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index; // Update selected tab
+              });
+            },
+            items: [
+              const BottomNavigationBarItem(
+                icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                label: AppStrings.shop,
+              ),
+              const BottomNavigationBarItem(
+                icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+                label: AppStrings.categories,
+              ),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  children: [
+                    const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                    if ((cartItems?? 0) > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          textAlign: TextAlign.center,
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            cartItems!.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+                label: AppStrings.cart,
               ),
-              label: AppStrings.cart,
-            ),
-            if(isLoggedIn)
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-              label: AppStrings.favourite,
-            ),
-            if(isLoggedIn)
+              if(isLoggedIn)
               const BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-                label: AppStrings.account,
+                icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+                label: AppStrings.favourite,
               ),
-          ],
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.tabInActivecolor,
-          showUnselectedLabels: true,
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: FontUtils.primaryFontStyle(),
-          unselectedLabelStyle: FontUtils.primaryFontStyle(),
+              if(isLoggedIn)
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                  label: AppStrings.account,
+                ),
+            ],
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.tabInActivecolor,
+            showUnselectedLabels: true,
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            selectedLabelStyle: FontUtils.primaryFontStyle(),
+            unselectedLabelStyle: FontUtils.primaryFontStyle(),
+          ),
         ),
       ),
     );

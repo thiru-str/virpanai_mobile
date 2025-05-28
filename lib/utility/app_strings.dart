@@ -188,4 +188,7 @@ class AppStrings {
   static const String reDirectSearch = 'Search';
   static const String reDirectProduct = 'Product';
   static const String reDirectLink = 'Link';
+
+  static const String exitApp = 'Exit App?';
+  static const String exitDescription = 'Are you sure you want to exit?';
 }
