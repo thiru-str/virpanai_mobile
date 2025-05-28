@@ -13,6 +13,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/app_utils.dart';
 import '../utility/currency_util.dart';
 
 class CartPage extends StatefulWidget {
@@ -31,33 +32,38 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
+  bool isLoggedIn = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getCartApi();
 
-    // Initialize the animation controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+      getCartApi();
 
-    // Define the animation's starting and ending positions
-    _animation = Tween<Offset>(
-      begin: const Offset(0, 1), // Start just below the screen
-      end: Offset.zero, // End at its natural position
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+      // Initialize the animation controller
+      _animationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 200),
+      );
 
-    // Delay animation start by 300ms
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _animationController.forward();
-    });
+      // Define the animation's starting and ending positions
+      _animation = Tween<Offset>(
+        begin: const Offset(0, 1), // Start just below the screen
+        end: Offset.zero, // End at its natural position
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
 
-
+      // Delay animation start by 300ms
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _animationController.forward();
+      });
+      });
   }
 
   @override
@@ -242,6 +248,9 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void getCartApi() async {
     try {
+      if (!isLoggedIn) {
+        return;
+      }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);

@@ -54,13 +54,20 @@ class _HomePageState extends State<HomePage> {
 
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
+  bool isLoggedIn = false;
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    initializePages();
-    listenToEvents();
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+      initializePages();
+      listenToEvents();
+    });
   }
 
   void listenToEvents() {
@@ -210,6 +217,9 @@ class _HomePageState extends State<HomePage> {
 
   void getCartApi() async {
     try {
+      if (!isLoggedIn) {
+        return;
+      }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       setState(() {
