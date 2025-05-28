@@ -216,9 +216,9 @@ class _SettingsPageState extends State<SettingsPage> {
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
           onTapOk: () async {
+            bool skipLogin = await SharedPreferencesUtil().getBool('skip_login')?? false;
             // Handle sign out action
             SharedPreferencesUtil().clear();
-            bool skipLogin = await SharedPreferencesUtil().getBool('skip_login')?? false;
             PageRouteUtils.pushAndRemoveUntil(context, skipLogin? const BottomNavPage(): WelcomePage());
           },
         );
