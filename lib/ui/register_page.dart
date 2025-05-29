@@ -144,15 +144,15 @@ class _RegisterPageState extends State<RegisterPage> {
   void register() async {
     try {
       final ApiService apiService = ApiService();
-      registerResponse = await apiService.register(
-          context,
-          emailController.text,
-          companyController.text,
-          firstNameController.text,
-          lastNameController.text,
-          widget.countryCode,
-          widget.phoneNo,
-          widget.token);
+      // registerResponse = await apiService.register(
+      //     context,
+      //     emailController.text,
+      //     companyController.text,
+      //     firstNameController.text,
+      //     lastNameController.text,
+      //     widget.countryCode,
+      //     widget.phoneNo,
+      //     widget.token);
 
       RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
         context,widget.token);

@@ -6,16 +6,24 @@ import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../api/api_service.dart';
+import '../model/refresh_token_response.dart';
+import '../model/register_response.dart';
+import '../utility/shared_preferences_util.dart';
+import 'bottom_nav_page.dart';
+
 class UserDetailsPage extends StatefulWidget {
   final String countryCode;
   final String phoneNo;
   final String token;
+  final Widget? redirectPage;
 
   const UserDetailsPage(
       {super.key,
         required this.countryCode,
         required this.phoneNo,
-        required this.token});
+        required this.token,
+        this.redirectPage});
 
 
   @override
@@ -44,6 +52,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   File? _shopFrontImage;
   File? _shopInteriorImage;
   File? _shopCounterImage;
+
+  String? _gstImagePath;
+  String? _shopFrontImagePath;
+  String? _shopInteriorImagePath;
+  String? _shopCounterImagePath;
+
+  bool apiCalling = true;
+  bool imageUploading = false;
+  RegisterResponse? registerResponse;
 
   Widget buildLabeledTextField({
     required String label,
@@ -175,7 +192,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             buildImageUploader(
               label: "GST Image",
               imageFile: _gstImage,
-              onUploadTap: () => pickImage((img) => setState(() => _gstImage = img)),
+              onUploadTap: () => pickImage((img) => setState(() => _gstImage = img),(path) => setState(() => _gstImagePath = path)),
             ),
             const SizedBox(height: 20),
           ],
@@ -191,17 +208,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             buildImageUploader(
               label: "Shop Front With Name Board",
               imageFile: _shopFrontImage,
-              onUploadTap: () => pickImage((img) => setState(() => _shopFrontImage = img)),
+              onUploadTap: () => pickImage((img) => setState(() => _shopFrontImage = img),(path) => setState(() => _shopFrontImagePath = path)),
             ),
             buildImageUploader(
               label: "Shop Interior",
               imageFile: _shopInteriorImage,
-              onUploadTap: () => pickImage((img) => setState(() => _shopInteriorImage = img)),
+              onUploadTap: () => pickImage((img) => setState(() => _shopInteriorImage = img),(path) => setState(() => _shopInteriorImagePath = path)),
             ),
             buildImageUploader(
               label: "Shop Counter",
               imageFile: _shopCounterImage,
-              onUploadTap: () => pickImage((img) => setState(() => _shopCounterImage = img)),
+              onUploadTap: () => pickImage((img) => setState(() => _shopCounterImage = img),(path) => setState(() => _shopCounterImagePath = path)),
             ),
           ],
         );
@@ -355,7 +372,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     required File? imageFile,
     required VoidCallback onUploadTap,
   }) {
-    return Column(
+    return imageUploading? Center(child: CircularProgressIndicator(color: AppColors.primary,)) : Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
@@ -392,10 +409,109 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     );
   }
 
-  Future<void> pickImage(Function(File) onImagePicked) async {
+  Future<void> pickImage(Function(File) onImagePicked, Function(String?) onUploadComplete) async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      onImagePicked(File(picked.path));
+      final imageFile = File(picked.path);
+      onImagePicked(imageFile);
+      await _uploadAndStoreImage(imageFile, onUploadComplete);
+    }
+  }
+
+  void register() async {
+    try {
+      final ApiService apiService = ApiService();
+      registerResponse = await apiService.register(
+          context,
+          _emailController.text,
+          _shopNameController.text,
+          _nameController.text,
+          "",
+          widget.countryCode,
+          widget.phoneNo,
+          widget.token,
+          _shopNameController.text,
+          _stateController.text,
+          _cityController.text,
+          _postalCodeController.text,
+          _isGstRegistered,
+          _gstNumberController.text,
+          _gstImagePath ?? "",
+          _shopFrontImagePath ?? "",
+          _shopInteriorImagePath ?? "",
+          _shopCounterImagePath ?? "");
+
+      RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
+          context,widget.token);
+
+      setState(() {
+        apiCalling = false;
+      });
+
+      SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
+      SharedPreferencesUtil()
+          .saveMap('customer', registerResponse!.customer!.toJson());
+
+      if (mounted) {
+        if (widget.redirectPage != null) {
+          setState(() {
+            apiCalling = true;
+          });
+          getHomePageApi();
+          setState(() {
+            apiCalling = false;
+          });
+          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+        } else {
+          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+        }
+      }
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
+  }
+
+  void getHomePageApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      final response= await apiService.getHomePage(context);
+      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
+      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
+      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
+      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _uploadAndStoreImage(File image, Function(String?) onSuccess) async {
+    try {
+      setState(() {
+        imageUploading = true;
+      });
+      var response = await ApiService().uploadImage(context, image);
+      if (response != null && response['file'] != null) {
+        setState(() {
+          imageUploading = false;
+        });
+        onSuccess(response['file']['path']);
+        print('Uploaded File Path: ${response['file']['path']}');
+      } else {
+        setState(() {
+          imageUploading = false;
+        });
+        onSuccess(null);
+        print('File upload failed or invalid response');
+      }
+    } catch (e) {
+      setState(() {
+        imageUploading = false;
+      });
+      onSuccess(null);
+      print('Error uploading image: $e');
     }
   }
 

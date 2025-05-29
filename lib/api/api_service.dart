@@ -251,20 +251,31 @@ class ApiService {
       String lastName,
       String countryCode,
       String phone,
-      String token) async {
+      String token,String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
     return _makePostRequest(
         "store/customers",
         {
           "email": email,
-          "company_name": companyName,
+          "company_name": shopName,
           "first_name": firstName,
           "last_name": lastName,
           "phone": phone,
           "metadata": {
             "country_code":countryCode,
-            "device_id":deviceId
+            "device_id":deviceId,
+            "shop_name":shopName,
+            "country":"IN",
+            "city":city,
+            "state":state,
+            "postal_code":postalCode,
+            "is_gst":isGST,
+            "gst_number":gstNo,
+            "gst_image":gstImage,
+            "shop_name_board_image":shopNameBoardImage,
+            "shop_interior_image":shopInteriorImage,
+            "shop_counter_image":shopCounterImage
           }
         },
         (data) => RegisterResponse.fromJson(data),
