@@ -687,6 +687,16 @@ class ApiService {
     );
   }
 
+  Future<dynamic> uploadDocImages(BuildContext context,String token, File file) async {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+    return _uploadFile(
+      file: file,
+      apiUrl: 'store/uploads',
+      fromJson: (json) => json, // Return the response as JSON
+      context: context,
+    );
+  }
+
   Future<NeftTransactionResponse> getNEFTTransaction(BuildContext context, String? orderID) async {
     await addToken();
     return _makeGetRequest<NeftTransactionResponse>(

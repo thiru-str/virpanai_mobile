@@ -492,7 +492,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       setState(() {
         imageUploading = true;
       });
-      var response = await ApiService().uploadImage(context, image);
+      var response = await ApiService().uploadDocImages(context, widget.token, image);
       if (response != null && response['file'] != null) {
         setState(() {
           imageUploading = false;
