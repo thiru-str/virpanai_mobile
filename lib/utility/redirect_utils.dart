@@ -25,13 +25,12 @@ class RedirectUtils {
     required String layoutOption,
     required LayoutDatum layoutData,
   }) {
-
     switch (layoutOption) {
       case AppStrings.category:
         _navigateToCategory(context, layoutData);
         break;
       case AppStrings.product:
-        _navigateToProduct(context, layoutData.redirectData!);
+        _navigateToProduct(context, layoutData,true);
         break;
       case AppStrings.brand:
         _navigateToBrand(context, layoutData);
@@ -55,7 +54,7 @@ class RedirectUtils {
         _navigateToSearch(context, redirectData);
         break;
       case AppStrings.reDirectProduct:
-        _navigateToProduct(context, redirectData);
+        _navigateToProduct(context, layoutData,false);
         break;
       case AppStrings.reDirectLink:
         _launchExternalLink(redirectData);
@@ -91,8 +90,11 @@ class RedirectUtils {
     );
   }
 
-  static void _navigateToProduct(BuildContext context, RedirectData redirectData) {
-    final productId = redirectData.redirectProductData?.productId;
+  static void _navigateToProduct(BuildContext context, LayoutDatum layoutData, bool isDirectProduct) {
+    final productId = isDirectProduct
+        ? layoutData.id
+        : layoutData.redirectData?.redirectProductData?.productId;
+
     if (productId == null || productId.isEmpty) return;
 
     PageRouteUtils.pushWithSlide(
