@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/splash_page.dart';
+import 'package:waioz/ui/welcome_page.dart';
 
 import '../utility/app_assets.dart';
+import '../utility/page_route_utils.dart';
 
 class ApprovalPage extends StatelessWidget {
-  const ApprovalPage({super.key});
+  final String errorCode;
+  const ApprovalPage({super.key,required this.errorCode});
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +113,7 @@ class ApprovalPage extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6AC259),

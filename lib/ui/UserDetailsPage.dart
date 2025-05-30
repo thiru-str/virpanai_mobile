@@ -237,7 +237,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       } else {
         // Submit
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
-        PageRouteUtils.push(context, ApprovalPage());
+        PageRouteUtils.push(context, ApprovalPage(errorCode: '00004',));
         // Navigate or trigger next logic
       }
     }

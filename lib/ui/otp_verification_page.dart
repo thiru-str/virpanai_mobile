@@ -13,6 +13,8 @@ import 'package:waioz/utility/shared_preferences_util.dart';
 import '../api/api_service.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
+import '../utility/app_utils.dart';
+import 'ApprovalPage.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String countryCode;
@@ -46,118 +48,171 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    setState(() {
-      _otpController.text = widget.otp;
+  void initState() {
+    super.initState();
+    // Optional: auto-focus after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
     });
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+  }
+
+  @override
+  Widget build(BuildContext context) {
+     setState(() {
+    _otpController.text = widget.otp;
+     });
+      return Scaffold(
+        extendBodyBehindAppBar: true,
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              // Title
-              Text(
-                AppStrings.enter_otp_digit,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Form for phone input
-              Text(
-                '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700]!,
-                ),
-              ),
-              const SizedBox(height: 32),
-              // OTP Fields
-              PinCodeTextField(
-                appContext: context,
-                length: 6, // Number of OTP digits
-                controller: _otpController,
-                focusNode: _focusNode,
-                keyboardType: TextInputType.number,
-                autoFocus: true,
-                animationType: AnimationType.none,
-                textStyle: FontUtils.primaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(8),
-                  fieldHeight: 50,
-                  fieldWidth: 50,
-                  inactiveFillColor: Colors.white,
-                  activeFillColor: Colors.white,
-                  selectedFillColor: Colors.white,
-                  inactiveColor: AppColors.secondary,
-                  activeColor: AppColors.primary,
-                  selectedColor: AppColors.primary,
-                ),
-                enableActiveFill: true,
-                onCompleted: (value) {
-                  print("OTP Entered: $value");
-                },
-                onChanged: (value) {
-                  print(value);
-                },
-              ),
-              const SizedBox(height: 32),
-            ],
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
-        child: FloatingActionButton(
-          shape: const CircleBorder(),
-          onPressed: () {
-            // Validate OTP and proceed
-            print('Submitted OTP: ${_otpController.text}');
-            verifyOtp();
-          },
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+        body: Stack(
+          children: [
+            // 🔹 Backgrounds
+            Positioned(top: 0, right: 0, child: SvgPicture.asset(AppAssets.bg_top)),
+            Positioned(bottom: 0, left: 0, child: SvgPicture.asset(AppAssets.bg_bottom)),
+
+            // 🔹 White translucent overlay
+            Positioned.fill(
+              child: IgnorePointer( // ✅ Allows interaction through overlay
+                child: Container(color: Colors.white.withOpacity(0.7)),
+              ),
+            ),
+
+            // 🔹 Scrollable content
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: SafeArea(
+                      top: true,
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 🔹 Title
+                              Text(
+                                AppStrings.enter_otp_digit,
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // 🔹 Info
+                              Text(
+                                '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[700]!,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+
+                              // 🔹 OTP Field
+                              PinCodeTextField(
+                                  appContext: context,
+                                  length: 6,
+                                  controller: _otpController,
+                                  focusNode: _focusNode,
+                                  keyboardType: TextInputType.number,
+                                  autoFocus: true,
+                                  animationType: AnimationType.none,
+                                  textStyle: FontUtils.primaryFontStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                  pinTheme: PinTheme(
+                                    shape: PinCodeFieldShape.box,
+                                    borderRadius: BorderRadius.circular(8),
+                                    fieldHeight: 50,
+                                    fieldWidth: 50,
+                                    inactiveFillColor: Colors.white,
+                                    activeFillColor: Colors.white,
+                                    selectedFillColor: Colors.white,
+                                    inactiveColor: AppColors.secondary,
+                                    activeColor: AppColors.primary,
+                                    selectedColor: AppColors.primary,
+                                  ),
+                                  enableActiveFill: true,
+                                  onCompleted: (value) => print("OTP Entered: $value"),
+                                  onChanged: (value) => print(value),
+                                ),
+
+                              const Spacer(),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // 🔹 FAB positioned above keyboard
+            Positioned(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 60,
+              right: 24,
+              child: FloatingActionButton(
+                elevation: 0,
+                shape: const CircleBorder(),
+                backgroundColor: AppColors.primary,
+                onPressed: () {
+                    if (_otpController.text.length == 6) {
+                      print("Submitted OTP: ${_otpController.text}");
+                      verifyOtp();
+                    } else {
+                      AppUtils.showToast("Enter full OTP");
+                    }
+
+                },
+                child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+              ),
+            ),
+          ],
         ),
-      ),
-      resizeToAvoidBottomInset:
-          true, // Ensures keyboard does not cause overflow
-    );
-  }
+      );
+      }
 
   void verifyOtp() async {
     try {
       final ApiService apiService = ApiService();
       verifyOtpResponse = await apiService.verifyOtp(
           context, widget.countryCode, widget.phoneNo, _otpController.text);
-      setState(() {
-        apiCalling = false;
-      });
+      setState(() => apiCalling = false);
 
-      if (!verifyOtpResponse!.newUser!) {
-        SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
-      } else {
-        //redirect to create account page
+      // First check for errors (regardless of newUser status)
+      if (verifyOtpResponse?.error != null) {
+        if (verifyOtpResponse?.error?.code == '00004' && mounted) {
+          PageRouteUtils.pushWithSlide(
+              context,
+              ApprovalPage(errorCode: verifyOtpResponse!.error!.code!));
+          return;
+        }
+        // Handle other errors if needed
+      }
+
+      // Then handle newUser cases
+      if (verifyOtpResponse?.newUser == true) {
         if (mounted) {
           PageRouteUtils.pushWithSlide(
               context,
@@ -170,24 +225,21 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         return;
       }
 
+      // Existing user flow
+      SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
+
       if (mounted) {
         if (widget.redirectPage != null) {
-          setState(() {
-            apiCalling = true;
-          });
-          getHomePageApi();
-          setState(() {
-            apiCalling = false;
-          });
+          setState(() => apiCalling = true);
+          getHomePageApi(); // Added await if it's async
+          setState(() => apiCalling = false);
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
           PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
         }
       }
     } catch (e) {
-      setState(() {
-        apiCalling = false;
-      });
+      setState(() => apiCalling = false);
       print(e);
     }
   }
