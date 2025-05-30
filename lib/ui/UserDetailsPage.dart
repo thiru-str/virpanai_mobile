@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
+import '../utility/app_assets.dart';
 import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
@@ -250,36 +252,93 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     });
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                // Step Indicators
-                _buildStepper(),
-                const SizedBox(height: 20),
-                Expanded(child: SingleChildScrollView(child: buildStepContent())),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _handleNext,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      resizeToAvoidBottomInset: false,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+
+              Positioned(
+                top: 0,
+                right: 0,
+                child: SvgPicture.asset(AppAssets.bg_top),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                child: SvgPicture.asset(AppAssets.bg_bottom),
+              ),
+
+
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Container(color: Colors.white.withOpacity(0.7)),
+                ),
+              ),
+
+
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                      children: [
+                      _buildStepper(),
+                  const SizedBox(height: 20),
+
+                  // Modified Scrollable Area
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight - 200,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            buildStepContent(),
+                            // Add minimal padding only if needed
+                            SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 0),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: Text(_currentStep < 1 ? "Next" : "Submit", style: const TextStyle(fontSize: 18,color: Colors.white)),
                   ),
-                )
-              ],
-            ),
-          ),
-        ),
+
+                  AnimatedPadding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                          ? MediaQuery.of(context).viewInsets.bottom + 10
+                          : 10,
+                    ),
+                    duration: const Duration(milliseconds: 100),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _handleNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                          child: Text(
+                            _currentStep < 1 ? "Next" : "Submit",
+                            style: const TextStyle(fontSize: 18, color: Colors.white),
+                          )
+                      ),)
+                    ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
+
   }
 
   Widget _buildStepper() {
@@ -295,7 +354,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
           return Expanded(
             child: Container(
-              height: 36, // Match circle height
+              height: 36,
               alignment: Alignment.center,
               child: Container(
                 height: 2,
@@ -348,24 +407,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
 
 
-
-
-
-
-  Widget _buildStepIndicator(int step, String title) {
-    bool isActive = _currentStep == step;
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: isActive ? AppColors.primary : AppColors.primary.withValues(alpha: 0.5),
-          child: Text("${step + 1}", style: const TextStyle(color: Colors.white)),
-        ),
-        const SizedBox(height: 4),
-        Text(title, style: TextStyle(color: isActive ? AppColors.primary : Colors.grey)),
-      ],
-    );
-  }
 
   Widget buildImageUploader({
     required String label,

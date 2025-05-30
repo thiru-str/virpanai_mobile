@@ -50,7 +50,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   void initState() {
     super.initState();
-    // Optional: auto-focus after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_focusNode);
     });
@@ -75,18 +74,17 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         ),
         body: Stack(
           children: [
-            // 🔹 Backgrounds
+
             Positioned(top: 0, right: 0, child: SvgPicture.asset(AppAssets.bg_top)),
             Positioned(bottom: 0, left: 0, child: SvgPicture.asset(AppAssets.bg_bottom)),
 
-            // 🔹 White translucent overlay
             Positioned.fill(
-              child: IgnorePointer( // ✅ Allows interaction through overlay
+              child: IgnorePointer(
                 child: Container(color: Colors.white.withOpacity(0.7)),
               ),
             ),
 
-            // 🔹 Scrollable content
+
             LayoutBuilder(
               builder: (context, constraints) {
                 return SingleChildScrollView(
@@ -104,7 +102,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // 🔹 Title
                               Text(
                                 AppStrings.enter_otp_digit,
                                 style: FontUtils.primaryFontStyle(
@@ -114,8 +111,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 ),
                               ),
                               const SizedBox(height: 24),
-
-                              // 🔹 Info
                               Text(
                                 '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
                                 style: FontUtils.primaryFontStyle(
@@ -124,8 +119,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 ),
                               ),
                               const SizedBox(height: 32),
-
-                              // 🔹 OTP Field
                               PinCodeTextField(
                                   appContext: context,
                                   length: 6,
@@ -168,7 +161,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               },
             ),
 
-            // 🔹 FAB positioned above keyboard
             Positioned(
               bottom: MediaQuery.of(context).viewInsets.bottom + 60,
               right: 24,
@@ -200,7 +192,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           context, widget.countryCode, widget.phoneNo, _otpController.text);
       setState(() => apiCalling = false);
 
-      // First check for errors (regardless of newUser status)
+
       if (verifyOtpResponse?.error != null) {
         if (verifyOtpResponse?.error?.code == '00004' && mounted) {
           PageRouteUtils.pushWithSlide(
@@ -208,10 +200,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               ApprovalPage(errorCode: verifyOtpResponse!.error!.code!));
           return;
         }
-        // Handle other errors if needed
       }
 
-      // Then handle newUser cases
+
       if (verifyOtpResponse?.newUser == true) {
         if (mounted) {
           PageRouteUtils.pushWithSlide(
@@ -225,13 +216,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         return;
       }
 
-      // Existing user flow
+
       SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
 
       if (mounted) {
         if (widget.redirectPage != null) {
           setState(() => apiCalling = true);
-          getHomePageApi(); // Added await if it's async
+          getHomePageApi();
           setState(() => apiCalling = false);
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {

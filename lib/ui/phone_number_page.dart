@@ -51,17 +51,14 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
       ),
       body: Stack(
         children: [
-          // Top and Bottom Backgrounds
+
           Positioned(top: 0, right: 0, child: SvgPicture.asset(AppAssets.bg_top)),
           Positioned(bottom: 0, left: 0, child: SvgPicture.asset(AppAssets.bg_bottom)),
 
-          // White overlay
           Positioned.fill(
             child: Container(color: Colors.white.withOpacity(0.7)),
           ),
 
-
-          // Scrollable content with keyboard padding
           LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
@@ -201,9 +198,6 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
       final ApiService apiService = ApiService();
       sendOtpResponse =
           await apiService.sendOtp(context, _countryCode!, _phoneNumber!);
-      /*if (kDebugMode) {
-        AppUtils.showToast(sendOtpResponse!.otp!);
-      }*/
       setState(() {
         apiCalling = false;
       });
