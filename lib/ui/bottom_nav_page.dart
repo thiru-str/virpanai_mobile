@@ -10,6 +10,7 @@ import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -131,24 +132,23 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       onPopInvoked: (bool didPop) async {
         if (didPop) return;
 
+        // If not on the first tab, go back to the previous tab
+        if (_currentIndex > 0) {
+          setState(() {
+            _currentIndex--; // Move to the previous tab
+          });
+          return; // Don't proceed to exit dialog
+        }
+
         final shouldExit = await showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text(AppStrings.exitApp),
-            content: const Text(AppStrings.exitDescription),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text(AppStrings.no),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(AppStrings.yes),
-              ),
-            ],
-          ),
-        );
-
+          builder: (context) => CommonAlertDialog(
+            title: AppStrings.exitApp,
+            content: AppStrings.exitDescription,
+            contentOk: AppStrings.yes,
+            contentCancel: AppStrings.no,
+            onTapOk: () => Navigator.of(context).pop(true)),
+          );
         if (shouldExit == true) {
           if (mounted) {
             SystemNavigator.pop(); // Close the app
