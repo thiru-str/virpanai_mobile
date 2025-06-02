@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
@@ -60,8 +61,12 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   String? _shopInteriorImagePath;
   String? _shopCounterImagePath;
 
+  bool _isGstImageUploading = false;
+  bool _isShopFrontUploading = false;
+  bool _isShopInteriorUploading = false;
+  bool _isShopCounterUploading = false;
+
   bool apiCalling = true;
-  bool imageUploading = false;
   RegisterResponse? registerResponse;
 
   Widget buildLabeledTextField({
@@ -112,7 +117,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           const Text("Owner Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           buildLabeledTextField(
-            label: "Name",
+            label: "Owner Name",
             controller: _nameController,
             validator: (val) => val == null || val.isEmpty ? 'Please enter your name' : null,
           ),
@@ -142,26 +147,26 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             controller: _shopNameController,
             validator: (val) => val == null || val.isEmpty ? 'Please enter shop name' : null,
           ),
-          buildLabeledTextField(
-            label: "Address",
-            controller: _addressController,
-            validator: (val) => val == null || val.isEmpty ? 'Please enter address' : null,
-          ),
-          buildLabeledTextField(
-            label: "State",
-            controller: _stateController,
-            validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
-          ),
+          // buildLabeledTextField(
+          //   label: "Address",
+          //   controller: _addressController,
+          //   validator: (val) => val == null || val.isEmpty ? 'Please enter address' : null,
+          // ),Waioz
+          // buildLabeledTextField(
+          //   label: "State",
+          //   controller: _stateController,
+          //   validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
+          // ),
           Row(
             children: [
-              Expanded(
-                child: buildLabeledTextField(
-                  label: "City",
-                  controller: _cityController,
-                  validator: (val) => val == null || val.isEmpty ? 'Enter city' : null,
-                ),
-              ),
-              const SizedBox(width: 12),
+              // Expanded(
+              //   child: buildLabeledTextField(
+              //     label: "City",
+              //     controller: _cityController,
+              //     validator: (val) => val == null || val.isEmpty ? 'Enter city' : null,
+              //   ),
+              // ),
+              // const SizedBox(width: 12),
               Expanded(
                 child: buildLabeledTextField(
                   label: "Postal Code",
@@ -194,7 +199,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             buildImageUploader(
               label: "GST Image",
               imageFile: _gstImage,
-              onUploadTap: () => pickImage((img) => setState(() => _gstImage = img),(path) => setState(() => _gstImagePath = path)),
+              isLoading: _isGstImageUploading,
+              onUploadTap: () async {
+                setState(() => _isGstImageUploading = true);
+                await pickImage(
+                      (img) => setState(() => _gstImage = img),
+                      (path) => setState(() {
+                    _gstImagePath = path;
+                    _isGstImageUploading = false;
+                  }),
+                );
+              },
             ),
             const SizedBox(height: 20),
           ],
@@ -210,17 +225,47 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             buildImageUploader(
               label: "Shop Front With Name Board",
               imageFile: _shopFrontImage,
-              onUploadTap: () => pickImage((img) => setState(() => _shopFrontImage = img),(path) => setState(() => _shopFrontImagePath = path)),
+              isLoading: _isShopFrontUploading,
+              onUploadTap: () async {
+                setState(() => _isGstImageUploading = true);
+                await pickImage(
+                      (img) => setState(() => _shopFrontImage = img),
+                      (path) => setState(() {
+                        _shopFrontImagePath = path;
+                    _isShopFrontUploading = false;
+                  }),
+                );
+              },
             ),
             buildImageUploader(
               label: "Shop Interior",
               imageFile: _shopInteriorImage,
-              onUploadTap: () => pickImage((img) => setState(() => _shopInteriorImage = img),(path) => setState(() => _shopInteriorImagePath = path)),
+              isLoading: _isShopInteriorUploading,
+              onUploadTap: () async {
+                setState(() => _isGstImageUploading = true);
+                await pickImage(
+                      (img) => setState(() => _shopInteriorImage = img),
+                      (path) => setState(() {
+                    _shopInteriorImagePath = path;
+                    _isShopInteriorUploading = false;
+                  }),
+                );
+              },
             ),
             buildImageUploader(
               label: "Shop Counter",
               imageFile: _shopCounterImage,
-              onUploadTap: () => pickImage((img) => setState(() => _shopCounterImage = img),(path) => setState(() => _shopCounterImagePath = path)),
+              isLoading: _isShopCounterUploading,
+              onUploadTap: () async {
+                setState(() => _isGstImageUploading = true);
+                await pickImage(
+                      (img) => setState(() => _shopCounterImage = img),
+                      (path) => setState(() {
+                    _shopCounterImagePath = path;
+                    _isShopCounterUploading = false;
+                  }),
+                );
+              },
             ),
           ],
         );
@@ -280,56 +325,59 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                      children: [
-                      _buildStepper(),
-                  const SizedBox(height: 20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                        children: [
+                        _buildStepper(),
+                    const SizedBox(height: 20),
 
-                  // Modified Scrollable Area
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight - 200,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            buildStepContent(),
-                            // Add minimal padding only if needed
-                            SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 0),
-                          ],
+                    // Modified Scrollable Area
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight - 200,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              buildStepContent(),
+                              // Add minimal padding only if needed
+                              SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 0),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  AnimatedPadding(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                          ? MediaQuery.of(context).viewInsets.bottom + 10
-                          : 10,
-                    ),
-                    duration: const Duration(milliseconds: 100),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _handleNext,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                    AnimatedPadding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                            ? MediaQuery.of(context).viewInsets.bottom + 10
+                            : 10,
+                      ),
+                      duration: const Duration(milliseconds: 100),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _handleNext,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                        ),
-                          child: Text(
-                            _currentStep < 1 ? "Next" : "Submit",
-                            style: const TextStyle(fontSize: 18, color: Colors.white),
-                          )
-                      ),)
+                            child: Text(
+                              _currentStep < 1 ? "Next" : "Submit",
+                              style: const TextStyle(fontSize: 18, color: Colors.white),
+                            )
+                        ),)
+                      ),
+                      ],
                     ),
-                    ],
                   ),
                 ),
               ),
@@ -412,14 +460,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     required String label,
     required File? imageFile,
     required VoidCallback onUploadTap,
+    required bool isLoading,
   }) {
-    return imageUploading? Center(child: CircularProgressIndicator(color: AppColors.primary,)) : Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         GestureDetector(
-          onTap: onUploadTap,
+          onTap: isLoading ? null : onUploadTap,
           child: DottedBorder(
             color: AppColors.primary,
             strokeWidth: 1.5,
@@ -431,7 +480,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               height: 150,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(10),
-              child: imageFile != null
+              child:  isLoading
+                  ? CircularProgressIndicator(color: AppColors.primary)
+                  : (imageFile != null
                   ? Image.file(imageFile, fit: BoxFit.cover)
                   : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -440,7 +491,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   SizedBox(height: 10),
                   Text("Click to Upload", style: TextStyle(color: AppColors.primary)),
                   Text("(Max. File size: 5 MB)", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                ],
+                ],)
               ),
             ),
           ),
@@ -456,6 +507,14 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       final imageFile = File(picked.path);
       onImagePicked(imageFile);
       await _uploadAndStoreImage(imageFile, onUploadComplete);
+    }
+    else{
+      setState(() {
+        _isGstImageUploading = false;
+        _isShopCounterUploading = false;
+        _isShopInteriorUploading = false;
+        _isShopFrontUploading = false;
+      });
     }
   }
 
@@ -530,27 +589,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   Future<void> _uploadAndStoreImage(File image, Function(String?) onSuccess) async {
     try {
-      setState(() {
-        imageUploading = true;
-      });
       var response = await ApiService().uploadDocImages(context, widget.token, image);
       if (response != null && response['file'] != null) {
-        setState(() {
-          imageUploading = false;
-        });
         onSuccess(response['file']['path']);
         print('Uploaded File Path: ${response['file']['path']}');
       } else {
-        setState(() {
-          imageUploading = false;
-        });
         onSuccess(null);
         print('File upload failed or invalid response');
       }
     } catch (e) {
-      setState(() {
-        imageUploading = false;
-      });
       onSuccess(null);
       print('Error uploading image: $e');
     }
