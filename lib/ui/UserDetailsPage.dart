@@ -3,7 +3,9 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
+import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -12,6 +14,7 @@ import '../api/api_service.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_assets.dart';
+import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
@@ -50,7 +53,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   final _postalCodeController = TextEditingController();
   final _gstNumberController = TextEditingController();
 
-  bool _isGstRegistered = true;
+  bool _isGstRegistered = false;
   File? _gstImage;
   File? _shopFrontImage;
   File? _shopInteriorImage;
@@ -66,8 +69,10 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   bool _isShopInteriorUploading = false;
   bool _isShopCounterUploading = false;
 
-  bool apiCalling = true;
+  bool apiCalling = false;
   RegisterResponse? registerResponse;
+
+  final FocusNode _focusNode = FocusNode();
 
   Widget buildLabeledTextField({
     required String label,
@@ -157,26 +162,41 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           //   controller: _stateController,
           //   validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
           // ),
-          Row(
-            children: [
-              // Expanded(
-              //   child: buildLabeledTextField(
-              //     label: "City",
-              //     controller: _cityController,
-              //     validator: (val) => val == null || val.isEmpty ? 'Enter city' : null,
-              //   ),
-              // ),
-              // const SizedBox(width: 12),
-              Expanded(
-                child: buildLabeledTextField(
-                  label: "Postal Code",
-                  controller: _postalCodeController,
-                  inputType: TextInputType.number,
-                  validator: (val) => val == null || val.isEmpty ? 'Enter postal code' : null,
-                ),
-              ),
-            ],
+          Text('Postal Code', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 10),
+          PinCodeTextField(
+            appContext: context,
+            length: 6,
+            controller: _postalCodeController,  // Reusing your postal code controller
+            focusNode: _focusNode,
+            keyboardType: TextInputType.number,
+            autoFocus: true,
+            animationType: AnimationType.none,
+            textStyle: FontUtils.primaryFontStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            pinTheme: PinTheme(
+              shape: PinCodeFieldShape.box,
+              borderRadius: BorderRadius.circular(8),
+              fieldHeight: 50,
+              fieldWidth: 50,
+              inactiveFillColor: Colors.white,
+              activeFillColor: Colors.white,
+              selectedFillColor: Colors.white,
+              inactiveColor:Colors.teal,
+              activeColor: AppColors.primary,
+              selectedColor: AppColors.primary,
+            ),
+            enableActiveFill: true,
+            validator: (value) => value == null || value.isEmpty || value.length != 6
+                ? 'Please enter a valid 6-digit postal code'
+                : null,
+            onCompleted: (value) => print("Postal Code Entered: $value"),
+            onChanged: (value) => print(value),
           ),
+          Text('Note: Based on the entered pincode is how we assign the correct Agent/ Distributer. Please ensure you give the correct pincode.'),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -280,15 +300,49 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         setState(() => _currentStep = 1);
       }
       else if (_currentStep == 1) {
-        setState(() => _currentStep = 2);
+        _showConfirmationAlert(context);
       } else {
         // Submit
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
-        PageRouteUtils.push(context, ApprovalPage(errorCode: '00004',));
         // Navigate or trigger next logic
         register();
       }
     }
+  }
+
+  void _showConfirmationAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: 'PinCode Verification',
+          content: 'You entered: ${_postalCodeController.text}\n\n'
+              'Note: Agent/Distributor assignment depends on this PinCode.\n\n'
+              'Please confirm this is correct before proceeding.',
+          contentOk: 'Confirm',
+          contentCancel: 'Edit',
+          onTapOk: () {
+            Navigator.of(context).pop();
+            setState(() => _currentStep = 2);
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _postalCodeController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
   }
 
   @override
@@ -360,7 +414,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                             : 10,
                       ),
                       duration: const Duration(milliseconds: 100),
-                      child: SizedBox(
+                      child: apiCalling? Center(child: CircularProgressIndicator(color: AppColors.primary,),): SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
@@ -529,6 +583,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   void register() async {
     try {
+      setState(() {
+        apiCalling = true;
+      });
       final ApiService apiService = ApiService();
       registerResponse = await apiService.register(
           context,
@@ -550,16 +607,16 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           _shopInteriorImagePath ?? "",
           _shopCounterImagePath ?? "");
 
-      RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
-          context,widget.token);
+      // RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
+      //     context,widget.token);
 
       setState(() {
         apiCalling = false;
       });
 
-      SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
-      SharedPreferencesUtil()
-          .saveMap('customer', registerResponse!.customer!.toJson());
+      // SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
+      // SharedPreferencesUtil()
+      //     .saveMap('customer', registerResponse!.customer!.toJson());
 
       if (mounted) {
         if (widget.redirectPage != null) {
@@ -572,7 +629,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           });
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00004'));
         }
       }
     } catch (e) {

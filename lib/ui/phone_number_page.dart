@@ -82,7 +82,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                color: AppColors.primary,
                               ),
                             ),
                             const SizedBox(height: 24),

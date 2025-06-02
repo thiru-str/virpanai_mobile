@@ -107,15 +107,33 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                                  color: AppColors.primary,
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              Text(
-                                '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[700]!,
+                              RichText(
+                                text: TextSpan(
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[700]!,
+                                  ),
+                                  children: [
+                                    const TextSpan(text: '${AppStrings.code_sent}\n'),
+                                    TextSpan(
+                                      text: '${widget.countryCode} ',
+                                      style: TextStyle(
+                                        color: AppColors.primary, // Or any color you prefer for country code
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: widget.phoneNo,
+                                      style: TextStyle(
+                                        color: AppColors.primary, // Or any color you prefer for phone number
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 32),
