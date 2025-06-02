@@ -286,6 +286,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
         PageRouteUtils.push(context, ApprovalPage(errorCode: '00004',));
         // Navigate or trigger next logic
+        register();
       }
     }
   }
@@ -459,8 +460,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   Widget buildImageUploader({
     required String label,
     required File? imageFile,
-    required VoidCallback onUploadTap,
     required bool isLoading,
+    required VoidCallback onUploadTap,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,18 +481,22 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               height: 150,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(10),
-              child:  isLoading
-                  ? CircularProgressIndicator(color: AppColors.primary)
-                  : (imageFile != null
+              child: isLoading
+                  ?  CircularProgressIndicator(color: AppColors.primary)
+                  : (imageFile != null)
                   ? Image.file(imageFile, fit: BoxFit.cover)
                   : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.cloud_upload_outlined, size: 40, color: AppColors.primary),
-                  SizedBox(height: 10),
-                  Text("Click to Upload", style: TextStyle(color: AppColors.primary)),
-                  Text("(Max. File size: 5 MB)", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                ],)
+                  Icon(Icons.cloud_upload_outlined,
+                      size: 40,
+                      color: AppColors.primary),
+                  const SizedBox(height: 10),
+                  Text("Click to Upload",
+                      style: TextStyle(color: AppColors.primary)),
+                  Text("(Max. File size: 5 MB)",
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
               ),
             ),
           ),
@@ -502,19 +507,23 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 
   Future<void> pickImage(Function(File) onImagePicked, Function(String?) onUploadComplete) async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      final imageFile = File(picked.path);
-      onImagePicked(imageFile);
-      await _uploadAndStoreImage(imageFile, onUploadComplete);
-    }
-    else{
-      setState(() {
-        _isGstImageUploading = false;
-        _isShopCounterUploading = false;
-        _isShopInteriorUploading = false;
-        _isShopFrontUploading = false;
-      });
+    try {
+      final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (picked != null) {
+        final imageFile = File(picked.path);
+        onImagePicked(imageFile);
+        await _uploadAndStoreImage(imageFile, onUploadComplete);
+      }
+    } finally {
+      // Reset all loading states if image picking is cancelled or fails
+      if (mounted) {
+        setState(() {
+          _isGstImageUploading = false;
+          _isShopCounterUploading = false;
+          _isShopInteriorUploading = false;
+          _isShopFrontUploading = false;
+        });
+      }
     }
   }
 
