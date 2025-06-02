@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/splash_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 import '../utility/app_assets.dart';
 import '../utility/page_route_utils.dart';
@@ -9,6 +11,42 @@ import '../utility/page_route_utils.dart';
 class ApprovalPage extends StatelessWidget {
   final String errorCode;
   const ApprovalPage({super.key,required this.errorCode});
+
+  String _getStatusText() {
+    switch (errorCode) {
+      case '00004':
+        return "Store Registration\nSubmitted!";
+      case '00005':
+        return "Store Registration\nRejected!";
+      case '00006':
+        return "Store Registration\nBlocked!";
+      default:
+        return "Store Registration \nSubmitted!";
+    }
+  }
+
+  String _getStatusDesc() {
+    switch (errorCode) {
+      case '00004':
+        return 'Your store details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp';
+      case '00005':
+        return 'Please review your details and try again. If this seems like a mistake, contact our support team.We’ve sent you a message via email or WhatsApp.';
+      case '00006':
+        return "This may be due to a policy issue or unusual activity.lf this seems incorrect, please contact support.We've sent you a notification via email or WhatsApp.";
+      default:
+        return 'Your store details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp';
+    }
+  }
+
+  Color _getStatusColor() {
+    switch (errorCode) {
+      case '00005':
+      case '00006':
+        return const Color(0xFFF44336);
+      default:
+        return const Color(0xFF69BC46);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,18 +105,18 @@ class ApprovalPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.green),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           Text(
-                            "Store Registration\nSubmitted!",
+                            _getStatusText(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
-                            "Your store details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp",
+                            _getStatusDesc(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style: const TextStyle(fontSize: 14, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -91,16 +129,44 @@ class ApprovalPage extends StatelessWidget {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.green.shade100,
+                          color: _getStatusColor().withValues(alpha: 0.25),
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 18,
-                          backgroundColor: Color(0xFF6AC259),
-                          child: Icon(Icons.check, color: Colors.white, size: 20),
+                          backgroundColor: _getStatusColor(),
+                          child: const Icon(Icons.check, color: Colors.white, size: 20),
                         ),
                       ),
                     ),
                   ],
+                ),
+
+                Visibility(
+                  visible: errorCode == '00005' || errorCode == '00006',
+                  child: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                      children: [
+                        const TextSpan(text: 'Have an issue? '),
+                        TextSpan(
+                          text: 'Please contact us',
+                          style: TextStyle(
+                            color: AppColors.primary, // Make clickable part stand out
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              // Add your contact action here
+
+                            },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 40),
@@ -116,7 +182,7 @@ class ApprovalPage extends StatelessWidget {
                         PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6AC259),
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -134,5 +200,9 @@ class ApprovalPage extends StatelessWidget {
         ],
       ),
     );
+
   }
+
+
+
 }

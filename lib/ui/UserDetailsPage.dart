@@ -629,7 +629,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           });
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00004'));
+          PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00000'));
         }
       }
     } catch (e) {
