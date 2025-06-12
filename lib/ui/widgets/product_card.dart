@@ -37,7 +37,7 @@ class ProductCard extends StatelessWidget {
             Stack(
               children: [
                 Container(
-                  height: 210, // Fixed height for the image
+                  height: 225, // Fixed height for the image
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.vertical(

@@ -35,7 +35,7 @@ class CartItemCard extends StatelessWidget {
       children: [
         // Card Content
         Container(
-          height: 100,
+          height: 110,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(

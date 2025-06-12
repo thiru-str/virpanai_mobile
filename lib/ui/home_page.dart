@@ -166,6 +166,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget getLayoutWidget(Content homePageContent) {
+    print('item ${homePageContent.layoutName}');
     switch (homePageContent.layoutName) {
       case "item1":
         return Item1(content: homePageContent);

@@ -252,7 +252,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         ),
         const SizedBox(height: 24),
         SizedBox(
-          height: 290,
+          height: 310,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,

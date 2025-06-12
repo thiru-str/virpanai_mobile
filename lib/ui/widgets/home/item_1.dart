@@ -66,12 +66,13 @@ class _Item1State extends State<Item1> {
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   width: widget.indicatorSize,
                   height: widget.indicatorSize,
-                  decoration: BoxDecoration(
+                  decoration: (widget.content.layoutData?.length ?? 0) > 1
+                      ? BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentIndex == index
                         ? Colors.black
                         : Colors.black.withOpacity(0.3),
-                  ),
+                  ):null,
                 );
               }),
             ),

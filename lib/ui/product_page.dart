@@ -175,7 +175,7 @@ class _ProductPageState extends State<ProductPage> {
                   mainAxisSpacing: 16, // Space between rows
                   childAspectRatio:
                   (MediaQuery.of(context).size.width / 2) /
-                      (240 + 16 + 16 + 32 + 24), // Dynamically calculate aspect ratio
+                      (265 + 16 + 16 + 32 + 24), // Dynamically calculate aspect ratio
                 ),
                 itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
