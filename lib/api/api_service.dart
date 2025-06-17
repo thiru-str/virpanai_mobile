@@ -688,7 +688,7 @@ class ApiService {
   }
 
   Future<dynamic> uploadDocImages(BuildContext context,String token, File file) async {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
+    //_dio.options.headers['Authorization'] = 'Bearer $token';
     return _uploadFile(
       file: file,
       apiUrl: 'store/uploads',

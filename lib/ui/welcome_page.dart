@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:waioz/ui/login_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -63,7 +64,7 @@ class WelcomePage extends StatelessWidget {
                     const SizedBox(height: 40),
                     ElevatedButton(
                       onPressed: () {
-                        PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
+                        PageRouteUtils.pushWithSlide(context, const LoginPage());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,

@@ -222,7 +222,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
 
       if (verifyOtpResponse?.newUser == true) {
-        if (mounted) {
+        /*if (mounted) {
           PageRouteUtils.pushWithSlide(
               context,
               UserDetailsPage(
@@ -230,7 +230,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 phoneNo: widget.phoneNo,
                 token: verifyOtpResponse!.token!,
               ));
-        }
+        }*/
         return;
       }
 

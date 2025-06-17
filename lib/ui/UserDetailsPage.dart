@@ -19,16 +19,10 @@ import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
 class UserDetailsPage extends StatefulWidget {
-  final String countryCode;
-  final String phoneNo;
-  final String token;
   final Widget? redirectPage;
 
   const UserDetailsPage(
       {super.key,
-        required this.countryCode,
-        required this.phoneNo,
-        required this.token,
         this.redirectPage});
 
 
@@ -53,21 +47,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   final _postalCodeController = TextEditingController();
   final _gstNumberController = TextEditingController();
 
-  bool _isGstRegistered = false;
+  bool _isGstRegistered = true;
   File? _gstImage;
-  File? _shopFrontImage;
-  File? _shopInteriorImage;
-  File? _shopCounterImage;
+  File? _panImage;
 
   String? _gstImagePath;
-  String? _shopFrontImagePath;
-  String? _shopInteriorImagePath;
-  String? _shopCounterImagePath;
+  String? _panImagePath;
+
 
   bool _isGstImageUploading = false;
-  bool _isShopFrontUploading = false;
-  bool _isShopInteriorUploading = false;
-  bool _isShopCounterUploading = false;
+  bool _isPanImageUploading = false;
+
 
   bool apiCalling = false;
   RegisterResponse? registerResponse;
@@ -119,10 +109,10 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Owner Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text("Distributor Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           buildLabeledTextField(
-            label: "Owner Name",
+            label: "Distributor Name",
             controller: _nameController,
             validator: (val) => val == null || val.isEmpty ? 'Please enter your name' : null,
           ),
@@ -140,18 +130,13 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           ),
         ],
       );
-    } else if (_currentStep == 1){
+    } else {
       // Step 2: Shop Details
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Shop Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text("Distributor Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          buildLabeledTextField(
-            label: "Shop Name",
-            controller: _shopNameController,
-            validator: (val) => val == null || val.isEmpty ? 'Please enter shop name' : null,
-          ),
           // buildLabeledTextField(
           //   label: "Address",
           //   controller: _addressController,
@@ -162,42 +147,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           //   controller: _stateController,
           //   validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
           // ),
-          Text('Postal Code', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 10),
-          PinCodeTextField(
-            appContext: context,
-            length: 6,
-            controller: _postalCodeController,  // Reusing your postal code controller
-            focusNode: _focusNode,
-            keyboardType: TextInputType.number,
-            autoFocus: true,
-            animationType: AnimationType.none,
-            textStyle: FontUtils.primaryFontStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-            pinTheme: PinTheme(
-              shape: PinCodeFieldShape.box,
-              borderRadius: BorderRadius.circular(8),
-              fieldHeight: 50,
-              fieldWidth: 50,
-              inactiveFillColor: Colors.white,
-              activeFillColor: Colors.white,
-              selectedFillColor: Colors.white,
-              inactiveColor:Colors.teal,
-              activeColor: AppColors.primary,
-              selectedColor: AppColors.primary,
-            ),
-            enableActiveFill: true,
-            validator: (value) => value == null || value.isEmpty || value.length != 6
-                ? 'Please enter a valid 6-digit postal code'
-                : null,
-            onCompleted: (value) => print("Postal Code Entered: $value"),
-            onChanged: (value) => print(value),
-          ),
-          Text('Note: Based on the entered pincode is how we assign the correct Agent/ Distributer. Please ensure you give the correct pincode.'),
-          const SizedBox(height: 10),
+
           Row(
             children: [
               const Text("Is your shop GST-registered?", style: TextStyle(fontSize: 16)),
@@ -232,64 +182,32 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               },
             ),
             const SizedBox(height: 20),
+
+            buildLabeledTextField(
+              label: "PAN Number",
+              controller: _gstNumberController,
+              validator: (val) => val == null || val.isEmpty ? 'Enter GST Number' : null,
+            ),
+            const SizedBox(height: 6),
+            buildImageUploader(
+              label: "PAN Image",
+              imageFile: _panImage,
+              isLoading: _isPanImageUploading,
+              onUploadTap: () async {
+                setState(() => _isPanImageUploading = true);
+                await pickImage(
+                      (img) => setState(() => _gstImage = img),
+                      (path) => setState(() {
+                    _panImagePath = path;
+                    _isPanImageUploading = false;
+                  }),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
           ],
         ],
       );
-    }
-    else{
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Shop Images", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            buildImageUploader(
-              label: "Shop Front With Name Board",
-              imageFile: _shopFrontImage,
-              isLoading: _isShopFrontUploading,
-              onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
-                await pickImage(
-                      (img) => setState(() => _shopFrontImage = img),
-                      (path) => setState(() {
-                        _shopFrontImagePath = path;
-                    _isShopFrontUploading = false;
-                  }),
-                );
-              },
-            ),
-            buildImageUploader(
-              label: "Shop Interior",
-              imageFile: _shopInteriorImage,
-              isLoading: _isShopInteriorUploading,
-              onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
-                await pickImage(
-                      (img) => setState(() => _shopInteriorImage = img),
-                      (path) => setState(() {
-                    _shopInteriorImagePath = path;
-                    _isShopInteriorUploading = false;
-                  }),
-                );
-              },
-            ),
-            buildImageUploader(
-              label: "Shop Counter",
-              imageFile: _shopCounterImage,
-              isLoading: _isShopCounterUploading,
-              onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
-                await pickImage(
-                      (img) => setState(() => _shopCounterImage = img),
-                      (path) => setState(() {
-                    _shopCounterImagePath = path;
-                    _isShopCounterUploading = false;
-                  }),
-                );
-              },
-            ),
-          ],
-        );
-
     }
   }
 
@@ -299,9 +217,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       if (_currentStep == 0) {
         setState(() => _currentStep = 1);
       }
-      else if (_currentStep == 1) {
-        _showConfirmationAlert(context);
-      } else {
+      else {
         // Submit
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
         // Navigate or trigger next logic
@@ -347,9 +263,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      _phoneController.text = '${widget.countryCode} ${widget.phoneNo}';
-    });
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
@@ -445,7 +358,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 
   Widget _buildStepper() {
-    List<String> titles = ["Step 1", "Step 2", "Step 3"];
+    List<String> titles = ["Step 1", "Step 2"];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -573,9 +486,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       if (mounted) {
         setState(() {
           _isGstImageUploading = false;
-          _isShopCounterUploading = false;
-          _isShopInteriorUploading = false;
-          _isShopFrontUploading = false;
+          _isPanImageUploading = false;
         });
       }
     }
@@ -593,9 +504,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           _shopNameController.text,
           _nameController.text,
           "",
-          widget.countryCode,
-          widget.phoneNo,
-          widget.token,
+          'widget.countryCode',
+          'widget.phoneNo',
+          'widget.token',
           _shopNameController.text,
           _stateController.text,
           _cityController.text,
@@ -603,9 +514,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           _isGstRegistered,
           _gstNumberController.text,
           _gstImagePath ?? "",
-          _shopFrontImagePath ?? "",
-          _shopInteriorImagePath ?? "",
-          _shopCounterImagePath ?? "");
+          "",
+          "",
+          "");
 
       // RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
       //     context,widget.token);
@@ -655,7 +566,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   Future<void> _uploadAndStoreImage(File image, Function(String?) onSuccess) async {
     try {
-      var response = await ApiService().uploadDocImages(context, widget.token, image);
+      var response = await ApiService().uploadDocImages(context, '', image);
       if (response != null && response['file'] != null) {
         onSuccess(response['file']['path']);
         print('Uploaded File Path: ${response['file']['path']}');
