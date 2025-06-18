@@ -15,20 +15,20 @@ class ApprovalPage extends StatelessWidget {
   String _getStatusText() {
     switch (errorCode) {
       case '00004':
-        return "Store Registration\nSubmitted!";
+        return "Agent Registration\nSubmitted!";
       case '00005':
-        return "Store Registration\nRejected!";
+        return "Agent Registration\nRejected!";
       case '00006':
-        return "Store Registration\nBlocked!";
+        return "Agent Registration\nBlocked!";
       default:
-        return "Store Registration \nSubmitted!";
+        return "Agent Registration \nSubmitted!";
     }
   }
 
   String _getStatusDesc() {
     switch (errorCode) {
       case '00004':
-        return 'Your store details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp';
+        return 'Your Agent details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp';
       case '00005':
         return 'Please review your details and try again. If this seems like a mistake, contact our support team.We’ve sent you a message via email or WhatsApp.';
       case '00006':

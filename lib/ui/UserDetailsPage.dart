@@ -46,6 +46,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   final _cityController = TextEditingController();
   final _postalCodeController = TextEditingController();
   final _gstNumberController = TextEditingController();
+  final _panNumberController = TextEditingController();
 
   bool _isGstRegistered = true;
   File? _gstImage;
@@ -148,16 +149,19 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           //   validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
           // ),
 
-          Row(
-            children: [
-              const Text("Is your shop GST-registered?", style: TextStyle(fontSize: 16)),
-              const Spacer(),
-              Switch(
-                activeColor: AppColors.primary,
-                value: _isGstRegistered,
-                onChanged: (value) => setState(() => _isGstRegistered = value),
-              ),
-            ],
+          Visibility(
+            visible: false,
+            child: Row(
+              children: [
+                const Text("Is your shop GST-registered?", style: TextStyle(fontSize: 16)),
+                const Spacer(),
+                Switch(
+                  activeColor: AppColors.primary,
+                  value: _isGstRegistered,
+                  onChanged: (value) => setState(() => _isGstRegistered = value),
+                ),
+              ],
+            ),
           ),
           if (_isGstRegistered) ...[
             buildLabeledTextField(
@@ -185,7 +189,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
             buildLabeledTextField(
               label: "PAN Number",
-              controller: _gstNumberController,
+              controller: _panNumberController,
               validator: (val) => val == null || val.isEmpty ? 'Enter GST Number' : null,
             ),
             const SizedBox(height: 6),
@@ -196,7 +200,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               onUploadTap: () async {
                 setState(() => _isPanImageUploading = true);
                 await pickImage(
-                      (img) => setState(() => _gstImage = img),
+                      (img) => setState(() => _panImage = img),
                       (path) => setState(() {
                     _panImagePath = path;
                     _isPanImageUploading = false;
@@ -213,11 +217,14 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
 
   void _handleNext() {
-    if (_formKey.currentState?.validate() ?? false) {
+
+    //if (_formKey.currentState?.validate() ?? false) {
+    if (true) {
       if (_currentStep == 0) {
         setState(() => _currentStep = 1);
       }
       else {
+      PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00000'));
         // Submit
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
         // Navigate or trigger next logic

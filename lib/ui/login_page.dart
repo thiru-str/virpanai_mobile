@@ -15,6 +15,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 import '../utility/app_utils.dart';
 import '../utility/rich_text_helper.dart';
+import 'ApprovalPage.dart';
 
 class LoginPage extends StatefulWidget {
   final Widget? redirectPage;
@@ -122,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                                 child: ElevatedButton(
                                     onPressed: (){
                                       if (_formKey.currentState!.validate()) {
-                                          sendOtp();
+                                        PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00000'));
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
