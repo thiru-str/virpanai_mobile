@@ -98,8 +98,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             isPassword: true,
             validator: (val) => val == null || val.isEmpty
                 ? 'Please enter your password'
-                : val.length < 6
-                    ? 'Password must be at least 6 characters'
+                : val.length < 5
+                    ? 'Password must be at least 5 characters'
                     : null,
           ),
         ],

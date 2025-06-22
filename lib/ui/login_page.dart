@@ -16,6 +16,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 import '../utility/app_utils.dart';
 import '../utility/rich_text_helper.dart';
+import '../utility/shared_preferences_util.dart';
 import 'ApprovalPage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -31,8 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _phoneNumber;
   String? _countryCode;
 
-  SendOtpResponse? sendOtpResponse;
-  bool apiCalling = true;
+  bool apiCalling = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -112,18 +112,18 @@ class _LoginPageState extends State<LoginPage> {
                                     validator: (val) => val == null ||
                                             val.isEmpty
                                         ? 'Please enter your password'
-                                        : val.length < 6
-                                            ? 'Password must be at least 6 characters'
+                                        : val.length < 5
+                                            ? 'Password must be at least 5 characters'
                                             : null,
                                   ),
                                   const SizedBox(height: 16),
-                              SizedBox(
+                              apiCalling? Center(child: CircularProgressIndicator(color: AppColors.primary,),):SizedBox(
                                 width: double.infinity,
                                 height: 48,
                                 child: ElevatedButton(
                                     onPressed: (){
                                       if (_formKey.currentState!.validate()) {
-                                        PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00000'));
+                                        login();
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -175,28 +175,35 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
-  void sendOtp() async {
+  void login() async {
     try {
+      setState(() {
+        apiCalling = true;
+      });
       final ApiService apiService = ApiService();
-      sendOtpResponse =
-          await apiService.sendOtp(context, _countryCode!, _phoneNumber!);
-      setState(() {
-        apiCalling = false;
-      });
+      var response = await apiService.login(
+          context,_emailController.text, _passwordController.text);
+      setState(() => apiCalling = false);
 
-      PageRouteUtils.pushWithSlide(
-          context,
-          OtpVerificationPage(
-            countryCode: _countryCode!,
-            phoneNo: _phoneNumber!,
-            otp: sendOtpResponse!.otp!,
-            redirectPage:widget.redirectPage,
-          ));
+      if (response.error != null) {
+        if ((response.error?.code == '00004' || response.error?.code == '00003') && mounted) {
+          PageRouteUtils.pushWithSlide(
+              context,
+              ApprovalPage(errorCode: response.error!.code!));
+          return;
+        }
+        else{
+          AppUtils.showToast(response.error?.message??'');
+        }
+      }
 
+      /*SharedPreferencesUtil().saveString('token', response.token!);
+
+      if (mounted) {
+        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+      }*/
     } catch (e) {
-      setState(() {
-        apiCalling = false;
-      });
+      setState(() => apiCalling = false);
       print(e);
     }
   }

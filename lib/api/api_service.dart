@@ -243,6 +243,15 @@ class ApiService {
         context);
   }
 
+  Future<VerifyOtpResponse> login(
+      BuildContext context,String email,String password) async {
+    return _makePostRequest(
+        "dealer/login",
+        {"email": email,"password":password},
+        (data) => VerifyOtpResponse.fromJson(data),
+        context);
+  }
+
   Future<RegisterResponse> register(
       BuildContext context,
       String email,
