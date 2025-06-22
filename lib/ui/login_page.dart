@@ -5,6 +5,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
+import 'package:waioz/ui/widgets/label_text_field.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -98,14 +99,13 @@ class _LoginPageState extends State<LoginPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-
-                                  buildLabeledTextField(
+                                  LabeledTextField(
                                     label: "Email",
                                     controller: _emailController,
                                     validator: (val) => val == null || !val.contains('@') ? 'Enter valid email' : null,
                                   ),
 
-                                  buildLabeledTextField(
+                                  LabeledTextField(
                                     label: "Password",
                                     controller: _passwordController,
                                     isPassword: true,
@@ -172,60 +172,6 @@ class _LoginPageState extends State<LoginPage> {
     );
 
 
-  }
-
-  Widget buildLabeledTextField({
-    required String label,
-    required TextEditingController controller,
-    TextInputType inputType = TextInputType.text,
-    String? Function(String?)? validator,
-    bool isPassword = false,
-  }) {
-    final ValueNotifier<bool> _obscureText = ValueNotifier(true);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 6),
-          ValueListenableBuilder<bool>(
-            valueListenable: _obscureText,
-            builder: (context, obscure, _) {
-              return TextFormField(
-                controller: controller,
-                keyboardType: inputType,
-                obscureText: isPassword ? obscure : false,
-                validator: validator,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.teal),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.teal),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.teal.shade100),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  suffixIcon: isPassword
-                      ? IconButton(
-                    icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => _obscureText.value = !obscure,
-                  )
-                      : null,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
   }
 
 

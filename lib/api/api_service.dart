@@ -246,37 +246,28 @@ class ApiService {
   Future<RegisterResponse> register(
       BuildContext context,
       String email,
-      String companyName,
-      String firstName,
-      String lastName,
-      String countryCode,
+      String name,
       String phone,
-      String token,String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage) async {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
-    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
+      String password,
+      String panNo,String panImage) async {
     return _makePostRequest(
-        "store/customers",
+        "dealer/create",
         {
           "email": email,
-          "company_name": shopName,
-          "first_name": firstName,
-          "last_name": lastName,
+          "name": name,
           "phone": phone,
-          "metadata": {
-            "country_code":countryCode,
-            "device_id":deviceId,
-            "shop_name":shopName,
-            "country":"IN",
-            "city":city,
-            "state":state,
-            "postal_code":postalCode,
-            "is_gst":isGST,
-            "gst_number":gstNo,
-            "gst_image":gstImage,
-            "shop_name_board_image":shopNameBoardImage,
-            "shop_interior_image":shopInteriorImage,
-            "shop_counter_image":shopCounterImage
-          }
+          "password": password,
+          //"assigned_pincodes": [],
+          // "address_1": "address_1",
+          // "address_2": "address_2",
+          // "city": "madurai",
+          // "state": "Tamil Nadu",
+          // "postal_code": "625009",
+          // "country": "India",
+          "pan_number": "1234n23j42k",
+          "documents": [
+            {"name": "PAN", "url": panImage}
+          ]
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -691,7 +682,7 @@ class ApiService {
     //_dio.options.headers['Authorization'] = 'Bearer $token';
     return _uploadFile(
       file: file,
-      apiUrl: 'store/uploads',
+      apiUrl: 'dealer/uploads',
       fromJson: (json) => json, // Return the response as JSON
       context: context,
     );
