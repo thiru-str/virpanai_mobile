@@ -1,4 +1,4 @@
-package com.waioz.cartel
+package com.gowelmart.agent
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import android.os.Bundle
