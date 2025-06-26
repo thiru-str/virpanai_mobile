@@ -72,7 +72,7 @@ class _Item11State extends State<Item11> {
             Image.network(
               currentData.image ?? '',
               width: double.infinity,
-              height: 350,
+              height: 500,
               fit: BoxFit.cover,
             ),
 
@@ -114,12 +114,15 @@ class _Item11State extends State<Item11> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Zestful. Playful. Delightful.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.yellowAccent,
+                  Visibility(
+                    visible: false,
+                    child: Text(
+                      'Zestful. Playful. Delightful.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.yellowAccent,
+                      ),
                     ),
                   ),
                 ],
@@ -127,30 +130,33 @@ class _Item11State extends State<Item11> {
             ),
 
             // 🔹 Bottom Center CTA Button
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.yellowAccent,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Text(
-                        'Shop',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+            Visibility(
+              visible: false,
+              child: Positioned(
+                bottom: 20,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.yellowAccent,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'Shop',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 6),
-                      Icon(Icons.arrow_forward, size: 16, color: Colors.black),
-                    ],
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward, size: 16, color: Colors.black),
+                      ],
+                    ),
                   ),
                 ),
               ),

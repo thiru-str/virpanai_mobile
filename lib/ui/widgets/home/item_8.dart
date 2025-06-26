@@ -13,7 +13,7 @@ class Item8 extends StatefulWidget {
   const Item8({
     Key? key,
     required this.content,
-    this.height = 100,
+    this.height = 420,
     this.indicatorSize = 8.0,
   }) : super(key: key);
 
@@ -29,30 +29,55 @@ class _Item8State extends State<Item8> {
     return Container(
       height: widget.height,
       color: AppColors.secondary, // Background color
-      child: PageView.builder(
-        itemCount: widget.content.layoutData!.length,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        itemBuilder: (context, index) {
-          LayoutDatum layoutData = widget.content.layoutData![index];
-          return GestureDetector(
-            onTap: () {
-              RedirectUtils.handleContentRedirect(
-                context: context,
-                layoutOption: widget.content.layoutOption!,
-                layoutData: layoutData,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          PageView.builder(
+            itemCount: widget.content.layoutData!.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              LayoutDatum layoutData = widget.content.layoutData![index];
+              return GestureDetector(
+                onTap: (){
+                  RedirectUtils.handleContentRedirect(
+                    context: context,
+                    layoutOption: widget.content.layoutOption!,
+                    layoutData: layoutData,
+                  );
+                },
+                child: CachedNetworkImage(
+                  imageUrl: layoutData.image!,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
               );
             },
-            child: CachedNetworkImage(
-              imageUrl:layoutData.image!,
-              fit: BoxFit.cover,
-              width: double.infinity,
+          ),
+          Positioned(
+            bottom: 16.0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(widget.content.layoutData!.length, (index) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  width: widget.indicatorSize,
+                  height: widget.indicatorSize,
+                  decoration: (widget.content.layoutData?.length ?? 0) > 1
+                      ? BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == index
+                        ? Colors.black
+                        : Colors.black.withOpacity(0.3),
+                  ):null,
+                );
+              }),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -22,191 +23,178 @@ class Item9 extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 250,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: content.layoutData!.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final layoutData = content.layoutData![index];
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: content.layoutData!.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 16),
+          itemBuilder: (context, index) {
+            final layoutData = content.layoutData![index];
 
-          return GestureDetector(
-            onTap: () {
-              RedirectUtils.handleContentRedirect(
-                context: context,
-                layoutOption: content.layoutOption!,
-                layoutData: layoutData,
-              );
-            },
-            child: Container(
-              width: 150,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFAFAFA),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 🔹 Image + Badges
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.all(Radius.circular(12)),
-                        child: Image.network(
-                          layoutData.image ?? '',
-                          height: 130,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
+            return GestureDetector(
+              onTap: () {
+                RedirectUtils.handleContentRedirect(
+                  context: context,
+                  layoutOption: content.layoutOption!,
+                  layoutData: layoutData,
+                );
+              },
+              child: Container(
+                width: 150,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFAFAFA),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 🔹 Image + Badges
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          child: CachedNetworkImage(
+                            imageUrl: layoutData.image ?? '',
+                            height: 130,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                      // 🔸 Top Tag
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              bottomRight: Radius.circular(8),
+                        // 🔸 Top Tag
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: const BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                bottomRight: Radius.circular(8),
+                              ),
+                            ),
+                            child: const Text("New Launch", style: TextStyle(fontSize: 10, color: Colors.white)),
+                          ),
+                        ),
+                        // 🔸 Yellow Playback & Rating
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade600,
+                              borderRadius: BorderRadius.circular(10), // Equal radius for all corners
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "10000mAh Battery",
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.star, size: 10, color: Colors.green),
+                                      SizedBox(width: 2),
+                                      Text("4.4", style: TextStyle(fontSize: 10)),
+                                    ],
+                                  ),
+                                )
+                              ],
                             ),
                           ),
-                          child: const Text("New Launch", style: TextStyle(fontSize: 10, color: Colors.white)),
                         ),
-                      ),
-                      // 🔸 Yellow Playback & Rating
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade600,
-                            borderRadius: BorderRadius.circular(10), // Equal radius for all corners
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "10000mAh Battery",
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  children: const [
-                                    Icon(Icons.star, size: 10, color: Colors.green),
-                                    SizedBox(width: 2),
-                                    Text("4.4", style: TextStyle(fontSize: 10)),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // 🔹 Product Title
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      layoutData.title ?? '',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      ],
                     ),
-                  ),
 
-                  const SizedBox(height: 4),
+                    const SizedBox(height: 4),
 
-                  // 🔹 Dotted Line
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: DottedLine(
-                      dashLength: 4,
-                      dashGapLength: 3,
-                      lineThickness: 1,
-                      dashColor: Colors.grey,
-                    ),
-                  ),
-
-                  // 🔹 Price & Variants Row
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          CurrencyUtil.appendCurrency(layoutData.prices?.sellingPrice ?? ''),
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                    // 🔹 Product Title
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        layoutData.title ?? '',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
                         ),
-                        const Spacer(),
-                        Row(
-                          children: [
-                            const CircleAvatar(radius: 5, backgroundColor: Colors.black),
-                            const SizedBox(width: 4),
-                            const CircleAvatar(radius: 5, backgroundColor: Colors.red),
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: const Text("+2", style: TextStyle(fontSize: 10)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // 🔹 Dotted Line
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: DottedLine(
+                        dashLength: 4,
+                        dashGapLength: 3,
+                        lineThickness: 1,
+                        dashColor: Colors.grey,
+                      ),
+                    ),
+
+                    // 🔹 Price & Variants Row
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            CurrencyUtil.appendCurrency(layoutData.prices?.sellingPrice ?? ''),
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
                             ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // 🔹 Original Price + % Off
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      children: [
-                        Text(
-                          CurrencyUtil.appendCurrency(layoutData.prices?.originalPrice ?? ''),
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "${layoutData.prices?.discountPercentage ?? ''} off",
-                          style: TextStyle(fontSize: 12, color: Colors.green.shade700),
-                        )
-                      ],
+                          const Spacer(),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
+
+                    const SizedBox(height: 4),
+
+                    // 🔹 Original Price + % Off
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            CurrencyUtil.appendCurrency(layoutData.prices?.originalPrice ?? ''),
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${layoutData.prices?.discountPercentage ?? ''} off",
+                            style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

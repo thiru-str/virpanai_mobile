@@ -10,6 +10,8 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
+import 'package:waioz/ui/widgets/home/Slider2.dart';
+import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/item_10.dart';
 import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
@@ -124,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                       },addressType: addressType,),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 0.0,vertical: 16.0),
                       child: ListView.separated(
                         separatorBuilder: (context, index) => const SizedBox(height: 16),
                         scrollDirection: Axis.vertical,
@@ -170,6 +172,8 @@ class _HomePageState extends State<HomePage> {
     switch (homePageContent.layoutName) {
       case "item1":
         return Item1(content: homePageContent);
+      case "Slider2":
+        return Slider2(content: homePageContent);
       case "item2":
         return Item2(content: homePageContent);
       case "item3":
@@ -182,14 +186,17 @@ class _HomePageState extends State<HomePage> {
         return Item6(content: homePageContent);
       case "item7":
         return Item7(content: homePageContent);
-      case "item8":
+      case "Slider3":
         return Item8(content: homePageContent);
-      case "item9":
+      case "Grid1":
         return Item9(content: homePageContent);
       case "item10": // video
         return Item10(content: homePageContent);
-      case "item11":
+      case "Slider1":
         return Item11(content: homePageContent);
+      case "Banner1":
+      case "Banner2":
+        return Banner1(content: homePageContent);
       default:
         return const SizedBox();
     }

@@ -1,19 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/model/home_page_response.dart';
 
-import '../../../model/home_page_response.dart';
-import '../../../utility/page_route_utils.dart';
+import '../../../utility/app_colors.dart';
+import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
-import '../../product_detail_page.dart';
-import '../../product_page.dart';
 
-class Item3 extends StatelessWidget {
+class Banner1 extends StatelessWidget {
   final Content content;
 
-  const Item3({
+  const Banner1({
     Key? key,
     required this.content,
   }) : super(key: key);
@@ -31,41 +27,41 @@ class Item3 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  content.layoutTitle!,
+                  content.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
                   ),
                 ),
-                  Visibility(
-                    visible: content.layoutRedirectTitle!.isNotEmpty,
-                    child: GestureDetector(
-                      onTap: (){
-
-                      },
-                      child: Text(
-                        content.layoutRedirectTitle!,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                            color: AppColors.textColor
-                        ),
+                Visibility(
+                  visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Handle redirect
+                    },
+                    child: Text(
+                      content.layoutRedirectTitle!,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
                       ),
                     ),
                   ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 100,
+            height: 180,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: content.layoutData!.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
+              separatorBuilder: (_, __) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                LayoutDatum layoutData = content.layoutData![index];
+                final layoutData = content.layoutData![index];
                 return GestureDetector(
                   onTap: () {
                     RedirectUtils.handleContentRedirect(
@@ -75,24 +71,29 @@ class Item3 extends StatelessWidget {
                     );
                   },
                   child: SizedBox(
-                    width: 70,
+                    width: 150,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration:  BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox(
+                            width: 150,
+                            height: 150,
+                            child: CachedNetworkImage(
+                              imageUrl: layoutData.image!,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
-                          layoutData.title!,
+                          layoutData.title ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(fontSize: 12),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -106,3 +107,4 @@ class Item3 extends StatelessWidget {
     );
   }
 }
+
