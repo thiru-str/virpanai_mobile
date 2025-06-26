@@ -92,7 +92,7 @@ class Item9 extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "10000mAh Battery",
+                                  'comfort guaranteed!',
                                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
                                 ),
                                 Container(

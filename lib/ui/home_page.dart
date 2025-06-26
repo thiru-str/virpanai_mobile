@@ -190,12 +190,11 @@ class _HomePageState extends State<HomePage> {
         return Item8(content: homePageContent);
       case "Grid1":
         return Item9(content: homePageContent);
-      case "item10": // video
+      case "Banner2": // video
         return Item10(content: homePageContent);
       case "Slider1":
         return Item11(content: homePageContent);
       case "Banner1":
-      case "Banner2":
         return Banner1(content: homePageContent);
       default:
         return const SizedBox();
