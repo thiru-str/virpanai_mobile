@@ -22,5 +22,9 @@ class AppAssets {
   static const String splash_logo = 'images/splash_logo.png';
   static const String bg_top = 'images/bg_top.svg';
   static const String bg_bottom = 'images/bg_bottom.svg';
+  static const String menu_1 = 'images/menu_1.svg';
+  static const String menu_2 = 'images/menu_2.svg';
+  static const String menu_3 = 'images/menu_3.svg';
+  static const String menu_4 = 'images/menu_4.svg';
 // Add more assets as needed
 }

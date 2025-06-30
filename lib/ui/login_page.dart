@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/ui/UserDetailsPage.dart';
+import 'package:waioz/ui/dashboard.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
 import 'package:waioz/ui/widgets/label_text_field.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -191,15 +192,15 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
         else{
-          AppUtils.showToast(response.error?.message??'');
+          SharedPreferencesUtil().saveString('token', response.token!);
+
+          if (mounted) {
+            PageRouteUtils.pushAndRemoveUntil(context, const Dashboard());
+          }
         }
       }
 
-      /*SharedPreferencesUtil().saveString('token', response.token!);
 
-      if (mounted) {
-        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-      }*/
     } catch (e) {
       setState(() => apiCalling = false);
       print(e);
