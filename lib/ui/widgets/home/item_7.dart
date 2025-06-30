@@ -96,16 +96,14 @@ class Item7 extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Center(
-                        child: Text(
-                          layoutData.title!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        layoutData.title!,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
                       Text(

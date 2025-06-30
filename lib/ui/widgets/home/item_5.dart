@@ -57,7 +57,7 @@ class Item5 extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 360,
+          height: 370,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: content.layoutData!.length,

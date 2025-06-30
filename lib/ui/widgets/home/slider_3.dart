@@ -5,23 +5,23 @@ import 'package:waioz/utility/app_colors.dart';
 
 import '../../../utility/redirect_utils.dart';
 
-class Item1 extends StatefulWidget {
+class Slider3 extends StatefulWidget {
   final Content content;
   final double height;
   final double indicatorSize;
 
-  const Item1({
+  const Slider3({
     Key? key,
     required this.content,
-    this.height = 200,
+    this.height = 420,
     this.indicatorSize = 8.0,
   }) : super(key: key);
 
   @override
-  _Item1State createState() => _Item1State();
+  _Slider3State createState() => _Slider3State();
 }
 
-class _Item1State extends State<Item1> {
+class _Slider3State extends State<Slider3> {
   int _currentIndex = 0;
 
   @override

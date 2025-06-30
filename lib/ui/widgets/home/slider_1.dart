@@ -23,16 +23,16 @@ import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
-class Item11 extends StatefulWidget {
+class Slider1 extends StatefulWidget {
   final Content content;
 
-  const Item11({super.key, required this.content});
+  const Slider1({super.key, required this.content});
 
   @override
-  State<Item11> createState() => _Item11State();
+  State<Slider1> createState() => _Slider1State();
 }
 
-class _Item11State extends State<Item11> {
+class _Slider1State extends State<Slider1> {
   int _currentIndex = 0;
   Timer? _timer;
 
@@ -72,7 +72,7 @@ class _Item11State extends State<Item11> {
             Image.network(
               currentData.image ?? '',
               width: double.infinity,
-              height: 350,
+              height: 500,
               fit: BoxFit.cover,
             ),
 
@@ -114,12 +114,15 @@ class _Item11State extends State<Item11> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Zestful. Playful. Delightful.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.yellowAccent,
+                  Visibility(
+                    visible: false,
+                    child: Text(
+                      'Zestful. Playful. Delightful.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.yellowAccent,
+                      ),
                     ),
                   ),
                 ],
@@ -127,30 +130,33 @@ class _Item11State extends State<Item11> {
             ),
 
             // 🔹 Bottom Center CTA Button
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.yellowAccent,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Text(
-                        'Shop',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+            Visibility(
+              visible: false,
+              child: Positioned(
+                bottom: 20,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.yellowAccent,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'Shop',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 6),
-                      Icon(Icons.arrow_forward, size: 16, color: Colors.black),
-                    ],
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward, size: 16, color: Colors.black),
+                      ],
+                    ),
                   ),
                 ),
               ),
