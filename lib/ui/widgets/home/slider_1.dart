@@ -23,16 +23,16 @@ import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
-class Item11 extends StatefulWidget {
+class Slider1 extends StatefulWidget {
   final Content content;
 
-  const Item11({super.key, required this.content});
+  const Slider1({super.key, required this.content});
 
   @override
-  State<Item11> createState() => _Item11State();
+  State<Slider1> createState() => _Slider1State();
 }
 
-class _Item11State extends State<Item11> {
+class _Slider1State extends State<Slider1> {
   int _currentIndex = 0;
   Timer? _timer;
 

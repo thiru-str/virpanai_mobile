@@ -12,9 +12,9 @@ import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
-import 'package:waioz/ui/widgets/home/item_10.dart';
-import 'package:waioz/ui/widgets/home/item_11.dart';
-import 'package:waioz/ui/widgets/home/item_9.dart';
+import 'package:waioz/ui/widgets/home/banner_2.dart';
+import 'package:waioz/ui/widgets/home/slider_1.dart';
+import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
@@ -23,7 +23,7 @@ import 'package:waioz/ui/widgets/home/item_4.dart';
 import 'package:waioz/ui/widgets/home/item_5.dart';
 import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
-import 'package:waioz/ui/widgets/home/item_8.dart';
+import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -187,13 +187,13 @@ class _HomePageState extends State<HomePage> {
       case "item7":
         return Item7(content: homePageContent);
       case "Slider3":
-        return Item8(content: homePageContent);
+        return Slider3(content: homePageContent);
       case "Grid1":
-        return Item9(content: homePageContent);
+        return Grid1(content: homePageContent);
       case "Banner2": // video
-        return Item10(content: homePageContent);
+        return Banner2(content: homePageContent);
       case "Slider1":
-        return Item11(content: homePageContent);
+        return Slider1(content: homePageContent);
       case "Banner1":
         return Banner1(content: homePageContent);
       default:

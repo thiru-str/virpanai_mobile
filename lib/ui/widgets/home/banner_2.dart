@@ -11,10 +11,10 @@ import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
-class Item10 extends StatelessWidget {
+class Banner2 extends StatelessWidget {
   final Content content;
 
-  const Item10({
+  const Banner2({
     Key? key,
     required this.content,
   }) : super(key: key);

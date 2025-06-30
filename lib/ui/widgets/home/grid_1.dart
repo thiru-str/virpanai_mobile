@@ -14,10 +14,10 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
-class Item9 extends StatelessWidget {
+class Grid1 extends StatelessWidget {
   final Content content;
 
-  const Item9({super.key, required this.content});
+  const Grid1({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
@@ -167,25 +167,28 @@ class Item9 extends StatelessWidget {
                     const SizedBox(height: 4),
 
                     // 🔹 Original Price + % Off
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Row(
-                        children: [
-                          Text(
-                            CurrencyUtil.appendCurrency(layoutData.prices?.originalPrice ?? ''),
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                              decoration: TextDecoration.lineThrough,
+                    Visibility(
+                      visible: layoutData.prices?.discountPercentage?.isNotEmpty ?? false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              CurrencyUtil.appendCurrency(layoutData.prices?.originalPrice ?? ''),
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey,
+                                decoration: TextDecoration.lineThrough,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "${layoutData.prices?.discountPercentage ?? ''} off",
-                            style: TextStyle(fontSize: 12, color: Colors.green.shade700),
-                          )
-                        ],
+                            const SizedBox(width: 6),
+                            Text(
+                              "${layoutData.prices?.discountPercentage ?? ''} off",
+                              style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
