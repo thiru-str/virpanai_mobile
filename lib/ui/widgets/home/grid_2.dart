@@ -80,14 +80,9 @@ class Grid2 extends StatelessWidget {
                 },
                 child: Column(
                   children: [
-                    Container(
+                    SizedBox(
                       width: 60,
                       height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondary,
-                      ),
-                      clipBehavior: Clip.antiAlias,
                       child: CachedNetworkImage(
                         imageUrl: layoutData.image!,
                         fit: BoxFit.cover,
