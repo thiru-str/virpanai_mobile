@@ -6,7 +6,6 @@ class PastOrderCard extends StatelessWidget {
   final int productCount;
   final String totalPrice;
   final List<String> imageUrls;
-  final int extraCount;
   final VoidCallback? onTap;
 
   const PastOrderCard({
@@ -15,13 +14,13 @@ class PastOrderCard extends StatelessWidget {
     required this.productCount,
     required this.totalPrice,
     required this.imageUrls,
-    this.extraCount = 0,
     this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final avatars = imageUrls.take(3).toList();
+    final avatars = imageUrls.take(2).toList();
+    final int extraCount = imageUrls.length > 2 ? imageUrls.length - 2 : 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
@@ -62,7 +61,9 @@ class PastOrderCard extends StatelessWidget {
                           const Text(
                             'No of Product',
                             style: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w500),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -82,7 +83,9 @@ class PastOrderCard extends StatelessWidget {
                         const Text(
                           'Total Price',
                           style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -113,6 +116,7 @@ class PastOrderCard extends StatelessWidget {
                     ),
                     SizedBox(
                       height: 36,
+                      width: (avatars.length + (extraCount > 0 ? 1 : 0)) * 28.0,
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
@@ -124,7 +128,9 @@ class PastOrderCard extends StatelessWidget {
                                 backgroundColor: Colors.green.shade800,
                                 child: CircleAvatar(
                                   radius: 16,
-                                  backgroundImage: CachedNetworkImageProvider(avatars[i]),
+                                  backgroundImage:
+                                  CachedNetworkImageProvider(avatars[i]),
+                                  backgroundColor: Colors.white,
                                 ),
                               ),
                             ),
@@ -133,7 +139,8 @@ class PastOrderCard extends StatelessWidget {
                               left: avatars.length * 28.0,
                               child: CircleAvatar(
                                 radius: 18,
-                                backgroundColor: Colors.green.withOpacity(0.15),
+                                backgroundColor:
+                                Colors.green.withOpacity(0.15),
                                 child: Text(
                                   '+$extraCount',
                                   style: TextStyle(
@@ -157,3 +164,4 @@ class PastOrderCard extends StatelessWidget {
     );
   }
 }
+
