@@ -6,10 +6,10 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
-class Item6 extends StatelessWidget {
+class Grid2 extends StatelessWidget {
   final Content content;
 
-  const Item6({Key? key, required this.content}) : super(key: key);
+  const Grid2({Key? key, required this.content}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +66,7 @@ class Item6 extends StatelessWidget {
               crossAxisCount: 5,
               mainAxisSpacing: 16,
               crossAxisSpacing: 12,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.65,
             ),
             itemBuilder: (context, index) {
               final layoutData = items[index];
