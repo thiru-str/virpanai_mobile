@@ -32,28 +32,36 @@ class Slider1 extends StatefulWidget {
   State<Slider1> createState() => _Slider1State();
 }
 
-class _Slider1State extends State<Slider1> {
+class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
-  Timer? _timer;
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _startAutoStory();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _nextSlide();
+      }
+    });
+
+    _controller.forward();
   }
 
-  void _startAutoStory() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {
-        _currentIndex = (_currentIndex + 1) % widget.content.layoutData!.length;
-      });
+  void _nextSlide() {
+    if (!mounted) return;
+    setState(() {
+      _currentIndex = (_currentIndex + 1) % widget.content.layoutData!.length;
     });
+    _controller.forward(from: 0);
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -68,7 +76,6 @@ class _Slider1State extends State<Slider1> {
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // 🔹 Background image
             Image.network(
               currentData.image ?? '',
               width: double.infinity,
@@ -76,7 +83,7 @@ class _Slider1State extends State<Slider1> {
               fit: BoxFit.cover,
             ),
 
-            // 🔸 Gradient starts just above button, ends at bottom
+            // Bottom gradient overlay
             Positioned(
               bottom: 0,
               left: 0,
@@ -96,16 +103,15 @@ class _Slider1State extends State<Slider1> {
               ),
             ),
 
-            // 🔹 Centered Title + Subtitle (above gradient)
+            // Title section
             Positioned(
               bottom: 100,
               left: 0,
               right: 0,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    currentData.title ?? 'SUMMER BREW',
+                    currentData.title ?? '',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -113,80 +119,52 @@ class _Slider1State extends State<Slider1> {
                       color: Colors.yellow,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Visibility(
-                    visible: false,
-                    child: Text(
-                      'Zestful. Playful. Delightful.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.yellowAccent,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
 
-            // 🔹 Bottom Center CTA Button
-            Visibility(
-              visible: false,
-              child: Positioned(
-                bottom: 20,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.yellowAccent,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Text(
-                          'Shop',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(width: 6),
-                        Icon(Icons.arrow_forward, size: 16, color: Colors.black),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // 🔹 Bottom Progress Indicator
+            // Progress bar
             Positioned(
               bottom: 6,
               left: 16,
               right: 16,
-              child: Row(
-                children: List.generate(widget.content.layoutData!.length, (index) {
-                  final isSeen = index < _currentIndex;
-                  final isActive = index == _currentIndex;
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Row(
+                    children: List.generate(layoutData.length, (index) {
+                      double value;
+                      if (index < _currentIndex) {
+                        value = 1.0;
+                      } else if (index == _currentIndex) {
+                        value = _controller.value;
+                      } else {
+                        value = 0.0;
+                      }
 
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isSeen
-                            ? Colors.white
-                            : isActive
-                            ? Colors.white.withOpacity(0.9)
-                            : Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
+                      return Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: value,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   );
-                }),
+                },
               ),
             ),
           ],
@@ -195,6 +173,7 @@ class _Slider1State extends State<Slider1> {
     );
   }
 }
+
 
 
 
