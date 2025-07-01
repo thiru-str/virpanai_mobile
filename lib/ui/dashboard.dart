@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/widgets/live_order_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 import '../utility/app_assets.dart';
@@ -17,10 +18,10 @@ class _DashboardState extends State<Dashboard> {
 
 
   final List<Widget> _pages = [
-    SizedBox(),
-    SizedBox(),
-    SizedBox(),
-    SizedBox(),
+    const LiveOrderPage(),
+    const LiveOrderPage(),
+    const LiveOrderPage(),
+    const LiveOrderPage(),
 
   ];
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
+import 'package:waioz/ui/widgets/past_order_card.dart';
+import 'package:waioz/ui/widgets/products_card.dart';
+import 'package:waioz/utility/app_assets.dart';
 
 class LiveOrderPage extends StatelessWidget {
   const LiveOrderPage({Key? key}) : super(key: key);
@@ -62,15 +65,14 @@ class LiveOrderPage extends StatelessWidget {
             const SizedBox(height: 16),
             // Ledger Balance Card
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   SvgPicture.asset(
-                    'assets/bg_ledger.svg', // Replace with your actual SVG
-                    width: double.infinity,
+                    AppAssets.order_bg,
                     height: 120,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fitWidth,
                   ),
                   Column(
                     children: const [
@@ -103,12 +105,23 @@ class LiveOrderPage extends StatelessWidget {
             const SizedBox(height: 16),
             // Store Cards
             ...stores.map((store) {
+              return PastOrderCard(
+                dateLabel: 'mon, June 2, 2025',
+                imageUrls:[ 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png','https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png','https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',],
+                productCount: store['productCount'] as int,
+                totalPrice: store['price'] as String,
+              );return ProductsCard(
+                imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                title: 'MI IOOOOmAh Power Bank 3i - Blue',
+                productCount: store['productCount'] as int,
+                price: store['price'] as String,
+              );
               return OrderItemCard(
-                imageUrl: store['image']??'',
-                storeName: store['name']!,
-                storeAddress: store['address']!,
-                productCount: store['productCount']!,
-                totalPrice: store['price']!,
+                imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                storeName: store['name'] as String,
+                storeAddress: store['address'] as String,
+                productCount: store['productCount'] as int,
+                totalPrice: store['price'] as String,
               );
             }).toList(),
           ],

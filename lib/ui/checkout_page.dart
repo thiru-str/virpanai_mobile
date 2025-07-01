@@ -8,7 +8,6 @@ import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
-import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';

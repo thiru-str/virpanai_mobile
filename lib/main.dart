@@ -4,7 +4,6 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
-import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_utils.dart';

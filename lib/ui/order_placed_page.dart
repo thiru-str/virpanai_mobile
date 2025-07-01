@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/ui/dashboard.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -79,7 +79,7 @@ class OrderPlacedPage extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         // Handle button tap
-                        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+                        PageRouteUtils.pushAndRemoveUntil(context, const Dashboard());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary, // Button color

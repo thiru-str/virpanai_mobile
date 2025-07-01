@@ -12,6 +12,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/dashboard.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -31,7 +32,6 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
-import 'bottom_nav_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -150,7 +150,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             Navigator.pop(context);
           }
           else{
-            PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+            PageRouteUtils.pushAndRemoveUntil(context, const Dashboard());
           }
         },
         onFavTap: addFavourite,

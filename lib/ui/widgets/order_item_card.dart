@@ -41,6 +41,7 @@ class OrderItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header Row
           Row(
             children: [
               ClipRRect(
@@ -50,8 +51,7 @@ class OrderItemCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) =>
-                      Container(color: Colors.grey.shade200),
+                  placeholder: (_, __) => Container(color: Colors.grey.shade200),
                   errorWidget: (_, __, ___) => const Icon(Icons.error),
                 ),
               ),
@@ -80,74 +80,102 @@ class OrderItemCard extends StatelessWidget {
               ),
             ],
           ),
-          const Divider(height: 24),
+
+          const SizedBox(height: 12),
+          const Divider(height: 1, thickness: 1),
+
+          const SizedBox(height: 12),
+
+          // Product + Price + Status Row
+          // Product + Price + Status Row
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Left: Product Info
               Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('No of Product',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 4),
-                          Text(
-                            "$productCount Product",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'No of Product',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                     ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Total Price',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 4),
-                          Text(
-                            totalPrice,
-                            style: const TextStyle(
-                              color: Colors.teal,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
+                    SizedBox(height: 4),
+                    Text(
+                      '200 Product', // replace dynamically
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (statusText != null && statusText!.isNotEmpty)
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: (statusColor ?? Colors.green).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor ?? Colors.green),
-                  ),
-                  child: Text(
-                    statusText!,
-                    style: TextStyle(
-                      color: statusColor ?? Colors.green,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+
+              // 🔹 Vertical Divider
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.grey.shade300,
+              ),
+
+              const SizedBox(width: 12),
+
+              // Right: Price + (optional) Status
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: statusText != null && statusText!.isNotEmpty
+                      ? MainAxisAlignment.start
+                      : MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Column(
+                      crossAxisAlignment: statusText != null && statusText!.isNotEmpty
+                          ? CrossAxisAlignment.start
+                          : CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'Total Price',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          totalPrice,
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                    if (statusText != null && statusText!.isNotEmpty) ...[
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: (statusColor ?? Colors.green).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: statusColor ?? Colors.green),
+                        ),
+                        child: Text(
+                          statusText!,
+                          style: TextStyle(
+                            color: statusColor ?? Colors.green,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
+              ),
             ],
           ),
+
         ],
       ),
     );
+
   }
 }

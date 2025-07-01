@@ -17,7 +17,6 @@ import '../model/register_response.dart';
 import '../utility/app_assets.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
-import 'bottom_nav_page.dart';
 
 class UserDetailsPage extends StatefulWidget {
   final Widget? redirectPage;

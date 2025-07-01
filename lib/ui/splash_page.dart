@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/ui/dashboard.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -75,7 +75,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   void navToNextPage() async {
     String? token = await SharedPreferencesUtil().getString('token');
-    Widget nextPage = token == null ? widget.skipLogin ? const BottomNavPage():  WelcomePage() : const BottomNavPage();
+    Widget nextPage = token == null ? widget.skipLogin ? const Dashboard():  WelcomePage() : const Dashboard();
 
     // Delay navigation until the animation completes
     await Future.delayed(const Duration(seconds: 3));

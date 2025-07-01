@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/refresh_token_response.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/ui/dashboard.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_strings.dart';
 
@@ -11,7 +12,6 @@ import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
-import 'bottom_nav_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final String countryCode;
@@ -176,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> {
           });
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          PageRouteUtils.pushAndRemoveUntil(context, const Dashboard());
         }
       }
     } catch (e) {
