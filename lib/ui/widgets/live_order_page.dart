@@ -25,7 +25,7 @@ class LiveOrderPage extends StatelessWidget {
         'name': 'Supreme Mobiles',
         'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
         'productCount': 100,
-        'price': '₹ 5,000',
+        'price': '₹5,000',
         'image': 'https://your-url.com/icon2.png',
       },
       {
