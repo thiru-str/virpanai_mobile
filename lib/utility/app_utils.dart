@@ -64,6 +64,26 @@ class AppUtils {
     return "#$alpha$red$green$blue".toUpperCase();
   }
 
+  // Converts RGB string (format: "rgb(R, G, B)") to Flutter Color
+  static Color rgbStringToColor(String rgbaString) {
+    final regex = RegExp(r'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)');
+    final match = regex.firstMatch(rgbaString);
+    if (match != null) {
+      return Color.fromRGBO(
+        int.parse(match.group(1)!),
+        int.parse(match.group(2)!),
+        int.parse(match.group(3)!),
+        double.parse(match.group(4)!),
+      );
+    }
+    return Colors.white;
+  }
+
+  static Color getAutoTextColor(Color backgroundColor) {
+    final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
+    return brightness == Brightness.dark ? Colors.white : Colors.black;
+  }
+
   static Future<bool> isLoggedIn() async {
     final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
     if (skipLogin == true) {
