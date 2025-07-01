@@ -8,6 +8,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/map_page.dart';
+import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
@@ -117,14 +118,28 @@ class _HomePageState extends State<HomePage> {
                       child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
                         PageRouteUtils.pushWithSlide(context, const CartPage());
                       },onSearchClick: (){
-                        PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
-                            setState(() {
-                              headerTitle = selectedAddress.address1!;
-                              addressType = selectedAddress.addressName!;
-                            });
-                        },));
-                      },addressType: addressType,),
-                    ),
+                        if (appHeader == "header-7") {
+                          PageRouteUtils.pushWithFade(
+                              context,
+                              ProductPage(
+                                categoryId: '',
+                              ));
+                                } else {
+                                  PageRouteUtils.pushWithSlide(context,
+                                      SearchAddressPage(
+                                    onTapAddress: (selectedAddress) {
+                                      setState(() {
+                                        headerTitle = selectedAddress.address1!;
+                                        addressType =
+                                            selectedAddress.addressName!;
+                                      });
+                                    },
+                                  ));
+                                }
+                              },
+                              addressType: addressType,
+                            ),
+                          ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0.0,vertical: 16.0),
                       child: ListView.separated(

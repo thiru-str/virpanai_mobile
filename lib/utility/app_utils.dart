@@ -64,6 +64,27 @@ class AppUtils {
     return "#$alpha$red$green$blue".toUpperCase();
   }
 
+  static Color rgbStringToColor(String rgbString) {
+    try {
+      // Extract numbers using regex
+      final regex = RegExp(r'rgb\((\d+),\s*(\d+),\s*(\d+)\)');
+      final match = regex.firstMatch(rgbString);
+
+      if (match != null && match.groupCount == 3) {
+        final r = int.parse(match.group(1)!);
+        final g = int.parse(match.group(2)!);
+        final b = int.parse(match.group(3)!);
+
+        return Color.fromRGBO(r, g, b, 1.0);
+      }
+    } catch (e) {
+      debugPrint('Error parsing color string: $e');
+    }
+
+    // Return a default color if parsing fails
+    return Colors.black;
+  }
+
   static Future<bool> isLoggedIn() async {
     // final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
     // if (skipLogin == false) {
