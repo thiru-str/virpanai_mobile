@@ -22,6 +22,7 @@ class Grid1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasAnyDiscount = content.layoutData?.any((item) => item.prices?.discountPercentage?.isNotEmpty ?? false) ?? false;
     return Container(
       color: AppUtils.rgbStringToColor(content.layoutBgColor??''),
       child: Column(
@@ -75,7 +76,7 @@ class Grid1 extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 250,
+            height: hasAnyDiscount? 250 : 215,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView.separated(
