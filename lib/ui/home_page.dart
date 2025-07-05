@@ -110,52 +110,60 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Stack(
           children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-              :SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                        PageRouteUtils.pushWithSlide(context, const CartPage());
-                      },onSearchClick: (){
-                        if (appHeader == "header-7") {
-                          PageRouteUtils.pushWithFade(
-                              context,
-                              ProductPage(
-                                categoryId: '',
-                              ));
-                                } else {
-                                  PageRouteUtils.pushWithSlide(context,
-                                      SearchAddressPage(
-                                    onTapAddress: (selectedAddress) {
-                                      setState(() {
-                                        headerTitle = selectedAddress.address1!;
-                                        addressType =
-                                            selectedAddress.addressName!;
-                                      });
-                                    },
-                                  ));
-                                }
-                              },
-                              addressType: addressType,
+              :RefreshIndicator(
+            onRefresh: () async {
+              // Call your refresh function here
+              setState(() => apiLoading = true);
+              await getHomePageApi();
+            },
+                child: SingleChildScrollView(
+                            physics: AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
+                          PageRouteUtils.pushWithSlide(context, const CartPage());
+                        },onSearchClick: (){
+                          if (appHeader == "header-7") {
+                            PageRouteUtils.pushWithFade(
+                                context,
+                                ProductPage(
+                                  categoryId: '',
+                                ));
+                                  } else {
+                                    PageRouteUtils.pushWithSlide(context,
+                                        SearchAddressPage(
+                                      onTapAddress: (selectedAddress) {
+                                        setState(() {
+                                          headerTitle = selectedAddress.address1!;
+                                          addressType =
+                                              selectedAddress.addressName!;
+                                        });
+                                      },
+                                    ));
+                                  }
+                                },
+                                addressType: addressType,
+                              ),
                             ),
-                          ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0.0,vertical: 16.0),
-                      child: ListView.separated(
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        scrollDirection: Axis.vertical,
-                        itemCount: homePageResponse!.content!.length,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final homePageContent = homePageResponse!.content![index];
-                          return getLayoutWidget(homePageContent);
-                        },
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0.0,vertical: 16.0),
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) => const SizedBox(height: 16),
+                          scrollDirection: Axis.vertical,
+                          itemCount: homePageResponse!.content!.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            final homePageContent = homePageResponse!.content![index];
+                            return getLayoutWidget(homePageContent);
+                          },
+                        ),
                       ),
-                    ),
-                    Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
-                  ],
+                      Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
+                    ],
+                  ),
                 ),
               ),
             Visibility(
@@ -216,7 +224,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void getHomePageApi() async {
+  Future<void> getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
