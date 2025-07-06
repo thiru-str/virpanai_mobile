@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
@@ -71,6 +72,7 @@ class CreateCustomerPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your action here (e.g., navigate to a new customer form)
+          PageRouteUtils.push(context, UserDetailsPage());
         },
         backgroundColor: const Color(0xFF005B65), // Dark teal color
         child: const Icon(Icons.add, color: Colors.white),
