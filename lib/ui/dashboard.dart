@@ -7,6 +7,7 @@ import 'package:waioz/ui/widgets/past_order_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 import '../utility/app_assets.dart';
+import 'analytics_page.dart';
 
 
 class Dashboard extends StatefulWidget {
@@ -22,7 +23,7 @@ class _DashboardState extends State<Dashboard> {
 
   final List<Widget> _pages = [
     const LiveOrderPage(),
-    const SizedBox(),
+    const AnalyticsPage(),
     const CreateCustomerPage(),
     const PastOrderPage(),
 

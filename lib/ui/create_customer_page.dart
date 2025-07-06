@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/ui/UserDetailsPage.dart';
+import 'package:waioz/ui/customer_register_page.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
+import 'package:waioz/ui/widgets/customer_detail_page.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/past_order_details.dart';
@@ -55,13 +57,18 @@ class CreateCustomerPage extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: stores.length,
                 itemBuilder: (context, index) {
-                  return OrderItemCard(
-                    imageUrl:
-                        'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-                    storeName: stores[index]['name'] as String,
-                    storeAddress: stores[index]['address'] as String,
-                    productCount: stores[index]['productCount'] as int,
-                    totalPrice: stores[index]['price'] as String,
+                  return GestureDetector(
+                    onTap: (){
+                      PageRouteUtils.push(context, CustomerDetailPage());
+                    },
+                    child: OrderItemCard(
+                      imageUrl:
+                          'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                      storeName: stores[index]['name'] as String,
+                      storeAddress: stores[index]['address'] as String,
+                      productCount: stores[index]['productCount'] as int,
+                      totalPrice: stores[index]['price'] as String,
+                    ),
                   );
                 },
               )
@@ -72,7 +79,7 @@ class CreateCustomerPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your action here (e.g., navigate to a new customer form)
-          PageRouteUtils.push(context, UserDetailsPage());
+          PageRouteUtils.push(context, CustomerRegisterPage(countryCode: '', phoneNo: '', token: 'token'));
         },
         backgroundColor: const Color(0xFF005B65), // Dark teal color
         child: const Icon(Icons.add, color: Colors.white),

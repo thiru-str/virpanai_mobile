@@ -27,5 +27,7 @@ class AppAssets {
   static const String menu_3 = 'images/menu_3.svg';
   static const String menu_4 = 'images/menu_4.svg';
   static const String order_bg = 'images/order_bg.svg';
+  static const String ic_chart = 'images/ic_chart.svg';
+  static const String ic_map = 'images/ic_map.png';
 // Add more assets as needed
 }

@@ -5,8 +5,12 @@ import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
+import 'package:waioz/ui/widgets/store_location_widget.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
+
+import '../../utility/page_route_utils.dart';
+import 'order_details.dart';
 
 class PastOrderDetailsPage extends StatelessWidget {
   const PastOrderDetailsPage({Key? key}) : super(key: key);
@@ -40,6 +44,7 @@ class PastOrderDetailsPage extends StatelessWidget {
                         //controller: controller,
                         //onChanged: onChanged,
                         decoration: InputDecoration(
+                          hintText: 'Search anything...',
                           //hintText: hintText,
                           hintStyle: const TextStyle(color: Colors.grey),
                           border: InputBorder.none,
@@ -61,19 +66,25 @@ class PastOrderDetailsPage extends StatelessWidget {
                   ],
                 ),
               ),
-          ListView.builder(
+              ListView.builder(
             itemCount: 5,
             physics: const NeverScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
             shrinkWrap: true,
             itemBuilder: (context, index) {
-              return OrderItemCard(
-                imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-                storeName: 'Supreme Mobiles',
-                storeAddress: 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-                productCount: 200,
-                totalPrice: '₹5,000',
-                statusText: 'Processing',
+              return GestureDetector(
+                onTap: (){
+                  PageRouteUtils.pushWithFade(
+                      context,const OrderDetailsPage());
+                },
+                child: OrderItemCard(
+                  imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                  storeName: 'Supreme Mobiles',
+                  storeAddress: 'Alagar Kovil Main Rd, K.Pudur,Madurai',
+                  productCount: 200,
+                  totalPrice: '₹5,000',
+                  statusText: 'Processing',
+                ),
               );
             },
           )

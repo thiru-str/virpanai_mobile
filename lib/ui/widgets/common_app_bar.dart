@@ -21,7 +21,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     return SafeArea(
       child: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5,
+        surfaceTintColor: Colors.transparent,
         leading: showBack
             ? IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),

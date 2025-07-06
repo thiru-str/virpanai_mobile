@@ -150,19 +150,24 @@ class OrderItemCard extends StatelessWidget {
                     ),
                     if (statusText != null && statusText!.isNotEmpty) ...[
                       const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: (statusColor ?? Colors.green).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: statusColor ?? Colors.green),
-                        ),
-                        child: Text(
-                          statusText!,
-                          style: TextStyle(
-                            color: statusColor ?? Colors.green,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: (statusColor ?? Colors.green).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: statusColor ?? Colors.green),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              statusText!,
+                              style: TextStyle(
+                                color: statusColor ?? Colors.green,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -170,6 +175,7 @@ class OrderItemCard extends StatelessWidget {
                   ],
                 ),
               ),
+
             ],
           ),
 
