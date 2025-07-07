@@ -59,6 +59,7 @@ class DashboardStatCard extends StatelessWidget {
           // Subtitle
           Text(
             subtitle,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
               color: Colors.grey.shade600,

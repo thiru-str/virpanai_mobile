@@ -55,6 +55,7 @@ class CreateCustomerPage extends StatelessWidget {
             children: [
               ListView.builder(
                 shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: stores.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
