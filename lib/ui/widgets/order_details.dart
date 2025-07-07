@@ -31,13 +31,13 @@ class OrderDetailsPage extends StatelessWidget {
                 address: 'Alagar Kovil Main Rd, K.Pudur, Madurai',
                 totalPrice: '₹ 90,000',
               ),
-              StoreLocationCard(
-                icon: const Icon(Icons.location_on, color: Colors.teal, size: 32),
-                mapWidget: Image.asset(
-                  AppAssets.ic_map,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              // StoreLocationCard(
+              //   icon: const Icon(Icons.location_on, color: Colors.teal, size: 32),
+              //   mapWidget: Image.asset(
+              //     AppAssets.ic_map,
+              //     fit: BoxFit.cover,
+              //   ),
+              // ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0,vertical: 16),
                 child: Row(
