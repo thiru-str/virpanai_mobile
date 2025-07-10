@@ -12,10 +12,12 @@ import 'package:waioz/ui/widgets/shop_image_card.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
 
+import '../../model/customer_list_response.dart';
 import '../../utility/page_route_utils.dart';
 
 class CustomerDetailPage extends StatelessWidget {
-  const CustomerDetailPage({Key? key}) : super(key: key);
+  final Customer? customer;
+  const CustomerDetailPage({Key? key,required this.customer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +41,17 @@ class CustomerDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const ProfileInfoCard(
+              ProfileInfoCard(
                 title: 'Name',
-                value: 'Vishnu Kumar',
+                value: '${customer?.firstName??''} ${customer?.lastName??''}',
               ),
-              const ProfileInfoCard(
+              ProfileInfoCard(
                 title: 'Email Address',
-                value: 'Vishnu@Gmail.Com',
+                value: customer?.email??'',
               ),
-              const ProfileInfoCard(
+              ProfileInfoCard(
                 title: 'Phone Number',
-                value: '+91 84512 26949',
+                value: '+91 ${customer?.email??''}',
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
@@ -70,16 +72,18 @@ class CustomerDetailPage extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Column(
-                  children: const [
-                    ShopDetailRow(title: 'Shop Name', value: 'Orange Mobiles'),
-                    ShopDetailRow(title: 'Address', value: 'N Veli St Simmakkal'),
+                  children: [
+                    ShopDetailRow(title: 'Shop Name', value: customer?.metadata?.shopName??''),
+                    ShopDetailRow(title: 'Address', value:customer?.metadata?.address??''),
                     ShopDetailRow(title: 'Country', value: 'India'),
-                    ShopDetailRow(title: 'City / Postal Code', value: 'Madurai / 625012'),
-                    ShopDetailRow(title: 'GST Number', value: '1241572513'),
-                    ShopDetailRow(
-                      title: 'GST image',
-                      imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-                    ),
+                    ShopDetailRow(title: 'City / Postal Code', value:customer?.metadata?.postalCode??''),
+                    if(customer?.metadata?.isGst??false)
+                        ShopDetailRow(
+                            title: 'GST Number', value: '12345'),
+                        ShopDetailRow(
+                          title: 'GST image',
+                          imageUrl: customer?.metadata?.shopGstImage??'',
+                        ),
                   ],
                 ),
               ),
@@ -94,20 +98,20 @@ class CustomerDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const Column(
+              Column(
                 children: [
                   ShopImageCard(
-                    imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                    imageUrl: customer?.metadata?.shopNameBoardImage??'',
                     title: 'Shop Front With Name Board',
                     size: '870 MB',
                   ),
                   ShopImageCard(
-                    imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                    imageUrl: customer?.metadata?.shopInteriorImage??'',
                     title: 'Shop Interior',
                     size: '870 MB',
                   ),
                   ShopImageCard(
-                    imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
+                    imageUrl: customer?.metadata?.shopCounterImage??'',
                     title: 'Shop Counter',
                     size: '870 MB',
                   ),

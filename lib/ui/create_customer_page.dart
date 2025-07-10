@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:waioz/model/customer_list_response.dart';
 import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/customer_register_page.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
@@ -9,40 +10,40 @@ import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/past_order_details.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
+import 'package:waioz/ui/widgets/store_contact_card.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 import '../../utility/page_route_utils.dart';
+import '../api/api_service.dart';
 
-class CreateCustomerPage extends StatelessWidget {
+class CreateCustomerPage extends StatefulWidget {
   const CreateCustomerPage({Key? key}) : super(key: key);
 
   @override
+  State<CreateCustomerPage> createState() => _CreateCustomerPageState();
+}
+
+class _CreateCustomerPageState extends State<CreateCustomerPage> {
+  CustomerListResponse? _customerListResponse;
+  bool apiLoading = true;
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initApis();
+  }
+
+  Future<void> initApis() async {
+    getApis();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final stores = [
-      {
-        'name': 'Poorvika Mobiles',
-        'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': '200',
-        'price': '₹ 90,000',
-        'image': 'https://your-url.com/icon1.png',
-      },
-      {
-        'name': 'Supreme Mobiles',
-        'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': '100',
-        'price': '₹5,000',
-        'image': 'https://your-url.com/icon2.png',
-      },
-      {
-        'name': 'The Chennai Mobiles',
-        'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': '50',
-        'price': '₹ 20,000',
-        'image': 'https://your-url.com/icon3.png',
-      },
-    ];
-    return Scaffold(
+    return apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):Scaffold(
       backgroundColor: Colors.white,
       appBar: const CommonAppBar(
         title: 'Customer List',
@@ -56,20 +57,21 @@ class CreateCustomerPage extends StatelessWidget {
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: stores.length,
+                itemCount: _customerListResponse?.customers?.length??0,
                 itemBuilder: (context, index) {
+                  final item = _customerListResponse?.customers?[index];
                   return GestureDetector(
                     onTap: (){
-                      PageRouteUtils.push(context, CustomerDetailPage());
+                      PageRouteUtils.push(context, CustomerDetailPage(customer: item,));
                     },
-                    child: OrderItemCard(
-                      imageUrl:
-                          'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-                      storeName: stores[index]['name'] as String,
-                      storeAddress: stores[index]['address'] as String,
-                      productCount: stores[index]['productCount'] as String,
-                      totalPrice: stores[index]['price'] as String,
-                    ),
+                    child: StoreContactCard(
+                      imageUrl: item?.metadata?.shopNameBoardImage??'',
+                      storeName: item?.metadata?.shopName??'',
+                      address: item?.metadata?.address??'',
+                      phoneNumber: '+91 ${item?.phone??''}',
+                      email: 'poorvikamob@gmail.com',
+                    )
+                    ,
                   );
                 },
               )
@@ -87,4 +89,21 @@ class CreateCustomerPage extends StatelessWidget {
       ),
     );
   }
+
+  void getApis() async {
+    try {
+      final ApiService apiService = ApiService();
+      final customerListResponse = await apiService.getCustomerList(context);
+      setState(() {
+        _customerListResponse = customerListResponse;
+        apiLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
+  }
+
 }

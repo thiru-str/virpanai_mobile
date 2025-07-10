@@ -57,7 +57,7 @@ class ShopImageCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  size,
+                  '',
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,

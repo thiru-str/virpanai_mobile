@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/customer_list_response.dart';
 import 'package:waioz/model/dashboard_response.dart';
 import 'package:waioz/model/dealer_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
@@ -854,6 +855,18 @@ class ApiService {
       null,
       null,
           (json) => DealerResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CustomerListResponse> getCustomerList(
+      BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<CustomerListResponse>(
+      'dealer/customer',
+      null,
+      null,
+          (json) => CustomerListResponse.fromJson(json),
       context,
     );
   }
