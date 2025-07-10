@@ -42,7 +42,7 @@ class PastOrderResponse {
 
 class PastOrder {
   String? date;
-  DateTime? formatedDate;
+  String? formatedDate;
   Data? data;
 
   PastOrder({
@@ -53,13 +53,13 @@ class PastOrder {
 
   factory PastOrder.fromJson(Map<String, dynamic> json) => PastOrder(
     date: json["date"],
-    formatedDate: json["formated_date"] == null ? null : DateTime.parse(json["formated_date"]),
+    formatedDate: json["formated_date"],
     data: json["data"] == null ? null : Data.fromJson(json["data"]),
   );
 
   Map<String, dynamic> toJson() => {
     "date": date,
-    "formated_date": "${formatedDate!.year.toString().padLeft(4, '0')}-${formatedDate!.month.toString().padLeft(2, '0')}-${formatedDate!.day.toString().padLeft(2, '0')}",
+    "formated_date": formatedDate,
     "data": data?.toJson(),
   };
 }

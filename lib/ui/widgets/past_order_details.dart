@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:waioz/model/past_order_detail_response.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
@@ -8,17 +9,40 @@ import 'package:waioz/ui/widgets/products_card.dart';
 import 'package:waioz/ui/widgets/store_location_widget.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
 
+import '../../api/api_service.dart';
 import '../../utility/page_route_utils.dart';
 import 'order_details.dart';
 
-class PastOrderDetailsPage extends StatelessWidget {
-  const PastOrderDetailsPage({Key? key}) : super(key: key);
+class PastOrderDetailsPage extends StatefulWidget {
+  final String date;
+  const PastOrderDetailsPage({Key? key,required this.date}) : super(key: key);
+
+  @override
+  State<PastOrderDetailsPage> createState() => _PastOrderDetailsPageState();
+}
+
+class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
+
+  PastOrderDetailResponse? _pastOrderDetailResponse;
+  bool apiLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initApis();
+  }
+
+  Future<void> initApis() async {
+    getApis();
+  }
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):Scaffold(
       backgroundColor: Colors.white,
       appBar: const CommonAppBar(title: 'Past Order',showBack: true,),
       body: SafeArea(
@@ -67,23 +91,24 @@ class PastOrderDetailsPage extends StatelessWidget {
                 ),
               ),
               ListView.builder(
-            itemCount: 5,
+            itemCount: _pastOrderDetailResponse?.pastOrderDetails?.length??0,
             physics: const NeverScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
             shrinkWrap: true,
             itemBuilder: (context, index) {
+              final item = _pastOrderDetailResponse?.pastOrderDetails?[index];
               return GestureDetector(
                 onTap: (){
                   PageRouteUtils.pushWithFade(
-                      context,const OrderDetailsPage());
+                      context, OrderDetailsPage(orderId: item?.id??'',));
                 },
                 child: OrderItemCard(
-                  imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-                  storeName: 'Supreme Mobiles',
-                  storeAddress: 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-                  productCount: 200,
-                  totalPrice: '₹5,000',
-                  statusText: 'Processing',
+                  imageUrl: item?.shopImage??'',
+                  storeName: item?.shopName??'',
+                  storeAddress: item?.shopAddress??'',
+                  productCount: item?.noOfProducts??'',
+                  totalPrice: item?.totalPrice??'',
+                  statusText: item?.orderStatus??'',
                 ),
               );
             },
@@ -93,5 +118,20 @@ class PastOrderDetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+  void getApis() async {
+    try {
+      final ApiService apiService = ApiService();
+      final pastOrderDetailResponse = await apiService.pastOrderDetail(context,widget.date);
+      setState(() {
+        _pastOrderDetailResponse = pastOrderDetailResponse;
+        apiLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
   }
 }

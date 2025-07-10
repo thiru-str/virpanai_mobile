@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DashboardStatCard extends StatelessWidget {
-  final String count;
+  final int count;
   final String countLabel;
   final String title;
   final String subtitle;
@@ -29,7 +29,7 @@ class DashboardStatCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                count,
+                '$count',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

@@ -5,7 +5,7 @@ class OrderItemCard extends StatelessWidget {
   final String imageUrl;
   final String storeName;
   final String storeAddress;
-  final int productCount;
+  final String productCount;
   final String totalPrice;
   final String? statusText; // Nullable status
   final Color? statusColor; // Optional custom color

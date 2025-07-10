@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/dashboard_response.dart';
+import 'package:waioz/model/dealer_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/live_order_detail_response.dart';
 import 'package:waioz/model/live_order_response.dart';
@@ -779,13 +781,15 @@ class ApiService {
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
   }
 
-  Future<ProductsResponse> dashboard(
+  //Dealer APIs
+  Future<DashboardResponse> dashboard(
       BuildContext context, String type,{String? year}) async {
-    return _makeGetRequest<ProductsResponse>(
+    await addToken();
+    return _makeGetRequest<DashboardResponse>(
       'dealer/dashboard/$type',
       null,
       {"year": year},
-          (json) => ProductsResponse.fromJson(json),
+          (json) => DashboardResponse.fromJson(json),
       context,
     );
   }
@@ -797,6 +801,7 @@ class ApiService {
 
   Future<LiveOrderDetailResponse> orderDetail(
       BuildContext context, String orderId) async {
+    await addToken();
     return _makeGetRequest<LiveOrderDetailResponse>(
       'dealer/get-live-orders/$orderId',
       null,
@@ -808,6 +813,7 @@ class ApiService {
 
   Future<PastOrderDetailResponse> pastOrderDetail(
       BuildContext context, String date) async {
+    await addToken();
     return _makeGetRequest<PastOrderDetailResponse>(
       'dealer/get-past-orders/$date',
       null,
@@ -818,7 +824,8 @@ class ApiService {
   }
 
   Future<PastOrderResponse> pastOrders(
-      BuildContext context, String date) async {
+      BuildContext context) async {
+    await addToken();
     return _makeGetRequest<PastOrderResponse>(
       'dealer/get-past-orders',
       null,
@@ -829,7 +836,8 @@ class ApiService {
   }
 
   Future<LiveOrdersResponse> liveOrders(
-      BuildContext context, String date) async {
+      BuildContext context) async {
+    await addToken();
     return _makeGetRequest<LiveOrdersResponse>(
       'dealer/get-live-orders',
       null,
@@ -838,6 +846,18 @@ class ApiService {
       context,
     );
   }
+
+  Future<DealerResponse> getDealerDetails(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<DealerResponse>(
+      'dealer/me',
+      null,
+      null,
+          (json) => DealerResponse.fromJson(json),
+      context,
+    );
+  }
+
 
 
 }

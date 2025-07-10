@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 class ProductsCard extends StatelessWidget {
   final String imageUrl;
   final String title;
-  final int productCount;
+  final String productCount;
   final String price;
 
   const ProductsCard({

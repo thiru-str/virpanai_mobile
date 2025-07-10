@@ -1,60 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:waioz/model/dealer_response.dart';
+import 'package:waioz/model/live_order_response.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../../api/api_service.dart';
 import '../../utility/page_route_utils.dart';
 import 'order_details.dart';
 
-class LiveOrderPage extends StatelessWidget {
+class LiveOrderPage extends StatefulWidget {
   const LiveOrderPage({Key? key}) : super(key: key);
 
   @override
+  State<LiveOrderPage> createState() => _LiveOrderPageState();
+}
+
+class _LiveOrderPageState extends State<LiveOrderPage> {
+
+  final ApiService apiService = ApiService();
+  LiveOrdersResponse? _liveOrdersResponse;
+  DealerResponse? _dealerResponse;
+  bool apiLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initApis();
+  }
+
+  Future<void> initApis() async {
+    getApis();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final stores = [
-      {
-        'name': 'Poorvika Mobiles',
-        'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': 200,
-        'price': '₹ 90,000',
-        'image': 'https://your-url.com/icon1.png',
-      },
-      {
-        'name': 'Supreme Mobiles',
-        'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': 100,
-        'price': '₹5,000',
-        'image': 'https://your-url.com/icon2.png',
-      },
-      {
-        'name': 'The Chennai Mobiles',
-        'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': 50,
-        'price': '₹ 20,000',
-        'image': 'https://your-url.com/icon3.png',
-      },
-    ];
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: ListView(
+        child: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ListView(
           padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Good Morning!',
+                'Hello!',
                 style: TextStyle(fontSize: 16),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Ravi Kumar',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                _dealerResponse?.dealer?.name??'',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 24),
@@ -77,23 +81,23 @@ class LiveOrderPage extends StatelessWidget {
                     height: 120,
                     fit: BoxFit.fitWidth,
                   ),
-                  const Column(
+              Column(
                     children: [
-                      Text(
+                      const Text(
                         'Ledger Balance',
                         style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
-                        '₹ 60,000',
-                        style: TextStyle(
+                        _liveOrdersResponse?.ledgerBalance??'',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
+                      const SizedBox(height: 4),
+                      const Text(
                         'Total Value Of All Orders',
                         style: TextStyle(
                           color: Colors.white,
@@ -106,36 +110,51 @@ class LiveOrderPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Store Cards
-            ...stores.map((store) {
-              // return PastOrderCard(
-              //   dateLabel: 'mon, June 2, 2025',
-              //   imageUrls:[ 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png','https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png','https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',],
-              //   productCount: store['productCount'] as int,
-              //   totalPrice: store['price'] as String,
-              // );return ProductsCard(
-              //   imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-              //   title: 'MI IOOOOmAh Power Bank 3i - Blue',
-              //   productCount: store['productCount'] as int,
-              //   price: store['price'] as String,
-              // );
-              return GestureDetector(
-                onTap: (){
-                  PageRouteUtils.pushWithFade(
-                      context,const OrderDetailsPage());
-                },
-                child: OrderItemCard(
-                  imageUrl: 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
-                  storeName: store['name'] as String,
-                  storeAddress: store['address'] as String,
-                  productCount: store['productCount'] as int,
-                  totalPrice: store['price'] as String,
-                ),
-              );
-            }).toList(),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _liveOrdersResponse?.liveOrders?.length??0,
+              itemBuilder: (context, index) {
+                final item = _liveOrdersResponse?.liveOrders?[index];
+                return GestureDetector(
+                  onTap: (){
+                    PageRouteUtils.pushWithFade(
+                        context,OrderDetailsPage(orderId: item?.id??'',isFromLiveOrder: true,));
+                  },
+                  child: OrderItemCard(
+                    imageUrl: item?.shopImage??'',
+                    storeName: item?.shopName??'',
+                    storeAddress: item?.shopAddress??'',
+                    productCount: item?.noOfProducts??'',
+                    totalPrice: item?.totalPrice??'',
+                  ),
+                );
+              },
+            )
           ],
         ),
       ),
     );
+  }
+
+  void getApis() async {
+    try {
+      final ApiService apiService = ApiService();
+      final dealerResponse = await apiService.getDealerDetails(context);
+      if (dealerResponse != null) {
+       await SharedPreferencesUtil().saveMap('dealer_info', dealerResponse.toJson());
+      }
+      final liveOrderResponse = await apiService.liveOrders(context);
+      setState(() {
+        _dealerResponse = dealerResponse;
+        _liveOrdersResponse = liveOrderResponse;
+        apiLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
   }
 }

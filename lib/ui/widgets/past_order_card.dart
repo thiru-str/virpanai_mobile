@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class PastOrderCard extends StatelessWidget {
   final String dateLabel;
-  final int productCount;
+  final String productCount;
   final String totalPrice;
   final List<String> imageUrls;
   final VoidCallback? onTap;

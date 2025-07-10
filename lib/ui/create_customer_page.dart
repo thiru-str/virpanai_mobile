@@ -23,21 +23,21 @@ class CreateCustomerPage extends StatelessWidget {
       {
         'name': 'Poorvika Mobiles',
         'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': 200,
+        'productCount': '200',
         'price': '₹ 90,000',
         'image': 'https://your-url.com/icon1.png',
       },
       {
         'name': 'Supreme Mobiles',
         'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': 100,
+        'productCount': '100',
         'price': '₹5,000',
         'image': 'https://your-url.com/icon2.png',
       },
       {
         'name': 'The Chennai Mobiles',
         'address': 'Alagar Kovil Main Rd, K.Pudur,Madurai',
-        'productCount': 50,
+        'productCount': '50',
         'price': '₹ 20,000',
         'image': 'https://your-url.com/icon3.png',
       },
@@ -67,7 +67,7 @@ class CreateCustomerPage extends StatelessWidget {
                           'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',
                       storeName: stores[index]['name'] as String,
                       storeAddress: stores[index]['address'] as String,
-                      productCount: stores[index]['productCount'] as int,
+                      productCount: stores[index]['productCount'] as String,
                       totalPrice: stores[index]['price'] as String,
                     ),
                   );

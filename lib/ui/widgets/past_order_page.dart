@@ -1,41 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
-import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/past_order_details.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
-import 'package:waioz/ui/widgets/products_card.dart';
-import 'package:waioz/ui/widgets/store_summary_card.dart';
-import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
 
+import '../../api/api_service.dart';
+import '../../model/past_order_response.dart';
 import '../../utility/page_route_utils.dart';
 
-class PastOrderPage extends StatelessWidget {
+class PastOrderPage extends StatefulWidget {
   const PastOrderPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State<PastOrderPage> createState() => _PastOrderPageState();
+}
 
-    return Scaffold(
+class _PastOrderPageState extends State<PastOrderPage> {
+  PastOrderResponse? _pastOrderResponse;
+  bool apiLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initApis();
+  }
+
+  Future<void> initApis() async {
+    getApis();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):Scaffold(
       backgroundColor: Colors.white,
       appBar: const CommonAppBar(title: 'Past Order',showFilter: true,),
       body: SafeArea(
         child: ListView.builder(
-          itemCount: 5,
+          itemCount: _pastOrderResponse?.pastOrders?.length??0,
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
           itemBuilder: (context, index) {
+            final item= _pastOrderResponse?.pastOrders?[index];
             return GestureDetector(
               onTap: (){
                 PageRouteUtils.pushWithFade(
-                    context,const PastOrderDetailsPage());
+                    context, PastOrderDetailsPage(date: item?.date??'',));
               },
               child: PastOrderCard(
-                dateLabel: 'Mon, June 2, 2025',
-                imageUrls:[ 'https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png','https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png','https://gowelmart.s3.ap-south-1.amazonaws.com/1751373789803-Rectangle_734.png',],
-                productCount: 200,
-                totalPrice: '100',
+                dateLabel: item?.date??'',
+                imageUrls:item?.data?.customerImages??[],
+                productCount: item?.data?.noOfProducts??'',
+                totalPrice: item?.data?.totalPrice??'',
               ),
             );
           },
@@ -43,4 +59,21 @@ class PastOrderPage extends StatelessWidget {
       ),
     );
   }
+
+  void getApis() async {
+    try {
+      final ApiService apiService = ApiService();
+      final pastOrderResponse = await apiService.pastOrders(context);
+      setState(() {
+        _pastOrderResponse = pastOrderResponse;
+        apiLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
+  }
+
 }

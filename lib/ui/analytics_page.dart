@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:waioz/model/dashboard_response.dart';
 import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/customer_register_page.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
@@ -12,11 +13,32 @@ import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 import '../../utility/page_route_utils.dart';
+import '../api/api_service.dart';
 
-class AnalyticsPage extends StatelessWidget {
+class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
+
+  @override
+  State<AnalyticsPage> createState() => _AnalyticsPageState();
+}
+
+class _AnalyticsPageState extends State<AnalyticsPage> {
+  bool apiLoading = true;
+  int _selectedIndex = 0;
+  DashboardResponse? _dashboardResponse;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initApis();
+  }
+
+  Future<void> initApis() async {
+    getDashboardData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +49,7 @@ class AnalyticsPage extends StatelessWidget {
         showFilter: false,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
@@ -35,11 +57,10 @@ class AnalyticsPage extends StatelessWidget {
               children: [
                 OrderToggleSelector(
                   onSelected: (index) {
-                    if (index == 0) {
-                      print("Today Order selected");
-                    } else {
-                      print("Overall Order selected");
-                    }
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                    getDashboardData();
                   },
                 ),
                 const SizedBox(height: 16),
@@ -56,7 +77,7 @@ class AnalyticsPage extends StatelessWidget {
                       height: 120,
                       fit: BoxFit.fitWidth,
                     ),
-                    const Column(
+                    Column(
                       children: [
                         Text(
                           'Ledger Balance',
@@ -64,7 +85,7 @@ class AnalyticsPage extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '₹ 60,000',
+                          _dashboardResponse?.totalRevenue??'',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 28,
@@ -109,27 +130,27 @@ class AnalyticsPage extends StatelessWidget {
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
                   childAspectRatio: 1.2,
-                  children: const [
+                  children: [
                     DashboardStatCard(
-                      count: '48',
+                      count: _dashboardResponse?.totalOrders??0,
                       countLabel: 'Order',
                       title: 'Today’s Orders',
                       subtitle: 'Total number of orders placed today',
                     ),
                     DashboardStatCard(
-                      count: '56',
+                      count: _dashboardResponse?.deliveredOrders??0,
                       countLabel: 'Order',
                       title: 'Delivered order',
                       subtitle: 'Total number of orders placed today',
                     ),
                     DashboardStatCard(
-                      count: '20',
+                      count: _dashboardResponse?.pendingOrders??0,
                       countLabel: 'Order',
                       title: 'Pending order',
                       subtitle: 'Orders yet to be delivered',
                     ),
                     DashboardStatCard(
-                      count: '45',
+                      count: _dashboardResponse?.totalProducts??0,
                       countLabel: 'Order',
                       title: 'Total product',
                       subtitle: 'Total number of product placed today',
@@ -145,4 +166,25 @@ class AnalyticsPage extends StatelessWidget {
 
     );
   }
+
+  void getDashboardData() async {
+    try {
+      String type = _selectedIndex == 0?'today':'over_all';
+      final ApiService apiService = ApiService();
+      final dashBoardResponse = await apiService.dashboard(context,type);
+      setState(() {
+        setState(() {
+          _dashboardResponse = dashBoardResponse;
+          apiLoading = false;
+        });
+      });
+
+    } catch (e) {
+      setState(() {
+        apiLoading = false;
+      });
+      print(e);
+    }
+  }
+
 }
