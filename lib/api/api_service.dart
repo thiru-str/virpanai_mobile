@@ -6,6 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
+import 'package:waioz/model/live_order_detail_response.dart';
+import 'package:waioz/model/live_order_response.dart';
+import 'package:waioz/model/past_order_detail_response.dart';
+import 'package:waioz/model/past_order_response.dart';
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
@@ -28,6 +32,7 @@ import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/ui/widgets/past_order_details.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -772,6 +777,66 @@ class ApiService {
   Future<void> setPublishableKey() async {
     String? publishableKey = await SharedPreferencesUtil().getString('publishable_key');
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
+  }
+
+  Future<ProductsResponse> dashboard(
+      BuildContext context, String type,{String? year}) async {
+    return _makeGetRequest<ProductsResponse>(
+      'dealer/dashboard/$type',
+      null,
+      {"year": year},
+          (json) => ProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<dynamic> completeOrder(BuildContext context, String orderId,String fulfillmentId) async {
+    return _makePostRequest('dealer/orders/fulfillments//mark-as-delivered', {"order_id":orderId,"fulfillment_id": fulfillmentId},
+            (data) => dynamic, context);
+  }
+
+  Future<LiveOrderDetailResponse> orderDetail(
+      BuildContext context, String orderId) async {
+    return _makeGetRequest<LiveOrderDetailResponse>(
+      'dealer/get-live-orders/$orderId',
+      null,
+      null,
+          (json) => LiveOrderDetailResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<PastOrderDetailResponse> pastOrderDetail(
+      BuildContext context, String date) async {
+    return _makeGetRequest<PastOrderDetailResponse>(
+      'dealer/get-past-orders/$date',
+      null,
+      null,
+          (json) => PastOrderDetailResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<PastOrderResponse> pastOrders(
+      BuildContext context, String date) async {
+    return _makeGetRequest<PastOrderResponse>(
+      'dealer/get-past-orders',
+      null,
+      null,
+          (json) => PastOrderResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<LiveOrdersResponse> liveOrders(
+      BuildContext context, String date) async {
+    return _makeGetRequest<LiveOrdersResponse>(
+      'dealer/get-live-orders',
+      null,
+      null,
+          (json) => LiveOrdersResponse.fromJson(json),
+      context,
+    );
   }
 
 
