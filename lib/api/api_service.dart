@@ -796,6 +796,7 @@ class ApiService {
   }
 
   Future<dynamic> completeOrder(BuildContext context, String orderId,String fulfillmentId) async {
+    await addToken();
     return _makePostRequest('dealer/orders/fulfillments//mark-as-delivered', {"order_id":orderId,"fulfillment_id": fulfillmentId},
             (data) => dynamic, context);
   }

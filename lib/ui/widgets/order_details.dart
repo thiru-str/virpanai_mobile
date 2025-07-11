@@ -131,8 +131,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     ),
                     Visibility(
                       visible:
-                          (_liveOrderDetailResponse?.data?.fulfillmentId ?? '')
-                              .isEmpty,
+                          (_liveOrderDetailResponse?.data?.orderStatus ?? '')!= 'Completed',
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 8),
