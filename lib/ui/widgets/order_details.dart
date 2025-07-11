@@ -131,7 +131,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     ),
                     Visibility(
                       visible:
-                          (_liveOrderDetailResponse?.data?.orderStatus ?? '')!= 'Completed',
+                          (_liveOrderDetailResponse?.data?.orderStatus ?? '')== 'Processing',
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 8),
