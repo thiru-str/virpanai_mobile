@@ -474,7 +474,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       });
 
       PageRouteUtils.pushAndRemoveUntil(
-          context, const ApprovalPage(errorCode: '00000'));
+          context, const ApprovalPage(errorCode: '00000',isFromDealer: true,));
     } catch (e) {
       setState(() {
         apiCalling = false;

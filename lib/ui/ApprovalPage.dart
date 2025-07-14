@@ -10,25 +10,28 @@ import '../utility/page_route_utils.dart';
 
 class ApprovalPage extends StatelessWidget {
   final String errorCode;
-  const ApprovalPage({super.key,required this.errorCode});
+  final bool isFromDealer;
+  const ApprovalPage({super.key,required this.errorCode,this.isFromDealer = false});
 
   String _getStatusText() {
+    final prefix = isFromDealer ? "Dealer" : "Agent";
     switch (errorCode) {
       case '00004':
-        return "Agent Registration\nSubmitted!";
+        return "$prefix Registration\nSubmitted!";
       case '00005':
-        return "Agent Registration\nRejected!";
+        return "$prefix Registration\nRejected!";
       case '00006':
-        return "Agent Registration\nBlocked!";
+        return "$prefix Registration\nBlocked!";
       default:
-        return "Agent Registration \nSubmitted!";
+        return "$prefix Registration \nSubmitted!";
     }
   }
 
   String _getStatusDesc() {
+    final prefix = isFromDealer ? "Dealer" : "Agent";
     switch (errorCode) {
       case '00004':
-        return 'Your Agent details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp';
+        return 'Your $prefix details have been submitted successfully. Our team will review them and get back to you shortly. A confirmation has been sent to your email or whatsapp';
       case '00005':
         return 'Please review your details and try again. If this seems like a mistake, contact our support team.We’ve sent you a message via email or WhatsApp.';
       case '00006':
