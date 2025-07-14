@@ -30,7 +30,6 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
   CustomerListResponse? _customerListResponse;
   bool apiLoading = true;
 
-
   @override
   void initState() {
     // TODO: implement initState
@@ -44,51 +43,77 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CommonAppBar(
-        title: 'Customer List',
-        showFilter: false,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              (_customerListResponse?.customers?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Customers yet', description: 'You currently don\'t have any customers',imageHeight: 150,):ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _customerListResponse?.customers?.length??0,
-                itemBuilder: (context, index) {
-                  final item = _customerListResponse?.customers?[index];
-                  return GestureDetector(
-                    onTap: (){
-                      PageRouteUtils.push(context, CustomerDetailPage(customer: item,));
-                    },
-                    child: StoreContactCard(
-                      imageUrl: item?.metadata?.shopNameBoardImage??'',
-                      storeName: item?.metadata?.shopName??'',
-                      address: item?.metadata?.address??'',
-                      phoneNumber: '+91 ${item?.phone??''}',
-                      email: 'poorvikamob@gmail.com',
-                    )
-                    ,
-                  );
-                },
-              )
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your action here (e.g., navigate to a new customer form)
-          PageRouteUtils.push(context, CustomerRegisterPage(countryCode: '', phoneNo: '', token: 'token'));
-        },
-        backgroundColor: const Color(0xFF005B65), // Dark teal color
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
+    return apiLoading
+        ? Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+            ),
+          )
+        : Scaffold(
+            backgroundColor: Colors.white,
+            appBar: const CommonAppBar(
+              title: 'Customer List',
+              showFilter: false,
+            ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    (_customerListResponse?.customers?.length ?? 0) == 0
+                        ? const EmptyView(
+                            imageAsset: AppAssets.ic_no_list,
+                            title: 'No Customers yet',
+                            description:
+                                'You currently don\'t have any customers',
+                            imageHeight: 150,
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount:
+                                _customerListResponse?.customers?.length ?? 0,
+                            itemBuilder: (context, index) {
+                              final item =
+                                  _customerListResponse?.customers?[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  PageRouteUtils.push(
+                                      context,
+                                      CustomerDetailPage(
+                                        customer: item,
+                                      ));
+                                },
+                                child: StoreContactCard(
+                                  imageUrl:
+                                      item?.metadata?.shopNameBoardImage ?? '',
+                                  storeName: item?.metadata?.shopName ?? '',
+                                  address: item?.metadata?.address ?? '',
+                                  phoneNumber: '+91 ${item?.phone ?? ''}',
+                                  email: 'poorvikamob@gmail.com',
+                                ),
+                              );
+                            },
+                          )
+                  ],
+                ),
+              ),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                // Add your action here (e.g., navigate to a new customer form)
+                final result = PageRouteUtils.push(
+                    context,
+                    const CustomerRegisterPage(
+                        countryCode: '', phoneNo: '', token: ''));
+                if (result == true) {
+                  getApis();
+                }
+              },
+              backgroundColor: const Color(0xFF005B65), // Dark teal color
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          );
   }
 
   void getApis() async {
@@ -106,5 +131,4 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
       print(e);
     }
   }
-
 }

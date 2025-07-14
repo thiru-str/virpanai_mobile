@@ -872,6 +872,42 @@ class ApiService {
     );
   }
 
+  Future<dynamic> createCustomer(
+      BuildContext context,
+      String email,
+      String companyName,
+      String firstName,
+      String lastName,
+      String countryCode,
+      String phone,
+      String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage) async {
+    return _makePostRequest(
+        "dealer/customer/create",
+        {
+          "email": email,
+          "company_name": shopName,
+          "first_name": firstName,
+          "last_name": lastName,
+          "phone": phone,
+          "metadata": {
+            "country_code":countryCode,
+            "shop_name":shopName,
+            "country":"IN",
+            "city":city,
+            "state":state,
+            "postal_code":postalCode,
+            "is_gst":isGST,
+            "gst_number":gstNo,
+            "gst_image":gstImage,
+            "shop_name_board_image":shopNameBoardImage,
+            "shop_interior_image":shopInteriorImage,
+            "shop_counter_image":shopCounterImage
+          }
+        },
+            (data) => data,
+        context);
+  }
+
 
 
 }
