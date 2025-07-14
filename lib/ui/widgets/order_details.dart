@@ -145,7 +145,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                 _liveOrderDetailResponse?.data?.orderId ?? '',
                                 _liveOrderDetailResponse?.data?.fulfillmentId ??
                                     '');
+
+                            if (response != null && response['message'] != null) {
+                              AppUtils.showToast(response['message']);
+                            }
                             setState(() {
+                              _liveOrderDetailResponse?.data?.orderStatus =='Completed';
                               completeOrderLoading = false;
                             });
                             if (response != null) {
