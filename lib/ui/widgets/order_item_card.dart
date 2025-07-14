@@ -95,14 +95,14 @@ class OrderItemCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children:  [
                     Text(
                       'No of Product',
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '200 Product', // replace dynamically
+                      productCount??'', // replace dynamically
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
