@@ -6,7 +6,9 @@ import 'package:waioz/utility/app_colors.dart';
 
 import '../../api/api_service.dart';
 import '../../model/past_order_response.dart';
+import '../../utility/app_assets.dart';
 import '../../utility/page_route_utils.dart';
+import 'empty_view.dart';
 
 class PastOrderPage extends StatefulWidget {
   const PastOrderPage({Key? key}) : super(key: key);
@@ -36,7 +38,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
       backgroundColor: Colors.white,
       appBar: const CommonAppBar(title: 'Past Order',showFilter: true,),
       body: SafeArea(
-        child: ListView.builder(
+        child: ( _pastOrderResponse?.pastOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Past Orders', description: 'You currently don\'t have any past orders',imageHeight: 150,):ListView.builder(
           itemCount: _pastOrderResponse?.pastOrders?.length??0,
           scrollDirection: Axis.vertical,
           shrinkWrap: true,

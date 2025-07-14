@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/dealer_response.dart';
 import 'package:waioz/model/live_order_response.dart';
+import 'package:waioz/ui/widgets/empty_view.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
@@ -110,7 +111,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
               ),
             ),
             const SizedBox(height: 16),
-            ListView.builder(
+            (_liveOrdersResponse?.liveOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Live Orders', description: 'You currently don\'t have any live orders',imageHeight: 150,):ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _liveOrdersResponse?.liveOrders?.length??0,

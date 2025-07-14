@@ -5,6 +5,7 @@ import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/customer_register_page.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
 import 'package:waioz/ui/widgets/customer_detail_page.dart';
+import 'package:waioz/ui/widgets/empty_view.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/past_order_details.dart';
@@ -54,7 +55,7 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ListView.builder(
+              (_customerListResponse?.customers?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Customers yet', description: 'You currently don\'t have any customers',imageHeight: 150,):ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: _customerListResponse?.customers?.length??0,
