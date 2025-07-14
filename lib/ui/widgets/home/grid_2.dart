@@ -66,7 +66,7 @@ class Grid2 extends StatelessWidget {
               crossAxisCount: 5,
               mainAxisSpacing: 16,
               crossAxisSpacing: 12,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.60,
             ),
             itemBuilder: (context, index) {
               final layoutData = items[index];
