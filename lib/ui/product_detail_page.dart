@@ -925,8 +925,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Future<List<ProductResponse.Product>?> showAddOnBottomSheet(
-      BuildContext context, List<ProductResponse.Product> productList) async {
-    showModalBottomSheet(
+      BuildContext context,
+      List<ProductResponse.Product> productList,
+      ) async {
+    return await showModalBottomSheet<List<ProductResponse.Product>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -935,7 +937,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       ),
       builder: (_) {
         return StatefulBuilder(
-            builder: (context, setState) {
+          builder: (context, setState) {
             return SafeArea(
               child: SizedBox(
                 height: MediaQuery.of(context).size.height * 0.75,
@@ -943,8 +945,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   children: [
                     // Header
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       child: Row(
                         children: [
                           Expanded(
@@ -972,8 +973,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     // Product List
                     Expanded(
                       child: ListView.builder(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemCount: productList.length,
                         itemBuilder: (context, index) {
                           final product = productList[index];
@@ -995,8 +995,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       margin: const EdgeInsets.all(16),
                       child: ElevatedButton(
                         onPressed: () {
-                          final selected = productList.where((p) => p.isSelected).toList();
-                          Navigator.of(context).pop(selected); // return selected list
+                          final selected =
+                          productList.where((p) => p.isSelected).toList();
+                          Navigator.of(context).pop(selected); // ✅ returns list
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1004,22 +1005,26 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
                         ),
-                        child: Text('Add to Cart',style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        )),
+                        child: Text(
+                          'Add to Cart',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             );
-          }
+          },
         );
       },
     );
   }
+
 
   void emitEvent(CartResponse cartResponse) {
     setState(() {
