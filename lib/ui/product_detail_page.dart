@@ -683,14 +683,27 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       return;
                     }
                     if ((addOnProductsCount ?? 0) > 0) {
-                      showAddOnBottomSheet(
-                          context, addOnProductsResponse?.products ?? []);
+                      final selectedAddOns = await showAddOnBottomSheet(
+                        context,
+                        addOnProductsResponse?.products ?? [],
+                      );
+
+                      if (selectedAddOns != null) {
+                        await addProductWithAddOnsToCart(
+                          mainQty: selectedQuantity,
+                          mainVariantId: selectedVariantId!,
+                          addOns: selectedAddOns,
+                        );
+                      }
                     } else {
-                      setState(() => quantityLoading = true);
-                      await addCart(selectedQuantity, selectedVariantId!);
-                      setState(() => quantityLoading = false);
+                      await addProductWithAddOnsToCart(
+                        mainQty: selectedQuantity,
+                        mainVariantId: selectedVariantId!,
+                        addOns: [],
+                      );
                     }
-                  },
+
+            },
             child: quantityLoading
                 ? CircularProgressIndicator(color: Colors.white)
                 : Text(
@@ -820,6 +833,37 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
+  Future<void> addProductWithAddOnsToCart({
+    required int mainQty,
+    required String mainVariantId,
+    required List<ProductResponse.Product> addOns,
+  }) async {
+    try {
+      final apiService = ApiService();
+      setState(() => quantityLoading = true);
+
+      // Add main product
+      await apiService.addCart(context, mainQty, mainVariantId);
+
+      // Add each add-on (with default quantity 1)
+      for (final product in addOns) {
+        if ((product.variants?.isNotEmpty ?? false)) {
+          final variantId = product.variants!.first.id;
+          if (variantId != null) {
+            await apiService.addCart(context, mainQty, variantId);
+          }
+        }
+      }
+
+      await getCartApi(); // Refresh cart
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() => quantityLoading = false);
+    }
+  }
+
+
   Future<void> addFavourite() async {
     if (!isLoggedIn) {
       return;
@@ -880,8 +924,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
-  void showAddOnBottomSheet(
-      BuildContext context, List<ProductResponse.Product> productList) {
+  Future<List<ProductResponse.Product>?> showAddOnBottomSheet(
+      BuildContext context, List<ProductResponse.Product> productList) async {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -952,7 +996,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       child: ElevatedButton(
                         onPressed: () {
                           final selected = productList.where((p) => p.isSelected).toList();
-                          debugPrint(jsonEncode(selected));
                           Navigator.of(context).pop(selected); // return selected list
                         },
                         style: ElevatedButton.styleFrom(
