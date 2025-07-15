@@ -125,24 +125,34 @@ class _HomePageState extends State<HomePage> {
                         child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
                           PageRouteUtils.pushWithSlide(context, const CartPage());
                         },onSearchClick: (){
-                          if (appHeader == "header-7") {
-                            PageRouteUtils.pushWithFade(
-                                context,
-                                ProductPage(
-                                  categoryId: '',
-                                ));
-                                  } else {
-                                    PageRouteUtils.pushWithSlide(context,
-                                        SearchAddressPage(
-                                      onTapAddress: (selectedAddress) {
-                                        setState(() {
-                                          headerTitle = selectedAddress.address1!;
-                                          addressType =
-                                              selectedAddress.addressName!;
-                                        });
-                                      },
-                                    ));
-                                  }
+                          PageRouteUtils.pushWithFade(
+                              context,
+                              ProductPage(
+                                categoryId: '',
+                              ));
+                          // if (appHeader == "header-7") {
+                          //   PageRouteUtils.pushWithFade(
+                          //       context,
+                          //       ProductPage(
+                          //         categoryId: '',
+                          //       ));
+                          //         } else {
+                          //   PageRouteUtils.pushWithFade(
+                          //       context,
+                          //       ProductPage(
+                          //         categoryId: '',
+                          //       ));
+                          //           // PageRouteUtils.pushWithSlide(context,
+                          //           //     SearchAddressPage(
+                          //           //   onTapAddress: (selectedAddress) {
+                          //           //     setState(() {
+                          //           //       headerTitle = selectedAddress.address1!;
+                          //           //       addressType =
+                          //           //           selectedAddress.addressName!;
+                          //           //     });
+                          //           //   },
+                          //           // ));
+                          //         }
                                 },
                                 addressType: addressType,
                               ),
