@@ -997,7 +997,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         onPressed: () {
                           final selected =
                           productList.where((p) => p.isSelected).toList();
-                          Navigator.of(context).pop(selected); // ✅ returns list
+                          Navigator.of(context).pop(selected);
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
