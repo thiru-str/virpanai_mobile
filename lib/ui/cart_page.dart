@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
+import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -27,6 +30,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
+  UpSellProductsResponse? upSellProductsResponse;
   bool apiLoading = true;
   bool isAnimating = false;
 
@@ -140,76 +144,78 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     );
                                   },
                                 ),
+                                buildUpSellProducts(),
+                                Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      CartCalculation(
+                                        keyText: '${AppStrings.subTotal}:',
+                                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
+                                      ),
+                                      Visibility(
+                                          visible: cartResponse!.cart!.discountSubtotal!>0,
+                                          child: CartCalculation(
+                                            keyText: '${AppStrings.discount}:',
+                                            valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                                          )),
+                                      Visibility(
+                                          visible: cartResponse!.cart!.shippingSubtotal!>0,
+                                          child: CartCalculation(
+                                            keyText: '${AppStrings.shipping}:',
+                                            valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
+                                          )),
+                                      CartCalculation(
+                                        keyText: '${AppStrings.tax}:',
+                                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                                      ),
+                                      CartCalculation(
+                                        keyText: '${AppStrings.total}:',
+                                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
+                                      ),
+                                      const SizedBox(height: 10,),
+                                      GestureDetector(
+                                        onTap: () {
+                                          showPromoCodeBottomSheet(context);
+                                        },
+                                        child: Container(
+                                          height: 50,
+                                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.secondary,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child:  Row(
+                                            children: [
+                                              const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  AppStrings.enter_promo_code,
+                                                  style: FontUtils.primaryFontStyle(color: AppColors.textColor),
+                                                ),
+                                              ),
+                                              Text(
+                                                AppStrings.apply,
+                                                style: FontUtils.secondaryFontStyle(color: AppColors.primary),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CartCalculation(
-                              keyText: '${AppStrings.subTotal}:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
-                            ),
-                            Visibility(
-                                visible: cartResponse!.cart!.discountSubtotal!>0,
-                                child: CartCalculation(
-                                  keyText: '${AppStrings.discount}:',
-                                  valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                                )),
-                            Visibility(
-                                visible: cartResponse!.cart!.shippingSubtotal!>0,
-                                child: CartCalculation(
-                                  keyText: '${AppStrings.shipping}:',
-                                  valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
-                                )),
-                            CartCalculation(
-                              keyText: '${AppStrings.tax}:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                            ),
-                            CartCalculation(
-                              keyText: '${AppStrings.total}:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
-                            ),
-                            const SizedBox(height: 10,),
-                            GestureDetector(
-                              onTap: () {
-                                showPromoCodeBottomSheet(context);
-                              },
-                              child: Container(
-                                height: 50,
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.secondary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child:  Row(
-                                  children: [
-                                    const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                       AppStrings.enter_promo_code,
-                                        style: FontUtils.primaryFontStyle(color: AppColors.textColor),
-                                      ),
-                                    ),
-                                    Text(
-                                      AppStrings.apply,
-                                      style: FontUtils.secondaryFontStyle(color: AppColors.primary),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
+
                     ],
                   ),
                   bottomNavigationBar: SlideTransition(
@@ -246,6 +252,53 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
+  Widget buildUpSellProducts() {
+
+    if((upSellProductsResponse?.products?.length?? 0) == 0) {
+      return const SizedBox();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'Suggested for You',
+          style: FontUtils.secondaryFontStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 310,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: upSellProductsResponse?.products?.length?? 0,
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final product =  upSellProductsResponse?.products![index];
+              return ProductCard(
+                imageUrl: product?.thumbnail??'',
+                title: product?.title??'',
+                price: CurrencyUtil.appendCurrency(
+                    product?.variants?.firstOrNull?.calculatedPrice?.rawCalculatedAmount?.value??''),
+                onTapCard: () {
+                  PageRouteUtils.pushWithSlide(
+                    context,
+                    ProductDetailPage(productId: product?.id?? ''),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   void getCartApi() async {
     try {
       if (!isLoggedIn) {
@@ -257,9 +310,12 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);
+      upSellProductsResponse = await apiService.upSellingProducts(context);
       setState(() {
+        upSellProductsResponse;
         apiLoading = false;
       });
+
     } catch (e) {
       setState(() {
         apiLoading = false;

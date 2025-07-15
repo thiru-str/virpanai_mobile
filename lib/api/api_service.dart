@@ -24,6 +24,7 @@ import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/shipping_response.dart';
+import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -755,6 +756,18 @@ class ApiService {
       'store/related-product/${productId}',
       {"region_id": regionId},
           (json) => RelatedProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<UpSellProductsResponse> upSellingProducts(
+      BuildContext context) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest<UpSellProductsResponse>(
+      'store/up-selling-product/${cartId}',
+      {"region_id": regionId},
+          (json) => UpSellProductsResponse.fromJson(json),
       context,
     );
   }
