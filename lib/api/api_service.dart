@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
@@ -753,7 +754,7 @@ class ApiService {
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<RelatedProductsResponse>(
-      'store/related-product/${productId}',
+      'store/related-product/$productId',
       {"region_id": regionId},
           (json) => RelatedProductsResponse.fromJson(json),
       context,
@@ -765,9 +766,20 @@ class ApiService {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest<UpSellProductsResponse>(
-      'store/up-selling-product/${cartId}',
+      'store/up-selling-product/$cartId',
       {"region_id": regionId},
           (json) => UpSellProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<AddOnProductsResponse> addOnProducts(
+      BuildContext context,String productId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makePostRequest<AddOnProductsResponse>(
+      'store/addon-product/$productId',
+      {"region_id": regionId},
+          (json) => AddOnProductsResponse.fromJson(json),
       context,
     );
   }
