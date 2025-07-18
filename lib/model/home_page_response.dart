@@ -87,6 +87,9 @@ class LayoutDatum {
   String? subTitle;
   Prices? prices;
   RedirectData? redirectData;
+  int? rating;
+  VariantDetails? variantDetails;
+  CartDetails? cartDetails;
 
   LayoutDatum({
     this.id,
@@ -95,6 +98,9 @@ class LayoutDatum {
     this.subTitle,
     this.prices,
     this.redirectData,
+    this.rating,
+    this.variantDetails,
+    this.cartDetails,
   });
 
   factory LayoutDatum.fromJson(Map<String, dynamic> json) => LayoutDatum(
@@ -104,6 +110,9 @@ class LayoutDatum {
     subTitle: json["sub_title"],
     prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]), // <-- Deserialize
     redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
+    rating: json["rating"],
+    variantDetails: json["variant_details"] == null ? null : VariantDetails.fromJson(json["variant_details"]),
+    cartDetails: json["cart_details"] == null ? null : CartDetails.fromJson(json["cart_details"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -112,8 +121,92 @@ class LayoutDatum {
     "title": title,
     "sub_title": subTitle,
     "prices": prices?.toJson(), // <-- Serialize
+    "rating": rating,
+    "variant_details": variantDetails?.toJson(),
+    "cart_details": cartDetails?.toJson(),
   };
 }
+
+class CartDetails {
+  String? cartId;
+  String? lineItemId;
+  String? variantId;
+  int? quantity;
+
+  CartDetails({
+    this.cartId,
+    this.lineItemId,
+    this.variantId,
+    this.quantity,
+  });
+
+  factory CartDetails.fromJson(Map<String, dynamic> json) => CartDetails(
+    cartId: json["cart_id"],
+    lineItemId: json["line_item_id"],
+    variantId:json["variant_id"],
+    quantity: json["quantity"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "cart_id": cartId,
+    "line_item_id": lineItemId,
+    "variant_id": variantId,
+    "quantity": quantity,
+  };
+}
+
+class VariantDetails {
+  String? variantId;
+  String? variantTitle;
+  String? variantSku;
+  String? variantPrice;
+  List<VariantOption>? variantOptions;
+
+  VariantDetails({
+    this.variantId,
+    this.variantTitle,
+    this.variantSku,
+    this.variantPrice,
+    this.variantOptions,
+  });
+
+  factory VariantDetails.fromJson(Map<String, dynamic> json) => VariantDetails(
+    variantId: json["variant_id"],
+    variantTitle: json["variant_title"],
+    variantSku: json["variant_sku"],
+    variantPrice: json["variant_price"],
+    variantOptions: json["variant_options"] == null ? [] : List<VariantOption>.from(json["variant_options"]!.map((x) => VariantOption.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "variant_id": variantId,
+    "variant_title": variantTitle,
+    "variant_sku": variantSku,
+    "variant_price": variantPrice,
+    "variant_options": variantOptions == null ? [] : List<dynamic>.from(variantOptions!.map((x) => x.toJson())),
+  };
+}
+
+class VariantOption {
+  String? optionTitle;
+  String? optionValue;
+
+  VariantOption({
+    this.optionTitle,
+    this.optionValue,
+  });
+
+  factory VariantOption.fromJson(Map<String, dynamic> json) => VariantOption(
+    optionTitle: json["option_title"],
+    optionValue: json["option_value"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "option_title":optionTitle,
+    "option_value": optionValue,
+  };
+}
+
 
 class Prices {
   String? sellingPrice;

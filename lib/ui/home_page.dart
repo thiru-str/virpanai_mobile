@@ -14,6 +14,7 @@ import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
+import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
@@ -229,6 +230,8 @@ class _HomePageState extends State<HomePage> {
         return Slider1(content: homePageContent);
       case "Banner1":
         return Banner1(content: homePageContent);
+      case "item9":
+        return Item9(content: homePageContent);
       default:
         return const SizedBox();
     }
