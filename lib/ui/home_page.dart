@@ -131,29 +131,6 @@ class _HomePageState extends State<HomePage> {
                               ProductPage(
                                 categoryId: '',
                               ));
-                          // if (appHeader == "header-7") {
-                          //   PageRouteUtils.pushWithFade(
-                          //       context,
-                          //       ProductPage(
-                          //         categoryId: '',
-                          //       ));
-                          //         } else {
-                          //   PageRouteUtils.pushWithFade(
-                          //       context,
-                          //       ProductPage(
-                          //         categoryId: '',
-                          //       ));
-                          //           // PageRouteUtils.pushWithSlide(context,
-                          //           //     SearchAddressPage(
-                          //           //   onTapAddress: (selectedAddress) {
-                          //           //     setState(() {
-                          //           //       headerTitle = selectedAddress.address1!;
-                          //           //       addressType =
-                          //           //           selectedAddress.addressName!;
-                          //           //     });
-                          //           //   },
-                          //           // ));
-                          //         }
                                 },
                                 addressType: addressType,
                               ),
@@ -231,7 +208,15 @@ class _HomePageState extends State<HomePage> {
       case "Banner1":
         return Banner1(content: homePageContent);
       case "item9":
-        return Item9(content: homePageContent);
+        return Item9(
+          content: homePageContent,
+          onCartQtyChanged: (deltaQty, variantId) async {
+            await addCart(deltaQty, variantId); // delta quantity (+1/-1)
+          },
+        );
+
+
+
       default:
         return const SizedBox();
     }
@@ -270,8 +255,25 @@ class _HomePageState extends State<HomePage> {
         cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
       });
       if((cartResponse?.cart?.items?.length?? 0) > 0) {
-        eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
+
+        final qtyMap = <String, int>{};
+        for (var item in cartResponse!.cart!.items!) {
+          qtyMap[item.variantId!] = item.quantity!;
+        }
+
+        eventBus.fire(ViewCartModel(cartItems!, cartItemImages!, qtyMap));
+        //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
       }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> addCart(int qty, String variantId) async {
+    try {
+      final apiService = ApiService();
+      await apiService.addCart(context, qty, variantId);
+      getCartApi();
     } catch (e) {
       print(e);
     }
