@@ -35,6 +35,7 @@ class HomePageResponse {
 class Content {
   String? layoutName;
   String? layoutTitle;
+  String? layoutSubTitle;
   String? layoutBannerImage;
   String? layoutBgColor;
   String? layoutRedirectTitle;
@@ -46,6 +47,7 @@ class Content {
   Content({
     this.layoutName,
     this.layoutTitle,
+    this.layoutSubTitle,
     this.layoutBannerImage,
     this.layoutBgColor,
     this.layoutRedirectTitle,
@@ -58,6 +60,7 @@ class Content {
   factory Content.fromJson(Map<String, dynamic> json) => Content(
     layoutName: json["layout_name"],
     layoutTitle: json["layout_title"],
+    layoutSubTitle: json["layout_sub_title"],
     layoutBannerImage: json["layout_banner_image"],
     layoutBgColor: json["layout_bg_color"],
     layoutRedirectTitle: json["layout_redirect_title"],
@@ -70,6 +73,7 @@ class Content {
   Map<String, dynamic> toJson() => {
     "layout_name": layoutName,
     "layout_title": layoutTitle,
+    "layout_sub_title": layoutSubTitle,
     "layout_banner_image": layoutBannerImage,
     "layout_bg_color": layoutBgColor,
     "layout_redirect_title": layoutRedirectTitle,

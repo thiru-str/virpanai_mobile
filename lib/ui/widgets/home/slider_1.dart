@@ -23,6 +23,8 @@ import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
+import '../../../utility/app_colors.dart';
+
 class Slider1 extends StatefulWidget {
   final Content content;
 
@@ -70,106 +72,154 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
     final layoutData = widget.content.layoutData!;
     final currentData = layoutData[_currentIndex];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Image.network(
-              currentData.image ?? '',
-              width: double.infinity,
-              height: 500,
-              fit: BoxFit.cover,
-            ),
-
-            // Bottom gradient overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+    return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Visibility(
+          visible: (widget.content.layoutTitle??'').isNotEmpty,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  widget.content.layoutTitle??'',
+                  style: FontUtils.primaryFontStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-
-            // Title section
-            Positioned(
-              bottom: 100,
-              left: 0,
-              right: 0,
-              child: Column(
+              SizedBox(height: 8,),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  widget.content.layoutSubTitle??'',
+                  style: FontUtils.secondaryFontStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textColor
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: GestureDetector(
+            onTap: (){
+              RedirectUtils.handleContentRedirect(
+                context: context,
+                layoutOption: widget.content.layoutOption!,
+                layoutData: currentData,
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
                 children: [
-                  Text(
-                    currentData.title ?? '',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.yellow,
+                  Image.network(
+                    currentData.image ?? '',
+                    width: double.infinity,
+                    height: 500,
+                    fit: BoxFit.cover,
+                  ),
+
+                  // Bottom gradient overlay
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.8),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Title section
+                  Positioned(
+                    bottom: 100,
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      children: [
+                        Text(
+                          currentData.title ?? '',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.yellow,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Progress bar
+                  Positioned(
+                    bottom: 6,
+                    left: 16,
+                    right: 16,
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return Row(
+                          children: List.generate(layoutData.length, (index) {
+                            double value;
+                            if (index < _currentIndex) {
+                              value = 1.0;
+                            } else if (index == _currentIndex) {
+                              value = _controller.value;
+                            } else {
+                              value = 0.0;
+                            }
+
+                            return Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 3),
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: value,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Progress bar
-            Positioned(
-              bottom: 6,
-              left: 16,
-              right: 16,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Row(
-                    children: List.generate(layoutData.length, (index) {
-                      double value;
-                      if (index < _currentIndex) {
-                        value = 1.0;
-                      } else if (index == _currentIndex) {
-                        value = _controller.value;
-                      } else {
-                        value = 0.0;
-                      }
-
-                      return Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: value,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  );
-                },
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
