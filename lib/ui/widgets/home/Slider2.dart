@@ -61,7 +61,7 @@ class Slider2 extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 130,
+          height: 140,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -77,66 +77,70 @@ class Slider2 extends StatelessWidget {
                     layoutData: layoutData,
                   );
                 },
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: AppColors.secondary,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: CachedNetworkImage(
-                              imageUrl: layoutData.image!,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: 70,
-                          child: Text(
-                            layoutData.title ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: FontUtils.primaryFontStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                      Visibility(
-                      visible:layoutData.prices != null &&
-                      layoutData.prices!.discountedPrice != null &&
-                      layoutData.prices!.discountedPrice != "0",
-                        child: Positioned(
-                          top: 1,
-                          right: 0,
-
-                          child: Container(
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.blueGrey.shade800,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              layoutData.prices?.discountPercentage??'',
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 10,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                child: SizedBox(
+                  width: 90,
+                  height: 120, // extra height to accommodate badge + image
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      // Rounded card with image & title
+                      Positioned(
+                        top: 10, // Push image down to leave space for badge
+                        left: 0,
+                        right: 0,
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                color: AppColors.secondary,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: CachedNetworkImage(
+                                  imageUrl: layoutData.image!,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 6),
+                            Text(
+                              layoutData.title ?? '',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: FontUtils.primaryFontStyle(fontSize: 12),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
+
+                      // Discount badge floating on top
+                      if (layoutData.prices != null &&
+                          layoutData.prices!.discountedPrice != null &&
+                          layoutData.prices!.discountedPrice != "0")
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blueGrey.shade800,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            layoutData.prices?.discountPercentage ?? '',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                )
+                ,
+
               );
             },
           ),
