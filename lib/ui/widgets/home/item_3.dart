@@ -62,7 +62,7 @@ class Item3 extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 100,
+            height: 120,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: content.layoutData!.length,
@@ -92,8 +92,9 @@ class Item3 extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
+                          textAlign: TextAlign.center,
                           layoutData.title!,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: FontUtils.primaryFontStyle(fontSize: 12),
                         ),
