@@ -51,13 +51,18 @@ class Grid1 extends StatelessWidget {
                         redirectData: content.redirectData!,
                       );
                     },
-                    child: Text(
-                      content.layoutRedirectTitle!,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
-                      ),
+                    child: Row(
+                      children: [
+                        Text(
+                          content.layoutRedirectTitle!,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 18)
+                      ],
                     ),
                   ),
                 ),

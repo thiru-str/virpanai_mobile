@@ -37,6 +37,10 @@ class Slider2 extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     // Handle redirection
+                    RedirectUtils.handleContentRedirectViewAll(
+                      context: context,
+                      redirectData: content.redirectData!,
+                    );
                   },
                   child: Row(
                     children: [
