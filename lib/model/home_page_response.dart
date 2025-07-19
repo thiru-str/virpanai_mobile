@@ -43,6 +43,7 @@ class Content {
   String? layoutOption;
   String? layoutSearchFilter;
   List<LayoutDatum>? layoutData;
+  RedirectData? redirectData;
 
   Content({
     this.layoutName,
@@ -55,6 +56,7 @@ class Content {
     this.layoutOption,
     this.layoutSearchFilter,
     this.layoutData,
+    this.redirectData,
   });
 
   factory Content.fromJson(Map<String, dynamic> json) => Content(
@@ -68,6 +70,8 @@ class Content {
     layoutOption: json["layout_option"],
     layoutSearchFilter: json["layout_search_filter"],
     layoutData: json["layout_data"] == null ? [] : List<LayoutDatum>.from(json["layout_data"]!.map((x) => LayoutDatum.fromJson(x))),
+    redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
+
   );
 
   Map<String, dynamic> toJson() => {
@@ -81,6 +85,10 @@ class Content {
     "layout_option": layoutOption,
     "layout_search_filter": layoutSearchFilter,
     "layout_data": layoutData == null ? [] : List<dynamic>.from(layoutData!.map((x) => x.toJson())),
+    "redirect_data": redirectData?.toJson(),
+
+
+
   };
 }
 
@@ -128,6 +136,7 @@ class LayoutDatum {
     "rating": rating,
     "variant_details": variantDetails?.toJson(),
     "cart_details": cartDetails?.toJson(),
+    "redirect_data": redirectData?.toJson(),
   };
 }
 

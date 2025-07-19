@@ -39,6 +39,10 @@ class Banner1 extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () {
                       // Handle redirect
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content.redirectData!,
+                      );
                     },
                     child: Text(
                       content.layoutRedirectTitle!,
@@ -88,7 +92,7 @@ class Banner1 extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          layoutData.title ?? '',
+                          layoutData.subTitle ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

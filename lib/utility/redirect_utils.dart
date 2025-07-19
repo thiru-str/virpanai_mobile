@@ -43,6 +43,32 @@ class RedirectUtils {
     }
   }
 
+  static void handleContentRedirectViewAll({
+    required BuildContext context,
+    required RedirectData redirectData,
+  }) {
+    switch (redirectData.redirectType) {
+      case AppStrings.reDirectSearch:
+        _navigateToSearch(context, redirectData);
+        break;
+      case AppStrings.reDirectProduct:
+        final productId = redirectData.redirectProductData?.productId;
+
+        if (productId == null || productId.isEmpty) return;
+
+        PageRouteUtils.pushWithSlide(
+          context,
+          ProductDetailPage(productId: productId),
+        );
+        break;
+      case AppStrings.reDirectLink:
+        _launchExternalLink(redirectData);
+        break;
+      default:
+        debugPrint('Unknown redirect type: ${redirectData.redirectType}');
+    }
+  }
+
 
 
   static void _handleCustomRedirect(BuildContext context, LayoutDatum layoutData) {

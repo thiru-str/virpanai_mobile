@@ -42,7 +42,10 @@ class Item4 extends StatelessWidget {
                     visible: content.layoutRedirectTitle!.isNotEmpty,
                     child: GestureDetector(
                       onTap: (){
-
+                        RedirectUtils.handleContentRedirectViewAll(
+                          context: context,
+                          redirectData: content.redirectData!,
+                        );
                       },
                       child: Text(
                         content.layoutRedirectTitle!,
