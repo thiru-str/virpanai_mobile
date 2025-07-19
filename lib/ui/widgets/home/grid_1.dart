@@ -246,7 +246,7 @@ class Grid1 extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    "${layoutData.prices?.discountPercentage ?? ''} off",
+                                    "${layoutData.prices?.discountPercentage ?? ''}",
                                     style: TextStyle(fontSize: 12, color: Colors.green.shade700),
                                   )
                                 ],
