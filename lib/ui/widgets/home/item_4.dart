@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -96,7 +97,7 @@ class Item4 extends StatelessWidget {
                                   top: Radius.circular(12),
                                 ),
                                 image: DecorationImage(
-                                  image: NetworkImage(layoutData.image!),
+                                  image: CachedNetworkImageProvider(layoutData.image!),
                                   fit: BoxFit.cover,
                                 ),
                               ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -49,7 +50,7 @@ class ViewCartWidget extends StatelessWidget {
                         backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 18,
-                          backgroundImage: NetworkImage(itemImages[i]),
+                          backgroundImage: CachedNetworkImageProvider(itemImages[i]),
                         ),
                       ),
                     ),

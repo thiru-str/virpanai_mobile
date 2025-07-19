@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -44,7 +45,7 @@ class ProductCard extends StatelessWidget {
                       top: Radius.circular(12),
                     ),
                     image: DecorationImage(
-                      image: NetworkImage(imageUrl),
+                      image: CachedNetworkImageProvider(imageUrl),
                       fit: BoxFit.cover,
                     ),
                   ),
