@@ -18,6 +18,7 @@ import 'package:waioz/ui/widgets/home/grid_2.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
+import 'package:waioz/ui/widgets/item_8.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
@@ -198,6 +199,8 @@ class _HomePageState extends State<HomePage> {
         return Item6(content: homePageContent);
       case "item7":
         return Item7(content: homePageContent);
+      case "item8":
+        return Item8(content: homePageContent);
       case "Slider3":
         return Slider3(content: homePageContent);
       case "Grid1":
