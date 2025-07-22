@@ -153,9 +153,13 @@ class Grid1 extends StatelessWidget {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
-                                        'comfort guaranteed!',
-                                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                                      const Flexible(
+                                        child: Text(
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          'comfort guaranteed!',
+                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                                        ),
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
