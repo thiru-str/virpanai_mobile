@@ -183,8 +183,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               const SizedBox(height: 15),
                               buildProductDescription(),
                               buildRelatedProducts(),
-                              /*buildShippingAndReturns(),
-                        const SizedBox(height: 15),*/
                               buildReviews(),
                               const SizedBox(height: 90),
                             ],
@@ -520,31 +518,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
-  /*Widget buildShippingAndReturns() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 10),
-        Text(
-          'Shipping & returns',
-          style: FontUtils.gabaritoStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Free standard shipping on all orders within the continental U.S. Expedited shipping options are available at an additional cost. Orders typically ship within 3-5 business days \n \n We offer a 30-day return policy. If you are not completely satisfied with your purchase, you can return the chair for a full refund or exchange, provided it is in its original condition and packaging.',
-          style: FontUtils.circularStdStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-            color: AppColors.textColor,
-          ),
-        ),
-      ],
-    );
-  }*/
 
   Widget buildRatingSection() {
     return RatingWidget(
@@ -1036,22 +1009,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
-  Future<void> navigateToCart() async {
-    final result = await PageRouteUtils.pushWithSlide(context, CartPage());
-    if (result == true) {
-      setState(() => apiLoading = true);
-      fetchInitialData();
-    }
-  }
 
-  void removeCart(String cartItemId) async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.removeCart(context, cartItemId);
-      await getCartApi();
-    } catch (e) {
-      setState(() {});
-      print(e);
-    }
-  }
+
 }

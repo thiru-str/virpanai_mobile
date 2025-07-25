@@ -18,7 +18,8 @@ import 'package:waioz/ui/widgets/home/grid_2.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
-import 'package:waioz/ui/widgets/item_8.dart';
+import 'package:waioz/ui/widgets/home/item_8.dart';
+import 'package:waioz/ui/widgets/product_quick_view_sheet.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
@@ -164,7 +165,14 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: GestureDetector(
                     onTap: (){
-                      PageRouteUtils.pushWithSlide(context, const CartPage());
+                     // PageRouteUtils.pushWithSlide(context, const CartPage());
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.white,
+                        builder: (context) => const ProductQuickViewSheet(productId: 'prod_01JVCF7WAW2E4XHEDRQEVE8GJR'),
+                      );
+
                     },
                     child: ViewCartWidget(
                       totalItems: cartItems!,
