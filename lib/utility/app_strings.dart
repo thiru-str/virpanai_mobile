@@ -1,7 +1,7 @@
 // lib/assets.dart
 
 class AppStrings {
-  static const String welcome_to_store = 'GoWelMart Agent';
+  static const String welcome_to_store = 'GoWelMart Distributor';
   static const String get_your_product = 'All branded Mobiles & Accessories under one umbrella';
 
   static const String transation_details = 'Transaction details';

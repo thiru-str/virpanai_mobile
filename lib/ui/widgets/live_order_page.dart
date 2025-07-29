@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/dealer_response.dart';
 import 'package:waioz/model/live_order_response.dart';
+import 'package:waioz/ui/profile_page.dart';
 import 'package:waioz/ui/widgets/empty_view.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
@@ -48,21 +49,36 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
         child: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ListView(
           padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Hello!',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                _dealerResponse?.dealer?.name??'',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                    Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'Hello!',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            _dealerResponse?.dealer?.name ?? '',
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(onPressed: (){
+                      PageRouteUtils.pushWithFade(
+                          context,
+                        ProfilePage()
+                          );
+                    }, icon: Icon(Icons.account_circle_outlined,color: AppColors.primary,size: 32,))
+                  ]),
+                  const SizedBox(height: 24),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
