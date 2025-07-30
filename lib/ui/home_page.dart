@@ -201,35 +201,17 @@ class _HomePageState extends State<HomePage> {
       case "item1":
         return Item1(content: homePageContent);
       case "item2":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Item2(content: homePageContent),
-        );
+        return Item2(content: homePageContent);
       case "item3":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Item3(content: homePageContent),
-        );
+        return Item3(content: homePageContent);
       case "item4":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Item4(content: homePageContent),
-        );
+        return Item4(content: homePageContent);
       case "item5":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Item5(content: homePageContent),
-        );
+        return Item5(content: homePageContent);
       case "item6":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Item6(content: homePageContent),
-        );
+        return Item6(content: homePageContent);
       case "item7":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Item7(content: homePageContent),
-        );
+        return Item7(content: homePageContent);
       case "item8":
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
