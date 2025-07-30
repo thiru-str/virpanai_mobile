@@ -36,10 +36,14 @@ class Item6 extends StatelessWidget {
                     color: AppColors.textColor
                 ),
               ),
-              if (content.layoutRedirectTitle!.isNotEmpty)
-                GestureDetector(
+              Visibility(
+                visible: content.layoutRedirectTitle!.isNotEmpty,
+                child: GestureDetector(
                   onTap: (){
-
+                    RedirectUtils.handleContentRedirectViewAll(
+                      context: context,
+                      redirectData: content.redirectData!,
+                    );
                   },
                   child: Text(
                     content.layoutRedirectTitle!,
@@ -50,6 +54,7 @@ class Item6 extends StatelessWidget {
                     ),
                   ),
                 ),
+              )
             ],
           ),
         ),
@@ -63,7 +68,7 @@ class Item6 extends StatelessWidget {
             itemBuilder: (context, index) {
               final layoutData = content.layoutData![index];
               return GestureDetector(
-                onTap: (){
+                onTap: () {
                   RedirectUtils.handleContentRedirect(
                     context: context,
                     layoutOption: content.layoutOption!,
@@ -87,7 +92,7 @@ class Item6 extends StatelessWidget {
                           color: AppColors.secondary,
                           shape: BoxShape.circle,
                         ),
-                        child: ClipOval(child: CachedNetworkImage(imageUrl: layoutData.image!,fit: BoxFit.cover,),),
+                        child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
                       ),
                       const SizedBox(width: 8), // Horizontal spacing
                       Flexible( // Constrain the Text widget

@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -21,81 +20,93 @@ class Item3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                content.layoutTitle!,
-                style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor
-                ),
-              ),
-              if (content.layoutRedirectTitle!.isNotEmpty)
-                GestureDetector(
-                  onTap: (){
-
-                  },
-                  child: Text(
-                    content.layoutRedirectTitle!,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 15,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  content.layoutTitle!,
+                  style: FontUtils.secondaryFontStyle(
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
-                        color: AppColors.textColor
+                      color: AppColors.textColor
+                  ),
+                ),
+                  Visibility(
+                    visible: content.layoutRedirectTitle!.isNotEmpty,
+                    child: GestureDetector(
+                      onTap: (){
+                        RedirectUtils.handleContentRedirectViewAll(
+                          context: context,
+                          redirectData: content.redirectData!,
+                        );
+                      },
+                      child: Text(
+                        content.layoutRedirectTitle!,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                            color: AppColors.textColor
+                        ),
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 130,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: content.layoutData!.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              LayoutDatum layoutData = content.layoutData![index];
-              return GestureDetector(
-                onTap: (){
-                  RedirectUtils.handleContentRedirect(
-                    context: context,
-                    layoutOption: content.layoutOption!,
-                    layoutData: layoutData,
-                  );
-                },
-                child: SizedBox(
-                  width: 70,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: 70,
-                        height: 80,
-                        child: CachedNetworkImage(imageUrl: layoutData.image!,fit: BoxFit.cover,),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        layoutData.title!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: FontUtils.primaryFontStyle(fontSize: 12),
-                      ),
-                    ],
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 120,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: content.layoutData!.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                LayoutDatum layoutData = content.layoutData![index];
+                return GestureDetector(
+                  onTap: () {
+                    RedirectUtils.handleContentRedirect(
+                      context: context,
+                      layoutOption: content.layoutOption!,
+                      layoutData: layoutData,
+                    );
+                  },
+                  child: SizedBox(
+                    width: 70,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 70,
+                          height: 70,
+                          decoration:  BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          textAlign: TextAlign.center,
+                          layoutData.title!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.primaryFontStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
-
 }
