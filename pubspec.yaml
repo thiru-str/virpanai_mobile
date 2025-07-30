@@ -63,6 +63,7 @@ dependencies:
   flutter_html: ^3.0.0-beta.2
   url_launcher: ^6.1.7
   collection: ^1.18.0
+  dotted_line: ^3.0.1
   video_player: ^2.7.0
   visibility_detector: ^0.4.0
 
