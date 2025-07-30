@@ -31,6 +31,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/add_on_products_response.dart';
 import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -754,6 +755,17 @@ class ApiService {
       'store/related-product/${productId}',
       {"region_id": regionId},
           (json) => RelatedProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<AddOnProductsResponse> addOnProducts(
+      BuildContext context,String productId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makePostRequest<AddOnProductsResponse>(
+      'store/addon-product/$productId',
+      {"region_id": regionId},
+          (json) => AddOnProductsResponse.fromJson(json),
       context,
     );
   }
