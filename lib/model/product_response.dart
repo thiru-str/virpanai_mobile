@@ -66,6 +66,7 @@ class Product {
   List<Variant>? variants;
   List<ProductWishlistElement>? productReview;
   ProductWishlistElement? productWishlist;
+  bool isSelected;
 
   Product({
     this.id,
@@ -97,6 +98,7 @@ class Product {
     this.variants,
     this.productReview,
     this.productWishlist,
+    this.isSelected = false,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(

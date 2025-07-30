@@ -14,6 +14,7 @@ import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
+import 'package:waioz/ui/widgets/add_on_product_card.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
@@ -31,6 +32,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/add_on_products_response.dart';
 import '../utility/full_screen_carousel.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -58,6 +60,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   bool? productPresentInCart; // Changed to nullable to handle loading state
   bool isFavorite = false;
   String? wishlistId = '';
+  int? addOnProductsCount = 0;
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
@@ -871,8 +874,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getProductsInfoApi() async {
     try {
-      if(selectedVariantId!=null)
-      {
+      if (selectedVariantId != null) {
         final apiService = ApiService();
         final response = await apiService.getProductInfo(
             context, widget.productId, selectedVariantId);
@@ -881,15 +883,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           setState(() {
             isFavorite = productInfoResponse?.productOnWishlist ?? false;
             wishlistId = productInfoResponse?.productWishlistId ?? '';
+            addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
           });
           apiLoading = false;
         });
+        if ((addOnProductsCount ?? 0) > 0) {
+          addOnProductsResponse =
+          await apiService.addOnProducts(context, widget.productId);
+        }
         getCartApi();
       }
     } catch (e) {
       setState(() => apiLoading = false);
     }
-
   }
 
   Future<void> addCart(int qty, String variantId) async {
