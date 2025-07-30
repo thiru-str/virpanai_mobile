@@ -21,6 +21,7 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -188,6 +189,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget getLayoutWidget(Content homePageContent) {
+    AppLogger.print('items--->', homePageContent.layoutName??'');
     switch (homePageContent.layoutName) {
       case "item1":
         return Item1(content: homePageContent);
