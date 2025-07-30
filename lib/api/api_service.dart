@@ -284,9 +284,16 @@ class ApiService {
   }
 
   Future<ProductsResponse> listProducts(
-      BuildContext context, String categoryId, String collectionId) async {
+      BuildContext context,
+      String categoryId,
+      String collectionId,
+      String searchString, {
+        int offset = 0,
+        int limit = 10,
+      }) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, String>{};
+
     if (regionId != null && regionId.isNotEmpty) {
       queryParams['region_id'] = regionId;
     }
@@ -298,11 +305,19 @@ class ApiService {
     if (collectionId.isNotEmpty) {
       queryParams['collection_id[]'] = collectionId;
     }
+
+    if (searchString.isNotEmpty) {
+      queryParams['q'] = searchString;
+    }
+
+    queryParams['offset'] = offset.toString();
+    queryParams['limit'] = limit.toString();
+
     return _makeGetRequest<ProductsResponse>(
       'store/products',
       null,
       queryParams,
-      (json) => ProductsResponse.fromJson(json),
+          (json) => ProductsResponse.fromJson(json),
       context,
     );
   }
