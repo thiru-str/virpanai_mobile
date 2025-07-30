@@ -49,6 +49,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
   RelatedProductsResponse? relatedProductsResponse;
+  AddOnProductsResponse? addOnProductsResponse;
   CartResponse? cartResponse;
 
   bool apiLoading = true;
@@ -746,12 +747,37 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 : () async {
               if (!isLoggedIn) {
                 AppUtils.showToast('Please login to Continue');
-                PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
+                PageRouteUtils.push(
+                    context,
+                    PhoneNumberPage(
+                      redirectPage: ProductDetailPage(
+                        productId: widget.productId,
+                        isFromLogin: true,
+                      ),
+                    ));
                 return;
               }
-              setState(() => quantityLoading = true);
-              await addCart(selectedQuantity, selectedVariantId!);
-              setState(() => quantityLoading = false);
+              if ((addOnProductsCount ?? 0) > 0) {
+                final selectedAddOns = await showAddOnBottomSheet(
+                  context,
+                  addOnProductsResponse?.products ?? [],
+                );
+
+                if (selectedAddOns != null) {
+                  await addProductWithAddOnsToCart(
+                    mainQty: selectedQuantity,
+                    mainVariantId: selectedVariantId!,
+                    addOns: selectedAddOns,
+                  );
+                }
+              } else {
+                await addProductWithAddOnsToCart(
+                  mainQty: selectedQuantity,
+                  mainVariantId: selectedVariantId!,
+                  addOns: [],
+                );
+              }
+
             },
             child: quantityLoading
                 ? CircularProgressIndicator(color: Colors.white)
@@ -881,6 +907,36 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
+  Future<void> addProductWithAddOnsToCart({
+    required int mainQty,
+    required String mainVariantId,
+    required List<ProductResponse.Product> addOns,
+  }) async {
+    try {
+      final apiService = ApiService();
+      setState(() => quantityLoading = true);
+
+      // Add main product
+      await apiService.addCart(context, mainQty, mainVariantId);
+
+      // Add each add-on (with default quantity 1)
+      for (final product in addOns) {
+        if ((product.variants?.isNotEmpty ?? false)) {
+          final variantId = product.variants!.first.id;
+          if (variantId != null) {
+            await apiService.addCart(context, mainQty, variantId);
+          }
+        }
+      }
+
+      await getCartApi(); // Refresh cart
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() => quantityLoading = false);
+    }
+  }
+
   Future<void> addFavourite() async {
     if (!isLoggedIn) {
       return;
@@ -940,6 +996,107 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         productPresentInCart = false;
       });
     }
+  }
+
+  Future<List<ProductResponse.Product>?> showAddOnBottomSheet(
+      BuildContext context,
+      List<ProductResponse.Product> productList,
+      ) async {
+    return await showModalBottomSheet<List<ProductResponse.Product>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.75,
+                child: Column(
+                  children: [
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                'Add-ons',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Divider(height: 1),
+
+                    // Product List
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        itemCount: productList.length,
+                        itemBuilder: (context, index) {
+                          final product = productList[index];
+                          return AddOnProductCard(
+                            product: product,
+                            onToggle: () {
+                              setState(() {
+                                product.isSelected = !product.isSelected;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
+                    // Sticky Button
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.all(16),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final selected =
+                          productList.where((p) => p.isSelected).toList();
+                          Navigator.of(context).pop(selected);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(
+                          'Add to Cart',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void emitEvent(CartResponse cartResponse) {
