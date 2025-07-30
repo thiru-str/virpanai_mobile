@@ -228,6 +228,20 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Item8(content: homePageContent),
         );
+      case "Slider2":
+        return Slider2(content: homePageContent);
+      case "Slider3":
+        return Slider3(content: homePageContent);
+      case "Grid1":
+        return Grid1(content: homePageContent);
+      case "Grid2":
+        return Grid2(content: homePageContent);
+      case "Banner2": // video
+        return Banner2(content: homePageContent);
+      case "Slider1":
+        return Slider1(content: homePageContent);
+      case "Banner1":
+        return Banner1(content: homePageContent);
       default:
         return const SizedBox();
     }
