@@ -165,14 +165,7 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: GestureDetector(
                     onTap: (){
-                     // PageRouteUtils.pushWithSlide(context, const CartPage());
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.white,
-                        builder: (context) => const ProductQuickViewSheet(productId: 'prod_01JVCF7WAW2E4XHEDRQEVE8GJR'),
-                      );
-
+                      PageRouteUtils.pushWithSlide(context, const CartPage());
                     },
                     child: ViewCartWidget(
                       totalItems: cartItems!,
