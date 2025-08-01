@@ -210,26 +210,28 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                       ),
                     ],
                   ),
-                  bottomNavigationBar: SlideTransition(
-                    position: _animation,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                  bottomNavigationBar: SafeArea(
+                    child: SlideTransition(
+                      position: _animation,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: const Size(
+                                double.infinity, 56), // Full width button
                           ),
-                          minimumSize: const Size(
-                              double.infinity, 56), // Full width button
-                        ),
-                        onPressed: () {
-                          // Add checkout logic here
-                          PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
-                        },
-                        child:  Text(
-                          AppStrings.check_out,
-                          style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+                          onPressed: () {
+                            // Add checkout logic here
+                            PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
+                          },
+                          child:  Text(
+                            AppStrings.check_out,
+                            style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+                          ),
                         ),
                       ),
                     ),
