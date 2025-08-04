@@ -881,6 +881,7 @@ class ApiService {
       String countryCode,
       String phone,
       String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage) async {
+    await addToken();
     return _makePostRequest(
         "dealer/customer/create",
         {

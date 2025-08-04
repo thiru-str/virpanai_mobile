@@ -320,6 +320,18 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
         debugPrint(
             "Form Submitted: ${_nameController.text}, ${_emailController.text}...");
         // Navigate or trigger next logic
+
+        if ((_shopFrontImagePath ?? '').isEmpty) {
+          AppUtils.showToast('Please upload Shop front image');
+          return;
+        }if ((_shopInteriorImagePath ?? '').isEmpty) {
+          AppUtils.showToast('Please upload Shop interior image');
+          return;
+        }if ((_shopCounterImagePath ?? '').isEmpty) {
+          AppUtils.showToast('Please upload Shop counter image');
+          return;
+        }
+
         register();
       }
     }
