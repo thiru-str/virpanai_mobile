@@ -875,9 +875,7 @@ class ApiService {
   Future<dynamic> createCustomer(
       BuildContext context,
       String email,
-      String companyName,
       String firstName,
-      String lastName,
       String countryCode,
       String phone,
       String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage) async {
@@ -888,7 +886,6 @@ class ApiService {
           "email": email,
           "company_name": shopName,
           "first_name": firstName,
-          "last_name": lastName,
           "phone": phone,
           "metadata": {
             "country_code":countryCode,
