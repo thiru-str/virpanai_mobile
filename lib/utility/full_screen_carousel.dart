@@ -76,12 +76,17 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
                 _currentIndex = index;
               });
             },
-            itemBuilder: (context, index) {
-              return CachedNetworkImage(
-                imageUrl: widget.imageUrls[index].url!,
-                fit: BoxFit.contain,
-              );
-            },
+              itemBuilder: (context, index) {
+                return InteractiveViewer(
+                  panEnabled: true,
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageUrls[index].url!,
+                    fit: BoxFit.contain,
+                  ),
+                );
+              }
           ),
           Positioned(
             bottom: 20,
@@ -109,4 +114,63 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
       ),
     );
   }
+
 }
+
+class _ZoomableImage extends StatefulWidget {
+  final String imageUrl;
+
+  const _ZoomableImage({required this.imageUrl});
+
+  @override
+  _ZoomableImageState createState() => _ZoomableImageState();
+}
+
+class _ZoomableImageState extends State<_ZoomableImage> {
+  final TransformationController _transformationController =
+  TransformationController();
+  TapDownDetails? _doubleTapDetails;
+  double _scale = 1.0;
+  final double _minScale = 1.0;
+  final double _maxScale = 4.0;
+
+  void _handleDoubleTapDown(TapDownDetails details) {
+    _doubleTapDetails = details;
+  }
+
+  void _handleDoubleTap() {
+    if (_scale == _minScale) {
+      // Zoom in at tap position
+      final position = _doubleTapDetails!.localPosition;
+      _transformationController.value = Matrix4.identity()
+        ..translate(-position.dx * (_maxScale - 1), -position.dy * (_maxScale - 1))
+        ..scale(_maxScale);
+      _scale = _maxScale;
+    } else {
+      // Reset zoom
+      _transformationController.value = Matrix4.identity();
+      _scale = _minScale;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onDoubleTapDown: _handleDoubleTapDown,
+      onDoubleTap: _handleDoubleTap,
+      child: InteractiveViewer(
+        transformationController: _transformationController,
+        minScale: _minScale,
+        maxScale: _maxScale,
+        panEnabled: true,
+        child: CachedNetworkImage(
+          imageUrl: widget.imageUrl,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+}
+
+// Usage in your PageView.builder:
+

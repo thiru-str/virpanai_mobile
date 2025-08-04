@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
@@ -76,11 +77,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
   bool isLoggedIn = false;
+  final TextEditingController quantityController = TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
-
+    quantityController.text = selectedQuantity.toString();
     AppUtils.isLoggedIn().then((value) {
       setState(() {
         isLoggedIn = value;
@@ -125,6 +128,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
     _animationController.dispose();
+    quantityController.dispose();
     super.dispose();
   }
 
@@ -628,45 +632,45 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   Widget buildQuantitySelector() {
     return Row(
       children: [
-        // Quantity Dropdown with a fixed width
+        // Quantity Input Field with fixed width
         Container(
-          width: 80, // Adjust the width as needed
+          width: 80,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: DropdownButton<int>(
-            value: selectedQuantity,
-            isExpanded: true,
-            underline: Container(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedQuantity = newValue!;
-              });
+          child: TextField(
+            controller: quantityController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(2), // ✅ limits to 2 digits
+              FilteringTextInputFormatter.digitsOnly, // ✅ only numbers
+            ],
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Qty',
+            ),
+            style: FontUtils.secondaryFontStyle(fontSize: 16),
+            onChanged: (value) {
+              final parsed = int.tryParse(value);
+              if (parsed != null && parsed > 0) {
+                setState(() => selectedQuantity = parsed);
+              }
             },
-            items: List.generate(10, (index) => index + 1)
-                .map((qty) => DropdownMenuItem(
-              value: qty,
-              child: Text(
-                qty.toString(),
-                style: FontUtils.secondaryFontStyle(fontSize: 16),
-              ),
-            ))
-                .toList(),
           ),
         ),
-        const SizedBox(width: 10), // Adds spacing between dropdown and button
-        // "Add to Cart" button takes more space
+        const SizedBox(width: 10),
+        // "Add to Cart" button
         Expanded(
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor:
               selectedVariantId == null ? Colors.grey : AppColors.primary,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              minimumSize: const Size(
-                  double.infinity, 50), // Ensures height remains the same
+                borderRadius: BorderRadius.circular(8),
+              ),
+              minimumSize: const Size(double.infinity, 50),
             ),
             onPressed: selectedVariantId == null
                 ? null
@@ -674,26 +678,35 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               setState(() => quantityLoading = true);
               if (!isLoggedIn) {
                 AppUtils.showToast('Please login to Continue');
-                PageRouteUtils.push(context, PhoneNumberPage(redirectPage: ProductDetailPage(productId: widget.productId,isFromLogin: true,),));
+                PageRouteUtils.push(
+                  context,
+                  PhoneNumberPage(
+                    redirectPage: ProductDetailPage(
+                      productId: widget.productId,
+                      isFromLogin: true,
+                    ),
+                  ),
+                );
                 return;
               }
               await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
             },
             child: quantityLoading
-                ? CircularProgressIndicator(color: Colors.white)
+                ? const CircularProgressIndicator(color: Colors.white)
                 : Text(
-              selectedVariantId == null
-                  ? 'Select Variant'
-                  : 'Add to Cart',
+              selectedVariantId == null ? 'Select Variant' : 'Add to Cart',
               style: FontUtils.primaryFontStyle(
-                  fontSize: 18, color: Colors.white),
+                fontSize: 18,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
       ],
     );
   }
+
 
 
   Future<void> getProductsApi() async {
