@@ -66,6 +66,7 @@ dependencies:
   flutter_html: ^3.0.0-beta.2
   video_player: ^2.7.0
   visibility_detector: ^0.4.0
+  mobile_scanner: ^3.5.0
 
 
 

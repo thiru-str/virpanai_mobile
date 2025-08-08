@@ -22,6 +22,7 @@ import '../model/home_page_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
+import 'home_page_new.dart';
 
 class BottomNavPage extends StatefulWidget {
   const BottomNavPage({super.key});
@@ -104,7 +105,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   Widget _getPage() {
     switch (_currentIndex) {
       case 0:
-        return const HomePage(); // Create a new instance
+        return const HomePageNew(); // Create a new instance
       case 1:
         return const CategoryPage(isFromBottomNav: true);
       case 2:
@@ -112,9 +113,9 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       case 3:
         return const MyFavoritesPage(isFromBottomNav: true);
       case 4:
-        return isLoggedIn ? SettingsPage() : const HomePage();
+        return isLoggedIn ? SettingsPage() : const HomePageNew();
       default:
-        return const HomePage();
+        return const HomePageNew();
     }
   }
 
