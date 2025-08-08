@@ -24,6 +24,9 @@ class _PastOrderPageState extends State<PastOrderPage> {
   bool apiLoading = true;
   String? startUtc = '';
   String? endUtc = '';
+  DateTime? startTimeUtc;
+  DateTime? endTimeUtc;
+
 
   @override
   void initState() {
@@ -48,6 +51,8 @@ class _PastOrderPageState extends State<PastOrderPage> {
                     context,
                     showDate: true,
                     showStatus: false,
+                    initialStart: startTimeUtc,
+                    initialEnd: endTimeUtc
                   );
                   if (result != null) {
                     startUtc = result.startUtc != null
@@ -56,7 +61,10 @@ class _PastOrderPageState extends State<PastOrderPage> {
                     endUtc = result.endUtc != null
                         ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.endUtc!.toUtc())
                         : '';
-                    setState(() {});
+                    setState(() {
+                      startTimeUtc = result.startUtc;
+                      endTimeUtc = result.endUtc;
+                    });
                     debugPrint('Result: $result'); // Better debug logging
                     getApis();
                   }
