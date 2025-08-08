@@ -100,9 +100,9 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
               ),
             ),
             floatingActionButton: FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
                 // Add your action here (e.g., navigate to a new customer form)
-                final result = PageRouteUtils.push(
+                final result = await PageRouteUtils.push(
                     context,
                     const CustomerRegisterPage(
                         countryCode: '', phoneNo: '', token: ''));
@@ -118,6 +118,9 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
 
   void getApis() async {
     try {
+      setState(() {
+        apiLoading = true;
+      });
       final ApiService apiService = ApiService();
       final customerListResponse = await apiService.getCustomerList(context);
       setState(() {
