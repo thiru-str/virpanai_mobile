@@ -68,6 +68,8 @@ dependencies:
   video_player: ^2.7.0
   visibility_detector: ^0.4.0
   syncfusion_flutter_charts: ^30.2.4
+  table_calendar: ^3.1.2
+
 
 
 
