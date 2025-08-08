@@ -319,7 +319,8 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           AppUtils.showToast(response.error?.message??'');
           return;
         }
-        _showConfirmationAlert(context);
+        Navigator.of(context).pop();
+        setState(() => _currentStep = 2);
       } else {
         // Submit
         debugPrint(
