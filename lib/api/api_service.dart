@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/check_pin_code_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/customer_list_response.dart';
 import 'package:waioz/model/dashboard_response.dart';
@@ -904,6 +905,12 @@ class ApiService {
         },
             (data) => data,
         context);
+  }
+
+  Future<CheckPinCodeResponse> checkPinCode(BuildContext context, String pinCode) async {
+    await addToken();
+    return _makePostRequest('dealer/customer/check-pincode', {"pincode":pinCode},
+            (data) => CheckPinCodeResponse.fromJson(data), context);
   }
 
 

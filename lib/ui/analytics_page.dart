@@ -11,6 +11,7 @@ import 'package:waioz/ui/widgets/past_order_card.dart';
 import 'package:waioz/ui/widgets/past_order_details.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
+import 'package:waioz/ui/widgets/revenue_chart.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -105,23 +106,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  width: double.infinity,
-                  child: SvgPicture.asset(
-                    AppAssets.ic_chart,
-                  ),
-                ),
+            Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: TodayRevenueChart(heading:_selectedIndex == 0? 'Today Revenue':'Overall Revenue',data: _dashboardResponse?.graphData??[]), // just pass!
+              ),
+            ),
                 const SizedBox(height: 16),
                 GridView.count(
                   physics: const NeverScrollableScrollPhysics(),

@@ -309,11 +309,16 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     }
   }
 
-  void _handleNext() {
+  Future<void> _handleNext() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_currentStep == 0) {
         setState(() => _currentStep = 1);
       } else if (_currentStep == 1) {
+        final response = await ApiService().checkPinCode(context, _postalCodeController.text);
+        if (!(response.status ?? false)) {
+          AppUtils.showToast(response.error?.message??'');
+          return;
+        }
         _showConfirmationAlert(context);
       } else {
         // Submit

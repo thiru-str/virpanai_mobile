@@ -14,6 +14,7 @@ import '../../api/api_service.dart';
 import '../../model/live_order_detail_response.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/font_utils.dart';
+import '../../utility/page_route_utils.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final String orderId;
@@ -121,11 +122,17 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       itemBuilder: (context, index) {
                         final item =
                             _liveOrderDetailResponse?.data?.products?[index];
-                        return ProductsCard(
-                          imageUrl: item?.productImage ?? '',
-                          title: item?.productTitle ?? '',
-                          productCount: item?.quantity ?? '',
-                          price: item?.total ?? '',
+                        return GestureDetector(
+                          onTap: (){
+                            PageRouteUtils.pushWithFade(
+                                context, OrderDetailsPage(orderId: item?.productId??'',));
+                          },
+                          child: ProductsCard(
+                            imageUrl: item?.productImage ?? '',
+                            title: item?.productTitle ?? '',
+                            productCount: item?.quantity ?? '',
+                            price: item?.total ?? '',
+                          ),
                         );
                       },
                     ),
