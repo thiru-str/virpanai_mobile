@@ -325,7 +325,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           title: 'PinCode Verification',
           content: 'You entered: ${_postalCodeController.text}\n\n'
               'Area name: ${response.data?.pincode?.firstOrNull?.area ?? 'N/A'}\n\n'
-              '${response.data?.dealer?.firstOrNull?.name != null ? 'Assigned Distributor: ${response.data!.dealer!.first!.name}\n\n' : ''}'
+              '${response.data?.dealer?.firstOrNull?.name != null ? 'Assigned Distributor: ${response.data!.dealer!.first.name}\n\n' : ''}'
               'Note: Distributor assignment depends on this PinCode.\n\n'
               'Please confirm this is correct before proceeding.',
           contentOk: 'Confirm',
