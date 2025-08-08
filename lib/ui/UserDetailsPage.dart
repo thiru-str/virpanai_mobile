@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:waioz/model/pin_code_response.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
@@ -77,6 +79,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   Widget buildLabeledTextField({
     required String label,
     required TextEditingController controller,
+    bool enabled = true,
     TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
@@ -92,6 +95,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             keyboardType: inputType,
             validator: validator,
             decoration: InputDecoration(
+              enabled: enabled,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               enabledBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.teal),
@@ -134,6 +138,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           ),
           buildLabeledTextField(
             label: "Phone Number",
+            enabled: false,
             controller: _phoneController,
             inputType: TextInputType.phone,
             validator: (val) => val == null || val.length < 10 ? 'Enter valid phone number' : null,
@@ -294,13 +299,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 
 
-  void _handleNext() {
+  Future<void> _handleNext() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_currentStep == 0) {
         setState(() => _currentStep = 1);
       }
       else if (_currentStep == 1) {
-        _showConfirmationAlert(context);
+        final response = await ApiService().pinCodeCheck(context, _postalCodeController.text);
+
+        _showConfirmationAlert(context,response);
       } else {
         // Submit
         debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
@@ -310,13 +317,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     }
   }
 
-  void _showConfirmationAlert(BuildContext context) {
+  void _showConfirmationAlert(BuildContext context, PinCodeResponse response) {
     showDialog(
       context: context,
       builder: (context) {
         return CommonAlertDialog(
           title: 'PinCode Verification',
           content: 'You entered: ${_postalCodeController.text}\n\n'
+              'Area name: ${response.data?.pincode?.firstOrNull?.area ?? 'N/A'}\n\n'
+              '${response.data?.dealer?.firstOrNull?.name != null ? 'Assigned Distributor: ${response.data!.dealer!.first!.name}\n\n' : ''}'
               'Note: Distributor assignment depends on this PinCode.\n\n'
               'Please confirm this is correct before proceeding.',
           contentOk: 'Confirm',

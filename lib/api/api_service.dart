@@ -31,6 +31,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/pin_code_response.dart';
 import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -762,6 +763,11 @@ class ApiService {
           (json) => RelatedProductsResponse.fromJson(json),
       context,
     );
+  }
+
+  Future<PinCodeResponse> pinCodeCheck(BuildContext context, String pinCode) async {
+    return _makePostRequest('public/pincode-list', {"pincode":pinCode},
+            (data) => PinCodeResponse.fromJson(data), context);
   }
 
   Future<void> addToken() async {
