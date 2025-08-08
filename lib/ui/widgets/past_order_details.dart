@@ -13,6 +13,7 @@ import 'package:waioz/utility/app_colors.dart';
 
 import '../../api/api_service.dart';
 import '../../utility/page_route_utils.dart';
+import '../order_filter_bottom_sheet.dart';
 import 'order_details.dart';
 
 class PastOrderDetailsPage extends StatefulWidget {
@@ -27,6 +28,7 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
 
   PastOrderDetailResponse? _pastOrderDetailResponse;
   bool apiLoading = true;
+  List<String> initialStatuses = [];
 
   @override
   void initState() {
@@ -76,7 +78,21 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: (){},
+                      onTap: () async {
+                        final result = await showOrdersFilterSheet(
+                          context,
+                          showDate: false,
+                          showStatus: true,
+                          initialStatuses: initialStatuses
+                        );
+                        if (result != null) {
+                          debugPrint('Result: $result'); // Better debug logging
+                          setState(() {
+                            initialStatuses = result.statuses;
+                          });
+                          //getApis();
+                        }
+                      },
                       child: Container(
                         height: 40,
                         width: 40,
