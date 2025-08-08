@@ -827,12 +827,19 @@ class ApiService {
   }
 
   Future<PastOrderResponse> pastOrders(
-      BuildContext context) async {
+      BuildContext context,String startUtc,String endUtc) async {
     await addToken();
+    final queryParams = <String, String>{};
+    if (startUtc.isNotEmpty) {
+      queryParams['start_date'] = startUtc;
+    }
+    if (endUtc.isNotEmpty) {
+      queryParams['end_date'] = endUtc;
+    }
     return _makeGetRequest<PastOrderResponse>(
       'dealer/get-past-orders',
       null,
-      null,
+      queryParams,
           (json) => PastOrderResponse.fromJson(json),
       context,
     );
