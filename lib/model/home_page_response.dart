@@ -306,12 +306,14 @@ class RedirectProductData {
 
 class RedirectSearchData {
   final String? category;
+  final String? collection;
   final String? brand;
   final String? minPrice;
   final String? maxPrice;
 
   RedirectSearchData({
     this.category,
+    this.collection,
     this.brand,
     this.minPrice,
     this.maxPrice,
@@ -320,6 +322,7 @@ class RedirectSearchData {
   factory RedirectSearchData.fromJson(Map<String, dynamic> json) {
     return RedirectSearchData(
       category: json['category'],
+      collection: json['collection'],
       brand: json['brand'],
       minPrice: json['min_price'],
       maxPrice: json['max_price'],
@@ -328,6 +331,7 @@ class RedirectSearchData {
 
   Map<String, dynamic> toJson() => {
     'category': category,
+    'collection': collection,
     'brand': brand,
     'min_price': minPrice,
     'max_price': maxPrice,

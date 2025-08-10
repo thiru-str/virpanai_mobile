@@ -18,10 +18,11 @@ import 'widgets/common_header_app_bar.dart';
 
 class ProductPage extends StatefulWidget {
   final String categoryId;
+  final String collectionId;
   final bool isFromBrand;
 
   const ProductPage(
-      {super.key, required this.categoryId, this.isFromBrand = false});
+      {super.key, required this.categoryId, this.isFromBrand = false,this.collectionId = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -44,7 +45,7 @@ class _ProductPageState extends State<ProductPage> {
   @override
   void initState() {
     super.initState();
-    getProductsApi(categoryIds: widget.categoryId);
+    getProductsApi(categoryIds: widget.categoryId,collectionIds: widget.collectionId);
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
               scrollController.position.maxScrollExtent &&
