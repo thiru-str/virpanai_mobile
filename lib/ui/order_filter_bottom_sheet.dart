@@ -3,6 +3,21 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../model/order_filter_result.dart';
 
+const Map<String, String> kDisplayToApi = {
+  'Processing': 'fulfilled',
+  'Completed':  'delivered',
+  'Cancelled':  'cancelled',
+};
+
+const List<String> kDisplayOrder = ['Processing', 'Completed', 'Cancelled'];
+
+String? displayFromApi(String api) {
+  for (final e in kDisplayToApi.entries) {
+    if (e.value == api) return e.key;
+  }
+  return null;
+}
+
 Future<OrdersFilterResult?> showOrdersFilterSheet(
     BuildContext context, {
       bool showDate = true,
@@ -71,27 +86,30 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
   DateTime? _rangeEnd;         // for range mode
   RangeSelectionMode _rangeMode = RangeSelectionMode.toggledOff;
 
-  // Status state
-  late List<String> _selectedStatuses;
+  late Set<String> _selectedDisplayStatuses;
 
   @override
   void initState() {
     super.initState();
 
+    // dates (unchanged)
     if (widget.singleDateSelection) {
       _selectedDay = widget.initialStart ?? DateTime.now();
       _focusedDay = _selectedDay!;
     } else {
       _rangeStart = widget.initialStart;
-      _rangeEnd = widget.initialEnd;
-      _focusedDay = widget.initialStart ?? DateTime.now();
-
-      // ✅ enable range selection by default
+      _rangeEnd = widget.initialEnd ?? widget.initialStart;
+      _focusedDay = widget.initialStart ?? widget.initialEnd ?? DateTime.now();
       _rangeMode = RangeSelectionMode.toggledOn;
     }
 
-    _selectedStatuses = [...widget.initialStatuses];
+    // statuses: initialStatuses are API values -> convert to display labels
+    _selectedDisplayStatuses = widget.initialStatuses
+        .map(displayFromApi)
+        .whereType<String>()
+        .toSet();
   }
+
 
 
   void _reset() {
@@ -100,7 +118,7 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
       _rangeStart = null;
       _rangeEnd = null;
       _rangeMode = RangeSelectionMode.toggledOff;
-      _selectedStatuses.clear();
+      _selectedDisplayStatuses.clear();
     });
   }
 
@@ -138,7 +156,9 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
       OrdersFilterResult(
         startUtc: startUtc,
         endUtc: endUtc,
-        statuses: [..._selectedStatuses],
+        statuses: _selectedDisplayStatuses
+            .map((display) => kDisplayToApi[display]!)
+            .toList(),
       ),
     );
   }
@@ -189,16 +209,18 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
                     Wrap(
                       spacing: 12,
                       runSpacing: 12,
-                      children: widget.allStatuses.map((s) {
-                        final selected = _selectedStatuses.contains(s);
+                      children: kDisplayOrder.map((display) {
+                        final selected = _selectedDisplayStatuses.contains(display);
                         return ChoiceChip(
-                          label: Text(s),
+                          label: Text(display),
                           selected: selected,
                           onSelected: (_) {
                             setState(() {
-                              selected
-                                  ? _selectedStatuses.remove(s)
-                                  : _selectedStatuses.add(s);
+                              if (selected) {
+                                _selectedDisplayStatuses.remove(display);
+                              } else {
+                                _selectedDisplayStatuses.add(display);
+                              }
                             });
                           },
                           selectedColor: const Color(0xFF0B8F79),
@@ -207,9 +229,7 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
                             fontWeight: FontWeight.w500,
                           ),
                           backgroundColor: const Color(0xFFEDEDED),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         );
                       }).toList(),

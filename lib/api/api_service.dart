@@ -819,7 +819,7 @@ class ApiService {
     await addToken();
     final queryParams = <String, String>{};
     if (status.isNotEmpty) {
-      queryParams['status'] = 'delivered';
+      queryParams['status'] = status.join(', ') ?? '';
     }
     return _makeGetRequest<PastOrderDetailResponse>(
       'dealer/get-past-orders/$date',

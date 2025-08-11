@@ -79,7 +79,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
             return GestureDetector(
               onTap: (){
                 PageRouteUtils.pushWithFade(
-                    context, PastOrderDetailsPage(date: item?.date??'',));
+                    context, PastOrderDetailsPage(date: item?.formatedDate??'',));
               },
               child: PastOrderCard(
                 dateLabel: item?.date??'',
