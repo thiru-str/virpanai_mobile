@@ -12,9 +12,9 @@ Future<OrdersFilterResult?> showOrdersFilterSheet(
       DateTime? initialEnd,
       List<String> initialStatuses = const [],
       List<String> allStatuses = const [
-        'Yet to Progress',
-        'Payment Pending',
-        'Mark as Completed',
+        'Processing',
+        'Completed',
+        'Cancelled',
       ],
     }) {
   assert(showDate || showStatus,

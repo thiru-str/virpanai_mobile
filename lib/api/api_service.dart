@@ -815,12 +815,16 @@ class ApiService {
   }
 
   Future<PastOrderDetailResponse> pastOrderDetail(
-      BuildContext context, String date) async {
+      BuildContext context, String date,List<String> status) async {
     await addToken();
+    final queryParams = <String, String>{};
+    if (status.isNotEmpty) {
+      queryParams['status'] = 'delivered';
+    }
     return _makeGetRequest<PastOrderDetailResponse>(
       'dealer/get-past-orders/$date',
       null,
-      null,
+      queryParams,
           (json) => PastOrderDetailResponse.fromJson(json),
       context,
     );

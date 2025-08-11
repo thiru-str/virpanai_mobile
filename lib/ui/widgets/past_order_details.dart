@@ -90,7 +90,7 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                           setState(() {
                             initialStatuses = result.statuses;
                           });
-                          //getApis();
+                          getApis();
                         }
                       },
                       child: Container(
@@ -138,7 +138,7 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
   void getApis() async {
     try {
       final ApiService apiService = ApiService();
-      final pastOrderDetailResponse = await apiService.pastOrderDetail(context,widget.date);
+      final pastOrderDetailResponse = await apiService.pastOrderDetail(context,widget.date,initialStatuses);
       setState(() {
         _pastOrderDetailResponse = pastOrderDetailResponse;
         apiLoading = false;
