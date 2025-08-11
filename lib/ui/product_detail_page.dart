@@ -881,12 +881,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   void emitEvent(CartResponse cartResponse) {
+    final totalQty = cartResponse.cart!.items!
+        .map((item) => item.quantity ?? 0) // pick quantity, default to 0
+        .fold<int>(0, (sum, qty) => sum + qty);
     setState(() {
-      cartItems = cartResponse.cart!.items!.length;
+      cartItems = totalQty;
       cartItemImages =
           cartResponse.cart!.items!.map((item) => item.thumbnail!).toList();
     });
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,
+
+    eventBus.fire(ViewCartModel(totalQty,
         cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 

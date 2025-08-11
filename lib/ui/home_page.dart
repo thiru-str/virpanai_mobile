@@ -224,12 +224,15 @@ class _HomePageState extends State<HomePage> {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
+      final totalQty = cartResponse?.cart!.items!
+          .map((item) => item.quantity ?? 0) // pick quantity, default to 0
+          .fold<int>(0, (sum, qty) => sum + qty);
       setState(() {
-        cartItems = cartResponse!.cart!.items!.length;
+        cartItems = totalQty;
         cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
       });
       if((cartResponse?.cart?.items?.length?? 0) > 0) {
-        eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
+        eventBus.fire(ViewCartModel(totalQty??0, cartItemImages!));
       }
     } catch (e) {
       print(e);

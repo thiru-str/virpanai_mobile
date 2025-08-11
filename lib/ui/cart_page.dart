@@ -257,7 +257,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void emitEvent(CartResponse cartResponse) {
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    final totalQty = cartResponse.cart!.items!
+        .map((item) => item.quantity ?? 0) // pick quantity, default to 0
+        .fold<int>(0, (sum, qty) => sum + qty);
+    print('total qty ${totalQty}');
+    eventBus.fire(ViewCartModel(totalQty,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
   void addPromoCode(String promoCode) async {
@@ -282,6 +286,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
           cartResponse!.cart!.items![index].isUpdating = false;
         });
       });
+      emitEvent(cartResponse!);
     } catch (e) {
       setState(() {
 
@@ -296,8 +301,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       await apiService.removeCart(context,cartItemId);
       getCartApi();
     } catch (e) {
+      print('total qty calling here');
       setState(() {
-
       });
       print(e);
     }

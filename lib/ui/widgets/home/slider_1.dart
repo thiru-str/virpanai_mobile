@@ -1,27 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/redirect_utils.dart';
 
-import 'dart:async';
-import 'package:flutter/material.dart';
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/utility/font_utils.dart';
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/redirect_utils.dart';
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/redirect_utils.dart';
 
 class Slider1 extends StatefulWidget {
   final Content content;
@@ -36,28 +18,28 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _controller;
 
+  static const _slideDuration = Duration(seconds: 5);
+  static const _swipeVelocityThreshold = 300; // px/s
+
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _nextSlide();
-      }
-    });
-
+    _controller = AnimationController(vsync: this, duration: _slideDuration)
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) _nextSlide();
+      });
     _controller.forward();
   }
 
-  void _nextSlide() {
+  void _goTo(int index) {
     if (!mounted) return;
-    setState(() {
-      _currentIndex = (_currentIndex + 1) % widget.content.layoutData!.length;
-    });
+    final len = widget.content.layoutData!.length;
+    setState(() => _currentIndex = (index % len + len) % len);
     _controller.forward(from: 0);
   }
+
+  void _nextSlide() => _goTo(_currentIndex + 1);
+  void _prevSlide() => _goTo(_currentIndex - 1);
 
   @override
   void dispose() {
@@ -68,111 +50,134 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final layoutData = widget.content.layoutData!;
+    if (layoutData.isEmpty) return const SizedBox.shrink();
     final currentData = layoutData[_currentIndex];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Image.network(
-              currentData.image ?? '',
-              width: double.infinity,
-              height: 500,
-              fit: BoxFit.cover,
-            ),
+        child: GestureDetector(
+          behavior: HitTestBehavior.deferToChild, // let child taps (redirection) work
+          // Pause only when a horizontal drag actually starts
+          onHorizontalDragStart: (_) {
+            if (_controller.isAnimating) _controller.stop();
+          },
+          onHorizontalDragEnd: (details) {
+            final v = details.primaryVelocity ?? 0.0;
+            if (v.abs() > _swipeVelocityThreshold) {
+              if (v > 0) {
+                _prevSlide(); // swipe right → previous
+              } else {
+                _nextSlide(); // swipe left → next
+              }
+            } else {
+              // small flicks: do nothing, just resume
+              if (!_controller.isAnimating) _controller.forward();
+            }
+          },
 
-            // Bottom gradient overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+          // (Optional) allow long-press to pause/resume without interfering with taps
+          onLongPressStart: (_) {
+            if (_controller.isAnimating) _controller.stop();
+          },
+          onLongPressEnd: (_) {
+            if (!_controller.isAnimating) _controller.forward();
+          },
+
+          child: Stack(
+            children: [
+              Image.network(
+                currentData.image ?? '',
+                width: double.infinity,
+                height: 500,
+                fit: BoxFit.cover,
+              ),
+
+              // Bottom gradient overlay
+              Positioned(
+                bottom: 0, left: 0, right: 0,
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Title section
-            Positioned(
-              bottom: 100,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  Text(
-                    currentData.title ?? '',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.yellow,
+              // Title section (your tap/redirection can be on this or another child)
+              Positioned(
+                bottom: 100, left: 0, right: 0,
+                child: Column(
+                  children: [
+                    Text(
+                      currentData.title ?? '',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.yellow,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // Progress bar
-            Positioned(
-              bottom: 6,
-              left: 16,
-              right: 16,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Row(
-                    children: List.generate(layoutData.length, (index) {
-                      double value;
-                      if (index < _currentIndex) {
-                        value = 1.0;
-                      } else if (index == _currentIndex) {
-                        value = _controller.value;
-                      } else {
-                        value = 0.0;
-                      }
+              // Progress bar
+              Positioned(
+                bottom: 6, left: 16, right: 16,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Row(
+                      children: List.generate(layoutData.length, (index) {
+                        double value;
+                        if (index < _currentIndex) {
+                          value = 1.0;
+                        } else if (index == _currentIndex) {
+                          value = _controller.value;
+                        } else {
+                          value = 0.0;
+                        }
 
-                      return Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: value,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(4),
+                        return Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: value,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }),
-                  );
-                },
+                        );
+                      }),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+
 
 
 
