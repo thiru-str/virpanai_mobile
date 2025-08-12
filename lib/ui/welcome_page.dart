@@ -47,7 +47,7 @@ class WelcomePage extends StatelessWidget {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -56,7 +56,7 @@ class WelcomePage extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 16,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                       ),
                     ],

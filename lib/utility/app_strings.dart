@@ -1,8 +1,8 @@
 // lib/assets.dart
 
 class AppStrings {
-  static const String welcome_to_store = 'Welcome to \n our store';
-  static const String get_your_product = 'Get your product as fast as one hour';
+  static const String welcome_to_store = 'Lightrix';
+  static const String get_your_product = 'One stop Lighting solutions';
 
   static const String transation_details = 'Transaction details';
   static const String get_started = 'Get Started';
