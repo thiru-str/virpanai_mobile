@@ -78,6 +78,7 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
         Visibility(
           visible: (widget.content.layoutTitle??'').isNotEmpty,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
