@@ -26,21 +26,28 @@ class Item4 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title + View All
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
+          Row(
+            children: [
+              Expanded(
+                child: Text(
                   content.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (hasViewAll)
-                  GestureDetector(
+              ),
+
+              if (hasViewAll) const SizedBox(width: 12),
+
+              if (hasViewAll)
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
                     onTap: () {
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
@@ -56,10 +63,9 @@ class Item4 extends StatelessWidget {
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-
           const SizedBox(height: 16),
 
           // Horizontal scroller: adaptive height (no fixed SizedBox wrapper)

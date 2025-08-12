@@ -30,36 +30,41 @@ class Item5 extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                content.layoutTitle ?? '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Expanded(
+                child: Text(
+                  content.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+
+              if (hasViewAll) const SizedBox(width: 12),
+
               if (hasViewAll)
-                GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirectViewAll(
-                      context: context,
-                      redirectData: content.redirectData!,
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        content.layoutRedirectTitle!,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
-                        ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content.redirectData!,
+                      );
+                    },
+                    child: Text(
+                      content.layoutRedirectTitle!,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
                       ),
-                      const Icon(Icons.chevron_right, size: 18),
-                    ],
+                    ),
                   ),
                 ),
             ],
