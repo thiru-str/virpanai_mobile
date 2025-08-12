@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -124,19 +126,22 @@ class Grid1 extends StatelessWidget {
                                 ),
                               ),
                               // 🔸 Top Tag
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(12),
-                                      bottomRight: Radius.circular(8),
+                              Visibility(
+                                visible:(layoutData.salesText ?? '').isNotEmpty,
+                                child: Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(12),
+                                        bottomRight: Radius.circular(8),
+                                      ),
                                     ),
+                                    child: Text(layoutData.salesText ?? '', style: TextStyle(fontSize: 10, color: Colors.white)),
                                   ),
-                                  child: const Text("New Launch", style: TextStyle(fontSize: 10, color: Colors.white)),
                                 ),
                               ),
                               // 🔸 Yellow Playback & Rating
@@ -153,11 +158,11 @@ class Grid1 extends StatelessWidget {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Flexible(
+                                       Flexible(
                                         child: Text(
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          'comfort guaranteed!',
+                                          layoutData.featureText ?? '',
                                           style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
                                         ),
                                       ),
@@ -168,10 +173,10 @@ class Grid1 extends StatelessWidget {
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Row(
-                                          children: const [
+                                          children:  [
                                             Icon(Icons.star, size: 10, color: Colors.green),
                                             SizedBox(width: 2),
-                                            Text("4.4", style: TextStyle(fontSize: 10)),
+                                            Text(generateRandomRating(), style: TextStyle(fontSize: 10)),
                                           ],
                                         ),
                                       )
@@ -270,6 +275,14 @@ class Grid1 extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String generateRandomRating({int maxRating = 5, int decimalPlaces = 1}) {
+    final random = Random();
+
+    double rating = 3.0 + random.nextDouble() * 2.0;
+
+    return rating.toStringAsFixed(decimalPlaces);
   }
 }
 

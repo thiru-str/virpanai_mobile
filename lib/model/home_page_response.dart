@@ -97,6 +97,8 @@ class LayoutDatum {
   String? image;
   String? title;
   String? subTitle;
+  String? featureText;
+  String? salesText;
   Prices? prices;
   RedirectData? redirectData;
   int? rating;
@@ -108,6 +110,8 @@ class LayoutDatum {
     this.image,
     this.title,
     this.subTitle,
+    this.featureText,
+    this.salesText,
     this.prices,
     this.redirectData,
     this.rating,
@@ -120,6 +124,8 @@ class LayoutDatum {
     image: json["image"],
     title: json["title"],
     subTitle: json["sub_title"],
+    featureText: json["feature_text"],
+    salesText: json["sales_text"],
     prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]), // <-- Deserialize
     redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
     rating: json["rating"],
@@ -131,6 +137,8 @@ class LayoutDatum {
     "id": id,
     "image": image,
     "title": title,
+    "feature_text": featureText,
+    "sales_text": salesText,
     "sub_title": subTitle,
     "prices": prices?.toJson(), // <-- Serialize
     "rating": rating,
