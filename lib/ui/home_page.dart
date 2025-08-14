@@ -114,12 +114,6 @@ class _HomePageState extends State<HomePage> {
                       child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
                         PageRouteUtils.pushWithSlide(context, const CartPage());
                       },onSearchClick: (){
-                        // PageRouteUtils.pushWithSlide(context, SearchAddressPage(onTapAddress: (selectedAddress){
-                        //     setState(() {
-                        //       headerTitle = selectedAddress.address1!;
-                        //       addressType = selectedAddress.addressName!;
-                        //     });
-                        // },));
                         PageRouteUtils.pushWithFade(
                             context,
                             const ProductPage(categoryId: '',));
