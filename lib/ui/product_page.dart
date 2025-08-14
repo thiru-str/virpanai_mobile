@@ -16,8 +16,10 @@ import 'widgets/common_header_app_bar.dart';
 
 class ProductPage extends StatefulWidget {
   final String categoryId;
+  final String collectionId;
   final bool isFromBrand;
-  const ProductPage({super.key, required this.categoryId, this.isFromBrand = false});
+  const ProductPage({super.key, required this.categoryId, this.isFromBrand = false,this.collectionId = ''});
+
 
   @override
   State<ProductPage> createState() => _ProductPageState();
