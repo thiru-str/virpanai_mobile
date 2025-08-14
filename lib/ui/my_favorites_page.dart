@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
@@ -47,86 +48,81 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar:CommonHeaderAppBar(
-              title: AppStrings.my_favorites,
-              leading: widget.isFromBottomNav ?? false ? false : true,
-              onBackTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
+        title: AppStrings.my_favorites,
+        leading: widget.isFromBottomNav ?? false ? false : true,
+        onBackTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
       body: apiLoading
           ?  Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      )
           : wishListResponse?.products?.isNotEmpty ?? false
-              ? SafeArea(
-                  child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: GridView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: wishListResponse?.products?.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // Number of columns
-                        crossAxisSpacing: 16, // Space between columns
-                        mainAxisSpacing: 16, // Space between rows
-                        childAspectRatio: (MediaQuery.of(context).size.width / 2) /
-                        (240 + 16 + 16 + 32 + 24), // Adjust this for proper card proportions
-                      ),
-                      itemBuilder: (context, index) {
-                        final product = wishListResponse!.products?[index];
-                        return GestureDetector(
-                          onTap: () {},
-                          child: ProductCard(
-                              imageUrl:
-                              product?.thumbnail ?? "",
-                              title: product?.title ?? "",
-                              price: CurrencyUtil.appendCurrency((product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString()),
-                              onTapFavorite: () {
-                                String currentCustomerId = customer?.id ?? "";
-                                var currentWishlistEntry;
+          ? SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: MasonryGridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16, // Space between columns
+                mainAxisSpacing: 16, // Space between rows
+                scrollDirection: Axis.vertical,
+                itemCount: wishListResponse?.products?.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final product = wishListResponse!.products?[index];
+                  return GestureDetector(
+                    onTap: () {},
+                    child: ProductCard(
+                        imageUrl:
+                        product?.thumbnail ?? "",
+                        title: product?.title ?? "",
+                        price: CurrencyUtil.appendCurrency((product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString()),
+                        onTapFavorite: () {
+                          String currentCustomerId = customer?.id ?? "";
+                          var currentWishlistEntry;
 
-                                // Check if productWishlist is not null and is a list
-                                if (product?.productWishlist is List) {
-                                  // Check if the list contains the current customer's wishlist entry
-                                  currentWishlistEntry = (product?.productWishlist as List).firstWhere(
-                                        (item) => item['customer_id'] == currentCustomerId,
-                                    orElse: () => null, // Return null if no match is found
-                                  );
-                                } else if (product?.productWishlist is Map) {
-                                  // Check if the productWishlist is a map and matches the current customer ID
-                                  currentWishlistEntry = (product?.productWishlist as Map)['customer_id'] == currentCustomerId
-                                      ? product?.productWishlist
-                                      : null;
-                                }
-                                if (currentWishlistEntry != null) {
-                                  // If the wishlist entry is found, delete it
-                                  print('Wishlist entry found: ${currentWishlistEntry['id']}');
-                                  deleteWishList(product?.id, currentWishlistEntry['id']);
-                                } else {
-                                  print('No wishlist entry for this customer.');
-                                }
-                              },
-                              isFavorite: true,
-                              onTapCard: () {
-                                PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: product?.id ?? "0"));
-                              }),
-                        );
-                      },
-                    ),
-                  ),
-                ))
-              : NoOrdersWidget(
-                  message: AppStrings.no_wishlist_yet,
-                  buttonText: AppStrings.explore_categories,
-                  iconPath: AppAssets.ic_cart_empty,
-                  onButtonTap: () {
-                  },
-                ),
+                          // Check if productWishlist is not null and is a list
+                          if (product?.productWishlist is List) {
+                            // Check if the list contains the current customer's wishlist entry
+                            currentWishlistEntry = (product?.productWishlist as List).firstWhere(
+                                  (item) => item['customer_id'] == currentCustomerId,
+                              orElse: () => null, // Return null if no match is found
+                            );
+                          } else if (product?.productWishlist is Map) {
+                            // Check if the productWishlist is a map and matches the current customer ID
+                            currentWishlistEntry = (product?.productWishlist as Map)['customer_id'] == currentCustomerId
+                                ? product?.productWishlist
+                                : null;
+                          }
+                          if (currentWishlistEntry != null) {
+                            // If the wishlist entry is found, delete it
+                            print('Wishlist entry found: ${currentWishlistEntry['id']}');
+                            deleteWishList(product?.id, currentWishlistEntry['id']);
+                          } else {
+                            print('No wishlist entry for this customer.');
+                          }
+                        },
+                        isFavorite: true,
+                        onTapCard: () {
+                          PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: product?.id ?? "0"));
+                        }),
+                  );
+                },
+              ),
+            ),
+          ))
+          : NoOrdersWidget(
+        message: AppStrings.no_wishlist_yet,
+        buttonText: AppStrings.explore_categories,
+        iconPath: AppAssets.ic_cart_empty,
+        onButtonTap: () {
+        },
+      ),
     );
   }
 
