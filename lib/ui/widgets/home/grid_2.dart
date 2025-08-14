@@ -60,7 +60,9 @@ class Grid2 extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: MasonryGridView.count(
-            crossAxisCount: 2,
+              crossAxisCount: 5,
+              mainAxisSpacing: 16,
+
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: items.length,
