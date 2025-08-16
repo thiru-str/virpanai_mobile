@@ -8,6 +8,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/map_page.dart';
+import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/scanner_view.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
@@ -144,12 +145,25 @@ class _HomePageNewState extends State<HomePageNew> {
                             minimumSize: const Size(
                                 double.infinity, 56), // Full width button
                           ),
-                          onPressed: () {
-                            PageRouteUtils.pushWithFade(
-                                context,ScannerView()
-                            );
-                          },
-                          child:  Text(
+                          onPressed: () async {
+                                  final result =
+                                      await PageRouteUtils.pushWithFade(
+                                          context, ScannerView());
+
+                                  if (result != null && result is String) {
+                                    if (result.startsWith('prod_')) {
+                                      PageRouteUtils.pushWithSlide(
+                                        context,
+                                        ProductDetailPage(
+                                            productId: result.toString()),
+                                      );
+                                    }
+                                    else{
+                                      AppUtils.showToast('Invalid QR Code');
+                                    }
+                                  }
+                                },
+                                child:  Text(
                             'Scan to view',
                             style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
                           ),

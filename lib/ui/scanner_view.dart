@@ -53,10 +53,11 @@ class _ScannerViewState extends State<ScannerView> {
                     final code = barcode.barcodes.firstOrNull?.rawValue;
                     if (code == null) return;
 
+                    debugPrint('scanned code'+code);
                     _hasScanned = true;
                     await _scannerController.stop();
 
-                    Navigator.pop(context); // remove scanner from view stack
+                    Navigator.pop(context,code); // remove scanner from view stack
 
                   },
 
