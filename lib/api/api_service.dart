@@ -76,6 +76,7 @@ class ApiService {
         await _handleLogout(context, response.data['error']);
         throw Exception('Unauthorized: ${response.data['error']}');
       } else {
+        AppLogger.print('error message:', response.data['message'] ??'');
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
