@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_strings.dart';
 
 import '../../../utility/app_colors.dart';
@@ -137,12 +139,13 @@ class _Item5Card extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: Image(
-                    image: CachedNetworkImageProvider(layoutData.image!),
+                  child: (layoutData.image??'').isNotEmpty?Image(
+                    image: CachedNetworkImageProvider(layoutData.image??''),
                     height: 280,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                  ),
+                    errorBuilder: (context, error, stackTrace) => _imageFallback(),
+                  ):_imageFallback(),
                 ),
                 Positioned(
                   top: 8,
@@ -237,6 +240,21 @@ class _Item5Card extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _imageFallback() {
+    return Container(
+      height: 280,
+      width: double.infinity,
+      color:AppColors.secondary, // light grey background
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image, // <- your SVG path
+        width: 56,
+        height: 56,
+        // optional tint to match your UI
       ),
     );
   }

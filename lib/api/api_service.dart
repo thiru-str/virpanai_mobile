@@ -403,7 +403,7 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v5',
+      'store/get_home_page/v7',
         null,
       (json) => HomePageResponse.fromJson(json),
       context,

@@ -2,7 +2,11 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/font_utils.dart';
+
+import '../../utility/app_assets.dart';
+import '../../utility/app_colors.dart';
 
 class CategoryCard extends StatelessWidget {
   final String imagePath;
@@ -50,12 +54,9 @@ class CategoryCard extends StatelessWidget {
                   height: 140, // Adjusted image height
                   width: double.infinity, // Take full width
                   fit: BoxFit.cover, // Fill the card space
+                  errorWidget: (context, error, stackTrace) => _imageFallback(),
                 )
-                    : Container(
-                  height: 140,
-                  width: double.infinity,
-                  color: Colors.grey[200], // Placeholder background
-                ),
+                    :_imageFallback(),
               ),
               const SizedBox(height: 12),
               Text(
@@ -92,4 +93,20 @@ class CategoryCard extends StatelessWidget {
       random.nextInt(256), // Blue value
     );
 }
+
+  Widget _imageFallback() {
+    return Container(
+      height: 140,
+      width: double.infinity,
+      color:AppColors.secondary, // light grey background
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image, // <- your SVG path
+        width: 56,
+        height: 56,
+        // optional tint to match your UI
+      ),
+    );
+  }
+
 }

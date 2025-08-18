@@ -149,7 +149,7 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: ViewCartWidget(
                       totalItems: cartItems!,
-                      itemImages:  cartItemImages!
+                      itemImages:  cartItemImages??[]
                     ),
                   ),
                 ): const SizedBox(),
@@ -227,10 +227,14 @@ class _HomePageState extends State<HomePage> {
           .fold<int>(0, (sum, qty) => sum + qty);
       setState(() {
         cartItems = totalQty;
-        cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
+        cartItemImages = (cartResponse?.cart?.items ?? [])
+            .map((item) => item.thumbnail)
+            .where((thumb) => thumb != null && thumb.isNotEmpty)
+            .cast<String>()
+            .toList();
       });
       if((cartResponse?.cart?.items?.length?? 0) > 0) {
-        eventBus.fire(ViewCartModel(totalQty??0, cartItemImages!));
+        eventBus.fire(ViewCartModel(totalQty??0, cartItemImages??[]));
       }
     } catch (e) {
       print(e);

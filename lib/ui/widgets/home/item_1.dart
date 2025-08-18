@@ -50,7 +50,7 @@ class _Item1State extends State<Item1> {
                   );
                 },
                 child: CachedNetworkImage(
-                  imageUrl: layoutData.image!,
+                  imageUrl: layoutData.image??'',
                   fit: BoxFit.cover,
                   width: double.infinity,
                 ),

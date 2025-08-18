@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
@@ -37,19 +39,7 @@ class ProductCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Container(
-                  height: 210, // Fixed height for the image
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                    image: DecorationImage(
-                      image: CachedNetworkImageProvider(imageUrl),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+                buildImage(imageUrl),
                 if (onTapFavorite != null)
                   Positioned(
                     top: 8,
@@ -99,5 +89,33 @@ class ProductCard extends StatelessWidget {
       ,
     )
     ;
+  }
+
+  Widget buildImage(String? imageUrl) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      child: SizedBox(
+        height: 210,
+        width: double.infinity,
+        child: (imageUrl == null || imageUrl.isEmpty)
+            ? _fallbackWidget()
+            : Image(
+          image: CachedNetworkImageProvider(imageUrl),
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _fallbackWidget(),
+        ),
+      ),
+    );
+  }
+  Widget _fallbackWidget() {
+    return Container(
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 48,
+        height: 48,
+      ),
+    );
   }
 }

@@ -8,18 +8,19 @@ import 'package:waioz/utility/font_utils.dart';
 
 class ViewCartWidget extends StatelessWidget {
   final int totalItems;
-  final List<String> itemImages;
+  final List<String>? itemImages; // allow null list
 
   const ViewCartWidget({
     Key? key,
     required this.totalItems,
-    required this.itemImages,
+    this.itemImages, // now nullable
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final bool hasExtraItems = itemImages.length > 2;
-    final int extraItemsCount = itemImages.length - 2;
+    final images = itemImages ?? []; // safely handle null
+    final bool hasExtraItems = images.length > 2;
+    final int extraItemsCount = images.length - 2;
 
     return Container(
       height: 70,
@@ -29,33 +30,51 @@ class ViewCartWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(50),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min, // Adjust width to content
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Images Row with Overlapping Effect
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: SizedBox(
               width: hasExtraItems
                   ? 100
-                  : (itemImages.length == 1 ? 40 : 70), // Dynamically adjust width
+                  : (images.length == 1 ? 40 : (images.isEmpty ? 40 : 70)),
               child: Stack(
-                clipBehavior: Clip.none, // Allow overflowing content
+                clipBehavior: Clip.none,
                 children: [
-                  for (int i = 0; i < itemImages.length && i < 2; i++)
+                  for (int i = 0; i < images.length && i < 2; i++)
                     Positioned(
-                      left: i * 30.0, // Position the images with spacing
+                      left: i * 30.0,
                       child: CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 18,
-                          backgroundImage: NetworkImage(itemImages[i]),
+                          backgroundColor: AppColors.secondary,
+                          backgroundImage: (images[i].isNotEmpty)
+                              ? NetworkImage(images[i])
+                              : null,
+                          child: images[i].isEmpty
+                              ? Icon(Icons.image_not_supported,
+                              color: Colors.white, size: 18)
+                              : null,
                         ),
+                      ),
+                    ),
+                  if (images.isEmpty)
+                  // show one fallback avatar if no images at all
+                    const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.white,
+                      child: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.shopping_bag,
+                            color: Colors.white, size: 18),
                       ),
                     ),
                   if (hasExtraItems)
                     Positioned(
-                      left: 60.0, // Position for the "+X" CircleAvatar
+                      left: 60.0,
                       child: CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.white,
@@ -77,13 +96,12 @@ class ViewCartWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 10), // Space between images and text
-          // View cart text
+          const SizedBox(width: 10),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               Text(
+              Text(
                 AppStrings.view_cart,
                 style: FontUtils.primaryFontStyle(
                   color: Colors.white,
@@ -101,8 +119,7 @@ class ViewCartWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(width: 10), // Space between text and button
-          // Action button
+          const SizedBox(width: 10),
           Container(
             height: 40,
             width: 40,
@@ -110,7 +127,7 @@ class ViewCartWidget extends StatelessWidget {
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            child:  Icon(
+            child: Icon(
               Icons.arrow_forward_ios,
               color: AppColors.primary,
               size: 20,
@@ -120,11 +137,8 @@ class ViewCartWidget extends StatelessWidget {
       ),
     );
   }
-
-
-
-
 }
+
 
 
 

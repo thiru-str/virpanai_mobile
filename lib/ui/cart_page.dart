@@ -105,7 +105,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     final cartItem =
                                         cartResponse!.cart!.items![index];
                                     return CartItemCard(
-                                      imageUrl: cartItem.thumbnail!,
+                                      imageUrl: cartItem.thumbnail??'',
                                       productName: cartItem.productTitle!,
                                       size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
                                       color: 'color',

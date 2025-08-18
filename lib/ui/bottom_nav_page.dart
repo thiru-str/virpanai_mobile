@@ -86,7 +86,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       await Future.wait([
         getCustomerApi(), // Wait for customer API
-        getHomePageApi() // Wait for home page API
+        //getHomePageApi() // Wait for home page API
       ]);
       setState(() {
         _isLoading = false;

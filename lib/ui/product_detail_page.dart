@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
@@ -30,6 +31,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/app_assets.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
@@ -202,36 +204,59 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildProductImages() {
+    final images = product?.images ?? [];
+
+    final itemCount = images.isNotEmpty ? images.length : 1;
+
     return SizedBox(
       height: 250,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: product?.images?.length ?? 0,
+        itemCount: itemCount,
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
+          final url = images.isNotEmpty ? images[index].url : null;
+
           return GestureDetector(
             onTap: () {
-              // Open fullscreen carousel
-              if (product!.images!.isNotEmpty) {
+              if (images.isNotEmpty) {
                 PageRouteUtils.pushWithFade(
-                    context,
-                    FullscreenImageCarousel(
-                      imageUrls: product!.images!,
-                      initialIndex: index,
-                    ));
+                  context,
+                  FullscreenImageCarousel(
+                    imageUrls: images,
+                    initialIndex: index,
+                  ),
+                );
               }
             },
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: CachedNetworkImage(
-                imageUrl: product!.images![index].url!,
+              child: (url != null && url.isNotEmpty)
+                  ? CachedNetworkImage(
+                imageUrl: url,
                 height: 250,
                 fit: BoxFit.cover,
-              ),
+                errorWidget: (context, _, __) => _fallbackWidget(),
+              )
+                  : _fallbackWidget(),
             ),
           );
         },
+      ),
+    );
+  }
+
+
+  Widget _fallbackWidget() {
+    return Container(
+      height: 250,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 48,
+        height: 48,
       ),
     );
   }
@@ -621,7 +646,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               PageRouteUtils.pushWithSlide(context, const CartPage());
             },
             child: ViewCartWidget(
-                totalItems: cartItems!, itemImages: cartItemImages!),
+                totalItems: cartItems!, itemImages: cartItemImages??[]),
           ),
         )
             : const SizedBox(),
@@ -815,6 +840,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
       setState(() => quantityLoading = false);
     } catch (e) {
+        debugPrint('calling here');
       setState(() => quantityLoading = false);
       print(e);
     }
@@ -881,17 +907,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   void emitEvent(CartResponse cartResponse) {
-    final totalQty = cartResponse.cart!.items!
+    final totalQty = (cartResponse.cart?.items ?? [])
         .map((item) => item.quantity ?? 0) // pick quantity, default to 0
         .fold<int>(0, (sum, qty) => sum + qty);
     setState(() {
       cartItems = totalQty;
-      cartItemImages =
-          cartResponse.cart!.items!.map((item) => item.thumbnail!).toList();
+      cartItemImages = (cartResponse.cart?.items ?? [])
+          .map((item) => item.thumbnail)
+          .where((thumb) => thumb != null && thumb.isNotEmpty)
+          .cast<String>()
+          .toList();
     });
 
-    eventBus.fire(ViewCartModel(totalQty,
-        cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    eventBus.fire(ViewCartModel(totalQty,cartItemImages??[]));
   }
 
   Future<void> navigateToCart() async {

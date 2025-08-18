@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/font_utils.dart';
 
+import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 
 class CartItemCard extends StatelessWidget {
@@ -48,12 +50,13 @@ class CartItemCard extends StatelessWidget {
               // Product Image
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
-                child: CachedNetworkImage(
+                child: imageUrl.isNotEmpty?CachedNetworkImage(
                   imageUrl: imageUrl,
                   width: 60,
                   height: 80,
                   fit: BoxFit.cover,
-                ),
+                  errorWidget: (context, _, __) => _imageFallback(60,80),
+                ):_imageFallback(60,80),
               ),
               const SizedBox(width: 12.0),
               // Product Details
@@ -165,5 +168,20 @@ class CartItemCard extends StatelessWidget {
       ],
     );
   }
+  Widget _imageFallback(double w, double h) {
+    return Container(
+      width: w,
+      height: h,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: w * 0.5, // scale relative to container
+        height: h * 0.5,
+      ),
+    );
+  }
+
+
 }
 
