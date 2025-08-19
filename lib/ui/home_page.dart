@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
               await getHomePageApi();
             },
                 child: SingleChildScrollView(
-                            physics: AlwaysScrollableScrollPhysics(),
+                            physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
                       Padding(

@@ -50,7 +50,7 @@ class CartPaymentMethodWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isActionable = paymentMethod == "NEFT"; // Only NEFT is actionable
+    bool isActionable = paymentMethod == "UPI"; // Only NEFT is actionable
     Color backgroundColor = isActionable
         ? AppColors.primary.withOpacity(0.15) // Highlighted for NEFT
         : AppColors.textColor.withOpacity(0.1); // Default for other methods

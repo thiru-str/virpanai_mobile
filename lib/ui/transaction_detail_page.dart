@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -25,7 +28,7 @@ class TransactionDetailsScreen extends StatefulWidget {
 }
 
 class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
-  BankDetails? bankDetails;
+  UpiDetails? upiDetails;
   NeftTransactionResponse? transactionResponse;
 
   @override
@@ -45,7 +48,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     final neftTransactionDetails =
         await ApiService().getNEFTTransaction(context, widget.orderID);
     setState(() {
-      bankDetails = publicDetails?.bankDetails;
+      upiDetails = publicDetails?.upiDetails;
       transactionResponse = neftTransactionDetails;
     });
   }
@@ -77,7 +80,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTransactionInfoCard(),
+            //_buildTransactionInfoCard(),
+            _buildQrCard(),
             const SizedBox(height: 20),
             transactionResponse?.neftPayment?.isNotEmpty ?? false
                 ? Expanded(
@@ -129,11 +133,11 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
             children: [
               Expanded(
                   child: _buildInfoRow('${AppStrings.name}:',
-                      bankDetails?.accountHolderName ?? "")),
+                      upiDetails?.upiId ?? "")),
               const SizedBox(width: 10),
               Expanded(
                   child: _buildInfoRow(
-                      '${AppStrings.bank_name}:', bankDetails?.bankName ?? "")),
+                      '${AppStrings.bank_name}:', upiDetails?.upiNotes ?? "")),
             ],
           ),
           const SizedBox(height: 20),
@@ -141,13 +145,108 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
             children: [
               Expanded(
                   child: _buildInfoRow('${AppStrings.account_no}:',
-                      bankDetails?.accountNumber ?? "")),
+                      '')),
               const SizedBox(width: 10),
               Expanded(
                   child: _buildInfoRow(
-                      '${AppStrings.IFSC_code}:', bankDetails?.ifscCode ?? "")),
+                      '${AppStrings.IFSC_code}:','')),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQrCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        gradient: LinearGradient(
+          colors: [AppColors.primary, Colors.deepPurple],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Title
+          Text(
+            AppConfig.appName,
+            style: FontUtils.primaryFontStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // QR Code
+          Visibility(
+            visible: (upiDetails?.upiId??'').isNotEmpty,
+            child: QrImageView(
+              data: upiDetails?.upiId??'',
+              version: QrVersions.auto,
+              size: 180.0,
+              backgroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // UPI ID row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "UPI ID: ",
+                  style: FontUtils.primaryFontStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  upiDetails?.upiId??'',
+                  style: FontUtils.primaryFontStyle(color: Colors.black),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: upiDetails?.upiId??''));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("UPI ID copied!")),
+                    );
+                  },
+                  child: const Icon(Icons.copy, size: 16, color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          if (upiDetails?.upiNotes != null && (upiDetails?.upiNotes??'').isNotEmpty)
+            Text(
+              upiDetails?.upiNotes??'',
+              style: FontUtils.primaryFontStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
         ],
       ),
     );

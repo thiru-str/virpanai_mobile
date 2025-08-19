@@ -9,6 +9,7 @@ import 'package:waioz/ui/widgets/order_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -117,8 +118,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           createdAt: (orderHistoryResponse?.orders?[index].createdAt??DateTime.now()),
           itemPrice: (orderHistoryResponse?.orders?[index].total?? 0),
           onTap: () {
-            // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
-            PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(selectedOrder: orderHistoryResponse?.orders?[index],));
+            PageRouteUtils.push(context, OrderDetailItemPage(orderId: orderHistoryResponse?.orders?[index].id??'',));
           },
         );
       },

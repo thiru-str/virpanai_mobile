@@ -55,7 +55,7 @@ class OrderPlacedPage extends StatelessWidget {
                   Text(
                     AppStrings.order_placed_success,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 28, // Adjusted font size for responsiveness
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
                     ),

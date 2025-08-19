@@ -125,10 +125,10 @@ class AppStrings {
 
   static const String close = 'Close';
   static const String confirm_continue = 'Confirm and Continue';
-  static const String neft_payment_instruct = "NEFT Payment Instructions";
+  static const String neft_payment_instruct = "UPI Payment Instructions";
   static const String place_your_order = "Place Your Order";
   static const String neft_payment_desc =
-      "You've selected NEFT as your payment method. Your order will be placed immediately. Please transfer the amount using the bank details available via the 'NEFT' button on the order details page. After payment, upload a screenshot and provide the receipt number and transfer date for verification.";
+      "You've selected UPI as your payment method. Your order will be placed immediately. Please transfer the amount using the UPI details available via the 'UPI' button on the order details page. After payment, upload a screenshot and provide the Transaction ID and Transaction date for verification.";
 
   static const String clear_all = "Clear All";
   static const String recommended = "Recommended";

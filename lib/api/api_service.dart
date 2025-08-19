@@ -7,6 +7,7 @@ import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
+import 'package:waioz/model/order_history_individual_reponse.dart';
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
@@ -394,7 +395,7 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v5',
+      'store/get_home_page/v7',
         null,
       (json) => HomePageResponse.fromJson(json),
       context,
@@ -603,6 +604,17 @@ class ApiService {
     );
   }
 
+  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
+    await addToken();
+    return _makeGetRequest<OrderHistoryIndividualReponse>(
+      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,',
+      null,
+      null,
+      (json) => OrderHistoryIndividualReponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<ProductInfoResponse> getProductInfo(
       BuildContext context, String? productId, String? variantId) async {
     await addToken();
@@ -671,14 +683,14 @@ class ApiService {
     );
   }
 
-  Future<dynamic> completeCart(
+  Future<PlaceOrderResponse> completeCart(
       BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId/complete',
       null,
-          (json) => json,
+          (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }

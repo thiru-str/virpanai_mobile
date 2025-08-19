@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
@@ -40,6 +41,7 @@ import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
 import '../utility/stripe_service.dart';
+import 'order_detail_item_page.dart';
 
 class CheckOutPage extends StatefulWidget {
   final CartResponse? cartResponse;
@@ -459,11 +461,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void completeCart() async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.completeCart(context);
+      final response = await apiService.completeCart(context);
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+      if(response.order!=null) {
+        Order? order = response.order!;
+        PageRouteUtils.pushAndRemoveUntil(context, OrderDetailItemPage(orderId: order.id));
+      }
+      else {
+        PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+      }
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
