@@ -7,6 +7,7 @@ import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -17,6 +18,8 @@ import '../ui/splash_page.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +58,9 @@ Future<void> main() async {
 
 
   runApp(HomeScreen(skipLogin: false,));
+  Future.delayed(Duration.zero, () {
+    AppLinkHelper.init();
+  });
 }
 
 class HomeScreen extends StatelessWidget {
@@ -64,6 +70,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
+      navigatorKey: navigatorKey, // if you're using it for global navigation
       debugShowCheckedModeBanner: false,
       home: SplashPage(skipLogin: skipLogin),
     );
