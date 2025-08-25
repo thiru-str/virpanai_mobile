@@ -60,11 +60,14 @@ class OrderDetailItemCard extends StatelessWidget {
                 // Product Size and Color
                 Row(
                   children: [
-                    Text(
-                      size,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
+                    Expanded(
+                      child: Text(
+                        size,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                   ],
