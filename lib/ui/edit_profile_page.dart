@@ -24,6 +24,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController companyController = TextEditingController();
   RegisterResponse? registerResponse;
   bool apiCalling = true;
+  bool submitCalling = false;
   Customer? customer;
 
   @override
@@ -91,7 +92,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       },
                     ),
                     const SizedBox(height: 32),
-                    ElevatedButton(
+                    submitCalling? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           // Handle registration logic
@@ -152,6 +153,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   void updateUser() async {
     try {
+      setState(() {
+        submitCalling = true;
+      });
       final ApiService apiService = ApiService();
       registerResponse = await apiService.updateProfile(
           context,
@@ -160,14 +164,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           firstNameController.text,
           lastNameController.text);
       setState(() {
-        apiCalling = false;
+        submitCalling = false;
       });
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
-      Navigator.pop(context, true);
     } catch (e) {
       setState(() {
-        apiCalling = false;
+        submitCalling = false;
       });
       print(e);
     }
