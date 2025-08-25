@@ -172,7 +172,7 @@ class _Item4Card extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16, ),
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
@@ -189,7 +189,7 @@ class _Item4Card extends StatelessWidget {
 
             // Prices
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
                   Text(
