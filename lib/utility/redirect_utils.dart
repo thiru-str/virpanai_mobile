@@ -129,4 +129,5 @@ class RedirectUtils {
 
     await launchExternalUrl(url!);
   }
+
 }

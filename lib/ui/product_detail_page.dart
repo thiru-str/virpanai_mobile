@@ -23,6 +23,7 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -160,6 +161,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           }
         },
         onFavTap: addFavourite,
+        onShareTap: (){
+          AppLinkHelper.shareProductInvite(widget.productId);
+        },
         isFavorite: isFavorite, // Pass the updated favorite status here
       ),
       backgroundColor: Colors.white,

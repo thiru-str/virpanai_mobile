@@ -1,5 +1,6 @@
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -50,6 +51,29 @@ class AppLinkHelper {
         ),
             (Route<dynamic> route) => false,
       );
+    }
+  }
+
+  static Future<void> shareProductInvite(
+      String productId,
+      ) async {
+    try {
+
+      final Uri link = Uri.parse('https://ecommerce.gowelmart.com/details?id=${productId}');
+
+      final String message = '''
+Check out this product on GoWelMart! 🛍️
+
+I think you'll love this. Here's the link: $link
+''';
+
+      await Share.share(
+        message,
+        subject: 'Look what I found on GoWelMart!',
+      );
+    } catch (e, stack) {
+      debugPrint('❌ Failed to share booking invite: $e');
+      // Optionally show toast or dialog
     }
   }
 
