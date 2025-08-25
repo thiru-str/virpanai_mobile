@@ -10,3 +10,8 @@ class ViewCartModel {
 
   ViewCartModel(this.totalItems,this.itemImages);
 }
+
+class TabSwitchEvent {
+  final int tabIndex;
+  TabSwitchEvent(this.tabIndex);
+}

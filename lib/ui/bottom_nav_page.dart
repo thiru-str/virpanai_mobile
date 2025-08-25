@@ -83,6 +83,13 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
         });
       }
     });
+    _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          _currentIndex = event.tabIndex;
+        });
+      }
+    });
   }
 
   Future<void> initializePages() async {

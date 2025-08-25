@@ -236,7 +236,9 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                       message: AppStrings.cart_empty,
                       buttonText: AppStrings.explore_categories,
                       iconPath: AppAssets.ic_cart_empty,
-                      onButtonTap: () {})),
+                      onButtonTap: () {
+                        eventBus.fire(TabSwitchEvent(1));
+                      })),
     );
   }
 
