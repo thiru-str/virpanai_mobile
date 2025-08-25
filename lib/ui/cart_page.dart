@@ -289,7 +289,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       emitEvent(cartResponse!);
     } catch (e) {
       setState(() {
-
+        cartResponse!.cart!.items![index].isUpdating = false;
       });
       print(e);
     }
