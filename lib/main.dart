@@ -11,7 +11,6 @@ import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/push_notification_service.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../ui/splash_page.dart';
@@ -33,9 +32,6 @@ Future<void> main() async {
   await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
   await Firebase.initializeApp();
-
-  final pushNotificationService = PushNotificationService();
-  await pushNotificationService.initializeFCM();
 
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());

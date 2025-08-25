@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
@@ -237,12 +238,49 @@ class ApiService {
 
   Future<VerifyOtpResponse> verifyOtp(
       BuildContext context,String countryCode,String phone, String otp) async {
-    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
+    String? deviceToken = await _updateToken();
     return _makePostRequest(
         "store/customers/verify-otp",
-        {"device_id": deviceId,"country_code":countryCode,"phone": phone, "otp": otp},
+        {"device_id": deviceToken,"country_code":countryCode,"phone": phone, "otp": otp},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
+  }
+
+  Future<String?> _updateToken() async {
+
+    String? fcmToken = await SharedPreferencesUtil().getString('fcm_token');
+
+    if (fcmToken == null || fcmToken.isEmpty) {
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        if (fcmToken != null && fcmToken.isNotEmpty) {
+          AppLogger.print('FCM token: ', fcmToken);
+          await SharedPreferencesUtil().saveString('fcm_token', fcmToken);
+        } else {
+          AppLogger.print('Failed to generate a new FCM token', '');
+          return null;
+        }
+      } catch (e) {
+        AppLogger.print('Error getting FCM token: $e', '');
+        return null;
+      }
+    }
+
+    // 3. Check if the token we have has been uploaded
+    String uploadedToken = await SharedPreferencesUtil().getString('fcm_token_uploaded') ?? '';
+
+    // 4. If it's a new token, upload it to the server
+    if (fcmToken != uploadedToken) {
+      AppLogger.print('Uploading new FCM token', fcmToken);
+      // Note: It's generally advised to avoid passing 'context' to long-lived operations
+      // as it might be disposed. Consider providing a way to get a fresh context or use a global navigator key.
+      await SharedPreferencesUtil().saveString('fcm_token_uploaded', fcmToken);
+    } else {
+      AppLogger.print('FCM token already uploaded', '');
+    }
+
+    // 5. Return the token to the caller
+    return fcmToken;
   }
 
   Future<RegisterResponse> register(

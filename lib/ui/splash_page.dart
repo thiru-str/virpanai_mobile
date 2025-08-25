@@ -10,6 +10,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../api/push_notification_service.dart';
 import '../utility/app_strings.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -32,6 +33,9 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    Future.microtask(() async {
+      await PushNotificationService().initialize(context);
+    });
 
     // Initialize animation controller
     _controller = AnimationController(
