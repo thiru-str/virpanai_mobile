@@ -191,4 +191,6 @@ class AppStrings {
 
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
+
+  static const String deleteAccount = 'Delete Account';
 }

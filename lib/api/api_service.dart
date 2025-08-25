@@ -805,6 +805,14 @@ class ApiService {
     );
   }
 
+  Future<RegisterResponse> deleteAccount(BuildContext context) async {
+    await addToken();
+    return _makeDeleteRequest("store/customers/delete", null, null,
+            (data) => RegisterResponse.fromJson(data), context);
+  }
+
+
+
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =
         'Bearer ${await SharedPreferencesUtil().getString('token')}';
