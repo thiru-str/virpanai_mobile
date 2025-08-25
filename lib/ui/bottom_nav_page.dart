@@ -40,6 +40,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
 
   int? cartItems;
   late StreamSubscription<ViewCartModel> _eventSubscription;
+  late StreamSubscription<TabSwitchEvent> _tabSwitchSub;
   bool isLoggedIn = false;
 
   @override
@@ -122,6 +123,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   void dispose() {
     _animationController.dispose();
     _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
