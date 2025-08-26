@@ -39,7 +39,6 @@ class RedirectUtils {
     required BuildContext context,
     required RedirectData redirectData,
   }) {
-    debugPrint('calling here 1${redirectData.redirectType}');
     final handler = _viewAllRedirectHandlers[redirectData.redirectType];
     if (handler != null) {
       handler(context, redirectData);
@@ -117,7 +116,6 @@ class RedirectUtils {
   }
 
   static void _handleProductRedirect(BuildContext context, RedirectData redirectData) {
-    debugPrint('calling here ${jsonEncode(redirectData.redirectProductData)}');
     final productId = redirectData.redirectProductData?.productId;
     if (productId?.isEmpty ?? true) return;
 
