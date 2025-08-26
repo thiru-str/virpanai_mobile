@@ -62,7 +62,6 @@ class Grid2 extends StatelessWidget {
           child: MasonryGridView.count(
               crossAxisCount: 5,
               mainAxisSpacing: 16,
-
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: items.length,
@@ -77,6 +76,7 @@ class Grid2 extends StatelessWidget {
                   );
                 },
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
                       width: 60,
@@ -88,15 +88,18 @@ class Grid2 extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      layoutData.title ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 11),
+                    SizedBox(
+                      height: 28, // enough for 2 lines at fontSize 11
+                      child: Text(
+                        layoutData.title ?? '',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.primaryFontStyle(fontSize: 11),
+                      ),
                     ),
                   ],
-                ),
+                )
               );
             },
           ),
