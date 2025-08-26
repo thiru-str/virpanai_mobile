@@ -8,15 +8,17 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../api/api_service.dart';
+import 'bottom_nav_page.dart';
 import 'widgets/cart_calculation.dart';
 import 'widgets/common_header_app_bar.dart';
 import 'widgets/order_detail_item_card.dart';
 
 class OrderDetailItemPage extends StatefulWidget {
 
-  final Order? selectedOrder;
+  final String? orderId;
 
-  const OrderDetailItemPage({super.key, this.selectedOrder});
+  const OrderDetailItemPage({super.key, this.orderId});
 
   @override
   State<OrderDetailItemPage> createState() => _OrderDetailItemPageState();
@@ -25,80 +27,120 @@ class OrderDetailItemPage extends StatefulWidget {
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   String paymentType = "Unknown"; // Default value
+  Order? order;
+  Map<String, String> paymentTypeMap = {
+    "pp_system_default": "COD",
+    "pp_stripe_stripe": "Stripe",
+    "pp_razorpay_razorpay": "Razorpay",
+    "pp_neft_neft": "UPI",
+  };
+  bool apiLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
-    Map<String, String> paymentTypeMap = {
-      "pp_system_default": "COD",
-      "pp_stripe_stripe": "Stripe",
-      "pp_razorpay_razorpay": "Razorpay",
-      "pp_neft_neft": "NEFT",
-    };
-    String? paymentId = widget.selectedOrder?.paymentCollections?.first.payments?.first.providerId;
-    print(paymentId);
-    setState(() {
-      paymentType = paymentTypeMap[paymentId] ?? "Unknown";
-    });
+    super.initState();
+    initializePages();
+  }
+
+  Future<void> initializePages() async {
+    getOrderHistoryAPI();
+  }
+
+  void getOrderHistoryAPI() async {
+    try {
+      final ApiService apiService = ApiService();
+      var response = await apiService.getIndividualOrderHistory(context,widget.orderId??'');
+      setState(() {
+        order = response.order;
+        debugPrint('order details called');
+        String? paymentId = order?.paymentCollections?.first.payments?.firstOrNull?.providerId??'';
+        print(paymentId);
+        paymentType = paymentTypeMap[paymentId] ?? "Unknown";
+        apiLoading= false;
+      });
+    } catch (e) {
+      debugPrint('exception called');
+      if (mounted) {
+        setState(() {
+          apiLoading= false;
+        });
+      }
+      print(e);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CommonHeaderAppBar(
-        title: AppStrings.orders,
-        onBackTap: () {
-          Navigator.of(context).pop();
+    return PopScope(
+        canPop: false, // Disable default back button
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          if (Navigator.of(context).canPop()) {
+            Navigator.pop(context); // Normal back navigation
+          } else {
+            // Redirect to home when no backstack exists
+            PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+          }
         },
-      ),
-      body: SingleChildScrollView(  // Wrap the body with SingleChildScrollView for scrolling
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        child: Column(  // Use a Column to arrange the widgets vertically
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildOrdersList(),
-            _buildSectionTitle('Billing details'),
-            const SizedBox(height: 10),// List of order items
-            Container(
-              padding: const EdgeInsets.all(0.0),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 10),
-                  CartPaymentMethodWidget(
-                    paymentMethod: paymentType, // Or any other payment method
-                    onTap: () {
-                      PageRouteUtils.pushWithSlide(context, TransactionDetailsScreen(orderID: widget.selectedOrder?.id ?? "",));
-                    },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: CommonHeaderAppBar(
+            title: AppStrings.orders,
+            onBackTap: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+              }
+            },
+          ),
+          body: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):SingleChildScrollView(  // Wrap the body with SingleChildScrollView for scrolling
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: Column(  // Use a Column to arrange the widgets vertically
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildOrdersList(),
+                _buildSectionTitle('Billing details'),
+                const SizedBox(height: 10),// List of order items
+                Container(
+                  padding: const EdgeInsets.all(0.0),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
                   ),
-                  SizedBox(height: 10,),
-                  CartCalculation(
-                    keyText: '${AppStrings.subTotal}:',
-                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.subtotal ?? 0).toString()),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      CartPaymentMethodWidget(
+                        paymentMethod: paymentType, // Or any other payment method
+                        onTap: () {
+                          PageRouteUtils.pushWithSlide(context, TransactionDetailsScreen(orderID: order?.id ?? "",));
+                        },
+                      ),
+                      SizedBox(height: 10,),
+                      CartCalculation(
+                        keyText: '${AppStrings.subTotal}:',
+                        valueText: CurrencyUtil.appendCurrency((order?.subtotal ?? 0).toString()),
+                      ),
+                      CartCalculation(
+                        keyText: '${AppStrings.tax}:',
+                        valueText: CurrencyUtil.appendCurrency((order?.taxTotal ?? 0).toString()),
+                      ),
+                      CartCalculation(
+                          keyText: '${AppStrings.total}:',
+                          valueText: CurrencyUtil.appendCurrency((order?.total ?? 0).toString())
+                      ),
+                    ],
                   ),
-                  CartCalculation(
-                    keyText: '${AppStrings.tax}:',
-                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.taxTotal ?? 0).toString()),
-                  ),
-                  CartCalculation(
-                    keyText: '${AppStrings.total}:',
-                    valueText: CurrencyUtil.appendCurrency((widget.selectedOrder?.total ?? 0).toString())
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 20),
+                _buildSectionTitle('Shipping details'),
+                const SizedBox(height: 20),// List of order items
+                _buildShippingDetailsCard(),  // Shipping details card
+              ],
             ),
-            const SizedBox(height: 20),
-            _buildSectionTitle('Shipping details'),
-            const SizedBox(height: 20),// List of order items
-            _buildShippingDetailsCard(),  // Shipping details card
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   Widget _buildSectionTitle(String title) {
@@ -116,9 +158,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     return ListView.builder(
       shrinkWrap: true,  // Prevent the list from taking up unnecessary space
       physics: NeverScrollableScrollPhysics(),  // Disable scrolling for the list within SingleChildScrollView
-      itemCount: widget.selectedOrder?.items?.length,  // Define the number of items you want to show
+      itemCount: order?.items?.length??0,  // Define the number of items you want to show
       itemBuilder: (context, index) {
-        final itemDetail = widget.selectedOrder?.items?[index];
+        final itemDetail = order?.items?[index];
         return OrderDetailItemCard(
           imageUrl: itemDetail?.thumbnail ?? "",
           size: itemDetail?.variantTitle ?? "",
@@ -144,13 +186,13 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           children: [
             //
             Text(
-              '${widget.selectedOrder?.cart?.shippingAddress?.address1}, '
-                  '${widget.selectedOrder?.cart?.shippingAddress?.city},'
-                  '${widget.selectedOrder?.cart?.shippingAddress?.postalCode}, '
-                  '${widget.selectedOrder?.cart?.shippingAddress?.province ?? ''}',
+              '${order?.cart?.shippingAddress?.address1}, '
+                  '${order?.cart?.shippingAddress?.city},'
+                  '${order?.cart?.shippingAddress?.postalCode}, '
+                  '${order?.cart?.shippingAddress?.province ?? ''}',
             ),
             SizedBox(height: 8),
-            Text('${widget.selectedOrder?.cart?.shippingAddress?.phone}'),
+            Text('${order?.cart?.shippingAddress?.phone}'),
           ],
         ));
   }
