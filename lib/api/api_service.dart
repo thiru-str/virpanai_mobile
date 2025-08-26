@@ -732,14 +732,14 @@ class ApiService {
     );
   }
 
-  Future<dynamic> completeCart(
+  Future<PlaceOrderResponse> completeCart(
       BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId/complete',
       null,
-          (json) => json,
+          (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }

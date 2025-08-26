@@ -459,11 +459,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void completeCart() async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.completeCart(context);
+      final response = await apiService.completeCart(context);
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+      PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
