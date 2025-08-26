@@ -447,7 +447,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+      PageRouteUtils.pushAndRemoveUntil(context,  OrderPlacedPage(orderId: '',));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
