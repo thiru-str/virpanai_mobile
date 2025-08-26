@@ -846,6 +846,12 @@ class ApiService {
             (data) => PinCodeResponse.fromJson(data), context);
   }
 
+  Future<dynamic> checkDuplicate(BuildContext context, String token,String email,String phone) async {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+    return _makePostRequest('dealer/customer/check-duplicate', {"email":email,"phone":phone},
+            (data) => data,context);
+  }
+
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =
         'Bearer ${await SharedPreferencesUtil().getString('token')}';

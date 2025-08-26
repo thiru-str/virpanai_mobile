@@ -88,7 +88,7 @@ class Slider2 extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             child: CachedNetworkImage(
                               imageUrl: layoutData.image!,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),

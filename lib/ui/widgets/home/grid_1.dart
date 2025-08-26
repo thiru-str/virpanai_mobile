@@ -146,9 +146,9 @@ class _Grid1Card extends StatelessWidget {
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   child: CachedNetworkImage(
                     imageUrl: layoutData.image ?? '',
-                    height: 130,
+                    height: 180,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 Visibility(

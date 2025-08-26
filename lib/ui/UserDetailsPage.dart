@@ -302,6 +302,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   Future<void> _handleNext() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_currentStep == 0) {
+        //final response = await ApiService().checkDuplicate(context, widget.token,_emailController.text,_phoneController.text);
         setState(() => _currentStep = 1);
       }
       else if (_currentStep == 1) {
