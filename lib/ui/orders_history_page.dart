@@ -118,7 +118,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           itemPrice: (orderHistoryResponse?.orders?[index].total?? 0),
           onTap: () {
             // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
-            PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(selectedOrder: orderHistoryResponse?.orders?[index],));
+            PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(orderId: orderHistoryResponse?.orders?[index].id??'',));
           },
         );
       },
