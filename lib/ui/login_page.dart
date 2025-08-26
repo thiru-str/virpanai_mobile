@@ -184,14 +184,18 @@ class _LoginPageState extends State<LoginPage> {
           context,_emailController.text, _passwordController.text);
       setState(() => apiCalling = false);
 
+
       if (response.error != null) {
-        if ((response.error?.code == '00004' || response.error?.code == '00003') && mounted) {
-          PageRouteUtils.pushWithSlide(
-              context,
-              ApprovalPage(errorCode: response.error!.code!));
+        if (((response.error?.code ?? '') == '00002') || ((response.error?.code ?? '') == '00001')) {
+          AppUtils.showToast(response.error?.message ?? '');
           return;
-        }
-        else{
+        } else if ((response.error?.code == '00004' ||
+                response.error?.code == '00003') &&
+            mounted) {
+          PageRouteUtils.pushWithSlide(
+              context, ApprovalPage(errorCode: response.error!.code!));
+          return;
+        } else{
           SharedPreferencesUtil().saveString('token', response.token!);
 
           if (mounted) {
