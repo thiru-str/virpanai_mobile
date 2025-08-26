@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "817601812747",
-    "project_id": "cartel-ba03b",
-    "storage_bucket": "cartel-ba03b.firebasestorage.app"
+    "project_number": "177578656637",
+    "project_id": "virpanai-8c709",
+    "storage_bucket": "virpanai-8c709.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:817601812747:android:627a0a26e13ed42e4caa0e",
+        "mobilesdk_app_id": "1:177578656637:android:a5a9e4d350833f9bee0214",
         "android_client_info": {
           "package_name": "com.gowelmart.user"
         }
@@ -15,7 +15,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBAC0Qom9uji2-JNzQKSj71YX7_VlhJbhg"
+          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:177578656637:android:1ce87d25319951c7ee0214",
+        "android_client_info": {
+          "package_name": "com.waioz.cartel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
         }
       ],
       "services": {

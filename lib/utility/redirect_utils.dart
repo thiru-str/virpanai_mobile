@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -37,6 +39,7 @@ class RedirectUtils {
     required BuildContext context,
     required RedirectData redirectData,
   }) {
+    debugPrint('calling here 1${redirectData.redirectType}');
     final handler = _viewAllRedirectHandlers[redirectData.redirectType];
     if (handler != null) {
       handler(context, redirectData);
@@ -114,6 +117,7 @@ class RedirectUtils {
   }
 
   static void _handleProductRedirect(BuildContext context, RedirectData redirectData) {
+    debugPrint('calling here ${jsonEncode(redirectData.redirectProductData)}');
     final productId = redirectData.redirectProductData?.productId;
     if (productId?.isEmpty ?? true) return;
 

@@ -132,45 +132,61 @@ class PushNotificationService {
     if (context == null) return;
 
     final token = await SharedPreferencesUtil().getString('token');
-    if (token == null || token.isEmpty) return;
+    if (token == null || token.isEmpty) {
+      debugPrint('No token found. Redirect flow may require login.');
+      // Optionally: Navigate to login with deep-link data preserved
+      return;
+    }
 
-    // Parse data from RemoteMessage or Map
-    Map<String, dynamic> data;
+    // Normalize data
+    final Map<String, dynamic> data;
     if (rawData is RemoteMessage) {
-      data = rawData.data;
+      data = Map<String, dynamic>.from(rawData.data);
     } else if (rawData is Map<String, dynamic>) {
       data = rawData;
     } else {
-      debugPrint('Unsupported notification payload type');
+      debugPrint('Unsupported notification payload type: ${rawData.runtimeType}');
       return;
     }
 
     debugPrint('Notification tapped. Data: $data');
 
+    Map<String, dynamic> _safeMap(dynamic value) {
+      if (value is Map<String, dynamic>) return value;
+      try {
+        if (value is String) return Map<String, dynamic>.from(jsonDecode(value));
+      } catch (_) {}
+      return <String, dynamic>{};
+    }
+
+    final searchDataMap = _safeMap(data['redirect_search_data']);
+    final productDataMap = _safeMap(data['redirect_product_data']);
+    final urlDataMap    = _safeMap(data['redirect_url_data']);
+
     final redirectData = RedirectData(
-      redirectType: data['type'] ?? '',
+      redirectType: data['redirect_type'] ?? data['type'] ?? '',
       redirectProductData: RedirectProductData(
-        productId: data['productId'] ?? data['product_id'] ?? '',
-        variantId: data['variantId'] ?? data['variant_id'] ?? '',
+        productId: productDataMap['product_id'] ?? productDataMap['productId'] ?? data['product_id'] ?? data['productId'] ?? '',
+        variantId: productDataMap['variant_id'] ?? productDataMap['variantId'] ?? data['variant_id'] ?? data['variantId'] ?? '',
       ),
       redirectSearchData: RedirectSearchData(
-        collection: data['collection'] ?? '',
-        category: data['category'] ?? '',
-        brand: data['brand'] ?? '',
-        minPrice: data['minPrice']?.toString() ?? data['min_price']?.toString() ?? '',
-        maxPrice: data['maxPrice']?.toString() ?? data['max_price']?.toString() ?? '',
+        collection: searchDataMap['collection'] ?? data['collection'] ?? '',
+        category: searchDataMap['category'] ?? data['category'] ?? '',
+        brand: searchDataMap['brand'] ?? data['brand'] ?? '',
+        minPrice: searchDataMap['min_price']?.toString() ?? searchDataMap['minPrice']?.toString() ?? data['min_price']?.toString() ?? data['minPrice']?.toString() ?? '',
+        maxPrice: searchDataMap['max_price']?.toString() ?? searchDataMap['maxPrice']?.toString() ?? data['max_price']?.toString() ?? data['maxPrice']?.toString() ?? '',
       ),
       redirectUrlData: RedirectUrlData(
-        url: data['url'] ?? '',
+        url: urlDataMap['url'] ?? data['url'] ?? '',
       ),
     );
-
 
     RedirectUtils.handleContentRedirectViewAll(
       context: context,
       redirectData: redirectData,
     );
   }
+
 
 
 

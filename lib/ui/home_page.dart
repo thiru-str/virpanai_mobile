@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> initializePages() async {
     getHomePageApi();
-    appHeader = (await SharedPreferencesUtil().getString('app_header'))!;
+    appHeader = (await SharedPreferencesUtil().getString('app_header'))??'';
   }
 
 
