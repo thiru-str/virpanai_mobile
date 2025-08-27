@@ -399,8 +399,8 @@ class ApiService {
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makeGetRequest<ProductDetailReponse>(
+      'store/products',
       '$productId?fields=+variants.inventory_quantity',
-      productId,
       {"region_id": regionId},
       (json) => ProductDetailReponse.fromJson(json),
       context,
