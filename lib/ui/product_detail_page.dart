@@ -540,14 +540,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     return false;
   }
 
-
-  bool isVariantAvailable(ProductResponse.Variant? variant) {
-    return variant != null &&
-        (variant.manageInventory == false ||
-            variant.allowBackorder! ||
-            (variant.inventoryQuantity ?? 0) > 0);
-  }
-
   Widget buildProductDescription() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
