@@ -37,7 +37,6 @@ class CartItemCard extends StatelessWidget {
       children: [
         // Card Content
         Container(
-          height: 100,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
@@ -70,7 +69,7 @@ class CartItemCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -78,10 +77,10 @@ class CartItemCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       size,
-                      maxLines: 1,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Colors.black54,
                       ),
                     ),

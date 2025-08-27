@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'dart:io' show Platform;
 
@@ -105,26 +107,78 @@ class PushNotificationService {
     }
   }
 
-  void _showLocalNotification(RemoteMessage message) {
+  void _showLocalNotification(RemoteMessage message) async {
     final notification = message.notification;
     final android = message.notification?.android;
 
     if (notification != null) {
+      // Extract data
+      final String? imageUrl = message.data['image'];
+      final String body = notification.body ?? "";
+      final String title = notification.title ?? "";
+
+      // Android Style Information
+      StyleInformation styleInformation;
+
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        // Show big picture if image exists
+        final bigPicture = await _downloadAndSaveFile(imageUrl, 'bigImage.jpg');
+        styleInformation = BigPictureStyleInformation(
+          FilePathAndroidBitmap(bigPicture),
+          contentTitle: title,
+          summaryText: body,
+          hideExpandedLargeIcon: true,
+        );
+      } else {
+        // Fallback to big text
+        styleInformation = BigTextStyleInformation(
+          body,
+          contentTitle: title,
+          summaryText: body,
+        );
+      }
+
+      // Show notification
       _flutterLocalNotificationsPlugin.show(
         notification.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
+        title,
+        body,
+        NotificationDetails(
           android: AndroidNotificationDetails(
             'default_channel',
             'General Notifications',
+            styleInformation: styleInformation,
             importance: Importance.high,
             priority: Priority.high,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: DarwinNotificationDetails(
+            attachments: imageUrl != null && imageUrl.isNotEmpty
+                ? [DarwinNotificationAttachment(await _downloadAndSaveFile(imageUrl, 'iosImage.jpg'))]
+                : null,
+          ),
         ),
         payload: jsonEncode(message.data),
       );
+    }
+  }
+
+  Future<String> _downloadAndSaveFile(String url, String fileName) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final String filePath = '${directory.path}/$fileName';
+
+    try {
+      final dio = Dio();
+      final response = await dio.get<List<int>>(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      final file = File(filePath);
+      await file.writeAsBytes(response.data!);
+      return filePath;
+    } catch (e) {
+      print("❌ Error downloading file: $e");
+      rethrow;
     }
   }
 
