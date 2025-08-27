@@ -342,7 +342,7 @@ class ApiService {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makeGetRequest<ProductDetailReponse>(
       'store/products',
-      productId,
+      '$productId?fields=+variants.inventory_quantity',
       {"region_id": regionId},
       (json) => ProductDetailReponse.fromJson(json),
       context,

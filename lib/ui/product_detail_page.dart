@@ -74,6 +74,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   ProductResponse.Variant? selectedVariant;
   String? selectedVariantId;
   int selectedQuantity = 1;
+  bool stockNotAvailable = false;
 
   bool showVariantSelection = false;
 
@@ -472,17 +473,37 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     setState(() {
       selectedVariant = matchedVariant;
       selectedVariantId = matchedVariant?.id;
+      stockNotAvailable = !isVariantAvailable(selectedVariant);
     });
 
     print("Selected Variant ID: ${selectedVariant?.id}");
+    print("Stock not available: ${!isVariantAvailable(selectedVariant)}");
+
   }
 
   bool isVariantAvailable(ProductResponse.Variant? variant) {
-    return variant != null &&
-        (variant.manageInventory == false ||
-            variant.allowBackorder! ||
-            (variant.inventoryQuantity ?? 0) > 0);
+    if (variant == null) return false;
+
+    // If we don't manage inventory
+    if (variant.manageInventory == false) {
+      return true;
+    }
+
+    // If we allow backorders
+    if (variant.allowBackorder == true) {
+      return true;
+    }
+
+    // If inventory is managed and quantity > 0
+    if (variant.manageInventory == true &&
+        (variant.inventoryQuantity ?? 0) > 0) {
+      return true;
+    }
+
+    // Otherwise out of stock
+    return false;
   }
+
 
   Widget buildProductDescription() {
     return Column(
@@ -634,13 +655,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  selectedVariantId == null ? Colors.grey : AppColors.primary,
+                  selectedVariantId == null && stockNotAvailable ? Colors.grey : AppColors.primary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
               minimumSize: const Size(
                   double.infinity, 50), // Ensures height remains the same
             ),
-            onPressed: selectedVariantId == null
+            onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
                     if (!isLoggedIn) {
@@ -682,7 +703,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 : Text(
                     selectedVariantId == null
                         ? 'Select Variant'
-                        : 'Add to Cart',
+                        : stockNotAvailable?'Out of Stock':'Add to Cart',
                     style: FontUtils.primaryFontStyle(
                         fontSize: 18, color: Colors.white),
                   ),
