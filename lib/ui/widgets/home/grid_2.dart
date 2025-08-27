@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../model/home_page_response.dart';
+import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
@@ -82,9 +84,9 @@ class Grid2 extends StatelessWidget {
                       width: 60,
                       height: 60,
                       child: CachedNetworkImage(
-                        imageUrl: layoutData.image!,
+                        imageUrl: layoutData.image??'',
                         fit: BoxFit.cover,
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                        errorWidget: (context, url, error) => _fallbackWidget(),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -105,6 +107,17 @@ class Grid2 extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+  Widget _fallbackWidget() {
+    return Container(
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 48,
+        height: 48,
+      ),
     );
   }
 }
