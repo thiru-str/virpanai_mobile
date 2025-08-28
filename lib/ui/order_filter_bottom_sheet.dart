@@ -118,7 +118,7 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
       _selectedDay = null;
       _rangeStart = null;
       _rangeEnd = null;
-      _rangeMode = RangeSelectionMode.toggledOff;
+      //_rangeMode = RangeSelectionMode.toggledOff;
       _selectedDisplayStatuses.clear();
     });
   }
