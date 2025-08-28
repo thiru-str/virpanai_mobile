@@ -50,9 +50,11 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),

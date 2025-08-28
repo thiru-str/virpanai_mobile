@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/check_pin_code_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/complete_order_response.dart';
 import 'package:waioz/model/customer_list_response.dart';
 import 'package:waioz/model/dashboard_response.dart';
 import 'package:waioz/model/dealer_response.dart';
@@ -796,10 +797,10 @@ class ApiService {
     );
   }
 
-  Future<dynamic> completeOrder(BuildContext context, String orderId,String fulfillmentId) async {
+  Future<CompleteOrderResponse> completeOrder(BuildContext context, String orderId,String fulfillmentId) async {
     await addToken();
     return _makePostRequest('dealer/orders/fulfillments//mark-as-delivered', {"order_id":orderId,"fulfillment_id": fulfillmentId},
-            (data) => dynamic, context);
+            (data) => CompleteOrderResponse.fromJson(data), context);
   }
 
   Future<LiveOrderDetailResponse> orderDetail(

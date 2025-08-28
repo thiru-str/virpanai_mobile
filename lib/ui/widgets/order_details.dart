@@ -147,18 +147,13 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                 _liveOrderDetailResponse?.data?.fulfillmentId ??
                                     '');
 
-                            if (response != null && response['message'] != null) {
-                              AppUtils.showToast(response['message']);
+                            if ((response.message??'').isNotEmpty) {
+                              AppUtils.showToast(response.message!);
                             }
                             setState(() {
-                              _liveOrderDetailResponse?.data?.orderStatus =='Completed';
+                              _liveOrderDetailResponse?.data?.orderStatus ='Completed';
                               completeOrderLoading = false;
                             });
-                            if (response != null) {
-                              if (response['message'] != null) {
-                                AppUtils.showToast(response['message']);
-                              }
-                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary, // Button color
