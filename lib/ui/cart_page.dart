@@ -174,7 +174,17 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                             const SizedBox(height: 10,),
                             GestureDetector(
                               onTap: () {
-                                showPromoCodeBottomSheet(context);
+                                if((cartResponse?.cart?.promotions??[]).isEmpty) {
+                                  showPromoCodeBottomSheet(context);
+                                }
+                                else{
+                                  List<String> promotionCodes = cartResponse?.cart?.promotions
+                                      ?.map((promotion) => promotion.code)
+                                      .where((code) => code != null)
+                                      .cast<String>()
+                                      .toList() ?? [];
+                                  removePromoCode(promotionCodes);
+                                }
                               },
                               child: Container(
                                 height: 50,
@@ -189,12 +199,12 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                       AppStrings.enter_promo_code,
+                                        (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.enter_promo_code:cartResponse?.cart?.promotions?.firstOrNull?.code??'',
                                         style: FontUtils.primaryFontStyle(color: AppColors.textColor),
                                       ),
                                     ),
                                     Text(
-                                      AppStrings.apply,
+                                      (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
                                       style: FontUtils.secondaryFontStyle(color: AppColors.primary),
                                     ),
                                   ],
@@ -270,25 +280,26 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.addPromoCode(context,promoCode);
-        setState(() {
-          cartResponse = response;
-        });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  void removePromoCode(String promoCode) async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.addPromoCode(context,promoCode);
       setState(() {
-        cartResponse = response;
+        cartResponse =  response;
       });
     } catch (e) {
       print(e);
     }
   }
+
+  void removePromoCode(List<String> promoCodes) async {
+    try {
+      final ApiService apiService = ApiService();
+      final response = await apiService.removePromoCode(context,promoCodes);
+      setState(() {
+        cartResponse =  response;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
 
   void updateCart(int qty,String cartItemId,int index) async {
     try {
@@ -392,7 +403,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                   }
                 },
                 child: Text(
-                  AppStrings.apply,
+                  (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
                   style: FontUtils.primaryFontStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
