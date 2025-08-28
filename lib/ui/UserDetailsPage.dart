@@ -15,6 +15,7 @@ import '../api/api_service.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_assets.dart';
+import '../utility/app_utils.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
@@ -156,10 +157,16 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     }
   }
 
-  void _handleNext() {
+  Future<void> _handleNext() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_currentStep == 0) {
-        setState(() => _currentStep = 1);
+        final response = await ApiService().checkDuplicateDealer(
+            context, _emailController.text, _phoneController.text);
+        if (response.status ?? false) {
+          setState(() => _currentStep = 1);
+        } else {
+          AppUtils.showToast(response.error?.message ?? '');
+        }
       } else {
         // Submit
         debugPrint(

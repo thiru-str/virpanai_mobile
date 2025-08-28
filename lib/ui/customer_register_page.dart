@@ -313,7 +313,13 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
   Future<void> _handleNext() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_currentStep == 0) {
-        setState(() => _currentStep = 1);
+        final response = await ApiService().checkDuplicate(
+            context, _emailController.text, _phoneController.text);
+        if (response.status ?? false) {
+          setState(() => _currentStep = 1);
+        } else {
+          AppUtils.showToast(response.error?.message ?? '');
+        }
       } else if (_currentStep == 1) {
         final response = await ApiService().checkPinCode(context, _postalCodeController.text);
         if (!(response.status ?? false)) {

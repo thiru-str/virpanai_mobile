@@ -41,6 +41,7 @@ import 'package:waioz/ui/widgets/past_order_details.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/duplicate_response_model.dart';
 import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -925,6 +926,14 @@ class ApiService {
             (data) => CheckPinCodeResponse.fromJson(data), context);
   }
 
+  Future<DuplicateResponse> checkDuplicate(BuildContext context,String email,String phone) async {
+    return _makePostRequest('store/customers/check-duplicate', {"email":email,"phone":phone},
+            (data) => DuplicateResponse.fromJson(data),context);
+  }
 
+  Future<DuplicateResponse> checkDuplicateDealer(BuildContext context,String email,String phone) async {
+    return _makePostRequest('dealer/check-duplicate', {"email":email,"phone":phone},
+            (data) => DuplicateResponse.fromJson(data),context);
+  }
 
 }
