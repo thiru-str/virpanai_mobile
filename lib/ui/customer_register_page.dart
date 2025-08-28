@@ -179,6 +179,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           PinCodeTextField(
             appContext: context,
             length: 6,
+            autoDisposeControllers: false,
             controller: _postalCodeController,
             // Reusing your postal code controller
             focusNode: _focusNode,
@@ -364,10 +365,19 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _shopNameController.dispose();
+    _addressController.dispose();
+    _stateController.dispose();
+    _cityController.dispose();
     _postalCodeController.dispose();
+    _gstNumberController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
+
 
   @override
   void initState() {
