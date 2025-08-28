@@ -265,7 +265,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             imageFile: _shopFrontImage,
             isLoading: _isShopFrontUploading,
             onUploadTap: () async {
-              setState(() => _isGstImageUploading = true);
+              setState(() => _isShopFrontUploading = true);
               await pickImage(
                 (img) => setState(() => _shopFrontImage = img),
                 (path) => setState(() {
@@ -280,7 +280,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             imageFile: _shopInteriorImage,
             isLoading: _isShopInteriorUploading,
             onUploadTap: () async {
-              setState(() => _isGstImageUploading = true);
+              setState(() => _isShopInteriorUploading = true);
               await pickImage(
                 (img) => setState(() => _shopInteriorImage = img),
                 (path) => setState(() {
@@ -295,7 +295,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             imageFile: _shopCounterImage,
             isLoading: _isShopCounterUploading,
             onUploadTap: () async {
-              setState(() => _isGstImageUploading = true);
+              setState(() => _isShopCounterUploading = true);
               await pickImage(
                 (img) => setState(() => _shopCounterImage = img),
                 (path) => setState(() {
