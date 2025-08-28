@@ -314,7 +314,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
         if (_isGstRegistered) {
           if (_gstImagePath == null) {
-            AppUtils.showToast('Upload GST image');
+            AppUtils.showToast('Please upload GST image');
             return;
           }
         }
@@ -325,16 +325,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       } else {
         // Submit
         debugPrint('image Submitted: ${_shopFrontImagePath}, ${_shopInteriorImagePath},${_shopCounterImagePath}');
-        if (_shopFrontImagePath == null) {
-          AppUtils.showToast('Upload Shop Front image');
+
+        if (_shopFrontImagePath==null) {
+          AppUtils.showToast('Please upload Shop front image');
           return;
-        }
-        if (_shopInteriorImagePath == null) {
-          AppUtils.showToast('Upload Shop Interior image');
+        }if (_shopInteriorImagePath==null) {
+          AppUtils.showToast('Please upload Shop interior image');
           return;
-        }
-        if (_shopCounterImagePath == null) {
-          AppUtils.showToast('Upload Shop Counter image');
+        }if (_shopCounterImagePath==null) {
+          AppUtils.showToast('Please upload Shop counter image');
           return;
         }
 
