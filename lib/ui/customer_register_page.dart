@@ -379,106 +379,118 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: SvgPicture.asset(AppAssets.bg_top),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: SvgPicture.asset(AppAssets.bg_bottom),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Container(color: Colors.white.withOpacity(0.7)),
+    return WillPopScope(
+      onWillPop: () async {
+        if (_currentStep > 0) {
+          setState(() => _currentStep -= 1);
+          return false; // prevent page exit
+        }
+        return true; // allow exit if already at step 0
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: SvgPicture.asset(AppAssets.bg_top),
                 ),
-              ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        _buildStepper(),
-                        const SizedBox(height: 20),
-
-                        // Modified Scrollable Area
-                        Expanded(
-                          child: SingleChildScrollView(
-                            physics: const ClampingScrollPhysics(),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: constraints.maxHeight - 200,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  buildStepContent(),
-                                  // Add minimal padding only if needed
-                                  SizedBox(
-                                      height: MediaQuery.of(context)
-                                                  .viewInsets
-                                                  .bottom >
-                                              0
-                                          ? 20
-                                          : 0),
-                                ],
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: SvgPicture.asset(AppAssets.bg_bottom),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(color: Colors.white.withOpacity(0.7)),
+                  ),
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Padding(padding:EdgeInsets.only(right: 20),child: _buildStepper()),
+                          const SizedBox(height: 20),
+                          // Modified Scrollable Area
+                          Expanded(
+                            child: SingleChildScrollView(
+                              physics: const ClampingScrollPhysics(),
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight - 200,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    buildStepContent(),
+                                    // Add minimal padding only if needed
+                                    SizedBox(
+                                        height: MediaQuery.of(context)
+                                                    .viewInsets
+                                                    .bottom >
+                                                0
+                                            ? 20
+                                            : 0),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
 
-                        AnimatedPadding(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom >
-                                      0
-                                  ? MediaQuery.of(context).viewInsets.bottom +
-                                      10
-                                  : 10,
-                            ),
-                            duration: const Duration(milliseconds: 100),
-                            child: apiCalling
-                                ? Center(
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.primary,
-                                    ),
-                                  )
-                                : SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: ElevatedButton(
-                                        onPressed: _handleNext,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          _currentStep < 1 ? "Next" : "Submit",
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.white),
-                                        )),
-                                  )),
-                      ],
+                          AnimatedPadding(
+                              padding: EdgeInsets.only(
+                                bottom: MediaQuery.of(context).viewInsets.bottom >
+                                        0
+                                    ? MediaQuery.of(context).viewInsets.bottom +
+                                        10
+                                    : 10,
+                              ),
+                              duration: const Duration(milliseconds: 100),
+                              child: apiCalling
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                        child: ElevatedButton(
+                                            onPressed: _handleNext,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppColors.primary,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              _currentStep < 1 ? "Next" : "Submit",
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.white),
+                                            )),
+                                      ),
+                                    )),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -487,73 +499,92 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     List<String> titles = ["Step 1", "Step 2", "Step 3"];
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: List.generate(titles.length * 2 - 1, (index) {
-        if (index.isOdd) {
-          // Connector line
-          int stepIndex = (index - 1) ~/ 2;
-          bool isLineActive = _currentStep > stepIndex;
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Back arrow as the first element in row
+          IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: AppColors.primary),
+            onPressed: () {
+              if (_currentStep > 0) {
+                setState(() => _currentStep -= 1);
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
 
-          return Expanded(
-            child: Container(
-              height: 36,
-              alignment: Alignment.center,
-              child: Container(
-                height: 2,
-                color: isLineActive
-                    ? AppColors.primary
-                    : AppColors.primary.withOpacity(0.2),
-              ),
-            ),
-          );
-        } else {
-          // Step circle
-          int stepIndex = index ~/ 2;
-          bool isActive = _currentStep == stepIndex;
-          bool isCompleted = _currentStep > stepIndex;
+        // Stepper content
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: List.generate(titles.length * 2 - 1, (index) {
+              if (index.isOdd) {
+                // Connector line
+                int stepIndex = (index - 1) ~/ 2;
+                bool isLineActive = _currentStep > stepIndex;
 
-          return Column(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isActive || isCompleted
-                      ? AppColors.primary
-                      : Colors.white,
-                  border: Border.all(
-                    color: isActive || isCompleted
-                        ? AppColors.primary
-                        : Colors.grey.shade400,
-                    width: 2,
+                return Expanded(
+                  child: Container(
+                    height: 36,
+                    alignment: Alignment.center,
+                    child: Container(
+                      height: 2,
+                      color: isLineActive
+                          ? AppColors.primary
+                          : AppColors.primary.withOpacity(0.2),
+                    ),
                   ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  "${stepIndex + 1}",
-                  style: TextStyle(
-                    color:
-                        isActive || isCompleted ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                titles[stepIndex],
-                style: TextStyle(
-                  color:
-                      isActive || isCompleted ? AppColors.primary : Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          );
-        }
-      }),
+                );
+              } else {
+                // Step circle
+                int stepIndex = index ~/ 2;
+                bool isActive = _currentStep == stepIndex;
+                bool isCompleted = _currentStep > stepIndex;
+
+                return Column(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isActive || isCompleted
+                            ? AppColors.primary
+                            : Colors.white,
+                        border: Border.all(
+                          color: isActive || isCompleted
+                              ? AppColors.primary
+                              : Colors.grey.shade400,
+                          width: 2,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "${stepIndex + 1}",
+                        style: TextStyle(
+                          color: isActive || isCompleted ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      titles[stepIndex],
+                      style: TextStyle(
+                        color: isActive || isCompleted ? AppColors.primary : Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                );
+              }
+            }),
+          ),
+        ),
+      ] ,
     );
   }
+
 
   Widget buildImageUploader({
     required String label,

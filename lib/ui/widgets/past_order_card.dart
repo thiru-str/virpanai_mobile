@@ -1,5 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+
+import '../../utility/app_assets.dart';
+import '../../utility/app_colors.dart';
 
 class PastOrderCard extends StatelessWidget {
   final String dateLabel;
@@ -128,10 +132,26 @@ class PastOrderCard extends StatelessWidget {
                                 backgroundColor: Colors.green.shade800,
                                 child: CircleAvatar(
                                   radius: 16,
-                                  backgroundImage:
-                                  CachedNetworkImageProvider(avatars[i]),
                                   backgroundColor: Colors.white,
-                                ),
+                                  child: ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: avatars[i],
+                                      fit: BoxFit.cover,
+                                      width: 32,
+                                      height: 32,
+                                      errorWidget: (context, url, error) => Container(
+                                        color: AppColors.secondary,
+                                        alignment: Alignment.center,
+                                        child: SvgPicture.asset(
+                                          AppAssets.ic_no_image,
+                                          width: 20,
+                                          height: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                ,
                               ),
                             ),
                           if (extraCount > 0)

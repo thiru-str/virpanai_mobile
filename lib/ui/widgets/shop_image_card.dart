@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+
+import '../../utility/app_assets.dart';
 
 class ShopImageCard extends StatelessWidget {
   final String imageUrl;
@@ -37,7 +40,13 @@ class ShopImageCard extends StatelessWidget {
                 width: 120,
                 height: 90,
                 color: Colors.grey.shade200,
-                child: const Icon(Icons.broken_image),
+                child: Center(
+                  child: SvgPicture.asset(
+                    AppAssets.ic_no_image,
+                    width: 60,
+                    height: 60,
+                  ),
+                ),
               ),
             ),
           ),
