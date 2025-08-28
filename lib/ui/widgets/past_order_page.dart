@@ -41,7 +41,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
 
   @override
   Widget build(BuildContext context) {
-    return apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       appBar: CommonAppBar(
                 title: 'Past Order',
@@ -69,7 +69,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
                     getApis();
                   }
                 }),
-            body: SafeArea(
+            body: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SafeArea(
         child: ( _pastOrderResponse?.pastOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Past Orders', description: 'You currently don\'t have any past orders',imageHeight: 150,):ListView.builder(
           itemCount: _pastOrderResponse?.pastOrders?.length??0,
           scrollDirection: Axis.vertical,

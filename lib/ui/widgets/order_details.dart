@@ -141,19 +141,29 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             setState(() {
                               completeOrderLoading = true;
                             });
-                            final response = await ApiService().completeOrder(
+
+                            try {
+                              final response = await ApiService().completeOrder(
                                 context,
                                 _liveOrderDetailResponse?.data?.orderId ?? '',
-                                _liveOrderDetailResponse?.data?.fulfillmentId ??
-                                    '');
+                                _liveOrderDetailResponse?.data?.fulfillmentId ?? '',
+                              );
 
-                            if ((response.message??'').isNotEmpty) {
-                              AppUtils.showToast(response.message!);
+                              if ((response.message ?? '').isNotEmpty) {
+                                AppUtils.showToast(response.message!);
+                              }
+
+                              setState(() {
+                                _liveOrderDetailResponse?.data?.orderStatus = 'Completed';
+                              });
+
+                            } catch (error) {
+                              debugPrint('$error');
+                            } finally {
+                              setState(() {
+                                completeOrderLoading = false;
+                              });
                             }
-                            setState(() {
-                              _liveOrderDetailResponse?.data?.orderStatus ='Completed';
-                              completeOrderLoading = false;
-                            });
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary, // Button color

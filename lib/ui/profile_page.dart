@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/login_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 
+import '../utility/app_assets.dart';
+import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -20,9 +23,25 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Profile",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                    child: Center(
+                      child: SvgPicture.asset(
+                        AppAssets.ic_arrow_svg,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10,),
+                  const Text(
+                    "Profile",
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               const SizedBox(height: 4),
               const Text(

@@ -44,10 +44,10 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
   @override
   Widget build(BuildContext context) {
 
-    return apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CommonAppBar(title: 'Past Order',showBack: true,),
-      body: SafeArea(
+      body: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
