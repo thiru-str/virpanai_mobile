@@ -47,7 +47,7 @@ class ProductsCard extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) =>
                   Container(color: Colors.grey.shade200),
-              errorWidget: (_, __, ___) => const Icon(Icons.error),
+              errorWidget: (_, __, ___) => _fallbackWidget(),
             ),
           ),
           const SizedBox(width: 12),
