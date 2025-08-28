@@ -321,6 +321,12 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           AppUtils.showToast(response.error?.message ?? '');
         }
       } else if (_currentStep == 1) {
+        if (_isGstRegistered) {
+          if (_gstImagePath == null) {
+            AppUtils.showToast('Please upload GST image');
+            return;
+          }
+        }
         final response = await ApiService().checkPinCode(context, _postalCodeController.text);
         if (!(response.status ?? false)) {
           AppUtils.showToast(response.error?.message??'');
@@ -333,13 +339,13 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             "Form Submitted: ${_nameController.text}, ${_emailController.text}...");
         // Navigate or trigger next logic
 
-        if ((_shopFrontImagePath ?? '').isEmpty) {
+        if (_shopFrontImagePath==null) {
           AppUtils.showToast('Please upload Shop front image');
           return;
-        }if ((_shopInteriorImagePath ?? '').isEmpty) {
+        }if (_shopInteriorImagePath==null) {
           AppUtils.showToast('Please upload Shop interior image');
           return;
-        }if ((_shopCounterImagePath ?? '').isEmpty) {
+        }if (_shopCounterImagePath==null) {
           AppUtils.showToast('Please upload Shop counter image');
           return;
         }
