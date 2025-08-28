@@ -253,7 +253,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               imageFile: _shopFrontImage,
               isLoading: _isShopFrontUploading,
               onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
+                setState(() => _isShopFrontUploading = true);
                 await pickImage(
                       (img) => setState(() => _shopFrontImage = img),
                       (path) => setState(() {
@@ -268,7 +268,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               imageFile: _shopInteriorImage,
               isLoading: _isShopInteriorUploading,
               onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
+                setState(() => _isShopInteriorUploading = true);
                 await pickImage(
                       (img) => setState(() => _shopInteriorImage = img),
                       (path) => setState(() {
@@ -283,7 +283,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               imageFile: _shopCounterImage,
               isLoading: _isShopCounterUploading,
               onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
+                setState(() => _isShopCounterUploading = true);
                 await pickImage(
                       (img) => setState(() => _shopCounterImage = img),
                       (path) => setState(() {
@@ -311,13 +311,33 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         }
       }
       else if (_currentStep == 1) {
+
+        if (_isGstRegistered) {
+          if (_gstImagePath == null) {
+            AppUtils.showToast('Upload GST image');
+            return;
+          }
+        }
+
         final response = await ApiService().pinCodeCheck(context, _postalCodeController.text);
 
         _showConfirmationAlert(context,response);
       } else {
         // Submit
-        debugPrint("Form Submitted: ${_nameController.text}, ${_emailController.text}...");
-        // Navigate or trigger next logic
+        debugPrint('image Submitted: ${_shopFrontImagePath}, ${_shopInteriorImagePath},${_shopCounterImagePath}');
+        if (_shopFrontImagePath == null) {
+          AppUtils.showToast('Upload Shop Front image');
+          return;
+        }
+        if (_shopInteriorImagePath == null) {
+          AppUtils.showToast('Upload Shop Interior image');
+          return;
+        }
+        if (_shopCounterImagePath == null) {
+          AppUtils.showToast('Upload Shop Counter image');
+          return;
+        }
+
         register();
       }
     }
