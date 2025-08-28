@@ -30,5 +30,6 @@ class AppAssets {
   static const String ic_chart = 'images/ic_chart.svg';
   static const String ic_map = 'images/ic_map.png';
   static const String ic_no_list = 'images/ic_no_list.svg';
+  static const String ic_no_image = 'images/ic_no_image.svg';
 // Add more assets as needed
 }

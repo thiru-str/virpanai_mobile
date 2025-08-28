@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/svg.dart';
+
+import '../../utility/app_assets.dart';
+import '../../utility/app_colors.dart';
 
 class ProductsCard extends StatelessWidget {
   final String imageUrl;
@@ -105,4 +109,19 @@ class ProductsCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fallbackWidget() {
+    return Container(
+      height: 60,
+      width: 60,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 48,
+        height: 48,
+      ),
+    );
+  }
+
 }

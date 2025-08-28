@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:waioz/utility/app_colors.dart';
+
+import '../../utility/app_assets.dart';
 
 class OrderItemCard extends StatelessWidget {
   final String imageUrl;
@@ -52,7 +56,7 @@ class OrderItemCard extends StatelessWidget {
                   height: 48,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(color: Colors.grey.shade200),
-                  errorWidget: (_, __, ___) => const Icon(Icons.error),
+                  errorWidget: (_, __, ___) => _fallbackWidget(),
                 ),
               ),
               const SizedBox(width: 12),
@@ -183,5 +187,19 @@ class OrderItemCard extends StatelessWidget {
       ),
     );
 
+  }
+
+  Widget _fallbackWidget() {
+    return Container(
+      height: 48,
+      width: 48,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 24,
+        height: 24,
+      ),
+    );
   }
 }

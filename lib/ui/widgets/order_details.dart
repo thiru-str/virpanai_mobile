@@ -46,19 +46,19 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return apiLoading
-        ? Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-            ),
-          )
-        : Scaffold(
+    return Scaffold(
             backgroundColor: Colors.white,
             appBar: CommonAppBar(
               title: widget.isFromLiveOrder ? 'Order Details' : 'Past Order',
               showBack: true,
             ),
-            body: SafeArea(
+            body: apiLoading
+                ? Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            )
+                : SafeArea(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
