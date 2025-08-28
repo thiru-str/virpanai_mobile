@@ -205,108 +205,148 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     });
   }
 
+  Widget _buildHeaderWithBack() {
+    return Row(
+      children: [
+        IconButton(
+          icon: SvgPicture.asset(
+            AppAssets.ic_arrow_svg,
+            height: 16,
+            width: 16,
+          ),
+          onPressed: () {
+            if (_currentStep > 0) {
+              setState(() => _currentStep -= 1);
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
+        const Expanded(
+          child: Text(
+            "Distributor Registration",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: SvgPicture.asset(AppAssets.bg_top),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: SvgPicture.asset(AppAssets.bg_bottom),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Container(color: Colors.white.withOpacity(0.7)),
+    return WillPopScope(
+      onWillPop: () async {
+        if (_currentStep > 0) {
+          setState(() => _currentStep -= 1);
+          return false; // prevent page exit
+        }
+        return true; // allow exit if already at step 0
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: SvgPicture.asset(AppAssets.bg_top),
                 ),
-              ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        _buildStepper(),
-                        const SizedBox(height: 20),
-
-                        // Modified Scrollable Area
-                        Expanded(
-                          child: SingleChildScrollView(
-                            physics: const ClampingScrollPhysics(),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: constraints.maxHeight - 200,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  buildStepContent(),
-                                  // Add minimal padding only if needed
-                                  SizedBox(
-                                      height: MediaQuery.of(context)
-                                                  .viewInsets
-                                                  .bottom >
-                                              0
-                                          ? 20
-                                          : 0),
-                                ],
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: SvgPicture.asset(AppAssets.bg_bottom),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(color: Colors.white.withOpacity(0.7)),
+                  ),
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          _buildHeaderWithBack(), // ✅ added here
+                          SizedBox(height: 14,),
+                          _buildStepper(),
+                          SizedBox(height: 14,),
+                          // Modified Scrollable Area
+                          Expanded(
+                            child: SingleChildScrollView(
+                              physics: const ClampingScrollPhysics(),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight - 200,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    buildStepContent(),
+                                    // Add minimal padding only if needed
+                                    SizedBox(
+                                        height: MediaQuery.of(context)
+                                                    .viewInsets
+                                                    .bottom >
+                                                0
+                                            ? 20
+                                            : 0),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-
-                        AnimatedPadding(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom >
-                                      0
-                                  ? MediaQuery.of(context).viewInsets.bottom +
-                                      10
-                                  : 10,
-                            ),
-                            duration: const Duration(milliseconds: 100),
-                            child: apiCalling
-                                ? Center(
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.primary,
-                                    ),
-                                  )
-                                : SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: ElevatedButton(
-                                        onPressed: _handleNext,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+      
+                          AnimatedPadding(
+                              padding: EdgeInsets.only(
+                                bottom: MediaQuery.of(context).viewInsets.bottom >
+                                        0
+                                    ? MediaQuery.of(context).viewInsets.bottom +
+                                        10
+                                    : 10,
+                              ),
+                              duration: const Duration(milliseconds: 100),
+                              child: apiCalling
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: ElevatedButton(
+                                          onPressed: _handleNext,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
                                           ),
-                                        ),
-                                        child: Text(
-                                          _currentStep < 1 ? "Next" : "Submit",
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.white),
-                                        )),
-                                  )),
-                      ],
+                                          child: Text(
+                                            _currentStep < 1 ? "Next" : "Submit",
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.white),
+                                          )),
+                                    )),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
