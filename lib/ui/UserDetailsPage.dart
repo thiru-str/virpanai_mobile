@@ -170,6 +170,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           Text('Postal Code', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
           PinCodeTextField(
+            autoDisposeControllers: false,
             appContext: context,
             length: 6,
             controller: _postalCodeController,  // Reusing your postal code controller
