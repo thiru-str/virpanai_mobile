@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/duplicate_response_model.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
@@ -858,10 +859,9 @@ class ApiService {
             (data) => PinCodeResponse.fromJson(data), context);
   }
 
-  Future<dynamic> checkDuplicate(BuildContext context, String token,String email,String phone) async {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
-    return _makePostRequest('dealer/customer/check-duplicate', {"email":email,"phone":phone},
-            (data) => data,context);
+  Future<DuplicateResponse> checkDuplicate(BuildContext context,String email,String phone) async {
+    return _makePostRequest('store/customers/check-duplicate', {"email":email,"phone":phone},
+            (data) => DuplicateResponse.fromJson(data),context);
   }
 
   Future<void> addToken() async {
