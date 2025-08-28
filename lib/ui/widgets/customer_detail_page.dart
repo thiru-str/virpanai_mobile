@@ -52,7 +52,7 @@ class CustomerDetailPage extends StatelessWidget {
               ),
               ProfileInfoCard(
                 title: 'Phone Number',
-                value: '+91 ${customer?.email??''}',
+                value: '+91 ${customer?.phone??''}',
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
@@ -80,7 +80,7 @@ class CustomerDetailPage extends StatelessWidget {
                     ShopDetailRow(title: 'City / Postal Code', value:customer?.metadata?.postalCode??''),
                     if(customer?.metadata?.isGst??false)
                         ShopDetailRow(
-                            title: 'GST Number', value: '12345'),
+                            title: 'GST Number', value: customer?.metadata?.gstNumber??''),
                         ShopDetailRow(
                           title: 'GST image',
                           imageUrl: customer?.metadata?.shopGstImage??'',

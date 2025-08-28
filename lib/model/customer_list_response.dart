@@ -108,6 +108,7 @@ class Metadata {
   String? country;
   String? dealerId;
   String? shopName;
+  String? gstNumber;
   String? postalCode;
   String? countryCode;
   String? shopGstImage;
@@ -123,6 +124,7 @@ class Metadata {
     this.country,
     this.dealerId,
     this.shopName,
+    this.gstNumber,
     this.postalCode,
     this.countryCode,
     this.shopGstImage,
@@ -139,9 +141,10 @@ class Metadata {
     country: json["country"],
     dealerId: json["dealer_id"],
     shopName: json["shop_name"],
+    gstNumber: json["gst_number"],
     postalCode: json["postal_code"],
     countryCode: json["country_code"],
-    shopGstImage: json["shop_gst_image"],
+    shopGstImage: json["gst_image"],
     shopCounterImage: json["shop_counter_image"],
     shopInteriorImage: json["shop_interior_image"],
     shopNameBoardImage: json["shop_name_board_image"],
@@ -155,6 +158,7 @@ class Metadata {
     "country": country,
     "dealer_id": dealerId,
     "shop_name": shopName,
+    "gst_number": gstNumber,
     "postal_code": postalCode,
     "country_code": countryCode,
     "shop_gst_image": shopGstImage,

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+
+import 'app_assets.dart';
 
 class AppUtils {
   // Private constructor to prevent instantiation
@@ -73,7 +74,5 @@ class AppUtils {
     final token = await SharedPreferencesUtil().getString('token');
     return token != null && token.isNotEmpty;
   }
-
-
 
 }

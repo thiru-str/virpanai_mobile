@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_utils.dart';
+
+import '../../utility/app_assets.dart';
+import '../../utility/app_colors.dart';
 
 class ShopDetailRow extends StatelessWidget {
   final String title;
@@ -47,7 +51,17 @@ class ShopDetailRow extends StatelessWidget {
                 imageUrl!,
                 height: 60,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => AppUtils().,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 60,
+                  width: 60,
+                  color: AppColors.secondary,
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(
+                    AppAssets.ic_no_image,
+                    width: 30,
+                    height: 30,
+                  ),
+                ),
               ),
             )
                 : Text(

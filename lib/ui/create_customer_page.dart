@@ -90,7 +90,7 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
                                   storeName: item?.metadata?.shopName ?? '',
                                   address: item?.metadata?.address ?? '',
                                   phoneNumber: '+91 ${item?.phone ?? ''}',
-                                  email: 'poorvikamob@gmail.com',
+                                  email: ' ${item?.email ?? ''}',
                                 ),
                               );
                             },
