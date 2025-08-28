@@ -563,6 +563,18 @@ class ApiService {
     );
   }
 
+  Future<CartResponse> removePromoCode(
+      BuildContext context,String promoCode) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/carts/$cartId/promotions',
+      {"promo_codes": [promoCode]},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> addFavourite(
       BuildContext context, String productId) async {
     await addToken();

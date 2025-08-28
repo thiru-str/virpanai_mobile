@@ -269,9 +269,21 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   void addPromoCode(String promoCode) async {
     try {
       final ApiService apiService = ApiService();
-      cartResponse = await apiService.addPromoCode(context,promoCode);
+      final response = await apiService.addPromoCode(context,promoCode);
+        setState(() {
+          cartResponse = response;
+        });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void removePromoCode(String promoCode) async {
+    try {
+      final ApiService apiService = ApiService();
+      final response = await apiService.addPromoCode(context,promoCode);
       setState(() {
-        cartResponse;
+        cartResponse = response;
       });
     } catch (e) {
       print(e);
