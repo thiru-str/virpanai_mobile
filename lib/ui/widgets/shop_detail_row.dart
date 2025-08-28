@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_utils.dart';
 
 class ShopDetailRow extends StatelessWidget {
   final String title;
@@ -46,7 +47,7 @@ class ShopDetailRow extends StatelessWidget {
                 imageUrl!,
                 height: 60,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                errorBuilder: (_, __, ___) => AppUtils().,
               ),
             )
                 : Text(

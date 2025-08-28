@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/svg.dart';
+
+import '../../utility/app_assets.dart';
+import '../../utility/app_colors.dart';
 
 class StoreContactCard extends StatelessWidget {
   final String imageUrl;
@@ -43,8 +47,7 @@ class StoreContactCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (_, __) =>
                       Container(color: Colors.grey.shade200),
-                  errorWidget: (_, __, ___) =>
-                  const Icon(Icons.store, size: 40),
+                  errorWidget: (_, __, ___) =>_fallbackWidget(),
                 ),
               ),
               const SizedBox(width: 12),
@@ -122,6 +125,19 @@ class StoreContactCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+  Widget _fallbackWidget() {
+    return Container(
+      height: 60,
+      width: 60,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 30,
+        height: 30,
       ),
     );
   }

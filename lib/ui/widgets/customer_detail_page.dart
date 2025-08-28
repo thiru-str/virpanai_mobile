@@ -13,6 +13,7 @@ import 'package:waioz/ui/widgets/store_summary_card.dart';
 import 'package:waioz/utility/app_assets.dart';
 
 import '../../model/customer_list_response.dart';
+import '../../utility/app_colors.dart';
 import '../../utility/page_route_utils.dart';
 
 class CustomerDetailPage extends StatelessWidget {

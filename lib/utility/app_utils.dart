@@ -74,4 +74,6 @@ class AppUtils {
     return token != null && token.isNotEmpty;
   }
 
+
+
 }
