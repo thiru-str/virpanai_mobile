@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 import '../model/order_filter_result.dart';
 
@@ -179,11 +180,11 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Row(
               children: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel',style: TextStyle(color: AppColors.primary),)),
                 const Spacer(),
                 const Text('Filter', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                 const Spacer(),
-                TextButton(onPressed: _apply, child: const Text('Apply')),
+                TextButton(onPressed: _apply, child: Text('Apply',style: TextStyle(color: AppColors.primary),)),
               ],
             ),
           ),
