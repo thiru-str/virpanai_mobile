@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+
+import '../../utility/app_assets.dart';
 
 class OrderDetailItemCard extends StatelessWidget {
   final String imageUrl;
@@ -39,6 +42,7 @@ class OrderDetailItemCard extends StatelessWidget {
               width: 60,
               height: 60,
               fit: BoxFit.cover,
+              errorWidget: (context, _, __) => _fallbackWidget(),
             ),
           ),
           const SizedBox(width: 12.0),
@@ -88,4 +92,18 @@ class OrderDetailItemCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fallbackWidget() {
+    return Container(
+      height: 60,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 30,
+        height: 30,
+      ),
+    );
+  }
+
 }

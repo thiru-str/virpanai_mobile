@@ -9,6 +9,7 @@ import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -27,6 +28,7 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
   bool apiLoading = true;
+  bool cartLoading = false;
   bool isAnimating = false;
 
   late AnimationController _animationController;
@@ -220,7 +222,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                     position: _animation,
                     child: Padding(
                       padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
-                      child: ElevatedButton(
+                      child: cartLoading? SizedBox(height:100,child: Center(child: CircularProgressIndicator(color: AppColors.primary,),)):ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
@@ -278,24 +280,48 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void addPromoCode(String promoCode) async {
     try {
+      setState(() {
+        cartLoading = true;
+      });
       final ApiService apiService = ApiService();
       final response = await apiService.addPromoCode(context,promoCode);
+      if ((response.cart?.promotions?.firstOrNull?.code ?? '')
+          .isNotEmpty) {
+        AppUtils.showToast(
+            '${response.cart?.promotions?.firstOrNull?.code ?? ''} Promo code applied successfully');
+      }
       setState(() {
         cartResponse =  response;
+        cartLoading = false;
       });
     } catch (e) {
+      setState(() {
+        cartLoading = false;
+      });
       print(e);
     }
   }
 
   void removePromoCode(List<String> promoCodes) async {
     try {
+      setState(() {
+        cartLoading = true;
+      });
       final ApiService apiService = ApiService();
       final response = await apiService.removePromoCode(context,promoCodes);
+      if ((response.cart?.promotions?.firstOrNull?.code ?? '')
+          .isEmpty) {
+        AppUtils.showToast(
+            'Promo code removed successfully');
+      }
       setState(() {
         cartResponse =  response;
+        cartLoading = false;
       });
     } catch (e) {
+      setState(() {
+        cartLoading = false;
+      });
       print(e);
     }
   }
@@ -303,6 +329,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void updateCart(int qty,String cartItemId,int index) async {
     try {
+      debugPrint('calling update');
       final ApiService apiService = ApiService();
       cartResponse = await apiService.updateCart(context,qty,cartItemId);
       setState(() {
@@ -322,6 +349,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void removeCart(String cartItemId) async {
     try {
+      debugPrint('calling remove');
       final ApiService apiService = ApiService();
       await apiService.removeCart(context,cartItemId);
       getCartApi();

@@ -722,6 +722,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
+
+              if (quantityController.text.isEmpty) {
+                AppUtils.showToast('Please enter quantity');
+                return;
+              }
+
+              final quantity = double.tryParse(quantityController.text);
+              if (quantity == null || quantity <= 0) {
+                AppUtils.showToast('Please enter valid quantity');
+                return;
+              }
+
               setState(() => quantityLoading = true);
               if (!isLoggedIn) {
                 AppUtils.showToast('Please login to Continue');
@@ -736,6 +748,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 );
                 return;
               }
+
+
               await addCart(selectedQuantity, selectedVariantId!);
               setState(() => quantityLoading = false);
             },
