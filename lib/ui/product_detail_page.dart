@@ -510,14 +510,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     setState(() {
       selectedVariant = matchedVariant;
       selectedVariantId = matchedVariant?.id;
-      stockNotAvailable = !isVariantAvailable(selectedVariant);
+      stockNotAvailable = !isStockAvailable(selectedVariant);
     });
 
     debugPrint("Selected Variant ID: ${selectedVariant?.id}");
-    debugPrint("Stock not available: ${!isVariantAvailable(selectedVariant)}");
+    debugPrint("Stock not available: ${!isStockAvailable(selectedVariant)}");
   }
 
-  bool isVariantAvailable(ProductResponse.Variant? variant) {
+  bool isStockAvailable(ProductResponse.Variant? variant) {
     if (variant == null) return false;
 
     // If we don't manage inventory
@@ -539,6 +539,27 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     // Otherwise out of stock
     return false;
   }
+
+  int getMaxQuantity(ProductResponse.Variant? variant, List<Item> cartItems) {
+    if (variant == null) return 10;
+
+    // how many of this variant already in cart
+    final cartQuantity = cartItems.fold<int>(0, (sum, item) {
+      if (item.variantId == variant.id) {
+        return sum + item.quantity!;
+      }
+      return sum;
+    });
+
+    // if variant has inventory_quantity
+    if (variant.inventoryQuantity != null) {
+      return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
+    }
+
+    // default max = 10
+    return (10 - cartQuantity).clamp(0, 10);
+  }
+
 
   Widget buildProductDescription() {
     return Column(
@@ -734,6 +755,27 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 return;
               }
 
+
+              final enteredQty = int.tryParse(quantityController.text) ?? 1;
+              final maxQty = getMaxQuantity(selectedVariant, cartResponse?.cart?.items??[]);
+
+              if (maxQty <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Max items for this stock reached',style: TextStyle(color: Colors.white),),backgroundColor: AppColors.primary,),
+                );
+                return;
+              }
+
+              final safeQty = (enteredQty.clamp(1, maxQty)).toInt();
+
+
+              if (safeQty < enteredQty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("You can only add up to $maxQty items.",style: TextStyle(color: Colors.white),),backgroundColor: AppColors.primary,),
+                );
+                return;
+              }
+
               setState(() => quantityLoading = true);
               if (!isLoggedIn) {
                 AppUtils.showToast('Please login to Continue');
@@ -748,6 +790,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 );
                 return;
               }
+
+
 
 
               await addCart(selectedQuantity, selectedVariantId!);
