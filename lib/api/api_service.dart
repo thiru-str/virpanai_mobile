@@ -811,7 +811,7 @@ class ApiService {
 
   Future<StoreContentResponse> getStoreContent(BuildContext context) async {
     return _makeGetRequest<StoreContentResponse>(
-      '/store/content',
+      'store/content',
       null,
       null,
           (json) => StoreContentResponse.fromJson(json),

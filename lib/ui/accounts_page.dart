@@ -52,7 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Container(
                     child: Center(
                       child: Text(
-                          (customer?.firstName ?? "C").substring(0, 1), // The letter to display
+                          (customer?.firstName??'').isNotEmpty?(customer?.firstName ?? "C").substring(0, 1):'', // The letter to display
                         style: FontUtils.primaryFontStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -126,29 +126,51 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 16),
           // Profile Items Section
-          Expanded(
-            child: ListView(
-              children: [
-                _buildProfileItem(AppStrings.address, () {
-                  PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address) {}));
-                }),
-                _buildProfileItem(AppStrings.favourites, () {
-                  PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
-                }),
-                _buildProfileItem(AppStrings.orders, () {
-                  PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
-                }),
-                ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
-                  if (contentItem.content?.data != null) {
-                    PageRouteUtils.pushWithSlide(
-                      context,
-                      StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
-                    );
-                  }
-                }))
-              ],
-            ),
-          ),
+          // Expanded(
+          //   child: ListView(
+          //     children: [
+          //       _buildProfileItem(AppStrings.address, () {
+          //         PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address) {}));
+          //       }),
+          //       _buildProfileItem(AppStrings.favourites, () {
+          //         PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
+          //       }),
+          //       _buildProfileItem(AppStrings.orders, () {
+          //         PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
+          //       }),
+          //       ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
+          //         if (contentItem.content?.data != null) {
+          //           PageRouteUtils.pushWithSlide(
+          //             context,
+          //             StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
+          //           );
+          //         }
+          //       }))
+          //     ],
+          //   ),
+          // ),Expanded(
+          //   child: ListView(
+          //     children: [
+          //       _buildProfileItem(AppStrings.address, () {
+          //         PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address) {}));
+          //       }),
+          //       _buildProfileItem(AppStrings.favourites, () {
+          //         PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
+          //       }),
+          //       _buildProfileItem(AppStrings.orders, () {
+          //         PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
+          //       }),
+          //       ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
+          //         if (contentItem.content?.data != null) {
+          //           PageRouteUtils.pushWithSlide(
+          //             context,
+          //             StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
+          //           );
+          //         }
+          //       }))
+          //     ],
+          //   ),
+          // ),
           // Sign Out Button
           Padding(
             padding: const EdgeInsets.only(bottom: 30.0),

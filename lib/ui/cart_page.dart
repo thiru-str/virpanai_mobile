@@ -127,7 +127,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                               cartResponse!.cart!.items![index].isUpdating = true;
                                             });
                                             if (cartItem.quantity! - 1 <= 0) {
-                                              removeCart(cartItem.id!);
+                                              removeCart(cartItem.id!,index);
                                         } else {
                                           updateCart(cartItem.quantity! - 1,
                                               cartItem.id!,index);
@@ -347,7 +347,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     }
   }
 
-  void removeCart(String cartItemId) async {
+  void removeCart(String cartItemId,int index) async {
     try {
       debugPrint('calling remove');
       final ApiService apiService = ApiService();
@@ -356,6 +356,9 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     } catch (e) {
       print('total qty calling here');
       setState(() {
+        setState(() {
+          cartResponse!.cart!.items![index].isUpdating = false;
+        });
       });
       print(e);
     }
