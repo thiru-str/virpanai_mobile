@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,6 +13,7 @@ import 'package:waioz/utility/app_utils.dart';
 
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
+import '../utility/shared_preferences_util.dart';
 
 class AddAddressPage extends StatefulWidget {
   final Address? selectedAddress; // Optional Address parameter
@@ -51,11 +54,14 @@ class _AddAddressPage extends State<AddAddressPage> {
   RegisterResponse? registerResponse;
   double latitude = 0;
   double longitude = 0;
+  Customer? customer;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    _initializeData();
 
     if (widget.selectedAddress != null) {
       final address = widget.selectedAddress!;
@@ -65,7 +71,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       streetAddressController.text = '${address.address1??''}${address.address2??''}';
       cityController.text = address.city??'';
       stateController.text = address.province??'';
-      zipCodeController.text = address.postalCode ?? '';
+      //zipCodeController.text = customer?.addresses?.firstOrNull?.postalCode??'';
       selectedLocation = address.addressName ?? AppStrings.work;
 
       // if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
@@ -86,11 +92,31 @@ class _AddAddressPage extends State<AddAddressPage> {
       streetAddressController.text = streetAddress.join(", ");
       cityController.text = place.locality ?? '';
       stateController.text = place.administrativeArea ?? '';
-      zipCodeController.text = place.postalCode ?? '';
+      //zipCodeController.text = customer?.addresses?.firstOrNull?.postalCode??'';
       latitude = widget.currentPosition!.latitude;
       longitude = widget.currentPosition!.longitude;
     }
 
+  }
+
+  Future<void> _initializeData() async {
+    // Wait for the customer data to be fetched
+    customer = await getCustomerResponse();
+    setState(() {
+      customer;
+    });
+    if (mounted) {
+      zipCodeController.text =
+          customer?.addresses?.firstOrNull?.postalCode ?? widget.selectedAddress?.postalCode??'';
+    }
+  }
+
+  Future<Customer?> getCustomerResponse() async {
+    dynamic userData = await SharedPreferencesUtil().getMap('customer');
+    if (userData != null) {
+      return Customer.fromJson(userData);
+    }
+    return null;
   }
 
   @override
@@ -159,6 +185,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
+                        maxLength: 10,
                         hintText: AppStrings.phone_number,
                         controller: phoneNumberController,
                         keyboardType: TextInputType.phone,
@@ -173,6 +200,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                       CustomTextField(
                         hintText: AppStrings.city,
                         controller: cityController,
+                        keyboardType: TextInputType.name,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return AppStrings.city_required;
@@ -198,6 +226,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: CustomTextField(
+                              enabled: false,
                               hintText: AppStrings.zip_code,
                               controller: zipCodeController,
                               keyboardType: TextInputType.number,

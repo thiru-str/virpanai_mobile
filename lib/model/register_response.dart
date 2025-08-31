@@ -36,7 +36,7 @@ class Customer {
   dynamic deletedAt;
   DateTime? createdAt;
   DateTime? updatedAt;
-  List<dynamic>? addresses;
+  List<Address>? addresses;
 
   Customer({
     this.id,
@@ -86,89 +86,85 @@ class Customer {
 
 class Address {
   String? id;
-  String? addressName;
-  bool? isDefaultShipping;
-  bool? isDefaultBilling;
   dynamic company;
-  dynamic firstName;
-  dynamic lastName;
+  String? customerId;
+  String? firstName;
+  String? lastName;
   String? address1;
-  String? address2;
+  dynamic address2;
   String? city;
-  String? countryCode;
   String? province;
   String? postalCode;
+  String? countryCode;
   String? phone;
   Metadata? metadata;
-  String? customerId;
+  bool? isDefaultShipping;
+  bool? isDefaultBilling;
   DateTime? createdAt;
   DateTime? updatedAt;
-  dynamic deletedAt;
+  String? addressName;
 
   Address({
     this.id,
-    this.addressName,
-    this.isDefaultShipping,
-    this.isDefaultBilling,
     this.company,
+    this.customerId,
     this.firstName,
     this.lastName,
     this.address1,
     this.address2,
     this.city,
-    this.countryCode,
     this.province,
     this.postalCode,
+    this.countryCode,
     this.phone,
     this.metadata,
-    this.customerId,
+    this.isDefaultShipping,
+    this.isDefaultBilling,
     this.createdAt,
     this.updatedAt,
-    this.deletedAt,
+    this.addressName,
   });
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
     id: json["id"],
-    addressName: json["address_name"],
-    isDefaultShipping: json["is_default_shipping"],
-    isDefaultBilling: json["is_default_billing"],
     company: json["company"],
+    customerId: json["customer_id"],
     firstName: json["first_name"],
     lastName: json["last_name"],
     address1: json["address_1"],
     address2: json["address_2"],
     city: json["city"],
-    countryCode: json["country_code"],
     province: json["province"],
     postalCode: json["postal_code"],
+    countryCode: json["country_code"],
     phone: json["phone"],
     metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
-    customerId: json["customer_id"],
+    isDefaultShipping: json["is_default_shipping"],
+    isDefaultBilling: json["is_default_billing"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
+    addressName: json["address_name"],
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "address_name": addressName,
-    "is_default_shipping": isDefaultShipping,
-    "is_default_billing": isDefaultBilling,
     "company": company,
+    "customer_id": customerId,
     "first_name": firstName,
     "last_name": lastName,
     "address_1": address1,
     "address_2": address2,
     "city": city,
-    "country_code": countryCode,
     "province": province,
     "postal_code": postalCode,
+    "country_code": countryCode,
     "phone": phone,
     "metadata": metadata?.toJson(),
-    "customer_id": customerId,
+    "is_default_shipping": isDefaultShipping,
+    "is_default_billing": isDefaultBilling,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
+    "address_name": addressName,
   };
 }
 

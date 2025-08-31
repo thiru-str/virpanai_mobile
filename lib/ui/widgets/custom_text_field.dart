@@ -7,6 +7,7 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?) validator;
   final bool isPassword;
   final TextInputType keyboardType;
+  final int? maxLength; // Optional: Allows multi-line input
   final int maxLines; // Optional: Allows multi-line input
   final bool enabled; // Optional: Allows multi-line input
 
@@ -18,6 +19,7 @@ class CustomTextField extends StatelessWidget {
     required this.validator,
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
+    this.maxLength,
     this.maxLines = 1, // Default single-line, can be changed
     this.enabled = true,
   }) : super(key: key);
@@ -29,6 +31,8 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType,
+      maxLength: maxLength,
+      textCapitalization: TextCapitalization.sentences,
       maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hintText,
