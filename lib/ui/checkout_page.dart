@@ -387,6 +387,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       builder: (context) {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
+          providerId: pp_id,
           onPaymentSelected: (PaymentProvider paymentProvider) {
             setState(() {
               addPaymentMethod = true;
@@ -410,6 +411,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       builder: (context) {
         return ShippingMethodBottomSheet(
           shippingOptions: shippingOptions,
+          selectedOption: shippingOption,
           onShippingSelected: (ShippingOption shippingOption) {
             setState(() {
               addShippingOption = true;

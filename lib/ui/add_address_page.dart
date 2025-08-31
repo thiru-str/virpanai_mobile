@@ -66,12 +66,12 @@ class _AddAddressPage extends State<AddAddressPage> {
       cityController.text = address.city??'';
       stateController.text = address.province??'';
       zipCodeController.text = address.postalCode ?? '';
-      selectedLocation = address.addressName ?? AppStrings.home;
+      selectedLocation = address.addressName ?? AppStrings.work;
 
-      if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
-        selectedLocation = AppStrings.others;
-        otherAddressName.text = address.addressName ?? '';
-      }
+      // if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
+      //   selectedLocation = AppStrings.others;
+      //   otherAddressName.text = address.addressName ?? '';
+      // }
     }
 
     // If map data is available, always update the address part
@@ -212,44 +212,44 @@ class _AddAddressPage extends State<AddAddressPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        AppStrings.location,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildHorizontalLocationList(),
-                      const SizedBox(height: 24),
-                      if (selectedLocation == AppStrings.others)
-                        TextFormField(
-                            controller: otherAddressName,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: AppColors.secondary,
-                              hintText: AppStrings.ex_friend_house,
-                              border: InputBorder.none,
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2.0,
-                                ),
-                              ),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppColors.primary,
-                                  width: 1.0,
-                                ),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppStrings.enter_address;
-                              }
-                              return null;
-                            }),
+                      // Text(
+                      //   AppStrings.location,
+                      //   style: FontUtils.primaryFontStyle(
+                      //     fontSize: 14,
+                      //     fontWeight: FontWeight.w500,
+                      //     color: AppColors.primary,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 12),
+                      // _buildHorizontalLocationList(),
+                      // const SizedBox(height: 24),
+                      // if (selectedLocation == AppStrings.others)
+                      //   TextFormField(
+                      //       controller: otherAddressName,
+                      //       decoration: InputDecoration(
+                      //         filled: true,
+                      //         fillColor: AppColors.secondary,
+                      //         hintText: AppStrings.ex_friend_house,
+                      //         border: InputBorder.none,
+                      //         focusedBorder: UnderlineInputBorder(
+                      //           borderSide: BorderSide(
+                      //             color: AppColors.primary,
+                      //             width: 2.0,
+                      //           ),
+                      //         ),
+                      //         enabledBorder: UnderlineInputBorder(
+                      //           borderSide: BorderSide(
+                      //             color: AppColors.primary,
+                      //             width: 1.0,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //       validator: (value) {
+                      //         if (value == null || value.isEmpty) {
+                      //           return AppStrings.enter_address;
+                      //         }
+                      //         return null;
+                      //       }),
                     ],
                   ),
                 ),
