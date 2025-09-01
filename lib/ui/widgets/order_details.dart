@@ -94,7 +94,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                               ),
                             ),
                             Visibility(
-                              visible: !widget.isFromLiveOrder,
+                              visible: !widget.isFromLiveOrder && (_liveOrderDetailResponse?.data?.orderStatus ?? '').toLowerCase()== 'processing',
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 4),
