@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/past_order_detail_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
@@ -29,12 +32,28 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
   PastOrderDetailResponse? _pastOrderDetailResponse;
   bool apiLoading = true;
   List<String> initialStatuses = [];
+  late StreamSubscription<ReloadEvent> _eventSubscription;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     initApis();
+    listenToEvents();
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    super.dispose();
+  }
+
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ReloadEvent>().listen((event) {
+      if (mounted) {
+        initApis();
+      }
+    });
   }
 
   Future<void> initApis() async {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
@@ -7,6 +9,7 @@ import 'package:waioz/utility/app_colors.dart';
 
 import '../../api/api_service.dart';
 import '../../model/past_order_response.dart';
+import '../../model/view_cart_model.dart';
 import '../../utility/app_assets.dart';
 import '../../utility/page_route_utils.dart';
 import '../order_filter_bottom_sheet.dart';
@@ -26,6 +29,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
   String? endUtc = '';
   DateTime? startTimeUtc;
   DateTime? endTimeUtc;
+  late StreamSubscription<ReloadEvent> _eventSubscription;
 
 
   @override
@@ -33,10 +37,25 @@ class _PastOrderPageState extends State<PastOrderPage> {
     // TODO: implement initState
     super.initState();
     initApis();
+    listenToEvents();
   }
 
   Future<void> initApis() async {
     getApis();
+  }
+
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ReloadEvent>().listen((event) {
+      if (mounted) {
+        initApis();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    super.dispose();
   }
 
   @override

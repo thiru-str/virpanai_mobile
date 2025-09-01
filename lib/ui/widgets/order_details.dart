@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
@@ -43,6 +44,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   Future<void> initApis() async {
     getApis();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +157,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
                               setState(() {
                                 _liveOrderDetailResponse?.data?.orderStatus = 'Completed';
+                                eventBus.fire(ReloadEvent(true));
                               });
 
                             } catch (error) {

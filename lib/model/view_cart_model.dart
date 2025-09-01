@@ -10,3 +10,8 @@ class ViewCartModel {
 
   ViewCartModel(this.totalItems,this.itemImages);
 }
+
+class ReloadEvent {
+  final bool reload;
+  ReloadEvent(this.reload);
+}
