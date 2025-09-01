@@ -17,6 +17,7 @@ import 'package:waioz/utility/app_colors.dart';
 import '../../api/api_service.dart';
 import '../../utility/page_route_utils.dart';
 import '../order_filter_bottom_sheet.dart';
+import 'empty_view.dart';
 import 'order_details.dart';
 
 class PastOrderDetailsPage extends StatefulWidget {
@@ -30,9 +31,13 @@ class PastOrderDetailsPage extends StatefulWidget {
 class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
 
   PastOrderDetailResponse? _pastOrderDetailResponse;
+  PastOrderDetailResponse? _filteredPastOrderDetailResponse;
   bool apiLoading = true;
   List<String> initialStatuses = [];
   late StreamSubscription<ReloadEvent> _eventSubscription;
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
 
   @override
   void initState() {
@@ -40,11 +45,53 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
     super.initState();
     initApis();
     listenToEvents();
+
+
+    // Add listener for search text changes
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+        _filterOrders();
+      });
+    });
   }
+
+  void _filterOrders() {
+    if (_pastOrderDetailResponse == null || _searchQuery.isEmpty) {
+      _filteredPastOrderDetailResponse = _pastOrderDetailResponse;
+      return;
+    }
+
+    final filteredOrders = _pastOrderDetailResponse!.pastOrderDetails?.where((order) {
+      return order.shopName?.toLowerCase().contains(_searchQuery) == true ||
+          order.shopAddress?.toLowerCase().contains(_searchQuery) == true ||
+          order.orderStatus?.toLowerCase().contains(_searchQuery) == true ||
+          order.totalPrice?.toLowerCase().contains(_searchQuery) == true ||
+          (order.noOfProducts?.toString().contains(_searchQuery) == true);
+    }).toList();
+
+    setState(() {
+      _filteredPastOrderDetailResponse = PastOrderDetailResponse(
+        pastOrderDetails: filteredOrders,
+        // Copy other properties if they exist
+      );
+    });
+  }
+
+  // Clear search
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+      _filteredPastOrderDetailResponse = _pastOrderDetailResponse;
+    });
+  }
+
 
   @override
   void dispose() {
     _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -62,7 +109,9 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-
+    final displayResponse = _searchQuery.isNotEmpty
+        ? _filteredPastOrderDetailResponse
+        : _pastOrderDetailResponse;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CommonAppBar(title: 'Past Order',showBack: true,),
@@ -86,13 +135,20 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
-                        //controller: controller,
+                        controller: _searchController,
                         //onChanged: onChanged,
                         decoration: InputDecoration(
+
                           hintText: 'Search anything...',
                           //hintText: hintText,
                           hintStyle: const TextStyle(color: Colors.grey),
                           border: InputBorder.none,
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                            onPressed: _clearSearch,
+                          )
+                              : null,
                         ),
                       ),
                     ),
@@ -125,13 +181,25 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                   ],
                 ),
               ),
-              ListView.builder(
-            itemCount: _pastOrderDetailResponse?.pastOrderDetails?.length??0,
-            physics: const NeverScrollableScrollPhysics(),
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final item = _pastOrderDetailResponse?.pastOrderDetails?[index];
+              (displayResponse?.pastOrderDetails?.length ?? 0) == 0
+                  ? Padding(
+                padding: const EdgeInsets.only(top: 48.0),
+                child: EmptyView(
+                  imageAsset: AppAssets.ic_no_list,
+                  title: _searchQuery.isNotEmpty ? 'No Results Found' : 'No Past Orders',
+                  description: _searchQuery.isNotEmpty
+                      ? 'No orders match your search "$_searchQuery"'
+                      : 'You currently don\'t have any past orders',
+                  imageHeight: 150,
+                ),
+              )
+                  : ListView.builder(
+                          itemCount: displayResponse?.pastOrderDetails?.length??0,
+                          physics: const NeverScrollableScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) {
+              final item = displayResponse?.pastOrderDetails?[index];
               return GestureDetector(
                 onTap: (){
                   PageRouteUtils.pushWithFade(
@@ -146,8 +214,8 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                   statusText: item?.orderStatus??'',
                 ),
               );
-            },
-          )
+                          },
+                        )
             ],
           ),
         ),
