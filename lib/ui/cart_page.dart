@@ -290,6 +290,10 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         AppUtils.showToast(
             '${response.cart?.promotions?.firstOrNull?.code ?? ''} Promo code applied successfully');
       }
+      else{
+        AppUtils.showToast(
+            'Promo code not applied.Please double check your cart items');
+      }
       setState(() {
         cartResponse =  response;
         cartLoading = false;

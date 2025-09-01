@@ -91,7 +91,7 @@ class Grid2 extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
-                      height: 28, // enough for 2 lines at fontSize 11
+                      height: 30, // enough for 2 lines at fontSize 11
                       child: Text(
                         layoutData.title ?? '',
                         textAlign: TextAlign.center,
