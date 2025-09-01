@@ -107,7 +107,7 @@ class _AddAddressPage extends State<AddAddressPage> {
     });
     if (mounted) {
       zipCodeController.text =
-          customer?.addresses?.firstOrNull?.postalCode ?? widget.selectedAddress?.postalCode??'';
+          customer?.metadata?.postalCode??'';
     }
   }
 

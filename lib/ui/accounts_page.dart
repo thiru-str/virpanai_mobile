@@ -79,7 +79,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           children: [
                             Text(
                               customer != null
-                                  ? '${customer!.firstName!} ${customer!.lastName}'
+                                  ? '${customer?.firstName??''} ${customer?.lastName??''}'
                                   : '',
                               overflow: TextOverflow.ellipsis,
                               style: FontUtils.primaryFontStyle(
@@ -90,7 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              customer != null ? customer!.email! : '',
+                              customer?.email?? '',
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
                                 color: Colors.black54,

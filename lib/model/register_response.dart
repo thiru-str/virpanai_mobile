@@ -169,20 +169,72 @@ class Address {
 }
 
 class Metadata {
+  bool? isGst;
+  String? status;
+  String? country;
+  String? dealerId;
+  String? deviceId;
+  String? lastUsed;
+  String? shopName;
+  String? lastLogin;
+  String? postalCode;
+  String? countryCode;
+  String? shopCounterImage;
+  String? shopInteriorImage;
+  String? shopNameBoardImage;
   String? latitude;
   String? longitude;
 
   Metadata({
+    this.isGst,
+    this.status,
+    this.country,
+    this.dealerId,
+    this.deviceId,
+    this.lastUsed,
+    this.shopName,
+    this.lastLogin,
+    this.postalCode,
+    this.countryCode,
+    this.shopCounterImage,
+    this.shopInteriorImage,
+    this.shopNameBoardImage,
     this.latitude,
     this.longitude,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    isGst: json["is_gst"],
+    status: json["status"],
+    country: json["country"],
+    dealerId: json["dealer_id"],
+    deviceId: json["device_id"],
+    lastUsed: json["last_used"],
+    shopName: json["shop_name"],
+    lastLogin: json["last_login"],
+    postalCode: json["postal_code"],
+    countryCode: json["country_code"],
+    shopCounterImage: json["shop_counter_image"],
+    shopInteriorImage: json["shop_interior_image"],
+    shopNameBoardImage: json["shop_name_board_image"],
     latitude: json["latitude"],
     longitude: json["longitude"],
   );
 
   Map<String, dynamic> toJson() => {
+    "is_gst": isGst,
+    "status": status,
+    "country": country,
+    "dealer_id": dealerId,
+    "device_id": deviceId,
+    "last_used": lastUsed,
+    "shop_name": shopName,
+    "last_login": lastLogin,
+    "postal_code": postalCode,
+    "country_code": countryCode,
+    "shop_counter_image": shopCounterImage,
+    "shop_interior_image": shopInteriorImage,
+    "shop_name_board_image": shopNameBoardImage,
     "latitude": latitude,
     "longitude": longitude,
   };
