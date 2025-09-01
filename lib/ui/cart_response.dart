@@ -145,7 +145,11 @@ class Cart {
     billingAddress: json["billing_address"],
     customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
     region: json["region"] == null ? null : Region.fromJson(json["region"]),
-    promotions: json["promotions"] == null ? [] : List<Promotion>.from(json["promotions"]!.map((x) => Promotion.fromJson(x))),
+    promotions: json["promotions"] == null
+        ? []
+        : List<Promotion>.from(
+        json["promotions"]!.where((x) => x != null).map((x) => Promotion.fromJson(x))
+    ),
 
   );
 
