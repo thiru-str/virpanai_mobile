@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class LabeledTextField extends StatefulWidget {
   final String label;
@@ -6,6 +7,8 @@ class LabeledTextField extends StatefulWidget {
   final TextInputType inputType;
   final String? Function(String?)? validator;
   final bool isPassword;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? maxLength;
 
   const LabeledTextField({
     super.key,
@@ -14,6 +17,8 @@ class LabeledTextField extends StatefulWidget {
     this.inputType = TextInputType.text,
     this.validator,
     this.isPassword = false,
+    this.inputFormatters,
+    this.maxLength,
   });
 
   @override
@@ -58,6 +63,8 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                 keyboardType: widget.inputType,
                 obscureText: widget.isPassword ? obscure : false,
                 validator: widget.validator,
+                inputFormatters: widget.inputFormatters,
+                maxLength: widget.maxLength,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),

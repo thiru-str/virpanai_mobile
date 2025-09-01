@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -81,6 +82,10 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             label: "Phone Number",
             controller: _phoneController,
             inputType: TextInputType.phone,
+            maxLength: 10,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             validator: (val) => val == null || val.length < 10
                 ? 'Enter valid phone number'
                 : null,

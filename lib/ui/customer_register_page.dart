@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -15,6 +16,7 @@ import '../api/api_service.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_assets.dart';
+import '../utility/app_strings.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
@@ -79,25 +81,31 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
     int? maxLength,
+    List<TextInputFormatter>? inputFormatters, // 👈 optional
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: controller,
             keyboardType: inputType,
             validator: validator,
             maxLength: maxLength,
-            textCapitalization: inputType == TextInputType.emailAddress?TextCapitalization.none:TextCapitalization.words,
+            inputFormatters: inputFormatters, // 👈 apply only if passed
+            textCapitalization: inputType == TextInputType.emailAddress
+                ? TextCapitalization.none
+                : TextCapitalization.words,
             decoration: InputDecoration(
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.teal),
                 borderRadius: BorderRadius.circular(10),
@@ -111,13 +119,14 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget buildStepContent() {
     if (_currentStep == 0) {
@@ -138,13 +147,24 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             label: "Email Address",
             controller: _emailController,
             inputType: TextInputType.emailAddress,
-            validator: (val) =>
-                val == null || !val.contains('@') ? 'Enter valid email' : null,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return AppStrings.email_required;
+              }
+              if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                  .hasMatch(value)) {
+                return AppStrings.enter_valid_email;
+              }
+              return null;
+            },
           ),
           buildLabeledTextField(
             label: "Phone Number",
             maxLength: 10,
             controller: _phoneController,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             inputType: TextInputType.phone,
             validator: (val) => val == null || val.length < 10
                 ? 'Enter valid phone number'
