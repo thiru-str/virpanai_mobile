@@ -78,6 +78,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     required TextEditingController controller,
     TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
+    int? maxLength,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -92,6 +93,8 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             controller: controller,
             keyboardType: inputType,
             validator: validator,
+            maxLength: maxLength,
+            textCapitalization: inputType == TextInputType.emailAddress?TextCapitalization.none:TextCapitalization.words,
             decoration: InputDecoration(
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -140,6 +143,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           ),
           buildLabeledTextField(
             label: "Phone Number",
+            maxLength: 10,
             controller: _phoneController,
             inputType: TextInputType.phone,
             validator: (val) => val == null || val.length < 10
@@ -409,109 +413,112 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
         }
         return true; // allow exit if already at step 0
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: false,
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              children: [
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: SvgPicture.asset(AppAssets.bg_top),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  child: SvgPicture.asset(AppAssets.bg_bottom),
-                ),
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Container(color: Colors.white.withOpacity(0.7)),
+      child: GestureDetector(
+        onTap: ()=> FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          resizeToAvoidBottomInset: false,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: SvgPicture.asset(AppAssets.bg_top),
                   ),
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Padding(padding:EdgeInsets.only(right: 20),child: _buildStepper()),
-                          const SizedBox(height: 20),
-                          // Modified Scrollable Area
-                          Expanded(
-                            child: SingleChildScrollView(
-                              physics: const ClampingScrollPhysics(),
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: constraints.maxHeight - 200,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    buildStepContent(),
-                                    // Add minimal padding only if needed
-                                    SizedBox(
-                                        height: MediaQuery.of(context)
-                                                    .viewInsets
-                                                    .bottom >
-                                                0
-                                            ? 20
-                                            : 0),
-                                  ],
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: SvgPicture.asset(AppAssets.bg_bottom),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Container(color: Colors.white.withOpacity(0.7)),
+                    ),
+                  ),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            Padding(padding:EdgeInsets.only(right: 20),child: _buildStepper()),
+                            const SizedBox(height: 20),
+                            // Modified Scrollable Area
+                            Expanded(
+                              child: SingleChildScrollView(
+                                physics: const ClampingScrollPhysics(),
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight - 200,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      buildStepContent(),
+                                      // Add minimal padding only if needed
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                      .viewInsets
+                                                      .bottom >
+                                                  0
+                                              ? 20
+                                              : 0),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
 
-                          AnimatedPadding(
-                              padding: EdgeInsets.only(
-                                bottom: MediaQuery.of(context).viewInsets.bottom >
-                                        0
-                                    ? MediaQuery.of(context).viewInsets.bottom +
-                                        10
-                                    : 10,
-                              ),
-                              duration: const Duration(milliseconds: 100),
-                              child: apiCalling
-                                  ? Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.primary,
-                                      ),
-                                    )
-                                  : SizedBox(
-                                      width: double.infinity,
-                                      height: 50,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                        child: ElevatedButton(
-                                            onPressed: _handleNext,
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: AppColors.primary,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                            AnimatedPadding(
+                                padding: EdgeInsets.only(
+                                  bottom: MediaQuery.of(context).viewInsets.bottom >
+                                          0
+                                      ? MediaQuery.of(context).viewInsets.bottom +
+                                          10
+                                      : 10,
+                                ),
+                                duration: const Duration(milliseconds: 100),
+                                child: apiCalling
+                                    ? Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.primary,
+                                        ),
+                                      )
+                                    : SizedBox(
+                                        width: double.infinity,
+                                        height: 50,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                          child: ElevatedButton(
+                                              onPressed: _handleNext,
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.primary,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
                                               ),
-                                            ),
-                                            child: Text(
-                                              _currentStep < 1 ? "Next" : "Submit",
-                                              style: const TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white),
-                                            )),
-                                      ),
-                                    )),
-                        ],
+                                              child: Text(
+                                                _currentStep < 1 ? "Next" : "Submit",
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white),
+                                              )),
+                                        ),
+                                      )),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
