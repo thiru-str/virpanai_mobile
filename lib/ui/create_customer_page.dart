@@ -90,7 +90,7 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
                                   imageUrl:
                                       item?.metadata?.shopNameBoardImage ?? '',
                                   storeName: item?.metadata?.shopName ?? '',
-                                  address: item?.metadata?.address ?? '',
+                                  address: item?.metadata?.postalCode ?? '',
                                   phoneNumber: '+91 ${item?.phone ?? ''}',
                                   email: ' ${item?.email ?? ''}',
                                 ),

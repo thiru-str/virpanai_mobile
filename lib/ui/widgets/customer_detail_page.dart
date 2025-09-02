@@ -75,7 +75,7 @@ class CustomerDetailPage extends StatelessWidget {
                 child: Column(
                   children: [
                     ShopDetailRow(title: 'Shop Name', value: customer?.metadata?.shopName??''),
-                    ShopDetailRow(title: 'Address', value:customer?.metadata?.address??''),
+                    //ShopDetailRow(title: 'Address', value:customer?.metadata?.address??''),
                     ShopDetailRow(title: 'Country', value: 'India'),
                     ShopDetailRow(title: 'City / Postal Code', value:customer?.metadata?.postalCode??''),
                     if(customer?.metadata?.isGst??false)
