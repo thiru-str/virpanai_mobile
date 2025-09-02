@@ -214,6 +214,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         {
           Navigator.pop(context,true);
         }
+      else {
+        Navigator.pop(context, false);
+      }
 
     } catch (e) {
       setState(() {
