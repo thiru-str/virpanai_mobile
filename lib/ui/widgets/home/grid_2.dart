@@ -92,7 +92,7 @@ class Grid2 extends StatelessWidget {
                     const SizedBox(height: 8),
                     SizedBox(
                       width: 60,
-                      height: MediaQuery.of(context).size.height < 700 ? 32 : 30,
+                      height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
                       child: Align(
                         alignment: Alignment.topCenter,
                         child: Text(
