@@ -1,6 +1,7 @@
 // Event class
 
 import 'package:event_bus/event_bus.dart';
+import 'package:waioz/model/register_response.dart';
 
 final EventBus eventBus = EventBus();
 
@@ -14,4 +15,9 @@ class ViewCartModel {
 class TabSwitchEvent {
   final int tabIndex;
   TabSwitchEvent(this.tabIndex);
+}
+
+class ProfileEvent {
+  final Customer? customer;
+  ProfileEvent(this.customer);
 }

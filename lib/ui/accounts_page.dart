@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
@@ -33,6 +36,26 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
+    listenToEvents();
+  }
+
+  late StreamSubscription<ProfileEvent> _eventSubscription;
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ProfileEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          if(event.customer!=null) {
+            customer = event.customer;
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel();
+    super.dispose();
   }
 
   @override

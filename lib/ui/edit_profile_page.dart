@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -162,6 +163,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           firstNameController.text,
           lastNameController.text);
       AppUtils.showToast('Profile updated successfully');
+      eventBus.fire(ProfileEvent(registerResponse?.customer));
       setState(() {
         submitCalling = false;
       });
