@@ -38,6 +38,17 @@ class PageRouteUtils {
     );
   }
 
+  static Future<T?> pushAndRemoveUntilFirst<T extends Object?>(
+      BuildContext context,
+      Widget page,
+      ) {
+    return Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => page),
+          (route) => route.isFirst, // keep only the first (ParentPage)
+    );
+  }
+
   /// Push a page with a fade transition
   static Future<T?> pushWithFade<T extends Object?>(
       BuildContext context,

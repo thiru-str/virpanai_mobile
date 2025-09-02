@@ -78,7 +78,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                           children: [
                             // Title
                             Text(
-                              AppStrings.enter_mob_no,
+                              'Enter your customer mobile number',
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -202,7 +202,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         apiCalling = false;
       });
 
-      PageRouteUtils.pushWithSlide(
+      final result = await PageRouteUtils.pushWithSlide(
           context,
           OtpVerificationPage(
             countryCode: _countryCode!,
@@ -210,6 +210,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             otp: sendOtpResponse!.otp!,
             redirectPage:widget.redirectPage,
           ));
+      if(result == true)
+        {
+          Navigator.pop(context,true);
+        }
 
     } catch (e) {
       setState(() {

@@ -149,7 +149,7 @@ class AppStrings {
       "You will receive an email confirmation";
   static const String order_placed_success = "Order Placed \n Successfully";
 
-  static const String code_sent = "Enter the code from the number we sent to";
+  static const String code_sent = "Enter the code from the number we sent to customer";
 
   static const String OTP_entered = 'OTP Entered';
   static const String submitted_otp = 'Submitted OTP ';

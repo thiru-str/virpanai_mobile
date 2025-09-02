@@ -15,6 +15,7 @@ import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_utils.dart';
 import 'ApprovalPage.dart';
+import 'customer_register_page.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String countryCode;
@@ -211,42 +212,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       setState(() => apiCalling = false);
 
 
-      if (verifyOtpResponse?.error != null) {
-        if (verifyOtpResponse?.error?.code == '00004' && mounted) {
-          PageRouteUtils.pushWithSlide(
-              context,
-              ApprovalPage(errorCode: verifyOtpResponse!.error!.code!));
-          return;
-        }
-      }
-
-
       if (verifyOtpResponse?.newUser == true) {
-        /*if (mounted) {
-          PageRouteUtils.pushWithSlide(
-              context,
-              UserDetailsPage(
-                countryCode: widget.countryCode,
-                phoneNo: widget.phoneNo,
-                token: verifyOtpResponse!.token!,
-              ));
-        }*/
-        return;
+        final result = await PageRouteUtils.push(context, CustomerRegisterPage(countryCode: widget.countryCode, phoneNo: widget.phoneNo, token: verifyOtpResponse?.token??''));
+        Navigator.pop(context, result); // bubble result back
+      }
+      else{
+        AppUtils.showToast('Customer already exists');
+        Navigator.pop(context, false); // bubble result back
       }
 
-
-      SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
-
-      if (mounted) {
-        if (widget.redirectPage != null) {
-          setState(() => apiCalling = true);
-          getHomePageApi();
-          setState(() => apiCalling = false);
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
-        } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const Dashboard());
-        }
-      }
     } catch (e) {
       setState(() => apiCalling = false);
       print(e);

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/customer_list_response.dart';
 import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/customer_register_page.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
 import 'package:waioz/ui/widgets/customer_detail_page.dart';
 import 'package:waioz/ui/widgets/empty_view.dart';
@@ -104,10 +105,13 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
             floatingActionButton: FloatingActionButton(
               onPressed: () async {
                 // Add your action here (e.g., navigate to a new customer form)
+                // final result = await PageRouteUtils.push(
+                //     context,
+                //     const CustomerRegisterPage(
+                //         countryCode: '', phoneNo: '', token: ''));
                 final result = await PageRouteUtils.push(
                     context,
-                    const CustomerRegisterPage(
-                        countryCode: '', phoneNo: '', token: ''));
+                    const PhoneNumberPage());
                 if (result == true) {
                   getApis();
                 }

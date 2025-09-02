@@ -81,6 +81,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
     int? maxLength,
+    bool enabled = true,
     List<TextInputFormatter>? inputFormatters, // 👈 optional
   }) {
     return Padding(
@@ -98,6 +99,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             keyboardType: inputType,
             validator: validator,
             maxLength: maxLength,
+            enabled: enabled,
             inputFormatters: inputFormatters, // 👈 apply only if passed
             textCapitalization: inputType == TextInputType.emailAddress
                 ? TextCapitalization.none
@@ -160,13 +162,13 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           ),
           buildLabeledTextField(
             label: "Phone Number",
-            maxLength: 10,
+            enabled: false,
             controller: _phoneController,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
             ],
             inputType: TextInputType.phone,
-            validator: (val) => val == null || val.length < 10
+            validator: (val) => val == null || val.isEmpty
                 ? 'Enter valid phone number'
                 : null,
           ),
@@ -338,7 +340,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     if (_formKey.currentState?.validate() ?? false) {
       if (_currentStep == 0) {
         final response = await ApiService().checkDuplicate(
-            context, _emailController.text, _phoneController.text);
+            context, _emailController.text, widget.phoneNo);
         if (response.status ?? false) {
           setState(() => _currentStep = 1);
         } else {
@@ -418,6 +420,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
   @override
   void initState() {
     super.initState();
+    _phoneController.text = '${widget.countryCode} ${widget.phoneNo}';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_focusNode);
     });
@@ -717,8 +720,8 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           context,
           _emailController.text,
           _nameController.text,
-          '+91',
-          _phoneController.text,
+          widget.countryCode,
+          widget.phoneNo,
           _shopNameController.text,
           _stateController.text,
           _cityController.text,
@@ -728,7 +731,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           _gstImagePath ?? "",
           _shopFrontImagePath ?? "",
           _shopInteriorImagePath ?? "",
-          _shopCounterImagePath ?? "");
+          _shopCounterImagePath ?? "",widget.token);
 
       setState(() {
         apiCalling = false;

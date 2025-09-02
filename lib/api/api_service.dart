@@ -240,16 +240,18 @@ class ApiService {
   }
 
   Future<SendOtpResponse> sendOtp(BuildContext context, String countryCode,String phone) async {
-    return _makePostRequest("store/customers/send-otp", {"country_code":countryCode,"phone": phone},
+    await addToken();
+    return _makePostRequest("dealer/customer/send-otp", {"country_code":countryCode,"phone": phone},
         (data) => SendOtpResponse.fromJson(data), context);
   }
 
   Future<VerifyOtpResponse> verifyOtp(
       BuildContext context,String countryCode,String phone, String otp) async {
-    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
+    await addToken();
+    //String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
     return _makePostRequest(
-        "store/customers/verify-otp",
-        {"device_id": deviceId,"country_code":countryCode,"phone": phone, "otp": otp},
+        "dealer/customer/verify-otp",
+        {"device_id": "","country_code":countryCode,"phone": phone, "otp": otp},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
   }
@@ -892,8 +894,9 @@ class ApiService {
       String firstName,
       String countryCode,
       String phone,
-      String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage) async {
-    await addToken();
+      String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage,String token) async {
+    //await addToken();
+    _dio.options.headers['Authorization'] = 'Bearer $token';
     return _makePostRequest(
         "dealer/customer/create",
         {
