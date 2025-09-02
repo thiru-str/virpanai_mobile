@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -41,8 +43,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   bool apiCalling = true;
   VerifyOtpResponse? verifyOtpResponse;
 
+  int _remainingSeconds = 30;
+  Timer? _timer;
+  bool _isResendVisible = false;
+
   @override
   void dispose() {
+    _timer?.cancel();
     _otpController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -54,13 +61,44 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_focusNode);
     });
+    if(widget.otp.isNotEmpty) {
+      _otpController.text = widget.otp;
+    }
+
+    startTimer();
+  }
+
+  void startTimer() {
+    setState(() {
+      _remainingSeconds = 30;
+      _isResendVisible = false;
+    });
+
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds == 0) {
+        timer.cancel();
+        setState(() {
+          _isResendVisible = true;
+        });
+      } else {
+        setState(() {
+          _remainingSeconds--;
+        });
+      }
+    });
+  }
+
+  void resendOtp() async {
+
+    sendOtp();
+
+    // Restart timer
+    startTimer();
   }
 
   @override
   Widget build(BuildContext context) {
-     setState(() {
-    _otpController.text = widget.otp;
-     });
       return Scaffold(
         extendBodyBehindAppBar: true,
         resizeToAvoidBottomInset: false,
@@ -167,6 +205,28 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                   onCompleted: (value) => print("OTP Entered: $value"),
                                   onChanged: (value) => print(value),
                                 ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  if (!_isResendVisible)
+                                    Text(
+                                      "Resend OTP in : 00:${_remainingSeconds.toString().padLeft(2, '0')}",
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  if (_isResendVisible)
+                                    GestureDetector(
+                                      onTap:resendOtp,
+                                      child: Text(
+                                        "Resend OTP",
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
 
                               const Spacer(),
                               const SizedBox(height: 20),
@@ -239,4 +299,33 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       print(e);
     }
   }
+
+  void sendOtp() async {
+    try {
+      setState(() {
+        apiCalling = true;
+      });
+      final ApiService apiService = ApiService();
+      final sendOtpResponse = await apiService.sendOtp(context, widget.countryCode, widget.phoneNo);
+
+      if ((sendOtpResponse.otp ?? '').isNotEmpty) {
+        setState(() {
+          _otpController.text = sendOtpResponse.otp ?? '';
+        });
+      }
+
+      setState(() {
+        apiCalling = false;
+      });
+
+
+
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
+  }
+
 }
