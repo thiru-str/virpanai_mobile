@@ -10,6 +10,7 @@ class NoOrdersWidget extends StatelessWidget {
   final String buttonText;
   final String iconPath;
   final VoidCallback onButtonTap;
+  final bool showExplore;
 
   const NoOrdersWidget({
     Key? key,
@@ -17,6 +18,7 @@ class NoOrdersWidget extends StatelessWidget {
     required this.buttonText,
     required this.iconPath,
     required this.onButtonTap,
+    this.showExplore = true,
   }) : super(key: key);
 
   @override
@@ -42,21 +44,24 @@ class NoOrdersWidget extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // Button Section
-          ElevatedButton(
-            onPressed: onButtonTap,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary, // Background color
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+          Visibility(
+            visible: showExplore,
+            child: ElevatedButton(
+              onPressed: onButtonTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary, // Background color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text(
-              buttonText,
-              style: FontUtils.primaryFontStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              child: Text(
+                buttonText,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
