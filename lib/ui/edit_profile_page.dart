@@ -5,6 +5,7 @@ import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
@@ -72,9 +73,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       hintText: AppStrings.lastname,
                       controller: lastNameController,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppStrings.lastname_required;
-                        }
                         return null;
                       },
                     ),
@@ -130,7 +128,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         setState(() {
           firstNameController.text = customer?.firstName ?? "";
           lastNameController.text = customer?.lastName ?? "";
-          phoneNoController.text = customer?.phone ?? "";
+          phoneNoController.text = '${customer?.metadata?.countryCode??''} ${customer?.phone ?? ''}';
           companyController.text = customer?.companyName ?? "";
         });
       }
@@ -163,6 +161,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           companyController.text,
           firstNameController.text,
           lastNameController.text);
+      AppUtils.showToast('Profile updated successfully');
       setState(() {
         submitCalling = false;
       });
