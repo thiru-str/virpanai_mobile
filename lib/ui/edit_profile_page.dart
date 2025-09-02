@@ -37,88 +37,91 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CommonHeaderAppBar(
-        title: AppStrings.edit_profile,
-        onBackTap: () {
-          Navigator.of(context).pop();
-        },
-      ),
-      body: apiCalling
-          ?  Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
-          : Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 32),
-                    CustomTextField(
-                      hintText:AppStrings.firstname,
-                      controller: firstNameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppStrings.firstname_required;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      hintText: AppStrings.lastname,
-                      controller: lastNameController,
-                      validator: (value) {
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      enabled: false,
-                      hintText: AppStrings.phone_number,
-                      controller: phoneNoController,
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppStrings.phone_number_required;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                    submitCalling? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Handle registration logic
-                          print("Form is valid. Proceed to register.");
-                          updateUser();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary, // Button color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        minimumSize: const Size(double.infinity, 60),
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: CommonHeaderAppBar(
+          title: AppStrings.edit_profile,
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        body: apiCalling
+            ?  Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              )
+            : Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 32),
+                      CustomTextField(
+                        hintText:AppStrings.firstname,
+                        controller: firstNameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return AppStrings.firstname_required;
+                          }
+                          return null;
+                        },
                       ),
-                      child: Text(
-                        AppStrings.Upadte,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        hintText: AppStrings.lastname,
+                        controller: lastNameController,
+                        validator: (value) {
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        enabled: false,
+                        hintText: AppStrings.phone_number,
+                        controller: phoneNoController,
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return AppStrings.phone_number_required;
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      submitCalling? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            // Handle registration logic
+                            print("Form is valid. Proceed to register.");
+                            updateUser();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary, // Button color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(double.infinity, 60),
+                        ),
+                        child: Text(
+                          AppStrings.Upadte,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
@@ -163,6 +166,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           firstNameController.text,
           lastNameController.text);
       AppUtils.showToast('Profile updated successfully');
+      FocusScope.of(context).unfocus();
       eventBus.fire(ProfileEvent(registerResponse?.customer));
       setState(() {
         submitCalling = false;
