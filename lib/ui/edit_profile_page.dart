@@ -157,7 +157,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final ApiService apiService = ApiService();
       registerResponse = await apiService.updateProfile(
           context,
-          phoneNoController.text,
+          customer?.phone ?? '',
           companyController.text,
           firstNameController.text,
           lastNameController.text);

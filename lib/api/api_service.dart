@@ -699,7 +699,7 @@ class ApiService {
     return _makePostRequest(
         "store/customers/me",
         {
-          "phone": phone,
+          //"phone": phone,
           "company_name": companyName,
           "first_name": firstName,
           "last_name": lastName,
