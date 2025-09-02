@@ -104,6 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                                   children: [
                                     LabeledTextField(
                                       label: "Email",
+                                      inputType: TextInputType.emailAddress,
                                       controller: _emailController,
                                       validator: (val) => val == null || !val.contains('@') ? 'Enter valid email' : null,
                                     ),
