@@ -187,12 +187,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
             //
             Text(
               '${order?.cart?.shippingAddress?.address1}, '
-                  '${order?.cart?.shippingAddress?.city},'
+                  '${order?.cart?.shippingAddress?.city}, '
                   '${order?.cart?.shippingAddress?.postalCode}, '
-                  '${order?.cart?.shippingAddress?.province ?? ''}',
+                  '${order?.cart?.shippingAddress?.province ?? ''}.',
             ),
             SizedBox(height: 8),
-            Text('${order?.cart?.shippingAddress?.phone}'),
+            Text('${order?.cart?.shippingAddress?.phone??''}'),
           ],
         ));
   }
