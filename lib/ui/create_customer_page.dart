@@ -56,21 +56,23 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
               showFilter: false,
             ),
             body: SafeArea(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    (_customerListResponse?.customers?.length ?? 0) == 0
-                        ? const EmptyView(
-                            imageAsset: AppAssets.ic_no_list,
-                            title: 'No Customers yet',
-                            description:
-                                'You currently don\'t have any customers',
-                            imageHeight: 150,
-                          )
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: (_customerListResponse?.customers?.length ?? 0) == 0
+                        ? const Center(
+                          child: EmptyView(
+                              imageAsset: AppAssets.ic_no_list,
+                              title: 'No Customers yet',
+                              description:
+                                  'You currently don\'t have any customers',
+                              imageHeight: 150,
+                            ),
+                        )
                         : ListView.builder(
                             shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
+                            physics: AlwaysScrollableScrollPhysics(),
                             itemCount:
                                 _customerListResponse?.customers?.length ?? 0,
                             itemBuilder: (context, index) {
@@ -94,9 +96,9 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
                                 ),
                               );
                             },
-                          )
-                  ],
-                ),
+                          ),
+                  )
+                ],
               ),
             ),
             floatingActionButton: FloatingActionButton(

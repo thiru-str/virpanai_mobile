@@ -73,10 +73,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    SvgPicture.asset(
-                      AppAssets.order_bg,
-                      height: 120,
-                      fit: BoxFit.fitWidth,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: SvgPicture.asset(
+                        AppAssets.order_bg,
+                        height: 120,
+                        fit: BoxFit.fill,
+                      ),
                     ),
                     Column(
                       children: [
@@ -84,7 +87,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                           'Ledger Balance',
                           style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
-                        SizedBox(height: 8),
                         Text(
                           _dashboardResponse?.totalRevenue??'',
                           style: TextStyle(
@@ -93,7 +95,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 4),
                         Text(
                           'Total Value Of All Orders',
                           style: TextStyle(

@@ -98,7 +98,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                   SvgPicture.asset(
                     AppAssets.order_bg,
                     height: 120,
-                    fit: BoxFit.fitWidth,
+                    fit: BoxFit.fill,
                   ),
               Column(
                     children: [
@@ -106,7 +106,6 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                         'Ledger Balance',
                         style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
-                      const SizedBox(height: 8),
                       Text(
                         _liveOrdersResponse?.ledgerBalance??'',
                         style: const TextStyle(
@@ -115,7 +114,6 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
                       const Text(
                         'Total Value Of All Orders',
                         style: TextStyle(
