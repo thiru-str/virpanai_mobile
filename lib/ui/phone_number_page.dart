@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
@@ -105,6 +106,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                                     ),
                                     const SizedBox(height: 8),
                                     IntlPhoneField(
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
                                       decoration: InputDecoration(
                                         filled: true,
                                         fillColor: Colors.transparent,

@@ -191,6 +191,9 @@ class _AddAddressPage extends State<AddAddressPage> {
                           maxLength: 10,
                           hintText: AppStrings.phone_number,
                           controller: phoneNumberController,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           keyboardType: TextInputType.phone,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
