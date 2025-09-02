@@ -91,13 +91,17 @@ class Grid2 extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
-                      height: 30, // enough for 2 lines at fontSize 11
-                      child: Text(
-                        layoutData.title ?? '',
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: FontUtils.primaryFontStyle(fontSize: 11),
+                      width: 60,
+                      height: MediaQuery.of(context).size.height < 700 ? 32 : 30,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Text(
+                          layoutData.title ?? '',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.primaryFontStyle(fontSize: 11),
+                        ),
                       ),
                     ),
                   ],
@@ -109,6 +113,18 @@ class Grid2 extends StatelessWidget {
       ],
     );
   }
+
+  double _calculateTextHeight(BuildContext context, String text, TextStyle style) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: 2,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: 60); // same width as your box
+
+    return textPainter.size.height;
+  }
+
+
   Widget _fallbackWidget() {
     return Container(
       color: AppColors.secondary,
