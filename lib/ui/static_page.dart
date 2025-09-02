@@ -23,6 +23,7 @@ class _StaticPageState extends State<StaticPage> {
   void initState() {
     super.initState();
 
+
     // Get the font family from FontUtils
     String fontFamily = FontUtils.apiPrimaryFont ?? FontUtils.defaultCircularStd;
 

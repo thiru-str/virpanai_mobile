@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/login_page.dart';
+import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/distributor_detail_page.dart';
@@ -63,17 +64,23 @@ class ProfilePage extends StatelessWidget {
               ProfileOptionTile(
                 icon: Icons.shield_outlined,
                 label: "Privacy Policy",
-                onTap: () {},
+                onTap: () {
+                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Privacy Policy', htmlData: AppStrings.sampleData));
+                },
               ),
               ProfileOptionTile(
                 icon: Icons.lock_outline,
                 label: "Terms of Service",
-                onTap: () {},
+                onTap: () {
+                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Terms of Servic', htmlData: AppStrings.sampleData));
+                },
               ),
               ProfileOptionTile(
                 icon: Icons.help_outline,
                 label: "Help Center",
-                onTap: () {},
+                onTap: () {
+                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Help Center', htmlData: AppStrings.sampleData));
+                },
               ),
               ProfileOptionTile(
                 icon: Icons.logout,
