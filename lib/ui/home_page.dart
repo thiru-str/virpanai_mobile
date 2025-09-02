@@ -112,7 +112,8 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                        PageRouteUtils.pushWithSlide(context, const CartPage());
+                        //PageRouteUtils.pushWithSlide(context, const CartPage());
+                        eventBus.fire(TabSwitchEvent(2));
                       },onSearchClick: (){
                         PageRouteUtils.pushWithFade(
                             context,
@@ -145,7 +146,8 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: GestureDetector(
                     onTap: (){
-                      PageRouteUtils.pushWithSlide(context, const CartPage());
+                      eventBus.fire(TabSwitchEvent(2));
+                      //PageRouteUtils.pushWithSlide(context, const CartPage());
                     },
                     child: ViewCartWidget(
                       totalItems: cartItems!,
