@@ -10,7 +10,7 @@ String dealerResponseToJson(DealerResponse data) => json.encode(data.toJson());
 
 class DealerResponse {
   Dealer? dealer;
-  List<DealerDocument>? dealerDocument;
+  List<dynamic>? dealerDocument;
 
   DealerResponse({
     this.dealer,
@@ -19,12 +19,12 @@ class DealerResponse {
 
   factory DealerResponse.fromJson(Map<String, dynamic> json) => DealerResponse(
     dealer: json["dealer"] == null ? null : Dealer.fromJson(json["dealer"]),
-    dealerDocument: json["dealer_document"] == null ? [] : List<DealerDocument>.from(json["dealer_document"]!.map((x) => DealerDocument.fromJson(x))),
+    dealerDocument: json["dealer_document"] == null ? [] : List<dynamic>.from(json["dealer_document"]!.map((x) => x)),
   );
 
   Map<String, dynamic> toJson() => {
     "dealer": dealer?.toJson(),
-    "dealer_document": dealerDocument == null ? [] : List<dynamic>.from(dealerDocument!.map((x) => x.toJson())),
+    "dealer_document": dealerDocument == null ? [] : List<dynamic>.from(dealerDocument!.map((x) => x)),
   };
 }
 
@@ -33,7 +33,7 @@ class Dealer {
   String? name;
   String? email;
   String? phone;
-  List<String>? assignedPincodes;
+  List<String>? assignedDistricts;
   String? panNumber;
   String? address1;
   String? address2;
@@ -44,7 +44,7 @@ class Dealer {
   String? status;
   String? gstNumber;
   Metadata? metadata;
-  dynamic outstandingSummary;
+  OutstandingSummary? outstandingSummary;
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic deletedAt;
@@ -54,7 +54,7 @@ class Dealer {
     this.name,
     this.email,
     this.phone,
-    this.assignedPincodes,
+    this.assignedDistricts,
     this.panNumber,
     this.address1,
     this.address2,
@@ -76,7 +76,7 @@ class Dealer {
     name: json["name"],
     email: json["email"],
     phone: json["phone"],
-    assignedPincodes: json["assigned_pincodes"] == null ? [] : List<String>.from(json["assigned_pincodes"]!.map((x) => x)),
+    assignedDistricts: json["assigned_districts"] == null ? [] : List<String>.from(json["assigned_districts"]!.map((x) => x)),
     panNumber: json["pan_number"],
     address1: json["address_1"],
     address2: json["address_2"],
@@ -87,7 +87,7 @@ class Dealer {
     status: json["status"],
     gstNumber: json["gst_number"],
     metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
-    outstandingSummary: json["outstanding_summary"],
+    outstandingSummary: json["outstanding_summary"] == null ? null : OutstandingSummary.fromJson(json["outstanding_summary"]),
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     deletedAt: json["deleted_at"],
@@ -98,7 +98,7 @@ class Dealer {
     "name": name,
     "email": email,
     "phone": phone,
-    "assigned_pincodes": assignedPincodes == null ? [] : List<dynamic>.from(assignedPincodes!.map((x) => x)),
+    "assigned_districts": assignedDistricts == null ? [] : List<dynamic>.from(assignedDistricts!.map((x) => x)),
     "pan_number": panNumber,
     "address_1": address1,
     "address_2": address2,
@@ -109,7 +109,7 @@ class Dealer {
     "status": status,
     "gst_number": gstNumber,
     "metadata": metadata?.toJson(),
-    "outstanding_summary": outstandingSummary,
+    "outstanding_summary": outstandingSummary?.toJson(),
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "deleted_at": deletedAt,
@@ -132,22 +132,26 @@ class Metadata {
   };
 }
 
-class DealerDocument {
-  String? url;
-  String? name;
+class OutstandingSummary {
+  double? billAmount;
+  double? balanceAmount;
+  double? receivedAmount;
 
-  DealerDocument({
-    this.url,
-    this.name,
+  OutstandingSummary({
+    this.billAmount,
+    this.balanceAmount,
+    this.receivedAmount,
   });
 
-  factory DealerDocument.fromJson(Map<String, dynamic> json) => DealerDocument(
-    url: json["url"],
-    name: json["name"],
+  factory OutstandingSummary.fromJson(Map<String, dynamic> json) => OutstandingSummary(
+    billAmount: json["billAmount"]?.toDouble(),
+    balanceAmount: json["balanceAmount"]?.toDouble(),
+    receivedAmount: json["receivedAmount"]?.toDouble(),
   );
 
   Map<String, dynamic> toJson() => {
-    "url": url,
-    "name": name,
+    "billAmount": billAmount,
+    "balanceAmount": balanceAmount,
+    "receivedAmount": receivedAmount,
   };
 }

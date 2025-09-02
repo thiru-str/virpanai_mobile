@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/login_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
+import 'package:waioz/ui/widgets/distributor_detail_page.dart';
 
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
@@ -25,18 +26,14 @@ class ProfilePage extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.pop(context);
-                    },
-                    child: Center(
-                      child: SvgPicture.asset(
-                        AppAssets.ic_arrow_svg,
-                        color: Colors.black87,
-                      ),
+                  Center(
+                    child: IconButton(
+                      onPressed: (){
+                        Navigator.pop(context);
+                      },
+                      icon:Icon(Icons.arrow_back_ios)
                     ),
                   ),
-                  SizedBox(width: 10,),
                   const Text(
                     "Profile",
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -51,15 +48,17 @@ class ProfilePage extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Reusable Options
-              ProfileOptionTile(
-                icon: Icons.person_outline,
-                label: "Profile Settings",
-                onTap: () {},
-              ),
+              // ProfileOptionTile(
+              //   icon: Icons.person_outline,
+              //   label: "Profile Settings",
+              //   onTap: () {},
+              // ),
               ProfileOptionTile(
                 icon: Icons.notifications_outlined,
                 label: "Distributor Details",
-                onTap: () {},
+                onTap: () {
+                  PageRouteUtils.pushWithSlide(context, const DistributorDetailPage());
+                },
               ),
               ProfileOptionTile(
                 icon: Icons.shield_outlined,
