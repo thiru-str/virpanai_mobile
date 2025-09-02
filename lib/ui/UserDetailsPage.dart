@@ -16,6 +16,7 @@ import '../api/api_service.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_assets.dart';
+import '../utility/app_strings.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
@@ -135,7 +136,14 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             label: "Email Address",
             controller: _emailController,
             inputType: TextInputType.emailAddress,
-            validator: (val) => val == null || !val.contains('@') ? 'Enter valid email' : null,
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+                  return AppStrings.enter_valid_email;
+                }
+              }
+              return null;
+            },
           ),
           buildLabeledTextField(
             label: "Phone Number",
