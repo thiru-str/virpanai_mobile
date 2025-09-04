@@ -1,8 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/widgets/item_video_tile.dart';
 import 'package:waioz/utility/app_strings.dart';
 
+import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
@@ -36,22 +39,18 @@ class Banner2 extends StatelessWidget {
                   style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor
-                  ),
+                      color: AppColors.textColor),
                 ),
                 Visibility(
                   visible: content.layoutRedirectTitle!.isNotEmpty,
                   child: GestureDetector(
-                    onTap: (){
-
-                    },
+                    onTap: () {},
                     child: Text(
                       content.layoutRedirectTitle!,
                       style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor
-                      ),
+                          color: AppColors.textColor),
                     ),
                   ),
                 ),
@@ -63,23 +62,39 @@ class Banner2 extends StatelessWidget {
             height: 180,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData!.length,
-              shrinkWrap: true,
+              itemCount: content.layoutData?.length ?? 0,
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                LayoutDatum layoutData = content.layoutData![index];
+                final layoutData = content.layoutData![index];
+                final mediaUrl = layoutData.image ?? '';
+                final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
+
                 return GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirect(
-                        context: context,
-                        layoutOption: content.layoutOption!,
-                        layoutData: layoutData,
-                      );
-                    },
-                    child: ItemVideoTile(
-                      videoUrl: layoutData.image!,
-                      title: layoutData.subTitle!,
-                    )
+                  onTap: () {
+                    RedirectUtils.handleContentRedirect(
+                      context: context,
+                      layoutOption: content.layoutOption!,
+                      layoutData: layoutData,
+                    );
+                  },
+                  child: isVideo
+                      ? ItemVideoTile(
+                          videoUrl: mediaUrl,
+                          title: layoutData.subTitle ?? '',
+                        )
+                      : SizedBox(
+                          width: 160,
+                          child: mediaUrl.isEmpty
+                              ? _imageFallback(160, 180) // empty → fallback
+                              : CachedNetworkImage(
+                                  imageUrl: mediaUrl,
+                                  fit: BoxFit.cover,
+                                  width: 160,
+                                  height: 180,
+                                  errorWidget: (context, url, error) =>
+                                      _imageFallback(160, 180),
+                                ),
+                        ),
                 );
               },
             ),
@@ -88,4 +103,18 @@ class Banner2 extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _imageFallback(double w, double h) {
+  return Container(
+    width: w,
+    height: h,
+    color: AppColors.secondary,
+    alignment: Alignment.center,
+    child: SvgPicture.asset(
+      AppAssets.ic_no_image,
+      width: w * 0.5,
+      height: h * 0.5,
+    ),
+  );
 }
