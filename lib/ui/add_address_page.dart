@@ -197,7 +197,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                           ],
                           keyboardType: TextInputType.phone,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.isEmpty || value.length < 10) {
                               return AppStrings.phone_number_required;
                             }
                             return null;
