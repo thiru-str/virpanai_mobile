@@ -154,8 +154,8 @@ class _RegisterPageState extends State<RegisterPage> {
           widget.phoneNo,
           widget.token);
 
-      RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
-        context,widget.token);
+      RefreshTokenResponse refreshTokenResponse =
+          await apiService.refreshToken(context, widget.token);
 
       setState(() {
         apiCalling = false;
@@ -163,7 +163,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
       SharedPreferencesUtil()
-          .saveMap('customer', registerResponse!.customer!.toJson());
+          .saveMap('customer', registerResponse?.customer?.toJson() ?? {});
 
       if (mounted) {
         if (widget.redirectPage != null) {
@@ -190,11 +190,15 @@ class _RegisterPageState extends State<RegisterPage> {
   void getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
-      final response= await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+      final response = await apiService.getHomePage(context);
+      await SharedPreferencesUtil()
+          .saveString('region_id', response.global?.regionId ?? "");
+      await SharedPreferencesUtil()
+          .saveString('cart_id', response.global?.cartId ?? "");
+      await SharedPreferencesUtil()
+          .saveString('currency_symbol', response.global?.currencySymbol ?? "");
+      await SharedPreferencesUtil()
+          .saveMap('global', response.global?.toJson() ?? {});
     } catch (e) {
       print(e);
     }

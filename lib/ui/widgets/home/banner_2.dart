@@ -12,7 +12,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Banner2 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Banner2({
     Key? key,
@@ -32,29 +32,27 @@ class Banner2 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  content.layoutTitle!,
+                  content?.layoutTitle ?? "",
                   style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor
-                  ),
+                      color: AppColors.textColor),
                 ),
                 Visibility(
-                  visible: content.layoutRedirectTitle!.isNotEmpty,
+                  visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
                   child: GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
-                        redirectData: content.redirectData!,
+                        redirectData: content?.redirectData,
                       );
                     },
                     child: Text(
-                      content.layoutRedirectTitle!,
+                      content?.layoutRedirectTitle ?? "",
                       style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor
-                      ),
+                          color: AppColors.textColor),
                     ),
                   ),
                 ),
@@ -66,24 +64,23 @@ class Banner2 extends StatelessWidget {
             height: 180,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData!.length,
+              itemCount: content?.layoutData?.length ?? 0,
               shrinkWrap: true,
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                LayoutDatum layoutData = content.layoutData![index];
+                LayoutDatum? layoutData = content?.layoutData?[index];
                 return GestureDetector(
                     onTap: () {
                       RedirectUtils.handleContentRedirect(
                         context: context,
-                        layoutOption: content.layoutOption!,
+                        layoutOption: content?.layoutOption ?? "",
                         layoutData: layoutData,
                       );
                     },
                     child: ItemVideoTile(
-                      videoUrl: layoutData.image!,
+                      videoUrl: layoutData!.image!,
                       title: layoutData.subTitle!,
-                    )
-                );
+                    ));
               },
             ),
           )

@@ -11,7 +11,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Item3 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Item3({
     Key? key,
@@ -31,32 +31,30 @@ class Item3 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  content.layoutTitle!,
+                  content?.layoutTitle ?? "",
                   style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor
-                  ),
+                      color: AppColors.textColor),
                 ),
-                  Visibility(
-                    visible: content.layoutRedirectTitle!.isNotEmpty,
-                    child: GestureDetector(
-                      onTap: (){
-                        RedirectUtils.handleContentRedirectViewAll(
-                          context: context,
-                          redirectData: content.redirectData!,
-                        );
-                      },
-                      child: Text(
-                        content.layoutRedirectTitle!,
-                        style: FontUtils.primaryFontStyle(
+                Visibility(
+                  visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
+                  child: GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content?.redirectData!,
+                      );
+                    },
+                    child: Text(
+                      content?.layoutRedirectTitle ?? "",
+                      style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                            color: AppColors.textColor
-                        ),
-                      ),
+                          color: AppColors.textColor),
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -65,15 +63,15 @@ class Item3 extends StatelessWidget {
             height: 120,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData!.length,
+              itemCount: content?.layoutData?.length ?? 0,
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                LayoutDatum layoutData = content.layoutData![index];
+                LayoutDatum? layoutData = content?.layoutData?[index];
                 return GestureDetector(
                   onTap: () {
                     RedirectUtils.handleContentRedirect(
                       context: context,
-                      layoutOption: content.layoutOption!,
+                      layoutOption: content?.layoutOption ?? "",
                       layoutData: layoutData,
                     );
                   },
@@ -84,16 +82,21 @@ class Item3 extends StatelessWidget {
                         Container(
                           width: 70,
                           height: 70,
-                          decoration:  BoxDecoration(
+                          decoration: BoxDecoration(
                             color: AppColors.secondary,
                             shape: BoxShape.circle,
                           ),
-                          child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
+                          child: ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: layoutData!.image!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           textAlign: TextAlign.center,
-                          layoutData.title!,
+                          layoutData.title ?? "",
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: FontUtils.primaryFontStyle(fontSize: 12),

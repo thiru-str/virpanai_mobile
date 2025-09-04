@@ -116,7 +116,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     return ListView.builder(
       shrinkWrap: true,  // Prevent the list from taking up unnecessary space
       physics: NeverScrollableScrollPhysics(),  // Disable scrolling for the list within SingleChildScrollView
-      itemCount: widget.selectedOrder?.items?.length,  // Define the number of items you want to show
+      itemCount: widget.selectedOrder?.items?.length ??0,  // Define the number of items you want to show
       itemBuilder: (context, index) {
         final itemDetail = widget.selectedOrder?.items?[index];
         return OrderDetailItemCard(

@@ -66,7 +66,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                     padding: const EdgeInsets.all(16.0),
                     child: GridView.builder(
                       scrollDirection: Axis.vertical,
-                      itemCount: wishListResponse?.products?.length,
+                      itemCount: wishListResponse?.products?.length ?? 0,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:

@@ -13,14 +13,13 @@ import 'widgets/common_header_app_bar.dart';
 
 class CategoryPage extends StatefulWidget {
   final bool isFromBottomNav;
-  const CategoryPage({super.key,this.isFromBottomNav = false});
+  const CategoryPage({super.key, this.isFromBottomNav = false});
 
   @override
   State<CategoryPage> createState() => _CategoryPageState();
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-
   ProductCategoriesResponse? productCategoriesResponse;
   bool apiLoading = true;
 
@@ -30,68 +29,83 @@ class _CategoryPageState extends State<CategoryPage> {
     super.initState();
     getCategoriesApi();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-      CommonHeaderAppBar(
-        title: AppStrings.categories,
-        leading: widget.isFromBottomNav ? false : true,
-        onBackTap: () {
-          Navigator.pop(context,true);
-        },
-      ),
-      backgroundColor: Colors.white,
-      body: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-          :Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(AppStrings.all_category,style: FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor)),
+        appBar: CommonHeaderAppBar(
+          title: AppStrings.categories,
+          leading: widget.isFromBottomNav ? false : true,
+          onBackTap: () {
+            Navigator.pop(context, true);
+          },
+        ),
+        backgroundColor: Colors.white,
+        body: apiLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
                 ),
-                const SizedBox(height: 10,),
-                Expanded(
-                  child: GridView.builder(
+              )
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(AppStrings.all_category,
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 16, color: AppColors.textColor)),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                      child: GridView.builder(
                         scrollDirection: Axis.vertical,
-                        itemCount:
-                            productCategoriesResponse!.productCategories!.length,
-                        gridDelegate:
-                             SliverGridDelegateWithFixedCrossAxisCount(
+                        itemCount: productCategoriesResponse
+                                ?.productCategories?.length ??
+                            0,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                              childAspectRatio: (MediaQuery.of(context).size.width / 2) /
+                          childAspectRatio:
+                              (MediaQuery.of(context).size.width / 2) /
                                   (200 + 12 + 12),
                         ),
                         itemBuilder: (context, index) {
-                          final productCategory = productCategoriesResponse!
-                              .productCategories![index];
+                          final productCategory = productCategoriesResponse
+                              ?.productCategories?[index];
                           return CategoryCard(
-                              imagePath: productCategory.image ?? '',
-                              title: productCategory.name!,
+                              imagePath: productCategory?.image ?? '',
+                              title: productCategory?.name ?? "",
                               onTap: () {
-                                if (productCategory
-                                    .categoryChildren!.isNotEmpty) {
+                                if ((productCategory
+                                        ?.categoryChildren?.isNotEmpty ??
+                                    false)) {
                                   PageRouteUtils.pushWithFade(
                                       context,
                                       SubCategoryPage(
-                                        categoryTitle: productCategory.name!,
+                                        categoryTitle:
+                                            productCategory?.name ?? "",
                                         productCategory:
-                                            productCategory.categoryChildren!,
+                                            productCategory?.categoryChildren ??
+                                                [],
                                       ));
-                                }
-                                else{
-                                  PageRouteUtils.pushWithFade(context, ProductPage(categoryId: productCategory.id!,));
+                                } else {
+                                  PageRouteUtils.pushWithFade(
+                                      context,
+                                      ProductPage(
+                                        categoryId: productCategory!.id!,
+                                      ));
                                 }
                               });
                         },
                       ),
-                ),
+                    ),
                   ],
-            ),
-          )
-    );
+                ),
+              ));
   }
 
   void getCategoriesApi() async {
@@ -103,6 +117,9 @@ class _CategoryPageState extends State<CategoryPage> {
         productCategoriesResponse;
       });
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         apiLoading = false;
       });

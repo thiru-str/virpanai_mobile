@@ -38,6 +38,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   VerifyOtpResponse? verifyOtpResponse;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    setState(() {
+      _otpController.text = widget.otp;
+    });
+  }
+
+  @override
   void dispose() {
     _otpController.dispose();
     _focusNode.dispose();
@@ -46,9 +55,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      _otpController.text = widget.otp;
-    });
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -195,11 +201,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
-      final response= await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+      final response = await apiService.getHomePage(context);
+      await SharedPreferencesUtil()
+          .saveString('region_id', response.global?.regionId ?? "");
+      await SharedPreferencesUtil()
+          .saveString('cart_id', response.global?.cartId ?? "");
+      await SharedPreferencesUtil()
+          .saveString('currency_symbol', response.global?.currencySymbol ?? "");
+      await SharedPreferencesUtil()
+          .saveMap('global', response.global?.toJson() ?? {});
     } catch (e) {
       print(e);
     }

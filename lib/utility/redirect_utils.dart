@@ -23,7 +23,7 @@ class RedirectUtils {
   static void handleContentRedirect({
     required BuildContext context,
     required String layoutOption,
-    required LayoutDatum layoutData,
+    required LayoutDatum? layoutData,
   }) {
     final handler = _contentRedirectHandlers[layoutOption];
     if (handler != null) {
@@ -35,32 +35,38 @@ class RedirectUtils {
 
   static void handleContentRedirectViewAll({
     required BuildContext context,
-    required RedirectData redirectData,
+    required RedirectData? redirectData,
   }) {
-    final handler = _viewAllRedirectHandlers[redirectData.redirectType];
+    final handler = _viewAllRedirectHandlers[redirectData?.redirectType];
     if (handler != null) {
       handler(context, redirectData);
     } else {
-      debugPrint('Unknown redirect type: ${redirectData.redirectType}');
+      debugPrint('Unknown redirect type: ${redirectData?.redirectType}');
     }
   }
 
   // Handler maps as static final constants
-  static final Map<String, Function(BuildContext, LayoutDatum)> _contentRedirectHandlers = {
+  static final Map<String, Function(BuildContext, LayoutDatum?)>
+      _contentRedirectHandlers = {
     AppStrings.category: _navigateToCategory,
-    AppStrings.product: (context, layoutData) => _navigateToProduct(context, layoutData, true),
+    AppStrings.product: (context, layoutData) =>
+        _navigateToProduct(context, layoutData, true),
     AppStrings.brand: _navigateToBrand,
     AppStrings.custom: _handleCustomRedirect,
   };
 
-  static final Map<String, Function(BuildContext, RedirectData)> _viewAllRedirectHandlers = {
+  static final Map<String, Function(BuildContext, RedirectData?)>
+      _viewAllRedirectHandlers = {
     AppStrings.reDirectSearch: _navigateToSearch,
-    AppStrings.reDirectProduct: (context, redirectData) => _handleProductRedirect(context, redirectData),
-    AppStrings.reDirectLink: (_, redirectData) => _launchExternalLink(redirectData),
+    AppStrings.reDirectProduct: (context, redirectData) =>
+        _handleProductRedirect(context, redirectData),
+    AppStrings.reDirectLink: (_, redirectData) =>
+        _launchExternalLink(redirectData),
   };
 
-  static void _handleCustomRedirect(BuildContext context, LayoutDatum layoutData) {
-    final redirectData = layoutData.redirectData;
+  static void _handleCustomRedirect(
+      BuildContext context, LayoutDatum? layoutData) {
+    final redirectData = layoutData?.redirectData;
     if (redirectData == null) return;
 
     handleContentRedirectViewAll(
@@ -69,8 +75,9 @@ class RedirectUtils {
     );
   }
 
-  static void _navigateToCategory(BuildContext context, LayoutDatum layoutData) {
-    final categoryId = layoutData.id;
+  static void _navigateToCategory(
+      BuildContext context, LayoutDatum? layoutData) {
+    final categoryId = layoutData?.id;
     if (categoryId == null) return;
 
     PageRouteUtils.pushWithFade(
@@ -79,8 +86,8 @@ class RedirectUtils {
     );
   }
 
-  static void _navigateToBrand(BuildContext context, LayoutDatum layoutData) {
-    final brandId = layoutData.id;
+  static void _navigateToBrand(BuildContext context, LayoutDatum? layoutData) {
+    final brandId = layoutData?.id;
     if (brandId == null) return;
 
     PageRouteUtils.pushWithSlide(
@@ -89,8 +96,9 @@ class RedirectUtils {
     );
   }
 
-  static void _navigateToSearch(BuildContext context, RedirectData redirectData) {
-    final categoryId = redirectData.redirectSearchData?.category;
+  static void _navigateToSearch(
+      BuildContext context, RedirectData? redirectData) {
+    final categoryId = redirectData?.redirectSearchData?.category;
     if (categoryId?.isEmpty ?? true) return;
 
     PageRouteUtils.pushWithSlide(
@@ -99,10 +107,11 @@ class RedirectUtils {
     );
   }
 
-  static void _navigateToProduct(BuildContext context, LayoutDatum layoutData, bool isDirectProduct) {
+  static void _navigateToProduct(
+      BuildContext context, LayoutDatum? layoutData, bool isDirectProduct) {
     final productId = isDirectProduct
-        ? layoutData.id
-        : layoutData.redirectData?.redirectProductData?.productId;
+        ? layoutData?.id
+        : layoutData?.redirectData?.redirectProductData?.productId;
 
     if (productId?.isEmpty ?? true) return;
 
@@ -112,8 +121,9 @@ class RedirectUtils {
     );
   }
 
-  static void _handleProductRedirect(BuildContext context, RedirectData redirectData) {
-    final productId = redirectData.redirectProductData?.productId;
+  static void _handleProductRedirect(
+      BuildContext context, RedirectData? redirectData) {
+    final productId = redirectData?.redirectProductData?.productId;
     if (productId?.isEmpty ?? true) return;
 
     PageRouteUtils.pushWithSlide(
@@ -122,8 +132,8 @@ class RedirectUtils {
     );
   }
 
-  static Future<void> _launchExternalLink(RedirectData redirectData) async {
-    final url = redirectData.redirectUrlData?.url;
+  static Future<void> _launchExternalLink(RedirectData? redirectData) async {
+    final url = redirectData?.redirectUrlData?.url;
     if (url?.isEmpty ?? true) return;
 
     await launchExternalUrl(url!);

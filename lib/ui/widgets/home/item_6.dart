@@ -11,7 +11,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Item6 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Item6({
     Key? key,
@@ -29,29 +29,27 @@ class Item6 extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                content.layoutTitle!,
+                content?.layoutTitle ?? "",
                 style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textColor
-                ),
+                    color: AppColors.textColor),
               ),
               Visibility(
-                visible: content.layoutRedirectTitle!.isNotEmpty,
+                visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
                 child: GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
-                      redirectData: content.redirectData!,
+                      redirectData: content?.redirectData,
                     );
                   },
                   child: Text(
-                    content.layoutRedirectTitle!,
+                    content?.layoutRedirectTitle ?? "",
                     style: FontUtils.primaryFontStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor
-                    ),
+                        color: AppColors.textColor),
                   ),
                 ),
               )
@@ -63,15 +61,15 @@ class Item6 extends StatelessWidget {
           height: 100,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: content.layoutData!.length,
+            itemCount: content?.layoutData?.length ?? 0,
             separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
-              final layoutData = content.layoutData![index];
+              final layoutData = content?.layoutData?[index];
               return GestureDetector(
                 onTap: () {
                   RedirectUtils.handleContentRedirect(
                     context: context,
-                    layoutOption: content.layoutOption!,
+                    layoutOption: content?.layoutOption ?? "",
                     layoutData: layoutData,
                   );
                 },
@@ -88,18 +86,24 @@ class Item6 extends StatelessWidget {
                       Container(
                         width: 50,
                         height: 50,
-                        decoration:  BoxDecoration(
+                        decoration: BoxDecoration(
                           color: AppColors.secondary,
                           shape: BoxShape.circle,
                         ),
-                        child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: layoutData!.image!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8), // Horizontal spacing
-                      Flexible( // Constrain the Text widget
+                      Flexible(
+                        // Constrain the Text widget
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Text(
-                            layoutData.title!,
+                            layoutData.title ?? "",
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -120,4 +124,3 @@ class Item6 extends StatelessWidget {
     );
   }
 }
-

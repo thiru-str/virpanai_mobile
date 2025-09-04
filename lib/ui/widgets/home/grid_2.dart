@@ -7,13 +7,14 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
 class Grid2 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Grid2({Key? key, required this.content}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final List<LayoutDatum> items = content.layoutData!.take(15).toList(); // Max 5x3 = 15 items
+    final List<LayoutDatum>? items =
+        content?.layoutData?.take(15).toList(); // Max 5x3 = 15 items
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,7 +25,7 @@ class Grid2 extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                content.layoutTitle ?? '',
+                content?.layoutTitle ?? '',
                 style: FontUtils.secondaryFontStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -32,7 +33,7 @@ class Grid2 extends StatelessWidget {
                 ),
               ),
               Visibility(
-                visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                visible: (content?.layoutRedirectTitle ?? '').isNotEmpty,
                 child: GestureDetector(
                   onTap: () {
                     // Handle section-level redirection if needed
@@ -40,7 +41,7 @@ class Grid2 extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        content.layoutRedirectTitle!,
+                        content?.layoutRedirectTitle ?? "",
                         style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -61,7 +62,7 @@ class Grid2 extends StatelessWidget {
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: items.length,
+            itemCount: items?.length ?? 0,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 5,
               mainAxisSpacing: 16,
@@ -69,12 +70,12 @@ class Grid2 extends StatelessWidget {
               childAspectRatio: 0.60,
             ),
             itemBuilder: (context, index) {
-              final layoutData = items[index];
+              final layoutData = items?[index];
               return GestureDetector(
                 onTap: () {
                   RedirectUtils.handleContentRedirect(
                     context: context,
-                    layoutOption: content.layoutOption!,
+                    layoutOption: content?.layoutOption ?? "",
                     layoutData: layoutData,
                   );
                 },
@@ -84,9 +85,10 @@ class Grid2 extends StatelessWidget {
                       width: 60,
                       height: 60,
                       child: CachedNetworkImage(
-                        imageUrl: layoutData.image!,
+                        imageUrl: layoutData!.image!,
                         fit: BoxFit.cover,
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.broken_image),
                       ),
                     ),
                     const SizedBox(height: 8),

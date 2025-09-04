@@ -3,7 +3,7 @@ import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 class Item8 extends StatefulWidget {
-  final Content content;
+  final Content? content;
   final double height;
   final double indicatorSize;
 
@@ -27,16 +27,16 @@ class _Item8State extends State<Item8> {
       height: widget.height,
       color: AppColors.secondary, // Background color
       child: PageView.builder(
-        itemCount: widget.content.layoutData!.length,
+        itemCount: widget.content?.layoutData?.length ?? 0,
         onPageChanged: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
         itemBuilder: (context, index) {
-          LayoutDatum layoutdata = widget.content.layoutData![index];
+          LayoutDatum? layoutdata = widget.content?.layoutData?[index];
           return Image.network(
-            layoutdata.image!,
+            layoutdata!.image!,
             fit: BoxFit.cover,
             width: double.infinity,
           );

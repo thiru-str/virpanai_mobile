@@ -5,7 +5,7 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/redirect_utils.dart';
 
 class Item2 extends StatefulWidget {
-  final Content content;
+  final Content? content;
   final double height;
   final double indicatorSize;
 
@@ -33,19 +33,19 @@ class _Item2State extends State<Item2> {
           alignment: Alignment.bottomCenter,
           children: [
             PageView.builder(
-              itemCount: widget.content.layoutData!.length,
+              itemCount: widget.content?.layoutData?.length ?? 0,
               onPageChanged: (index) {
                 setState(() {
                   _currentIndex = index;
                 });
               },
               itemBuilder: (context, index) {
-                LayoutDatum layoutData = widget.content.layoutData![index];
+                LayoutDatum? layoutData = widget.content?.layoutData?[index];
                 return GestureDetector(
                   onTap: () {
                     RedirectUtils.handleContentRedirect(
                       context: context,
-                      layoutOption: widget.content.layoutOption!,
+                      layoutOption: widget.content?.layoutOption ?? "",
                       layoutData: layoutData,
                     );
                   },
@@ -53,7 +53,7 @@ class _Item2State extends State<Item2> {
                     borderRadius: BorderRadius.circular(15),
                     child: CachedNetworkImage(
                       fit: BoxFit.cover,
-                      imageUrl: layoutData.image!,
+                      imageUrl: layoutData!.image!,
                       width: double.infinity,
                     ),
                   ),
@@ -64,7 +64,8 @@ class _Item2State extends State<Item2> {
               bottom: 16.0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(widget.content.layoutData!.length, (index) {
+                children:
+                    List.generate(widget.content?.layoutData?.length ?? 0, (index) {
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4.0),
                     width: widget.indicatorSize,

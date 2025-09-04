@@ -252,8 +252,8 @@ class _ProductPageState extends State<ProductPage> {
                       final product = filteredProducts[index];
                       return ProductCard(
                         imageUrl: product.thumbnail!,
-                        title: product.title!,
-                        price: product.variants!.isNotEmpty
+                        title: product.title ?? "",
+                        price: (product.variants?.isNotEmpty ?? false)
                             ? CurrencyUtil.appendCurrency(product
                                     .variants?[0]
                                     .calculatedPrice

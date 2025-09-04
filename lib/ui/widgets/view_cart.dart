@@ -6,10 +6,9 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
-
 class ViewCartWidget extends StatelessWidget {
   final int totalItems;
-  final List<String> itemImages;
+  final List<String>? itemImages;
 
   const ViewCartWidget({
     Key? key,
@@ -19,8 +18,8 @@ class ViewCartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasExtraItems = itemImages.length > 2;
-    final int extraItemsCount = itemImages.length - 2;
+    final bool hasExtraItems = (itemImages?.length ?? 0) > 2;
+    final int extraItemsCount =( itemImages?.length ?? 0) - 2;
 
     return Container(
       height: 70,
@@ -38,11 +37,13 @@ class ViewCartWidget extends StatelessWidget {
             child: SizedBox(
               width: hasExtraItems
                   ? 100
-                  : (itemImages.length == 1 ? 40 : 70), // Dynamically adjust width
+                  : (itemImages?.length == 1
+                      ? 40
+                      : 70), // Dynamically adjust width
               child: Stack(
                 clipBehavior: Clip.none, // Allow overflowing content
                 children: [
-                  for (int i = 0; i < itemImages.length && i < 2; i++)
+                  for (int i = 0; i <( itemImages?.length ?? 0) && i < 2; i++)
                     Positioned(
                       left: i * 30.0, // Position the images with spacing
                       child: CircleAvatar(
@@ -50,7 +51,8 @@ class ViewCartWidget extends StatelessWidget {
                         backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 18,
-                          backgroundImage: CachedNetworkImageProvider(itemImages[i]),
+                          backgroundImage:
+                              CachedNetworkImageProvider(itemImages![i]),
                         ),
                       ),
                     ),
@@ -84,7 +86,7 @@ class ViewCartWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               Text(
+              Text(
                 AppStrings.view_cart,
                 style: FontUtils.primaryFontStyle(
                   color: Colors.white,
@@ -111,7 +113,7 @@ class ViewCartWidget extends StatelessWidget {
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            child:  Icon(
+            child: Icon(
               Icons.arrow_forward_ios,
               color: AppColors.primary,
               size: 20,
@@ -121,12 +123,4 @@ class ViewCartWidget extends StatelessWidget {
       ),
     );
   }
-
-
-
-
 }
-
-
-
-

@@ -16,14 +16,14 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
 class Grid1 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Grid1({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppUtils.rgbStringToColor(content.layoutBgColor??''),
+      color: AppUtils.rgbStringToColor(content?.layoutBgColor??''),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,7 +34,7 @@ class Grid1 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  content.layoutTitle ?? '',
+                  content?.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -42,19 +42,19 @@ class Grid1 extends StatelessWidget {
                   ),
                 ),
                 Visibility(
-                  visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
+                  visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
                   child: GestureDetector(
                     onTap: () {
                       // Handle redirect
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
-                        redirectData: content.redirectData!,
+                        redirectData: content?.redirectData,
                       );
                     },
                     child: Row(
                       children: [
                         Text(
-                          content.layoutRedirectTitle!,
+                          content?.layoutRedirectTitle ?? "",
                           style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class Grid1 extends StatelessWidget {
             child:ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(16.0),),
               child: CachedNetworkImage(
-                imageUrl: content.layoutBannerImage??'',
+                imageUrl: content?.layoutBannerImage??'',
                 height: 150, // Adjusted image height
                 width: double.infinity, // Take full width
                 fit: BoxFit.cover, // Fill the card space
@@ -89,16 +89,16 @@ class Grid1 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: content.layoutData!.length,
+                itemCount: content?.layoutData?.length ??0,
                 separatorBuilder: (_, __) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
-                  final layoutData = content.layoutData![index];
+                  final layoutData = content?.layoutData![index];
 
                   return GestureDetector(
                     onTap: () {
                       RedirectUtils.handleContentRedirect(
                         context: context,
-                        layoutOption: content.layoutOption!,
+                        layoutOption: content?.layoutOption ??"",
                         layoutData: layoutData,
                       );
                     },
@@ -117,7 +117,7 @@ class Grid1 extends StatelessWidget {
                               ClipRRect(
                                 borderRadius: const BorderRadius.all(Radius.circular(12)),
                                 child: CachedNetworkImage(
-                                  imageUrl: layoutData.image ?? '',
+                                  imageUrl: layoutData?.image ?? '',
                                   height: 130,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
@@ -188,7 +188,7 @@ class Grid1 extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: Text(
-                              layoutData.title ?? '',
+                              layoutData?.title ?? '',
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -219,7 +219,7 @@ class Grid1 extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  CurrencyUtil.appendCurrency(layoutData.prices?.sellingPrice ?? ''),
+                                  CurrencyUtil.appendCurrency(layoutData?.prices?.sellingPrice ?? ''),
                                   style: FontUtils.primaryFontStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -234,13 +234,13 @@ class Grid1 extends StatelessWidget {
 
                           // 🔹 Original Price + % Off
                           Visibility(
-                            visible: layoutData.prices?.discountPercentage?.isNotEmpty ?? false,
+                            visible: layoutData?.prices?.discountPercentage?.isNotEmpty ?? false,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: Row(
                                 children: [
                                   Text(
-                                    CurrencyUtil.appendCurrency(layoutData.prices?.originalPrice ?? ''),
+                                    CurrencyUtil.appendCurrency(layoutData?.prices?.originalPrice ?? ''),
                                     style: FontUtils.primaryFontStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w400,
@@ -250,7 +250,7 @@ class Grid1 extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    "${layoutData.prices?.discountPercentage ?? ''}",
+                                    "${layoutData?.prices?.discountPercentage ?? ''}",
                                     style: TextStyle(fontSize: 12, color: Colors.green.shade700),
                                   )
                                 ],

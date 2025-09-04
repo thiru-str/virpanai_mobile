@@ -48,7 +48,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
@@ -62,7 +61,6 @@ class _HomePageState extends State<HomePage> {
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
   bool isLoggedIn = false;
-
 
   @override
   void initState() {
@@ -90,7 +88,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription
+        .cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
@@ -99,91 +98,114 @@ class _HomePageState extends State<HomePage> {
     appHeader = (await SharedPreferencesUtil().getString('app_header'))!;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: appHeader == "header-2" ? CommonHeaderAppBar(
-          title: AppStrings.home,
-          leading: false,
-          onBackTap: () {
-            Navigator.of(context).pop();
-          },
-        ) : null,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-              :RefreshIndicator(
-            onRefresh: () async {
-              // Call your refresh function here
-              setState(() => apiLoading = true);
-              await getHomePageApi();
-            },
-                child: SingleChildScrollView(
-                            physics: AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                          PageRouteUtils.pushWithSlide(context, const CartPage());
-                        },onSearchClick: (){
-                          PageRouteUtils.pushWithFade(
-                              context,
-                              ProductPage(
-                                categoryId: '',
-                              ));
+        appBar: appHeader == "header-2"
+            ? CommonHeaderAppBar(
+                title: AppStrings.home,
+                leading: false,
+                onBackTap: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null,
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              apiLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        // Call your refresh function here
+                        setState(() => apiLoading = true);
+                        await getHomePageApi();
+                      },
+                      child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: CommonHeader(
+                                headerType: appHeader,
+                                title: headerTitle,
+                                cartCount: cartItems ?? 0,
+                                onCartClick: () {
+                                  PageRouteUtils.pushWithSlide(
+                                      context, const CartPage());
+                                },
+                                onSearchClick: () {
+                                  PageRouteUtils.pushWithFade(
+                                      context,
+                                      ProductPage(
+                                        categoryId: '',
+                                      ));
                                 },
                                 addressType: addressType,
                               ),
                             ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0.0,vertical: 16.0),
-                        child: ListView.separated(
-                          separatorBuilder: (context, index) => const SizedBox(height: 16),
-                          scrollDirection: Axis.vertical,
-                          itemCount: homePageResponse!.content!.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            final homePageContent = homePageResponse!.content![index];
-                            return getLayoutWidget(homePageContent);
-                          },
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0.0, vertical: 16.0),
+                              child: ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 16),
+                                scrollDirection: Axis.vertical,
+                                itemCount:
+                                    homePageResponse?.content?.length ?? 0,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final homePageContent =
+                                      homePageResponse?.content?[index];
+                                  return getLayoutWidget(homePageContent);
+                                },
+                              ),
+                            ),
+                            Visibility(
+                                visible: cartItems != null && cartItems != 0,
+                                child: const SizedBox(
+                                  height: 80,
+                                ))
+                          ],
                         ),
                       ),
-                      Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
-                    ],
-                  ),
+                    ),
+              Visibility(
+                visible: cartItems != null && cartItems != 0,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: cartItems != null
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 20.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              PageRouteUtils.pushWithSlide(
+                                  context, const CartPage());
+                            },
+                            child: ViewCartWidget(
+                                totalItems: cartItems!,
+                                itemImages: cartItemImages!),
+                          ),
+                        )
+                      : const SizedBox(),
                 ),
               ),
-            Visibility(
-              visible: cartItems!= null && cartItems != 0,
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: cartItems!=null ?Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: GestureDetector(
-                    onTap: (){
-                      PageRouteUtils.pushWithSlide(context, const CartPage());
-                    },
-                    child: ViewCartWidget(
-                      totalItems: cartItems!,
-                      itemImages:  cartItemImages!
-                    ),
-                  ),
-                ): const SizedBox(),
-              ),
-            ),
-          ],
-        ),
-      )
-    );
+            ],
+          ),
+        ));
   }
 
-  Widget getLayoutWidget(Content homePageContent) {
-    print('item ${homePageContent.layoutName}');
-    switch (homePageContent.layoutName) {
+  Widget getLayoutWidget(Content? homePageContent) {
+    print('item ${homePageContent?.layoutName}');
+    switch (homePageContent?.layoutName) {
       case "item1":
         return Item1(content: homePageContent);
       case "Slider2":
@@ -211,18 +233,16 @@ class _HomePageState extends State<HomePage> {
       case "Banner2": // video
         return Banner2(content: homePageContent);
       case "Slider1":
-        return Slider1(content: homePageContent);
+        return Slider1(content: homePageContent!);
       case "Banner1":
-        return Banner1(content: homePageContent);
+        return Banner1(content: homePageContent!);
       case "item9":
         return Item9(
-          content: homePageContent,
+          content: homePageContent!,
           onCartQtyChanged: (deltaQty, variantId) async {
             await addCart(deltaQty, variantId); // delta quantity (+1/-1)
           },
         );
-
-
 
       default:
         return const SizedBox();
@@ -233,16 +253,21 @@ class _HomePageState extends State<HomePage> {
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
-      SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      SharedPreferencesUtil()
+          .saveString('region_id', homePageResponse?.global?.regionId ?? "");
+      SharedPreferencesUtil()
+          .saveString('cart_id', homePageResponse?.global?.cartId ?? "");
+      SharedPreferencesUtil().saveString(
+          'currency_symbol', homePageResponse?.global?.currencySymbol ?? "");
+      SharedPreferencesUtil()
+          .saveMap('global', homePageResponse?.global?.toJson() ?? {});
       setState(() {
         apiLoading = false;
         homePageResponse;
       });
       getCartApi();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         apiLoading = false;
       });
@@ -258,17 +283,18 @@ class _HomePageState extends State<HomePage> {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       setState(() {
-        cartItems = cartResponse!.cart!.items!.length;
-        cartItemImages = cartResponse!.cart!.items!.map((item) => item.thumbnail!).toList();
+        cartItems = cartResponse?.cart?.items?.length;
+        cartItemImages = cartResponse?.cart?.items
+            ?.map((item) => item.thumbnail ?? "")
+            .toList();
       });
-      if((cartResponse?.cart?.items?.length?? 0) > 0) {
-
+      if ((cartResponse?.cart?.items?.length ?? 0) > 0) {
         final qtyMap = <String, int>{};
-        for (var item in cartResponse!.cart!.items!) {
-          qtyMap[item.variantId!] = item.quantity!;
+        for (var item in cartResponse?.cart?.items ?? []) {
+          qtyMap[item.variantId] = item.quantity;
         }
 
-        eventBus.fire(ViewCartModel(cartItems!, cartItemImages!, qtyMap));
+        eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
         //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
       }
     } catch (e) {
@@ -285,6 +311,4 @@ class _HomePageState extends State<HomePage> {
       print(e);
     }
   }
-
-
 }
