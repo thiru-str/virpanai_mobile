@@ -95,7 +95,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             controller: controller,
             keyboardType: inputType,
             validator: validator,
-            textCapitalization: TextCapitalization.sentences,
+            textCapitalization: inputType == TextInputType.emailAddress? TextCapitalization.none:TextCapitalization.sentences,
             decoration: InputDecoration(
               enabled: enabled,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
