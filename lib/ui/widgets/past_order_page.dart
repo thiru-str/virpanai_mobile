@@ -60,54 +60,57 @@ class _PastOrderPageState extends State<PastOrderPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CommonAppBar(
-                title: 'Past Order',
-                showFilter: true,
-                onFilterTap: () async {
-                  final result = await showOrdersFilterSheet(
-                    context,
-                    showDate: true,
-                    showStatus: false,
-                    initialStart: startTimeUtc,
-                    initialEnd: endTimeUtc
-                  );
-                  if (result != null) {
-                    startUtc = result.startUtc != null
-                        ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.startUtc!.toUtc())
-                        : '';
-                    endUtc = result.endUtc != null
-                        ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.endUtc!.toUtc())
-                        : '';
-                    setState(() {
-                      startTimeUtc = result.startUtc;
-                      endTimeUtc = result.endUtc;
-                    });
-                    debugPrint('Result: $result'); // Better debug logging
-                    getApis();
-                  }
-                }),
-            body: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SafeArea(
-        child: ( _pastOrderResponse?.pastOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Past Orders', description: 'You currently don\'t have any past orders',imageHeight: 150,):ListView.builder(
-          itemCount: _pastOrderResponse?.pastOrders?.length??0,
-          scrollDirection: Axis.vertical,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            final item= _pastOrderResponse?.pastOrders?[index];
-            return GestureDetector(
-              onTap: (){
-                PageRouteUtils.pushWithFade(
-                    context, PastOrderDetailsPage(date: item?.formatedDate??'',));
-              },
-              child: PastOrderCard(
-                dateLabel: item?.date??'',
-                imageUrls:item?.data?.customerImages??[],
-                productCount: item?.data?.noOfProducts??'',
-                totalPrice: item?.data?.totalPrice??'',
-              ),
-            );
-          },
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: CommonAppBar(
+                  title: 'Past Order',
+                  showFilter: true,
+                  onFilterTap: () async {
+                    final result = await showOrdersFilterSheet(
+                      context,
+                      showDate: true,
+                      showStatus: false,
+                      initialStart: startTimeUtc,
+                      initialEnd: endTimeUtc
+                    );
+                    if (result != null) {
+                      startUtc = result.startUtc != null
+                          ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.startUtc!.toUtc())
+                          : '';
+                      endUtc = result.endUtc != null
+                          ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.endUtc!.toUtc())
+                          : '';
+                      setState(() {
+                        startTimeUtc = result.startUtc;
+                        endTimeUtc = result.endUtc;
+                      });
+                      debugPrint('Result: $result'); // Better debug logging
+                      getApis();
+                    }
+                  }),
+              body: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SafeArea(
+          child: ( _pastOrderResponse?.pastOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Past Orders', description: 'You currently don\'t have any past orders',imageHeight: 150,):ListView.builder(
+            itemCount: _pastOrderResponse?.pastOrders?.length??0,
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              final item= _pastOrderResponse?.pastOrders?[index];
+              return GestureDetector(
+                onTap: (){
+                  PageRouteUtils.pushWithFade(
+                      context, PastOrderDetailsPage(date: item?.formatedDate??'',));
+                },
+                child: PastOrderCard(
+                  dateLabel: item?.date??'',
+                  imageUrls:item?.data?.customerImages??[],
+                  productCount: item?.data?.noOfProducts??'',
+                  totalPrice: item?.data?.totalPrice??'',
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
