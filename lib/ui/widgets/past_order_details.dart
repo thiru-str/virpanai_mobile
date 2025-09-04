@@ -113,111 +113,114 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
         ? _filteredPastOrderDetailResponse
         : _pastOrderDetailResponse;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CommonAppBar(title: 'Past Order', showBack: true),
-      body: apiLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : Column(
-        children: [
-          // Search Container (fixed height)
-          Container(
-            height: 50,
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: Colors.grey),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search anything...',
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      border: InputBorder.none,
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
-                        onPressed: _clearSearch,
-                      )
-                          : null,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    final result = await showOrdersFilterSheet(
-                      context,
-                      showDate: false,
-                      showStatus: true,
-                      initialStatuses: initialStatuses,
-                    );
-                    if (result != null) {
-                      debugPrint('Result: $result');
-                      setState(() {
-                        initialStatuses = result.statuses;
-                      });
-                      getApis();
-                    }
-                  },
-                  child: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF005B65),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.tune, color: Colors.white, size: 20),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Content area that takes remaining space
-          Expanded(
-            child: (displayResponse?.pastOrderDetails?.length ?? 0) == 0
-                ? Center(
-              child: EmptyView(
-                imageAsset: AppAssets.ic_no_list,
-                title: _searchQuery.isNotEmpty ? 'No Results Found' : 'No Past Orders',
-                description: _searchQuery.isNotEmpty
-                    ? 'No orders match your search "$_searchQuery"'
-                    : 'You currently don\'t have any past orders',
-                imageHeight: 150,
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: const CommonAppBar(title: 'Past Order', showBack: true),
+        body: apiLoading
+            ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : Column(
+          children: [
+            // Search Container (fixed height)
+            Container(
+              height: 50,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(30),
               ),
-            )
-                : ListView.builder(
-              itemCount: displayResponse?.pastOrderDetails?.length ?? 0,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final item = displayResponse?.pastOrderDetails?[index];
-                return GestureDetector(
-                  onTap: () {
-                    PageRouteUtils.pushWithFade(
-                      context,
-                      OrderDetailsPage(orderId: item?.id ?? ''),
-                    );
-                  },
-                  child: OrderItemCard(
-                    imageUrl: item?.shopImage ?? '',
-                    storeName: item?.shopName ?? '',
-                    storeAddress: item?.shopAddress ?? '',
-                    productCount: item?.noOfProducts ?? '',
-                    totalPrice: item?.totalPrice ?? '',
-                    statusText: item?.orderStatus ?? '',
+              child: Row(
+                children: [
+                  const Icon(Icons.search, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search anything...',
+                        hintStyle: const TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                          onPressed: _clearSearch,
+                        )
+                            : null,
+                      ),
+                    ),
                   ),
-                );
-              },
+                  GestureDetector(
+                    onTap: () async {
+                      final result = await showOrdersFilterSheet(
+                        context,
+                        showDate: false,
+                        showStatus: true,
+                        initialStatuses: initialStatuses,
+                      );
+                      if (result != null) {
+                        debugPrint('Result: $result');
+                        setState(() {
+                          initialStatuses = result.statuses;
+                        });
+                        getApis();
+                      }
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF005B65),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.tune, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Content area that takes remaining space
+            Expanded(
+              child: (displayResponse?.pastOrderDetails?.length ?? 0) == 0
+                  ? Center(
+                child: EmptyView(
+                  imageAsset: AppAssets.ic_no_list,
+                  title: _searchQuery.isNotEmpty ? 'No Results Found' : 'No Past Orders',
+                  description: _searchQuery.isNotEmpty
+                      ? 'No orders match your search "$_searchQuery"'
+                      : 'You currently don\'t have any past orders',
+                  imageHeight: 150,
+                ),
+              )
+                  : ListView.builder(
+                itemCount: displayResponse?.pastOrderDetails?.length ?? 0,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final item = displayResponse?.pastOrderDetails?[index];
+                  return GestureDetector(
+                    onTap: () {
+                      PageRouteUtils.pushWithFade(
+                        context,
+                        OrderDetailsPage(orderId: item?.id ?? ''),
+                      );
+                    },
+                    child: OrderItemCard(
+                      imageUrl: item?.shopImage ?? '',
+                      storeName: item?.shopName ?? '',
+                      storeAddress: item?.shopAddress ?? '',
+                      productCount: item?.noOfProducts ?? '',
+                      totalPrice: item?.totalPrice ?? '',
+                      statusText: item?.orderStatus ?? '',
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
