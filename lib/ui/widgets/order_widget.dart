@@ -77,12 +77,15 @@ class OrderWidget extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            Text(
-                              CurrencyUtil.appendCurrency(itemPrice.toStringAsFixed(2)),
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                            Visibility(
+                              visible: itemPrice>0,
+                              child: Text(
+                                CurrencyUtil.appendCurrency(itemPrice.toStringAsFixed(2)),
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 4),

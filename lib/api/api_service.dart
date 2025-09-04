@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/address_list_response.dart';
+import 'package:waioz/model/cancel_order_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/duplicate_response_model.dart';
 import 'package:waioz/model/filter_category_response.dart';
@@ -862,6 +863,12 @@ class ApiService {
   Future<DuplicateResponse> checkDuplicate(BuildContext context,String email,String phone) async {
     return _makePostRequest('store/customers/check-duplicate', {"email":email,"phone":phone},
             (data) => DuplicateResponse.fromJson(data),context);
+  }
+
+  Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
+    await addToken();
+    return _makePostRequest('store/cancel-order/$orderId', null,
+            (data) => CancelOrderResponse.fromJson(data),context);
   }
 
   Future<void> addToken() async {
