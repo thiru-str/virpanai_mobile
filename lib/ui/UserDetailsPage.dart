@@ -191,6 +191,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             focusNode: _focusNode,
             keyboardType: TextInputType.number,
             autoFocus: true,
+            errorTextMargin: EdgeInsets.symmetric(horizontal: 15),
             animationType: AnimationType.none,
             textStyle: FontUtils.primaryFontStyle(
               fontSize: 20,
