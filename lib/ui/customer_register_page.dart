@@ -431,6 +431,8 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     return WillPopScope(
       onWillPop: () async {
         if (_currentStep > 0) {
+          FocusScope.of(context).unfocus();
+          _formKey.currentState?.reset();
           setState(() => _currentStep -= 1);
           return false; // prevent page exit
         }
@@ -558,6 +560,8 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             icon: Icon(Icons.arrow_back_ios, color: AppColors.primary),
             onPressed: () {
               if (_currentStep > 0) {
+                FocusScope.of(context).unfocus();
+                _formKey.currentState?.reset();
                 setState(() => _currentStep -= 1);
               } else {
                 Navigator.pop(context);
