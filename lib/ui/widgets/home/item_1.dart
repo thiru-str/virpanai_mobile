@@ -54,7 +54,7 @@ class _Item1State extends State<Item1> {
                   imageUrl: layoutData!.image!,
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  errorWidget: (context, url, error) => ImageFallbackWidget(
+                  errorWidget: (context, url, error) =>const ImageFallbackWidget(
                     h: 120,
                     w: 120,
                   ),

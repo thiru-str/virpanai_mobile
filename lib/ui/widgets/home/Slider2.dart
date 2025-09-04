@@ -104,7 +104,7 @@ class Slider2 extends StatelessWidget {
                                   imageUrl: layoutData!.image!,
                                   fit: BoxFit.cover,
                                   errorWidget: (context, url, error) =>
-                                      ImageFallbackWidget(
+                                  const    ImageFallbackWidget(
                                     h: 80,
                                   ),
                                 ),

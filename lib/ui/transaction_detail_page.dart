@@ -203,12 +203,12 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                         boundaryMargin: EdgeInsets.all(0),
                         child: (neftPayment?.image == null ||
                                 (neftPayment?.image?.isEmpty ?? false))
-                            ? ImageFallbackWidget(h: 120, w: 120)
+                            ? const ImageFallbackWidget(h: 120, w: 120)
                             : CachedNetworkImage(
                                 imageUrl: neftPayment!.image!,
                                 fit: BoxFit.contain,
                                 errorWidget: (context, url, error) =>
-                                    ImageFallbackWidget(h: 120, w: 120),
+                                   const ImageFallbackWidget(h: 120, w: 120),
                               ),
                       ),
                     ),
@@ -217,13 +217,13 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               },
               child: (neftPayment?.image == null ||
                       (neftPayment?.image?.isEmpty ?? false))
-                  ? ImageFallbackWidget(h: 120, w: 120)
+                  ?const ImageFallbackWidget(h: 120, w: 120)
                   : CachedNetworkImage(
                       imageUrl: neftPayment!.image!,
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => ImageFallbackWidget(
+                      errorWidget: (context, url, error) =>const ImageFallbackWidget(
                         h: 120,
                         w: 120,
                       ),

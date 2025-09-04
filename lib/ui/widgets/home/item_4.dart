@@ -108,7 +108,7 @@ class Item4 extends StatelessWidget {
                                         ClipRRect(
                                       borderRadius: const BorderRadius.vertical(
                                           top: Radius.circular(12)),
-                                      child: ImageFallbackWidget(
+                                      child: const ImageFallbackWidget(
                                         h: 120,
                                       ),
                                     ),

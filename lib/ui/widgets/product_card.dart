@@ -48,7 +48,7 @@ class ProductCard extends StatelessWidget {
                     height: 225,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => ImageFallbackWidget(
+                    errorWidget: (context, url, error) =>const ImageFallbackWidget(
                       w: 60,
                       h: 60,
                     ),

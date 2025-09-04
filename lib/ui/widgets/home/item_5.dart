@@ -94,20 +94,6 @@ class Item5 extends StatelessWidget {
                       children: [
                         Stack(
                           children: [
-                            // Container(
-                            //   height: 280,
-                            //   width: double.infinity,
-                            //   decoration: BoxDecoration(
-                            //     borderRadius: const BorderRadius.vertical(
-                            //       top: Radius.circular(12),
-                            //     ),
-                            //     image: DecorationImage(
-                            //       image: CachedNetworkImageProvider(
-                            //           layoutData!.image!),
-                            //       fit: BoxFit.cover,
-                            //     ),
-                            //   ),
-                            // ),
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(12)),
@@ -119,7 +105,7 @@ class Item5 extends StatelessWidget {
                                 errorWidget: (context, url, error) => ClipRRect(
                                   borderRadius: const BorderRadius.vertical(
                                       top: Radius.circular(12)),
-                                  child: ImageFallbackWidget(
+                                  child:const ImageFallbackWidget(
                                     h: 120,
                                   ),
                                 ),

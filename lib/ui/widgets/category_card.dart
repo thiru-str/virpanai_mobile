@@ -53,7 +53,7 @@ class CategoryCard extends StatelessWidget {
                         width: double.infinity, // Take full width
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) =>
-                            ImageFallbackWidget(
+                            const ImageFallbackWidget(
                           w: double.infinity,
                           h: 140,
                         ), // Fill the card space
@@ -61,7 +61,11 @@ class CategoryCard extends StatelessWidget {
                     : Container(
                         height: 140,
                         width: double.infinity,
-                        color: Colors.grey[200], // Placeholder background
+                        color: Colors.grey[200],
+                        child: const ImageFallbackWidget(
+                          w: 110,
+                          h: 110,
+                        ), // Placeholder background
                       ),
               ),
               const SizedBox(height: 12),

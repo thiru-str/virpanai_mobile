@@ -47,15 +47,7 @@ class ViewCartWidget extends StatelessWidget {
                   for (int i = 0; i < (itemImages?.length ?? 0) && i < 2; i++)
                     Positioned(
                       left: i * 30.0, // Position the images with spacing
-                      // child: CircleAvatar(
-                      //   radius: 20,
-                      //   backgroundColor: Colors.white,
-                      //   child: CircleAvatar(
-                      //     radius: 18,
-                      //     backgroundImage:
-                      //         CachedNetworkImageProvider(itemImages![i]),
-                      //   ),
-                      // ),
+
                       child: ClipOval(
                         child: CachedNetworkImage(
                           imageUrl: itemImages![i],
@@ -63,7 +55,7 @@ class ViewCartWidget extends StatelessWidget {
                           height: 36,
                           fit: BoxFit.cover,
                           errorWidget: (context, url, error) =>
-                              ImageFallbackWidget(
+                              const ImageFallbackWidget(
                             w: 36,
                             h: 36,
                           ),
@@ -80,8 +72,7 @@ class ViewCartWidget extends StatelessWidget {
                           radius: 18,
                           backgroundColor: AppColors.primary,
                           child: Text(
-                            // '+$extraItemsCount',
-                            "hsdfgshdfjsgdjfjsdgfj",
+                            '+$extraItemsCount',
                             style: FontUtils.primaryFontStyle(
                               color: Colors.white,
                               fontSize: 12,

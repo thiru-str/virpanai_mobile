@@ -41,7 +41,7 @@ class OrderDetailItemCard extends StatelessWidget {
               width: 60,
               height: 60,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) => ImageFallbackWidget(
+              errorWidget: (context, url, error) =>const ImageFallbackWidget(
                 w: 60,
                 h: 60,
               ),

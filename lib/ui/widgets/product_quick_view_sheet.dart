@@ -210,7 +210,7 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
             child: CachedNetworkImage(
               imageUrl: product!.images![index].url!,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) => ImageFallbackWidget(
+              errorWidget: (context, url, error) => const ImageFallbackWidget(
                 w: 180,
               ),
             ),
@@ -232,56 +232,7 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
     );
   }
 
-  // Widget buildVariants() {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: product?.options?.map((option) {
-  //       return Padding(
-  //         padding: const EdgeInsets.symmetric(vertical: 8),
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text(
-  //               option.title ?? '',
-  //               style:
-  //                   const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-  //             ),
-  //             const SizedBox(height: 8),
-  //             Wrap(
-  //               spacing: 10,
-  //               children: option.values!.map((val) {
-  //                 final isSelected = selectedOptions[option.id!]?.id == val.id;
-  //                 return GestureDetector(
-  //                   onTap: () {
-  //                     setState(() {
-  //                       selectedOptions[option.id!] = val;
-  //                       updateVariant();
-  //                     });
-  //                   },
-  //                   child: Container(
-  //                     padding: const EdgeInsets.symmetric(
-  //                         horizontal: 12, vertical: 8),
-  //                     decoration: BoxDecoration(
-  //                       border: Border.all(
-  //                           color: isSelected ? Colors.black : Colors.grey),
-  //                       borderRadius: BorderRadius.circular(5),
-  //                       color: isSelected ? Colors.black : Colors.white,
-  //                     ),
-  //                     child: Text(
-  //                       val.value ?? '',
-  //                       style: TextStyle(
-  //                           color: isSelected ? Colors.white : Colors.black),
-  //                     ),
-  //                   ),
-  //                 );
-  //               }).toList(),
-  //             ),
-  //           ],
-  //         ),
-  //       );
-  //     }).toList(),
-  //   );
-  // }
+  
 
   Widget buildVariants() {
     final options = product?.options ?? [];

@@ -230,7 +230,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 height: 250,
                 fit: BoxFit.cover,
                 errorWidget: (context, url, error) => ImageFallbackWidget(
-                  h: 220,
+                  h: 120,
+                  w: 120,
                 ),
               ),
             ),

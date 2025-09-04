@@ -54,10 +54,10 @@ class CartItemCard extends StatelessWidget {
                   width: 60,
                   height: 80,
                   fit: BoxFit.cover,
-                   errorWidget: (context, url, error) => ImageFallbackWidget(
-              w: 60,
-              h: 80,
-            ),
+                  errorWidget: (context, url, error) => ImageFallbackWidget(
+                    w: 60,
+                    h: 80,
+                  ),
                 ),
               ),
               const SizedBox(width: 12.0),
@@ -171,4 +171,3 @@ class CartItemCard extends StatelessWidget {
     );
   }
 }
-

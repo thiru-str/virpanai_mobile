@@ -20,17 +20,6 @@ class ItemVideoTile extends StatefulWidget {
 class _ItemVideoTileState extends State<ItemVideoTile> {
   VideoPlayerController? _controller;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _controller = VideoPlayerController.network(widget.videoUrl)
-  //     ..initialize().then((_) {
-  //       setState(() {});
-  //       _controller.setLooping(true);
-  //       _controller.setVolume(0);
-  //       _controller.play(); // 🔁 Always autoplay
-  //     });
-  // }
   bool _isError = false;
 
   @override
@@ -70,11 +59,8 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
           child: SizedBox(
             width: 150,
             height: 150,
-            // child: _controller.value.isInitialized
-            //     ? VideoPlayer(_controller)
-            //     : Container(color: Colors.black12),
             child: _isError
-                ? ImageFallbackWidget(h: 120) // fallback widget
+                ? const ImageFallbackWidget(h: 120) // fallback widget
                 : (_controller != null && _controller!.value.isInitialized
                     ? VideoPlayer(_controller!)
                     : Container(color: Colors.black12)),

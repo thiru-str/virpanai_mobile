@@ -84,7 +84,7 @@ class Grid1 extends StatelessWidget {
                   height: 150, // Adjusted image height
                   width: double.infinity, // Take full width
                   fit: BoxFit.cover, // Fill the card space
-                  errorWidget: (context, url, error) => ImageFallbackWidget(
+                  errorWidget: (context, url, error) =>const ImageFallbackWidget(
                     h: 130,
                     fit: BoxFit.cover,
                   ),
@@ -131,7 +131,7 @@ class Grid1 extends StatelessWidget {
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   errorWidget: (context, url, error) =>
-                                      ImageFallbackWidget(
+                                     const ImageFallbackWidget(
                                     h: 120,
                                     fit: BoxFit.cover,
                                   ),

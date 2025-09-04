@@ -54,13 +54,13 @@ class _Item2State extends State<Item2> {
                     borderRadius: BorderRadius.circular(15),
                     child: (layoutData?.image == null ||
                             (layoutData?.image?.isEmpty ?? false))
-                        ? ImageFallbackWidget(h: 120, w: 120)
+                        ? const ImageFallbackWidget(h: 120, w: 120)
                         : CachedNetworkImage(
                             fit: BoxFit.cover,
                             imageUrl: layoutData!.image!,
                             width: double.infinity,
                             errorWidget: (context, url, error) =>
-                                ImageFallbackWidget(
+                              const  ImageFallbackWidget(
                               h: 120,
                               w: 120,
                             ),

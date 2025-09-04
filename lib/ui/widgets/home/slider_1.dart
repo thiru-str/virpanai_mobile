@@ -124,14 +124,14 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
               borderRadius: BorderRadius.circular(20),
               child: Stack(
                 children: [
-                  Image.network(
-                    currentData.image ?? '',
-                    width: double.infinity,
+                  Container(
                     height: 500,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, url, error) => ImageFallbackWidget(
-                      h: 500,
+                    child: Image.network(
+                      currentData.image ?? '',
+                      width: double.infinity,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, url, error) =>
+                         const ImageFallbackWidget(h: 220, fit: BoxFit.contain),
                     ),
                   ),
 
