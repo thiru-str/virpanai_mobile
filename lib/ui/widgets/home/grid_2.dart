@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
@@ -88,7 +89,11 @@ class Grid2 extends StatelessWidget {
                         imageUrl: layoutData!.image!,
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) =>
-                            const Icon(Icons.broken_image),
+                            ImageFallbackWidget(
+                          h: 60,
+                          w: 60,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),

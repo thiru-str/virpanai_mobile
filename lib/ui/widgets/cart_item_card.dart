@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../utility/app_colors.dart';
 
@@ -53,6 +54,10 @@ class CartItemCard extends StatelessWidget {
                   width: 60,
                   height: 80,
                   fit: BoxFit.cover,
+                   errorWidget: (context, url, error) => ImageFallbackWidget(
+              w: 60,
+              h: 80,
+            ),
                 ),
               ),
               const SizedBox(width: 12.0),

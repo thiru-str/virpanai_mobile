@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 class Item8 extends StatefulWidget {
   final Content? content;
@@ -39,6 +40,9 @@ class _Item8State extends State<Item8> {
             layoutdata!.image!,
             fit: BoxFit.cover,
             width: double.infinity,
+            errorBuilder: (context, url, error) => ImageFallbackWidget(
+              h: 80,
+            ),
           );
         },
       ),

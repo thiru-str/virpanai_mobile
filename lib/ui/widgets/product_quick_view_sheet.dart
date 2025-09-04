@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 import '../../api/api_service.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 
@@ -209,6 +210,9 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
             child: CachedNetworkImage(
               imageUrl: product!.images![index].url!,
               fit: BoxFit.cover,
+              errorWidget: (context, url, error) => ImageFallbackWidget(
+                w: 180,
+              ),
             ),
           );
         },

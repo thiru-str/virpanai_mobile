@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/page_route_utils.dart';
@@ -94,6 +95,10 @@ class Item6 extends StatelessWidget {
                           child: CachedNetworkImage(
                             imageUrl: layoutData!.image!,
                             fit: BoxFit.cover,
+                            errorWidget: (context, url, error) =>
+                                ImageFallbackWidget(
+                              h: 120,
+                            ),
                           ),
                         ),
                       ),

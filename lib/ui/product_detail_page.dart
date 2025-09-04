@@ -29,6 +29,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
@@ -143,7 +144,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     } catch (e) {
       print("Error fetching initial data: $e");
     } finally {
-      setState(() => apiLoading = false);
+      if (mounted) {
+        setState(() => apiLoading = false);
+      }
     }
   }
 
@@ -226,6 +229,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 imageUrl: product!.images![index].url!,
                 height: 250,
                 fit: BoxFit.cover,
+                errorWidget: (context, url, error) => ImageFallbackWidget(
+                  h: 220,
+                ),
               ),
             ),
           );
@@ -401,7 +407,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     List<Widget> sections = [];
 
-    for (var option in product?.options ?? []) {
+    for (var option in product!.options!) {
       final title = option.title ?? '';
 
       sections.add(Column(

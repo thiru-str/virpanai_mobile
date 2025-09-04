@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/view_cart_model.dart';
 import '../../../utility/app_colors.dart';
@@ -138,6 +139,10 @@ class _Item9State extends State<Item9> {
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, url, error) => ImageFallbackWidget(
+                    h: 150,
+                    w: double.infinity,
+                  ),
                 ),
               ),
               if (prices.discountPercentage != null &&

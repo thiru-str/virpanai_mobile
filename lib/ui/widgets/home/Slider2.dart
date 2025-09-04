@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
 import '../../../utility/page_route_utils.dart';
@@ -102,6 +103,10 @@ class Slider2 extends StatelessWidget {
                                 child: CachedNetworkImage(
                                   imageUrl: layoutData!.image!,
                                   fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      ImageFallbackWidget(
+                                    h: 80,
+                                  ),
                                 ),
                               ),
                             ),
@@ -122,7 +127,8 @@ class Slider2 extends StatelessWidget {
                           layoutData.prices?.discountedPrice != null &&
                           layoutData.prices?.discountedPrice != "0")
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.blueGrey.shade800,
                             borderRadius: BorderRadius.circular(20),
@@ -138,9 +144,7 @@ class Slider2 extends StatelessWidget {
                         ),
                     ],
                   ),
-                )
-                ,
-
+                ),
               );
             },
           ),
@@ -149,4 +153,3 @@ class Slider2 extends StatelessWidget {
     );
   }
 }
-

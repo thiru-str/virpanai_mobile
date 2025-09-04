@@ -41,9 +41,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    setState(() {
-      _otpController.text = widget.otp;
-    });
+    _otpController.text = widget.otp;
   }
 
   @override

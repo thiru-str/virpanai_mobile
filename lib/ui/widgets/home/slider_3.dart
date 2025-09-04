@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/redirect_utils.dart';
 
@@ -53,6 +54,10 @@ class _Slider3State extends State<Slider3> {
                   imageUrl: layoutData!.image!,
                   fit: BoxFit.cover,
                   width: double.infinity,
+                  errorWidget: (context, url, error) => ImageFallbackWidget(
+                    h: 220,
+                    w: double.infinity,
+                  ),
                 ),
               );
             },

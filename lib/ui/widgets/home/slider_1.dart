@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
 import 'dart:async';
@@ -128,6 +129,10 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                     width: double.infinity,
                     height: 500,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, url, error) => ImageFallbackWidget(
+                      h: 500,
+                      fit: BoxFit.cover,
+                    ),
                   ),
 
                   // Bottom gradient overlay

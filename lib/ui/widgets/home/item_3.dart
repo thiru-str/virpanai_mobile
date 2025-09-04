@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
 import '../../../utility/page_route_utils.dart';
@@ -43,7 +44,7 @@ class Item3 extends StatelessWidget {
                     onTap: () {
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
-                        redirectData: content?.redirectData!,
+                        redirectData: content?.redirectData,
                       );
                     },
                     child: Text(
@@ -87,16 +88,22 @@ class Item3 extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: layoutData!.image!,
-                              fit: BoxFit.cover,
-                            ),
+                            child: (layoutData?.image == null ||
+                                    (layoutData?.image?.isEmpty ?? false))
+                                ? ImageFallbackWidget(h: 75, w: 75)
+                                : CachedNetworkImage(
+                                    imageUrl: layoutData!.image!,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) =>
+                                        ImageFallbackWidget(h: 75, w: 75),
+                                  ),
                           ),
                         ),
+                        // ),
                         const SizedBox(height: 8),
                         Text(
                           textAlign: TextAlign.center,
-                          layoutData.title ?? "",
+                          layoutData?.title ?? "",
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: FontUtils.primaryFontStyle(fontSize: 12),

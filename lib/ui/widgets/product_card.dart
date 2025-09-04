@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 class ProductCard extends StatelessWidget {
   final String imageUrl;
@@ -33,20 +34,23 @@ class ProductCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // Ensures the height wraps around its children
+          mainAxisSize:
+              MainAxisSize.min, // Ensures the height wraps around its children
           children: [
             Stack(
               children: [
-                Container(
-                  height: 225, // Fixed height for the image
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                    image: DecorationImage(
-                      image: CachedNetworkImageProvider(imageUrl),
-                      fit: BoxFit.cover,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    height: 225,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => ImageFallbackWidget(
+                      w: 60,
+                      h: 60,
                     ),
                   ),
                 ),
@@ -57,9 +61,7 @@ class ProductCard extends StatelessWidget {
                     child: GestureDetector(
                       onTap: onTapFavorite,
                       child: Icon(
-                        isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.grey[600],
                       ),
                     ),
@@ -74,8 +76,7 @@ class ProductCard extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textColor
-                ),
+                    color: AppColors.textColor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -95,9 +96,7 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
-      )
-      ,
-    )
-    ;
+      ),
+    );
   }
 }

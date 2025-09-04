@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
@@ -93,17 +94,34 @@ class Item5 extends StatelessWidget {
                       children: [
                         Stack(
                           children: [
-                            Container(
-                              height: 280,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
-                                image: DecorationImage(
-                                  image: CachedNetworkImageProvider(
-                                      layoutData!.image!),
-                                  fit: BoxFit.cover,
+                            // Container(
+                            //   height: 280,
+                            //   width: double.infinity,
+                            //   decoration: BoxDecoration(
+                            //     borderRadius: const BorderRadius.vertical(
+                            //       top: Radius.circular(12),
+                            //     ),
+                            //     image: DecorationImage(
+                            //       image: CachedNetworkImageProvider(
+                            //           layoutData!.image!),
+                            //       fit: BoxFit.cover,
+                            //     ),
+                            //   ),
+                            // ),
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12)),
+                              child: CachedNetworkImage(
+                                imageUrl: layoutData!.image!,
+                                height: 280,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(12)),
+                                  child: ImageFallbackWidget(
+                                    h: 120,
+                                  ),
                                 ),
                               ),
                             ),

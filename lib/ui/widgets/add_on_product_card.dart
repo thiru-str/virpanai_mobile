@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../utility/currency_util.dart';
 import '../../utility/font_utils.dart';
@@ -36,6 +37,10 @@ class AddOnProductCard extends StatelessWidget {
             width: 50,
             height: 50,
             fit: BoxFit.cover,
+            errorWidget: (context, url, error) => ImageFallbackWidget(
+              w: 50,
+              h: 50,
+            ),
           ),
         ),
         title: Text(

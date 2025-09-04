@@ -5,6 +5,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
 import 'package:flutter/material.dart';
@@ -23,11 +24,13 @@ class Grid1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppUtils.rgbStringToColor(content?.layoutBgColor??''),
+      color: AppUtils.rgbStringToColor(content?.layoutBgColor ?? ''),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16,),
+          const SizedBox(
+            height: 16,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -72,15 +75,20 @@ class Grid1 extends StatelessWidget {
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child:ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(16.0),),
-              child: CachedNetworkImage(
-                imageUrl: content?.layoutBannerImage??'',
-                height: 150, // Adjusted image height
-                width: double.infinity, // Take full width
-                fit: BoxFit.cover, // Fill the card space
-              )
-            ),
+            child: ClipRRect(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(16.0),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: content?.layoutBannerImage ?? '',
+                  height: 150, // Adjusted image height
+                  width: double.infinity, // Take full width
+                  fit: BoxFit.cover, // Fill the card space
+                  errorWidget: (context, url, error) => ImageFallbackWidget(
+                    h: 130,
+                    fit: BoxFit.cover,
+                  ),
+                )),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -89,7 +97,7 @@ class Grid1 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: content?.layoutData?.length ??0,
+                itemCount: content?.layoutData?.length ?? 0,
                 separatorBuilder: (_, __) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   final layoutData = content?.layoutData![index];
@@ -98,7 +106,7 @@ class Grid1 extends StatelessWidget {
                     onTap: () {
                       RedirectUtils.handleContentRedirect(
                         context: context,
-                        layoutOption: content?.layoutOption ??"",
+                        layoutOption: content?.layoutOption ?? "",
                         layoutData: layoutData,
                       );
                     },
@@ -115,12 +123,18 @@ class Grid1 extends StatelessWidget {
                           Stack(
                             children: [
                               ClipRRect(
-                                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
                                 child: CachedNetworkImage(
                                   imageUrl: layoutData?.image ?? '',
                                   height: 130,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      ImageFallbackWidget(
+                                    h: 120,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               // 🔸 Top Tag
@@ -128,7 +142,8 @@ class Grid1 extends StatelessWidget {
                                 top: 0,
                                 left: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 3),
                                   decoration: const BoxDecoration(
                                     color: Colors.black,
                                     borderRadius: BorderRadius.only(
@@ -136,7 +151,9 @@ class Grid1 extends StatelessWidget {
                                       bottomRight: Radius.circular(8),
                                     ),
                                   ),
-                                  child: const Text("New Launch", style: TextStyle(fontSize: 10, color: Colors.white)),
+                                  child: const Text("New Launch",
+                                      style: TextStyle(
+                                          fontSize: 10, color: Colors.white)),
                                 ),
                               ),
                               // 🔸 Yellow Playback & Rating
@@ -145,33 +162,42 @@ class Grid1 extends StatelessWidget {
                                 left: 0,
                                 right: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: Colors.amber.shade600,
-                                    borderRadius: BorderRadius.circular(10), // Equal radius for all corners
+                                    borderRadius: BorderRadius.circular(
+                                        10), // Equal radius for all corners
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Flexible(
                                         child: Text(
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           'comfort guaranteed!',
-                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                         ),
                                         child: Row(
                                           children: const [
-                                            Icon(Icons.star, size: 10, color: Colors.green),
+                                            Icon(Icons.star,
+                                                size: 10, color: Colors.green),
                                             SizedBox(width: 2),
-                                            Text("4.4", style: TextStyle(fontSize: 10)),
+                                            Text("4.4",
+                                                style: TextStyle(fontSize: 10)),
                                           ],
                                         ),
                                       )
@@ -203,7 +229,8 @@ class Grid1 extends StatelessWidget {
 
                           // 🔹 Dotted Line
                           const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             child: DottedLine(
                               dashLength: 4,
                               dashGapLength: 3,
@@ -219,7 +246,8 @@ class Grid1 extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  CurrencyUtil.appendCurrency(layoutData?.prices?.sellingPrice ?? ''),
+                                  CurrencyUtil.appendCurrency(
+                                      layoutData?.prices?.sellingPrice ?? ''),
                                   style: FontUtils.primaryFontStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -234,13 +262,18 @@ class Grid1 extends StatelessWidget {
 
                           // 🔹 Original Price + % Off
                           Visibility(
-                            visible: layoutData?.prices?.discountPercentage?.isNotEmpty ?? false,
+                            visible: layoutData
+                                    ?.prices?.discountPercentage?.isNotEmpty ??
+                                false,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               child: Row(
                                 children: [
                                   Text(
-                                    CurrencyUtil.appendCurrency(layoutData?.prices?.originalPrice ?? ''),
+                                    CurrencyUtil.appendCurrency(
+                                        layoutData?.prices?.originalPrice ??
+                                            ''),
                                     style: FontUtils.primaryFontStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w400,
@@ -251,7 +284,9 @@ class Grid1 extends StatelessWidget {
                                   const SizedBox(width: 6),
                                   Text(
                                     "${layoutData?.prices?.discountPercentage ?? ''}",
-                                    style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green.shade700),
                                   )
                                 ],
                               ),
@@ -266,10 +301,11 @@ class Grid1 extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8,),
+          const SizedBox(
+            height: 8,
+          ),
         ],
       ),
     );
   }
 }
-
