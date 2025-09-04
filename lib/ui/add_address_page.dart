@@ -52,6 +52,7 @@ class _AddAddressPage extends State<AddAddressPage> {
 
   String selectedLocation = AppStrings.home; // Default location selection
   bool apiCalling = true;
+  bool isUpdating = false;
   RegisterResponse? registerResponse;
   double latitude = 0;
   double longitude = 0;
@@ -295,7 +296,7 @@ class _AddAddressPage extends State<AddAddressPage> {
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: ElevatedButton(
+                  child: isUpdating? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         print("Form is valid. Proceed to Create Address.");
@@ -400,6 +401,9 @@ class _AddAddressPage extends State<AddAddressPage> {
 
   void createOrUpdateAddress() async {
     try {
+      setState(() {
+        isUpdating = true;
+      });
       final ApiService apiService = ApiService();
       selectedLocation = selectedLocation == AppStrings.others
           ? otherAddressName.text
@@ -419,7 +423,7 @@ class _AddAddressPage extends State<AddAddressPage> {
           latitude.toString(),
           longitude.toString());
       setState(() {
-        apiCalling = false;
+        isUpdating = false;
       });
       Navigator.pop(context, true);
       if (widget.doublePop) {
@@ -427,7 +431,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       }
     } catch (e) {
       setState(() {
-        apiCalling = false;
+        isUpdating = false;
       });
       print(e);
     }
