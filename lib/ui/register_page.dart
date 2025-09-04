@@ -98,11 +98,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
-                        return AppStrings.enter_valid_email;
-                      }
+                    if (value == null || value.isEmpty) {
+                      return 'enter email';
                     }
+
+                    final emailRegex = RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+
+                    if (!emailRegex.hasMatch(value)) {
+                      return AppStrings.enter_valid_email;
+                    }
+
                     return null;
                   },
                 ),

@@ -137,11 +137,16 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             controller: _emailController,
             inputType: TextInputType.emailAddress,
             validator: (value) {
-              if (value != null && value.isNotEmpty) {
-                if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
-                  return AppStrings.enter_valid_email;
-                }
+              if (value == null || value.isEmpty) {
+                return 'enter email';
               }
+
+              final emailRegex = RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+
+              if (!emailRegex.hasMatch(value)) {
+                return AppStrings.enter_valid_email;
+              }
+
               return null;
             },
           ),
@@ -211,6 +216,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             onCompleted: (value) => print("Postal Code Entered: $value"),
             onChanged: (value) => print(value),
           ),
+          const SizedBox(height: 10),
           Text('Note: Based on the entered pincode is how we assign the correct Agent/ Distributer. Please ensure you give the correct pincode.'),
           const SizedBox(height: 10),
           Row(
@@ -513,6 +519,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           icon: Icon(Icons.arrow_back_ios, color: AppColors.primary),
           onPressed: () {
             if (_currentStep > 0) {
+
               setState(() => _currentStep -= 1);
             } else {
               Navigator.pop(context);
