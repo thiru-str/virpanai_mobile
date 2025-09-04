@@ -16,6 +16,7 @@ class CartItemCard extends StatelessWidget {
   final bool isUpdating; // New field
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
+  final VoidCallback onRemoveAll;
 
   const CartItemCard({
     Key? key,
@@ -28,6 +29,7 @@ class CartItemCard extends StatelessWidget {
     this.isUpdating = false,
     required this.onIncrease,
     required this.onDecrease,
+    required this.onRemoveAll,
   }) : super(key: key);
 
   @override
@@ -144,6 +146,19 @@ class CartItemCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: onRemoveAll,
+                    child: const Text(
+                      "Remove All",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                        decorationColor: Colors.red,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                 ],
               ),

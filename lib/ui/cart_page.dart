@@ -115,7 +115,13 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                       price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
                                       quantity: cartItem.quantity!,
                                       isUpdating: cartItem.isUpdating!,
-                                      onIncrease: () {
+                                      onRemoveAll: () {
+                                        setState(() {
+                                          cartResponse!.cart!.items![index].isUpdating = true;
+                                        });
+                                        //updateCart(0,cartItem.id!,index);
+                                        removeCart(cartItem.id!,index);
+                                      },onIncrease: () {
                                         setState(() {
                                           cartResponse!.cart!.items![index].isUpdating = true;
                                         });
@@ -354,12 +360,10 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void removeCart(String cartItemId,int index) async {
     try {
-      debugPrint('calling remove');
       final ApiService apiService = ApiService();
       await apiService.removeCart(context,cartItemId);
       getCartApi();
     } catch (e) {
-      print('total qty calling here');
       setState(() {
         setState(() {
           cartResponse!.cart!.items![index].isUpdating = false;
