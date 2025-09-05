@@ -43,7 +43,7 @@ class OrderWidget extends StatelessWidget {
                 child: Icon(
                   Icons.receipt,
                   size: 28,
-                  color: Colors.black87,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -59,7 +59,7 @@ class OrderWidget extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 4),

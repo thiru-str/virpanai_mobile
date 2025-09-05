@@ -73,12 +73,22 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    final (statusTitle, statusColor) = switch (order?.status ?? '') {
-      'pending' => ('Processing', Colors.grey),
-      'canceled' => ('Canceled', Colors.red),
-      'completed' => ('Delivered', Colors.green),
+    // First check if canceled
+    final isCanceled = order?.status == 'canceled';
+
+    // Map fulfillmentStatus
+    final fulfillmentStatus = order?.metadata?.fulfillmentStatus ?? '';
+
+    final (statusTitle, statusColor) = isCanceled
+        ? ('Canceled', Colors.red)
+        : switch (fulfillmentStatus) {
+      'not_fulfilled' => ('Order Processing', Colors.grey),
+      'fulfilled' => ('Ready For Dispatch', Colors.blue),
+      'shipped' => ('Shipped', Colors.orange),
+      'delivered' => ('Delivered', Colors.green),
       _ => ('Processing', Colors.grey),
     };
+
     return PopScope(
         canPop: false, // Disable default back button
         onPopInvoked: (didPop) async {
@@ -200,7 +210,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                       _buildShippingDetailsCard(), // Shipping details card
                       const SizedBox(height: 20), // List of order items
                       Visibility(
-                        visible: (order?.status ?? '')=='pending',
+                        visible: fulfillmentStatus == 'not_fulfilled' &&
+                            !isCanceled,
                         child: GestureDetector(
                           onTap: (){
                             _showCancellation(context,order?.id??'');
