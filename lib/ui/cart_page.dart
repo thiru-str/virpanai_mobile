@@ -5,6 +5,7 @@ import 'package:waioz/ui/checkout_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -14,7 +15,10 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/register_response.dart' as RegisterResponse;
+import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 import '../utility/currency_util.dart';
+import 'address_list_page.dart';
 
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
@@ -29,6 +33,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   CartResponse? cartResponse;
   bool apiLoading = true;
   bool cartLoading = false;
+  bool addressLoading = false;
   bool isAnimating = false;
 
   late AnimationController _animationController;
@@ -91,10 +96,45 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                   backgroundColor: Colors.white,
                   body: Column(
                     children: [
+                      Visibility(
+                        visible: cartResponse!.cart!.items!.isNotEmpty,
+                        child: DeliveryAddressWidget(
+                          address: _buildShippingAddress(cartResponse),
+                          label: null,
+                          isLoading: addressLoading,
+                          onAddAddress: () {
+                            //Navigator.push(context, AddAddressPage.route());
+                            PageRouteUtils.pushWithSlide(
+                                context,
+                                AddressListPage(
+                                  isFromCheckout: true,
+                                  onSelectedAddress: (address) {
+                                    setState(() {
+                                      addressLoading = true;
+                                    });
+                                    updateAddress(address);
+                                  },
+                                ));
+                          },
+                          onChangeAddress: () {
+                            PageRouteUtils.pushWithSlide(
+                                context,
+                                AddressListPage(
+                                  isFromCheckout: true,
+                                  onSelectedAddress: (address) {
+                                    setState(() {
+                                      addressLoading = true;
+                                    });
+                                    updateAddress(address);
+                                  },
+                                ));
+                          },
+                        ),
+                      ),
                       Expanded(
                         child: SingleChildScrollView(
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -239,7 +279,10 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                         ),
                         onPressed: () {
                           // Add checkout logic here
-                          PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
+                          if(!addressLoading) {
+                            PageRouteUtils.pushWithSlide(context,
+                                CheckOutPage(cartResponse: cartResponse,));
+                          }
                         },
                         child:  Text(
                           AppStrings.check_out,
@@ -454,7 +497,52 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
+  String? _buildShippingAddress(CartResponse? cartResponse) {
+    final address = cartResponse?.cart?.shippingAddress;
+    if (address == null || address.address1 == null) return null;
 
+    return [
+      address.address1,
+      address.city,
+      address.postalCode,
+      address.province ?? '',
+    ].where((e) => e != null && e.toString().isNotEmpty).join(', ');
+  }
+
+  void updateAddress(RegisterResponse.Address address) async {
+    try {
+      final ApiService apiService = ApiService();
+      cartResponse = await apiService.updateAddress(
+          context, convertToShippingAddress(address));
+      setState(() {
+        addressLoading = false;
+        cartResponse;
+      });
+    } catch (e) {
+      setState(() {
+        addressLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  CheckOut.ShippingAddress convertToShippingAddress(
+      RegisterResponse.Address address) {
+    return CheckOut.ShippingAddress(
+      // Map the fields from Address to ShippingAddress
+      address1: address.address1 ?? '',
+      address2: address.address2 ?? '',
+      firstName: address.firstName ?? '',
+      lastName: address.lastName ?? '',
+      phone: address.phone ?? '',
+      company: address.company ?? '',
+      postalCode: address.postalCode ?? '',
+      countryCode: address.countryCode ?? '',
+      province: address.province ?? '',
+      city: address.city ?? '',
+    );
+  }
 
 
 }
+

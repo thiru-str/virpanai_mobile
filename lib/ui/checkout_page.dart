@@ -54,7 +54,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   CartResponse? cartResponse;
   ShippingResponse? shippingResponse;
   bool apiLoading = true;
-  bool addAddress = false;
+  bool addAddress = true;
   bool addPaymentMethod = false;
   bool addShippingOption = false;
   RegisterResponse.Address? selectedAddress;
@@ -99,26 +99,26 @@ class _CheckOutPageState extends State<CheckOutPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CheckoutItemCard(
-                                  title: AppStrings.shipping_address,
-                                  subtitle: addAddress
-                                      ? selectedAddress!.address1!
-                                      : AppStrings.add_shipping_address,
-                                  onTap: () {
-                                    PageRouteUtils.pushWithSlide(
-                                        context,
-                                        AddressListPage(
-                                          isFromCheckout: true,
-                                          onSelectedAddress: (address) {
-                                            setState(() {
-                                              addAddress = true;
-                                              selectedAddress = address;
-                                              apiLoading = true;
-                                            });
-                                            updateAddress(address);
-                                            },
-                                        ));
-                                  }),
+                              // CheckoutItemCard(
+                              //     title: AppStrings.shipping_address,
+                              //     subtitle: addAddress
+                              //         ? selectedAddress!.address1!
+                              //         : AppStrings.add_shipping_address,
+                              //     onTap: () {
+                              //       PageRouteUtils.pushWithSlide(
+                              //           context,
+                              //           AddressListPage(
+                              //             isFromCheckout: true,
+                              //             onSelectedAddress: (address) {
+                              //               setState(() {
+                              //                 addAddress = true;
+                              //                 selectedAddress = address;
+                              //                 apiLoading = true;
+                              //               });
+                              //               updateAddress(address);
+                              //               },
+                              //           ));
+                              //     }),
                               CheckoutItemCard(
                                   title:  AppStrings.shipping_method,
                                   subtitle: addShippingOption
