@@ -659,7 +659,7 @@ class ApiService {
   Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
     await addToken();
     return _makeGetRequest<OrderHistoryIndividualReponse>(
-      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,',
+      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
       null,
       null,
           (json) => OrderHistoryIndividualReponse.fromJson(json),
