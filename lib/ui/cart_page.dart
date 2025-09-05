@@ -279,7 +279,12 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                         ),
                         onPressed: () {
                           // Add checkout logic here
-                          if(!addressLoading) {
+                          if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
+                                  AppUtils.showToast(
+                                      'Please add address to proceed');
+                                  return;
+                                }
+                                if(!addressLoading) {
                             PageRouteUtils.pushWithSlide(context,
                                 CheckOutPage(cartResponse: cartResponse,));
                           }

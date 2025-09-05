@@ -702,7 +702,7 @@ class ShippingAddress {
   dynamic firstName;
   dynamic lastName;
   dynamic company;
-  dynamic address1;
+  String? address1;
   dynamic address2;
   dynamic city;
   dynamic postalCode;
