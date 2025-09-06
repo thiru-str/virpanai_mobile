@@ -231,7 +231,7 @@ class _HomePageState extends State<HomePage> {
       case "Grid2":
         return Grid2(content: homePageContent);
       case "Banner2": // video
-        return Banner2(content: homePageContent);
+        return Banner2(content: homePageContent!);
       case "Slider1":
         return Slider1(content: homePageContent!);
       case "Banner1":
