@@ -53,98 +53,101 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              // Title
-              Text(
-                AppStrings.enter_otp_digit,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Form for phone input
-              Text(
-                '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700]!,
-                ),
-              ),
-              const SizedBox(height: 32),
-              // OTP Fields
-              PinCodeTextField(
-                appContext: context,
-                length: 6, // Number of OTP digits
-                controller: _otpController,
-                focusNode: _focusNode,
-                keyboardType: TextInputType.number,
-                autoFocus: true,
-                animationType: AnimationType.none,
-                textStyle: FontUtils.primaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(8),
-                  fieldHeight: 50,
-                  fieldWidth: 50,
-                  inactiveFillColor: Colors.white,
-                  activeFillColor: Colors.white,
-                  selectedFillColor: Colors.white,
-                  inactiveColor: AppColors.secondary,
-                  activeColor: AppColors.primary,
-                  selectedColor: AppColors.primary,
-                ),
-                enableActiveFill: true,
-                onCompleted: (value) {
-                  print("OTP Entered: $value");
-                },
-                onChanged: (value) {
-                  print(value);
-                },
-              ),
-              const SizedBox(height: 32),
-            ],
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
-        child: FloatingActionButton(
-          shape: const CircleBorder(),
-          onPressed: () {
-            // Validate OTP and proceed
-            print('Submitted OTP: ${_otpController.text}');
-            verifyOtp();
-          },
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                // Title
+                Text(
+                  AppStrings.enter_otp_digit,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Form for phone input
+                Text(
+                  '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700]!,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // OTP Fields
+                PinCodeTextField(
+                  appContext: context,
+                  length: 6, // Number of OTP digits
+                  controller: _otpController,
+                  focusNode: _focusNode,
+                  keyboardType: TextInputType.number,
+                  autoFocus: true,
+                  animationType: AnimationType.none,
+                  textStyle: FontUtils.primaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(8),
+                    fieldHeight: 50,
+                    fieldWidth: 50,
+                    inactiveFillColor: Colors.white,
+                    activeFillColor: Colors.white,
+                    selectedFillColor: Colors.white,
+                    inactiveColor: AppColors.secondary,
+                    activeColor: AppColors.primary,
+                    selectedColor: AppColors.primary,
+                  ),
+                  enableActiveFill: true,
+                  onCompleted: (value) {
+                    print("OTP Entered: $value");
+                  },
+                  onChanged: (value) {
+                    print(value);
+                  },
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
         ),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
+          child: FloatingActionButton(
+            shape: const CircleBorder(),
+            onPressed: () {
+              // Validate OTP and proceed
+              print('Submitted OTP: ${_otpController.text}');
+              verifyOtp();
+            },
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+          ),
+        ),
+        resizeToAvoidBottomInset:
+            true, // Ensures keyboard does not cause overflow
       ),
-      resizeToAvoidBottomInset:
-          true, // Ensures keyboard does not cause overflow
     );
   }
 

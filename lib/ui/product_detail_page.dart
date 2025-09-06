@@ -152,53 +152,56 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CommonHeaderAppBar(
-        onBackTap: () {
-          if (!widget.isFromLogin) {
-            Navigator.pop(context);
-          } else {
-            PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-          }
-        },
-        onFavTap: addFavourite,
-        isFavorite: isFavorite, // Pass the updated favorite status here
-      ),
-      backgroundColor: Colors.white,
-      body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          : SafeArea(
-              child: Stack(children: [
-                Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              buildProductImages(),
-                              const SizedBox(height: 25),
-                              buildProductDetails(),
-                              buildCartSection(),
-                              const SizedBox(height: 15),
-                              buildProductDescription(),
-                              buildRelatedProducts(),
-                              buildReviews(),
-                              const SizedBox(height: 90),
-                            ],
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: CommonHeaderAppBar(
+          onBackTap: () {
+            if (!widget.isFromLogin) {
+              Navigator.pop(context);
+            } else {
+              PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+            }
+          },
+          onFavTap: addFavourite,
+          isFavorite: isFavorite, // Pass the updated favorite status here
+        ),
+        backgroundColor: Colors.white,
+        body: apiLoading
+            ? Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
+            : SafeArea(
+                child: Stack(children: [
+                  Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                buildProductImages(),
+                                const SizedBox(height: 25),
+                                buildProductDetails(),
+                                buildCartSection(),
+                                const SizedBox(height: 15),
+                                buildProductDescription(),
+                                buildRelatedProducts(),
+                                buildReviews(),
+                                const SizedBox(height: 90),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                buildBottomButton()
-              ]),
-            ),
+                    ],
+                  ),
+                  buildBottomButton()
+                ]),
+              ),
+      ),
     );
   }
 
