@@ -20,8 +20,8 @@ class ImageFallbackWidget extends StatelessWidget {
       alignment: Alignment.center,
       child: SvgPicture.asset(
         AppAssets.ic_no_image,
-        width: w,
-        height: h,
+        width: (w ??0)* 0.5,
+        height: (h ?? 0)* 0.5,
         fit: fit,
       ),
     );
