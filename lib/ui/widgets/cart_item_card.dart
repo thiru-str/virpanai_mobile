@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
+import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 
 class CartItemCard extends StatelessWidget {
@@ -15,9 +17,10 @@ class CartItemCard extends StatelessWidget {
   final bool isUpdating; // New field
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
+  final VoidCallback onRemoveAll;
 
   const CartItemCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.productName,
     required this.size,
@@ -27,7 +30,8 @@ class CartItemCard extends StatelessWidget {
     this.isUpdating = false,
     required this.onIncrease,
     required this.onDecrease,
-  }) : super(key: key);
+    required this.onRemoveAll,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,6 @@ class CartItemCard extends StatelessWidget {
       children: [
         // Card Content
         Container(
-          height: 110,
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
@@ -49,16 +52,13 @@ class CartItemCard extends StatelessWidget {
               // Product Image
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
-                child: CachedNetworkImage(
+                child: imageUrl.isNotEmpty?CachedNetworkImage(
                   imageUrl: imageUrl,
                   width: 60,
                   height: 80,
                   fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => ImageFallbackWidget(
-                    w: 60,
-                    h: 80,
-                  ),
-                ),
+                  errorWidget: (context, _, __) => const ImageFallbackWidget(w: 60,h: 80),
+                ):const ImageFallbackWidget(w: 60,h:80),
               ),
               const SizedBox(width: 12.0),
               // Product Details
@@ -72,7 +72,7 @@ class CartItemCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -80,10 +80,10 @@ class CartItemCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       size,
-                      maxLines: 1,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Colors.black54,
                       ),
                     ),
@@ -114,7 +114,7 @@ class CartItemCard extends StatelessWidget {
                             color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.remove,
                             color: Colors.white,
                             size: 16,
@@ -139,7 +139,7 @@ class CartItemCard extends StatelessWidget {
                             color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.add,
                             color: Colors.white,
                             size: 16,
@@ -147,6 +147,19 @@ class CartItemCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: onRemoveAll,
+                    child: const Text(
+                      "Remove All",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                        decorationColor: Colors.red,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -170,4 +183,7 @@ class CartItemCard extends StatelessWidget {
       ],
     );
   }
+
+
 }
+

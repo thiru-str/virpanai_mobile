@@ -131,6 +131,13 @@ class _CartPageState extends State<CartPage>
                                               .toStringAsFixed(2)),
                                       quantity: cartItem?.quantity ?? 0,
                                       isUpdating: cartItem?.isUpdating ?? false,
+                                      onRemoveAll: () {
+                                        setState(() {
+                                          cartResponse!.cart!.items![index].isUpdating = true;
+                                        });
+                                        //updateCart(0,cartItem.id!,index);
+                                        removeCart(cartItem?.id??'',index);
+                                      },
                                       onIncrease: () {
                                         setState(() {
                                           cartResponse!.cart!.items![index]
@@ -173,7 +180,7 @@ class _CartPageState extends State<CartPage>
                                         }
 
                                         if (quantity - 1 <= 0) {
-                                          removeCart(id);
+                                          removeCart(id,index);
                                         } else {
                                           updateCart(quantity - 1, id, index);
                                         }
@@ -433,13 +440,17 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void removeCart(String cartItemId) async {
+  void removeCart(String cartItemId,int index) async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.removeCart(context, cartItemId);
+      await apiService.removeCart(context,cartItemId);
       getCartApi();
     } catch (e) {
-      setState(() {});
+      setState(() {
+        setState(() {
+          cartResponse?.cart?.items?[index].isUpdating = false;
+        });
+      });
       print(e);
     }
   }
