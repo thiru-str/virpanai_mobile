@@ -226,6 +226,7 @@ class _ProductPageState extends State<ProductPage> {
                       buttonText: AppStrings.explore_categories,
                       iconPath: AppAssets.ic_cart_empty,
                       onButtonTap: () {},
+                      showExplore: false,
                     );
                   }
 
