@@ -26,12 +26,14 @@ class Slider2 extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                content?.layoutTitle ?? '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Expanded(
+                child: Text(
+                  content?.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
                 ),
               ),
               if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
@@ -40,7 +42,7 @@ class Slider2 extends StatelessWidget {
                     // Handle redirection
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
-                      redirectData: content?.redirectData,
+                      redirectData: content!.redirectData!,
                     );
                   },
                   child: Row(

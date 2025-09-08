@@ -32,12 +32,14 @@ class Item4 extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  content?.layoutTitle ?? "",
-                  style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor),
+                Expanded(
+                  child: Text(
+                    content?.layoutTitle ?? "",
+                    style: FontUtils.secondaryFontStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor),
+                  ),
                 ),
                 Visibility(
                   visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
@@ -45,7 +47,7 @@ class Item4 extends StatelessWidget {
                     onTap: () {
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
-                        redirectData: content?.redirectData,
+                        redirectData: content!.redirectData!,
                       );
                     },
                     child: Text(
