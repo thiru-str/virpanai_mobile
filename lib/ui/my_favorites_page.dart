@@ -9,6 +9,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/view_cart_model.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
 import '../utility/currency_util.dart';
@@ -121,6 +122,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   buttonText: AppStrings.explore_categories,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () {
+                    eventBus.fire(TabSwitchEvent(1));
                   },
                 ),
     );
