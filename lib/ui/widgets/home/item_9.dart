@@ -58,7 +58,7 @@ class _Item9State extends State<Item9> {
       children: [
         /// Title and See All
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -93,23 +93,26 @@ class _Item9State extends State<Item9> {
         const SizedBox(height: 12),
         SizedBox(
           height: 300,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            scrollDirection: Axis.horizontal,
-            itemCount: widget.content.layoutData?.length ?? 0,
-            separatorBuilder: (context, index) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              final layoutData = widget.content.layoutData?[index];
-              final variantId = layoutData?.variantDetails?.variantId;
-              final prices = layoutData?.prices;
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              scrollDirection: Axis.horizontal,
+              itemCount: widget.content.layoutData?.length ?? 0,
+              separatorBuilder: (context, index) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                final layoutData = widget.content.layoutData?[index];
+                final variantId = layoutData?.variantDetails?.variantId;
+                final prices = layoutData?.prices;
 
-              // updated qty from event (fallback to original)
-              final cartQty = variantQtyMap[variantId] ??
-                  layoutData?.cartDetails?.quantity ??
-                  0;
+                // updated qty from event (fallback to original)
+                final cartQty = variantQtyMap[variantId] ??
+                    layoutData?.cartDetails?.quantity ??
+                    0;
 
-              return buildProductCard(layoutData, prices, cartQty);
-            },
+                return buildProductCard(layoutData, prices, cartQty);
+              },
+            ),
           ),
         ),
       ],
