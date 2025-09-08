@@ -1,22 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../model/home_page_response.dart';
+import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
 class Grid2 extends StatelessWidget {
-  final Content? content;
+  final Content content;
 
   const Grid2({Key? key, required this.content}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final List<LayoutDatum>? items =
-        content?.layoutData?.take(15).toList(); // Max 5x3 = 15 items
+    final List<LayoutDatum> items = content.layoutData!.take(15).toList(); // Max 5x3 = 15 items
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +27,7 @@ class Grid2 extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                content?.layoutTitle ?? '',
+                content.layoutTitle ?? '',
                 style: FontUtils.secondaryFontStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -35,7 +35,7 @@ class Grid2 extends StatelessWidget {
                 ),
               ),
               Visibility(
-                visible: (content?.layoutRedirectTitle ?? '').isNotEmpty,
+                visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
                 child: GestureDetector(
                   onTap: () {
                     // Handle section-level redirection if needed
@@ -43,7 +43,7 @@ class Grid2 extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        content?.layoutRedirectTitle ?? "",
+                        content.layoutRedirectTitle!,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -62,51 +62,69 @@ class Grid2 extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: MasonryGridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: 5,
+            mainAxisSpacing: 16,
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: items?.length ?? 0,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              final layoutData = items?[index];
+              final layoutData = items[index];
               return GestureDetector(
-                onTap: () {
-                  RedirectUtils.handleContentRedirect(
-                    context: context,
-                    layoutOption: content?.layoutOption ?? "",
-                    layoutData: layoutData,
-                  );
-                },
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: CachedNetworkImage(
-                        imageUrl: layoutData!.image!,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) =>
-                            ImageFallbackWidget(
-                          h: 60,
-                          w: 60,
+                  onTap: () {
+                    RedirectUtils.handleContentRedirect(
+                      context: context,
+                      layoutOption: content.layoutOption!,
+                      layoutData: layoutData,
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: layoutData.image??'',
                           fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => _fallbackWidget(),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      layoutData.title ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 11),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: 60,
+                        height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Text(
+                            layoutData.title ?? '',
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: FontUtils.primaryFontStyle(fontSize: 11),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+
+
+  Widget _fallbackWidget() {
+    return Container(
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 48,
+        height: 48,
+      ),
     );
   }
 }
