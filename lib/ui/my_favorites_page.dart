@@ -121,6 +121,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   message: AppStrings.no_wishlist_yet,
                   buttonText: AppStrings.explore_categories,
                   iconPath: AppAssets.ic_cart_empty,
+                  showExplore: (widget.isFromBottomNav ?? false),
                   onButtonTap: () {
                     eventBus.fire(TabSwitchEvent(1));
                   },

@@ -138,8 +138,7 @@ class _HomePageState extends State<HomePage> {
                                 title: headerTitle,
                                 cartCount: cartItems ?? 0,
                                 onCartClick: () {
-                                  PageRouteUtils.pushWithSlide(
-                                      context, const CartPage());
+                                  eventBus.fire(TabSwitchEvent(2));
                                 },
                                 onSearchClick: () {
                                   PageRouteUtils.pushWithFade(
@@ -187,8 +186,7 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.only(bottom: 20.0),
                           child: GestureDetector(
                             onTap: () {
-                              PageRouteUtils.pushWithSlide(
-                                  context, const CartPage());
+                              eventBus.fire(TabSwitchEvent(2));
                             },
                             child: ViewCartWidget(
                                 totalItems: cartItems!,
