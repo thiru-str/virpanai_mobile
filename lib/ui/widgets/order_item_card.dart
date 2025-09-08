@@ -13,6 +13,7 @@ class OrderItemCard extends StatelessWidget {
   final String totalPrice;
   final String? statusText; // Nullable status
   final Color? statusColor; // Optional custom color
+  final String? paymentMode; // Optional custom color
 
   const OrderItemCard({
     Key? key,
@@ -23,6 +24,7 @@ class OrderItemCard extends StatelessWidget {
     required this.totalPrice,
     this.statusText,
     this.statusColor,
+    this.paymentMode,
   }) : super(key: key);
 
   @override
@@ -92,90 +94,105 @@ class OrderItemCard extends StatelessWidget {
 
           // Product + Price + Status Row
           // Product + Price + Status Row
-          Row(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left: Product Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children:  [
-                    Text(
-                      'No of Product',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      productCount??'', // replace dynamically
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 🔹 Vertical Divider
-              Container(
-                width: 1,
-                height: 40,
-                color: Colors.grey.shade300,
-              ),
-
-              const SizedBox(width: 12),
-
-              // Right: Price + (optional) Status
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: statusText != null && statusText!.isNotEmpty
-                      ? MainAxisAlignment.start
-                      : MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Column(
-                      crossAxisAlignment: statusText != null && statusText!.isNotEmpty
-                          ? CrossAxisAlignment.start
-                          : CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          'Total Price',
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left: Product Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children:  [
+                        Text(
+                          'No of Product',
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
-                          totalPrice,
-                          style: const TextStyle(
-                            color: Colors.teal,
+                          productCount??'', // replace dynamically
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
                       ],
                     ),
-                    if (statusText != null && statusText!.isNotEmpty) ...[
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: (statusColor ?? Colors.green).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: statusColor ?? Colors.green),
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              statusText!,
-                              style: TextStyle(
-                                color: statusColor ?? Colors.green,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                  ),
+
+                  // 🔹 Vertical Divider
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: Colors.grey.shade300,
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Right: Price + (optional) Status
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: statusText != null && statusText!.isNotEmpty
+                          ? MainAxisAlignment.start
+                          : MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          crossAxisAlignment: statusText != null && statusText!.isNotEmpty
+                              ? CrossAxisAlignment.start
+                              : CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'Total Price',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              totalPrice,
+                              style: const TextStyle(
+                                color: Colors.teal,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (statusText != null && statusText!.isNotEmpty) ...[
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: (statusColor ?? Colors.green).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: statusColor ?? Colors.green),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  statusText!,
+                                  style: TextStyle(
+                                    color: statusColor ?? Colors.green,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      ],
+                    ),
+                  ),
+
+                ],
+              ),
+              Visibility(
+                visible: paymentMode!=null,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Text('Payment Mode: $paymentMode')
                   ],
                 ),
               ),

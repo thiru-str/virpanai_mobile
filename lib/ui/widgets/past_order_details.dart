@@ -214,6 +214,7 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                       productCount: item?.noOfProducts ?? '',
                       totalPrice: item?.totalPrice ?? '',
                       statusText: item?.orderStatus ?? '',
+                      paymentMode: item?.paymentMethod,
                     ),
                   );
                 },

@@ -50,6 +50,7 @@ class PastOrderDetail {
   String? noOfProducts;
   String? totalPrice;
   String? orderStatus;
+  String? paymentMethod;
 
   PastOrderDetail({
     this.id,
@@ -61,6 +62,7 @@ class PastOrderDetail {
     this.noOfProducts,
     this.totalPrice,
     this.orderStatus,
+    this.paymentMethod,
   });
 
   factory PastOrderDetail.fromJson(Map<String, dynamic> json) => PastOrderDetail(
@@ -73,6 +75,7 @@ class PastOrderDetail {
     noOfProducts: json["no_of_products"],
     totalPrice: json["total_price"],
     orderStatus: json["order_status"],
+    paymentMethod: json["payment_method"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -85,5 +88,6 @@ class PastOrderDetail {
     "no_of_products": noOfProducts,
     "total_price": totalPrice,
     "order_status": orderStatus,
+    "payment_method": paymentMethod,
   };
 }
