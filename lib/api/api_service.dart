@@ -33,6 +33,8 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/cancel_order_response.dart';
+import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -802,6 +804,23 @@ class ApiService {
           (json) => AddOnProductsResponse.fromJson(json),
       context,
     );
+  }
+
+  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
+    await addToken();
+    return _makeGetRequest<OrderHistoryIndividualReponse>(
+      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
+      null,
+      null,
+          (json) => OrderHistoryIndividualReponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
+    await addToken();
+    return _makePostRequest('store/cancel-order/$orderId', null,
+            (data) => CancelOrderResponse.fromJson(data),context);
   }
 
   Future<void> addToken() async {
