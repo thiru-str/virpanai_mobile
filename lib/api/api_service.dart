@@ -684,7 +684,7 @@ class ApiService {
     );
   }
 
-  Future<dynamic> completeCart(
+  Future<PlaceOrderResponse> completeCart(
       BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
