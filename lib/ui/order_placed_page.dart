@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/ui/order_detail_item_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -8,7 +9,8 @@ import '../utility/app_assets.dart';
 import '../utility/page_route_utils.dart';
 
 class OrderPlacedPage extends StatelessWidget {
-  const OrderPlacedPage({super.key});
+  String? orderId;
+  OrderPlacedPage({super.key,required this.orderId});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +67,7 @@ class OrderPlacedPage extends StatelessWidget {
 
                   // Subtext
                   Text(
-                 AppStrings.email_confirmation,
+                    AppStrings.email_confirmation,
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14, // Adjusted font size
                       color: AppColors.textColor50,
@@ -73,7 +75,7 @@ class OrderPlacedPage extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: ElevatedButton(
@@ -90,6 +92,31 @@ class OrderPlacedPage extends StatelessWidget {
                       ),
                       child: Text(
                         AppStrings.see_more_product,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle button tap
+                        PageRouteUtils.pushAndRemoveUntil(context, OrderDetailItemPage(orderId: orderId,));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary, // Button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        minimumSize: const Size(double.infinity, 60),
+                      ),
+                      child: Text(
+                        'View details',
                         style: FontUtils.primaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
