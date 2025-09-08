@@ -41,6 +41,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
 
   int? cartItems;
   late StreamSubscription<ViewCartModel> _eventSubscription;
+  late StreamSubscription<TabSwitchEvent> _tabSwitchSub;
   bool isLoggedIn = false;
 
   @override
@@ -83,13 +84,20 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
         });
       }
     });
+    _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          _currentIndex = event.tabIndex;
+        });
+      }
+    });
   }
 
   Future<void> initializePages() async {
     try {
       await Future.wait([
         getCustomerApi(), // Wait for customer API
-        getHomePageApi() // Wait for home page API
+        //getHomePageApi() // Wait for home page API
       ]);
       setState(() {
         _isLoading = false;
@@ -123,117 +131,117 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   void dispose() {
     _animationController.dispose();
     _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false, // Disable default back behavior
-      onPopInvoked: (bool didPop) async {
-        if (didPop) return;
+        canPop: false, // Disable default back behavior
+        onPopInvoked: (bool didPop) async {
+          if (didPop) return;
 
-        // If not on the first tab, go back to the previous tab
-        if (_currentIndex > 0) {
-          setState(() {
-            _currentIndex--; // Move to the previous tab
-          });
-          return; // Don't proceed to exit dialog
-        }
-
-        final shouldExit = await showDialog(
-          context: context,
-          builder: (context) => CommonAlertDialog(
-            title: AppStrings.exitApp,
-            content: AppStrings.exitDescription,
-            contentOk: AppStrings.yes,
-            contentCancel: AppStrings.no,
-            onTapOk: () => Navigator.of(context).pop(true)),
-          );
-        if (shouldExit == true) {
-          if (mounted) {
-            SystemNavigator.pop(); // Close the app
+          // If not on the first tab, go back to the previous tab
+          if (_currentIndex > 0) {
+            setState(() {
+              _currentIndex--; // Move to the previous tab
+            });
+            return; // Don't proceed to exit dialog
           }
-        }
-      },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: _isLoading
-            ?  Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        )
-            : _getPage(), // Dynamically build the current page
-        bottomNavigationBar: SlideTransition(
-          position: _slideAnimation,
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index; // Update selected tab
-              });
-            },
-            items: [
-              const BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-                label: AppStrings.shop,
-              ),
-              const BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-                label: AppStrings.categories,
-              ),
-              BottomNavigationBarItem(
-                icon: Stack(
-                  children: [
-                    const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                    if ((cartItems?? 0) > 0)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 16,
-                            minHeight: 16,
-                          ),
-                          child: Text(
-                            cartItems!.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
+
+          final shouldExit = await showDialog(
+            context: context,
+            builder: (context) => CommonAlertDialog(
+                title: AppStrings.exitApp,
+                content: AppStrings.exitDescription,
+                contentOk: AppStrings.yes,
+                contentCancel: AppStrings.no,
+                onTapOk: () => Navigator.of(context).pop(true)),
+          );
+          if (shouldExit == true) {
+            if (mounted) {
+              SystemNavigator.pop(); // Close the app
+            }
+          }
+        },
+        child:  Scaffold(
+          backgroundColor: Colors.white,
+          body: _isLoading
+              ?  Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          )
+              : _getPage(), // Dynamically build the current page
+          bottomNavigationBar: SlideTransition(
+            position: _slideAnimation,
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index; // Update selected tab
+                });
+              },
+              items: [
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                  label: AppStrings.shop,
+                ),
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+                  label: AppStrings.categories,
+                ),
+                BottomNavigationBarItem(
+                  icon: Stack(
+                    children: [
+                      const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                      if ((cartItems?? 0) > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            textAlign: TextAlign.center,
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              cartItems!.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
+                  label: AppStrings.cart,
                 ),
-                label: AppStrings.cart,
-              ),
-              if(isLoggedIn)
-              const BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-                label: AppStrings.favourite,
-              ),
-              if(isLoggedIn)
-                const BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-                  label: AppStrings.account,
-                ),
-            ],
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: AppColors.tabInActivecolor,
-            showUnselectedLabels: true,
-            backgroundColor: Colors.white,
-            type: BottomNavigationBarType.fixed,
-            selectedLabelStyle: FontUtils.primaryFontStyle(),
-            unselectedLabelStyle: FontUtils.primaryFontStyle(),
-          ),
-        ),
-      ),
+                if(isLoggedIn)
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+                    label: AppStrings.favourite,
+                  ),
+                if(isLoggedIn)
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                    label: AppStrings.account,
+                  ),
+              ],
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.tabInActivecolor,
+              showUnselectedLabels: true,
+              backgroundColor: Colors.white,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: FontUtils.primaryFontStyle(),
+              unselectedLabelStyle: FontUtils.primaryFontStyle(),
+            ),
+          ),)
     );
   }
 

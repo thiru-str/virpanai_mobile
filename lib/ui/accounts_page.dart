@@ -27,6 +27,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
   List<ContentData> storeContentList = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -53,13 +54,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Container(
                     child: Center(
                       child: Text(
-                          (customer?.firstName ?? "C").substring(0, 1), // The letter to display
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        )
-                      ),
+                          (customer?.firstName ?? "C")
+                              .substring(0, 1), // The letter to display
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )),
                     ),
                   ),
                 ),
@@ -67,9 +68,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.primary,width: 1.5),
+                    border: Border.all(color: AppColors.primary, width: 1.5),
                     borderRadius: BorderRadius.circular(12.0),
-
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           children: [
                             Text(
                               customer != null
-                                  ? '${customer!.firstName!} ${customer!.lastName}'
+                                  ? '${customer?.firstName} ${customer?.lastName}'
                                   : '',
                               overflow: TextOverflow.ellipsis,
                               style: FontUtils.primaryFontStyle(
@@ -91,7 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              customer != null ? customer!.email! : '',
+                              customer?.email ?? "",
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
                                 color: Colors.black54,
@@ -103,7 +103,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       // Edit Button
                       TextButton(
                         onPressed: () async {
-                          final result = await PageRouteUtils.pushWithSlide(context, EditProfilePage());
+                          final result = await PageRouteUtils.pushWithSlide(
+                              context, EditProfilePage());
                           if (result == true) {
                             setState(() {
                               getCustomerInfo();
@@ -128,10 +129,11 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
           // Profile Items Section
           Expanded(
-            child: ListView(
+            child: isLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,)):ListView(
               children: [
                 _buildProfileItem(AppStrings.address, () {
-                  PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address) {}));
+                  PageRouteUtils.pushWithSlide(context,
+                      AddressListPage(onSelectedAddress: (address) {}));
                 }),
                 _buildProfileItem(AppStrings.favourites, () {
                   PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
@@ -139,14 +141,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 _buildProfileItem(AppStrings.orders, () {
                   PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
                 }),
-                ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
-                  if (contentItem.content?.data != null) {
-                    PageRouteUtils.pushWithSlide(
-                      context,
-                      StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
-                    );
-                  }
-                }))
+                ...storeContentList.map((contentItem) =>
+                    _buildProfileItem(contentItem.name ?? "Unknown", () {
+                      if (contentItem.content?.data != null) {
+                        PageRouteUtils.pushWithSlide(
+                          context,
+                          StaticPage(
+                              pageTitle: contentItem.name ?? "",
+                              htmlData: contentItem.content!.data!),
+                        );
+                      }
+                    }))
               ],
             ),
           ),
@@ -192,10 +197,21 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> fetchStoreContentAPI() async {
-    final storeContent = await ApiService().getStoreContent(context);
-    setState(() {
-      storeContentList = storeContent.data ?? [];
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      final storeContent = await ApiService().getStoreContent(context);
+      setState(() {
+            storeContentList = storeContent.data ?? [];
+          });
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<Customer?> getCustomerResponse() async {
@@ -216,10 +232,11 @@ class _SettingsPageState extends State<SettingsPage> {
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
           onTapOk: () async {
-            bool skipLogin = await SharedPreferencesUtil().getBool('skip_login')?? false;
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
             await SharedPreferencesUtil().clear();
-            if(mounted) {
+            if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
                   context, skipLogin ? const BottomNavPage() : WelcomePage());
             }

@@ -97,6 +97,8 @@ class LayoutDatum {
   String? image;
   String? title;
   String? subTitle;
+  String? featureText;
+  String? salesText;
   Prices? prices;
   RedirectData? redirectData;
   int? rating;
@@ -108,6 +110,8 @@ class LayoutDatum {
     this.image,
     this.title,
     this.subTitle,
+    this.featureText,
+    this.salesText,
     this.prices,
     this.redirectData,
     this.rating,
@@ -120,6 +124,8 @@ class LayoutDatum {
     image: json["image"],
     title: json["title"],
     subTitle: json["sub_title"],
+    featureText: json["feature_text"],
+    salesText: json["sales_text"],
     prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]), // <-- Deserialize
     redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
     rating: json["rating"],
@@ -131,6 +137,8 @@ class LayoutDatum {
     "id": id,
     "image": image,
     "title": title,
+    "feature_text": featureText,
+    "sales_text": salesText,
     "sub_title": subTitle,
     "prices": prices?.toJson(), // <-- Serialize
     "rating": rating,
@@ -254,12 +262,14 @@ class RedirectData {
   final RedirectProductData? redirectProductData;
   final RedirectSearchData? redirectSearchData;
   final RedirectUrlData? redirectUrlData;
+  final RedirectOrderData? redirectOrderData;
 
   RedirectData({
     this.redirectType,
     this.redirectProductData,
     this.redirectSearchData,
     this.redirectUrlData,
+    this.redirectOrderData,
   });
 
   factory RedirectData.fromJson(Map<String, dynamic> json) {
@@ -273,6 +283,9 @@ class RedirectData {
           : null,
       redirectUrlData: json['redirect_url_data'] != null
           ? RedirectUrlData.fromJson(json['redirect_url_data'])
+          : null,
+      redirectOrderData: json['redirect_order_data'] != null
+          ? RedirectOrderData.fromJson(json['redirect_order_data'])
           : null,
     );
   }
@@ -304,14 +317,32 @@ class RedirectProductData {
   };
 }
 
+class RedirectOrderData {
+  final String? orderId;
+
+  RedirectOrderData({this.orderId});
+
+  factory RedirectOrderData.fromJson(Map<String, dynamic> json) {
+    return RedirectOrderData(
+      orderId: json['order_id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'order_id': orderId,
+  };
+}
+
 class RedirectSearchData {
   final String? category;
+  final String? collection;
   final String? brand;
   final String? minPrice;
   final String? maxPrice;
 
   RedirectSearchData({
     this.category,
+    this.collection,
     this.brand,
     this.minPrice,
     this.maxPrice,
@@ -320,6 +351,7 @@ class RedirectSearchData {
   factory RedirectSearchData.fromJson(Map<String, dynamic> json) {
     return RedirectSearchData(
       category: json['category'],
+      collection: json['collection'],
       brand: json['brand'],
       minPrice: json['min_price'],
       maxPrice: json['max_price'],
@@ -328,6 +360,7 @@ class RedirectSearchData {
 
   Map<String, dynamic> toJson() => {
     'category': category,
+    'collection': collection,
     'brand': brand,
     'min_price': minPrice,
     'max_price': maxPrice,

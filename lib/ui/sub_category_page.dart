@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
@@ -57,14 +58,10 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                 height: 10,
               ),
               Expanded(
-                child: GridView.builder(
+                child: MasonryGridView.count(
+                  crossAxisCount: 2,
                   scrollDirection: Axis.vertical,
                   itemCount: widget.productCategory.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: (MediaQuery.of(context).size.width / 2) /
-                        (200 + 12 + 12),
-                  ),
                   itemBuilder: (context, index) {
                     final productCategory = widget.productCategory[index];
                     return GestureDetector(

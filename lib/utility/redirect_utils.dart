@@ -91,11 +91,12 @@ class RedirectUtils {
 
   static void _navigateToSearch(BuildContext context, RedirectData redirectData) {
     final categoryId = redirectData.redirectSearchData?.category;
-    if (categoryId?.isEmpty ?? true) return;
+
+    final collectionId = redirectData.redirectSearchData?.collection??'';
 
     PageRouteUtils.pushWithSlide(
       context,
-      ProductPage(categoryId: categoryId!),
+      ProductPage(categoryId: categoryId!,collectionId: collectionId,),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
@@ -8,6 +9,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/view_cart_model.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
 import '../utility/currency_util.dart';
@@ -64,19 +66,14 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: GridView.builder(
+                    child: MasonryGridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16, // Space between columns
+                      mainAxisSpacing: 16, // Space between rows
                       scrollDirection: Axis.vertical,
-                      itemCount: wishListResponse?.products?.length,
+                      itemCount: wishListResponse?.products?.length ?? 0,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // Number of columns
-                        crossAxisSpacing: 16, // Space between columns
-                        mainAxisSpacing: 16, // Space between rows
-                        childAspectRatio: (MediaQuery.of(context).size.width / 2) /
-                        (265 + 16 + 16 + 32 + 24), // Adjust this for proper card proportions
-                      ),
                       itemBuilder: (context, index) {
                         final product = wishListResponse!.products?[index];
                         return GestureDetector(
@@ -124,7 +121,9 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   message: AppStrings.no_wishlist_yet,
                   buttonText: AppStrings.explore_categories,
                   iconPath: AppAssets.ic_cart_empty,
+                  showExplore: (widget.isFromBottomNav ?? false),
                   onButtonTap: () {
+                    eventBus.fire(TabSwitchEvent(1));
                   },
                 ),
     );

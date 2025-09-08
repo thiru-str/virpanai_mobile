@@ -81,8 +81,11 @@ class SharedPreferencesUtil {
     await prefs.clear();
 
     if (publicDetailsResponse != null) {
-      await prefs.setString('public_details', jsonEncode(publicDetailsResponse.toJson()));
-      await prefs.setString('publishable_key', publicDetailsResponse.token!);
+      await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
+      await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
+      await SharedPreferencesUtil().saveBool('google_map_usage', false);
+      await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
+      await SharedPreferencesUtil().saveBool('skip_login', false);
     }
   }
 

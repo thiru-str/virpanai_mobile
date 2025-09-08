@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/view_cart_model.dart';
 import '../../../utility/app_colors.dart';
@@ -17,7 +18,6 @@ import '../../product_page.dart';
 class Item9 extends StatefulWidget {
   final Content content;
   final void Function(int delta, String variantId)? onCartQtyChanged;
-
 
   const Item9({
     Key? key,
@@ -51,7 +51,6 @@ class _Item9State extends State<Item9> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -59,7 +58,7 @@ class _Item9State extends State<Item9> {
       children: [
         /// Title and See All
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -72,7 +71,8 @@ class _Item9State extends State<Item9> {
                 ),
               ),
               Visibility(
-                visible: widget.content.layoutRedirectTitle?.isNotEmpty ?? false,
+                visible:
+                    widget.content.layoutRedirectTitle?.isNotEmpty ?? false,
                 child: GestureDetector(
                   onTap: () {
                     // handle redirect
@@ -93,21 +93,26 @@ class _Item9State extends State<Item9> {
         const SizedBox(height: 12),
         SizedBox(
           height: 300,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            scrollDirection: Axis.horizontal,
-            itemCount: widget.content.layoutData!.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              final layoutData = widget.content.layoutData![index];
-              final variantId = layoutData.variantDetails!.variantId;
-              final prices = layoutData.prices!;
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              scrollDirection: Axis.horizontal,
+              itemCount: widget.content.layoutData?.length ?? 0,
+              separatorBuilder: (context, index) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                final layoutData = widget.content.layoutData?[index];
+                final variantId = layoutData?.variantDetails?.variantId;
+                final prices = layoutData?.prices;
 
-              // updated qty from event (fallback to original)
-              final cartQty = variantQtyMap[variantId] ?? layoutData.cartDetails?.quantity ?? 0;
+                // updated qty from event (fallback to original)
+                final cartQty = variantQtyMap[variantId] ??
+                    layoutData?.cartDetails?.quantity ??
+                    0;
 
-              return buildProductCard(layoutData, prices, cartQty);
-            },
+                return buildProductCard(layoutData, prices, cartQty);
+              },
+            ),
           ),
         ),
       ],
@@ -124,17 +129,23 @@ class _Item9State extends State<Item9> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           /// Image & Discount
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
                 child: Image.network(
                   layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, url, error) => ImageFallbackWidget(
+                    h: 150,
+                    w: double.infinity,
+                  ),
                 ),
               ),
               if (prices.discountPercentage != null &&
@@ -143,7 +154,8 @@ class _Item9State extends State<Item9> {
                   top: 6,
                   left: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade800,
                       borderRadius: BorderRadius.circular(12),
@@ -161,7 +173,8 @@ class _Item9State extends State<Item9> {
               Positioned(
                 top: 6,
                 right: 6,
-                child: Icon(Icons.favorite_border, size: 20, color: Colors.grey),
+                child:
+                    Icon(Icons.favorite_border, size: 20, color: Colors.grey),
               ),
             ],
           ),
@@ -212,49 +225,51 @@ class _Item9State extends State<Item9> {
 
           /// Add to Cart OR Quantity Selector
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: cartQty > 0
                 ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _qtyButton(Icons.remove, () {
-                  if (cartQty > 0) {
-                    widget.onCartQtyChanged?.call(-1, layoutData.variantDetails!.variantId);
-                  }
-                }),
-                Text(
-                  '$cartQty',
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                _qtyButton(Icons.add, () {
-                  widget.onCartQtyChanged?.call(1, layoutData.variantDetails!.variantId);
-                }),
-              ],
-            )
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _qtyButton(Icons.remove, () {
+                        if (cartQty > 0) {
+                          widget.onCartQtyChanged
+                              ?.call(-1, layoutData.variantDetails.variantId);
+                        }
+                      }),
+                      Text(
+                        '$cartQty',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      _qtyButton(Icons.add, () {
+                        widget.onCartQtyChanged
+                            ?.call(1, layoutData.variantDetails.variantId);
+                      }),
+                    ],
+                  )
                 : SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  widget.onCartQtyChanged?.call(1,layoutData.variantDetails!.variantId); // add 1
-                },
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade400),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        widget.onCartQtyChanged?.call(
+                            1, layoutData.variantDetails.variantId); // add 1
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("Add To Cart"),
+                    ),
                   ),
-                ),
-                child: const Text("Add To Cart"),
-              ),
-            ),
           ),
         ],
       ),
     );
   }
-
 
   Widget _qtyButton(IconData icon, VoidCallback onPressed) {
     return Container(
@@ -264,7 +279,10 @@ class _Item9State extends State<Item9> {
       ),
       child: IconButton(
         color: Colors.white,
-        icon: Icon(icon, size: 16,),
+        icon: Icon(
+          icon,
+          size: 16,
+        ),
         onPressed: onPressed,
         padding: const EdgeInsets.all(4),
         constraints: const BoxConstraints(minWidth: 32, minHeight: 32),

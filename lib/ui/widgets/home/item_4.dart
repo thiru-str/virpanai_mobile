@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
@@ -12,7 +13,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Item4 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Item4({
     Key? key,
@@ -31,33 +32,33 @@ class Item4 extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  content.layoutTitle!,
-                  style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor
+                Expanded(
+                  child: Text(
+                    content?.layoutTitle ?? "",
+                    style: FontUtils.secondaryFontStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor),
                   ),
                 ),
-                  Visibility(
-                    visible: content.layoutRedirectTitle!.isNotEmpty,
-                    child: GestureDetector(
-                      onTap: (){
-                        RedirectUtils.handleContentRedirectViewAll(
-                          context: context,
-                          redirectData: content.redirectData!,
-                        );
-                      },
-                      child: Text(
-                        content.layoutRedirectTitle!,
-                        style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor
-                        ),
-                      ),
+                Visibility(
+                  visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
+                  child: GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content!.redirectData!,
+                      );
+                    },
+                    child: Text(
+                      content?.layoutRedirectTitle ?? "",
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor),
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -66,15 +67,15 @@ class Item4 extends StatelessWidget {
             height: 320,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData!.length,
+              itemCount: content?.layoutData?.length ?? 0,
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                LayoutDatum layoutData = content.layoutData![index];
+                LayoutDatum? layoutData = content?.layoutData?[index];
                 return GestureDetector(
                   onTap: () {
                     RedirectUtils.handleContentRedirect(
                       context: context,
-                      layoutOption: content.layoutOption!,
+                      layoutOption: content?.layoutOption ?? "",
                       layoutData: layoutData,
                     );
                   },
@@ -90,27 +91,42 @@ class Item4 extends StatelessWidget {
                         Stack(
                           children: [
                             Container(
-                              height: 230,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12),
+                                height: 230,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
                                 ),
-                                image: DecorationImage(
-                                  image: CachedNetworkImageProvider(layoutData.image!),
-                                  fit: BoxFit.cover,
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(12)),
+                                  child: CachedNetworkImage(
+                                    imageUrl: layoutData!.image!,
+                                    height: 230,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) =>
+                                        ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(
+                                          top: Radius.circular(12)),
+                                      child: const ImageFallbackWidget(
+                                        h: 120,
+                                      ),
+                                    ),
+                                  ),
+                                )
                                 ),
-                              ),
-                            ),
                             Visibility(
                               visible: layoutData.prices != null &&
-                                  layoutData.prices!.discountedPrice != null &&
-                                  layoutData.prices!.discountedPrice != "0",
+                                  layoutData.prices?.discountedPrice != null &&
+                                  layoutData.prices?.discountedPrice != "0",
                               child: Positioned(
                                 top: 0,
                                 left: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 6, horizontal: 6),
                                   decoration: const BoxDecoration(
                                     color: Colors.pink,
                                     borderRadius: BorderRadius.only(
@@ -119,7 +135,9 @@ class Item4 extends StatelessWidget {
                                   ),
                                   child: RotatedBox(
                                     quarterTurns: -1,
-                                    child: Text(layoutData.prices!.discountPercentage!,
+                                    child: Text(
+                                      layoutData.prices?.discountPercentage ??
+                                          "",
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -136,24 +154,25 @@ class Item4 extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
-                            layoutData.title!,
+                            layoutData.title ?? "",
                             style: FontUtils.primaryFontStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.textColor
-                            ),
+                                color: AppColors.textColor),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                CurrencyUtil.appendCurrency(layoutData.prices!.sellingPrice!),
+                                CurrencyUtil.appendCurrency(
+                                    layoutData.prices?.sellingPrice ?? ""),
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 21,
                                   fontWeight: FontWeight.w700,
@@ -164,16 +183,19 @@ class Item4 extends StatelessWidget {
                               ),
                               Visibility(
                                 visible: layoutData.prices != null &&
-                                    layoutData.prices!.discountedPrice != null &&
-                                    layoutData.prices!.discountedPrice != "0",
+                                    layoutData.prices?.discountedPrice !=
+                                        null &&
+                                    layoutData.prices?.discountedPrice != "0",
                                 child: Padding(
                                   padding: const EdgeInsets.only(left: 8.0),
                                   child: Text(
-                                    CurrencyUtil.appendCurrency(layoutData.prices!.originalPrice!),
+                                    CurrencyUtil.appendCurrency(
+                                        layoutData.prices?.originalPrice ?? ""),
                                     style: FontUtils.primaryFontStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
-                                      color: AppColors.textColor.withOpacity(0.6),
+                                      color:
+                                          AppColors.textColor.withOpacity(0.6),
                                       decoration: TextDecoration.lineThrough,
                                     ),
                                   ),
@@ -182,7 +204,6 @@ class Item4 extends StatelessWidget {
                             ],
                           ),
                         ),
-
                       ],
                     ),
                   ),

@@ -8,6 +8,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import 'widgets/common_header_app_bar.dart';
@@ -200,21 +201,33 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                       child: InteractiveViewer(
                         panEnabled: false, // Disable panning for better UX
                         boundaryMargin: EdgeInsets.all(0),
-                        child: CachedNetworkImage(
-                          imageUrl: neftPayment?.image ?? "",
-                          fit: BoxFit.contain,
-                        ),
+                        child: (neftPayment?.image == null ||
+                                (neftPayment?.image?.isEmpty ?? false))
+                            ? const ImageFallbackWidget(h: 120, w: 120)
+                            : CachedNetworkImage(
+                                imageUrl: neftPayment!.image!,
+                                fit: BoxFit.contain,
+                                errorWidget: (context, url, error) =>
+                                   const ImageFallbackWidget(h: 120, w: 120),
+                              ),
                       ),
                     ),
                   ),
                 );
               },
-              child: CachedNetworkImage(
-                imageUrl: neftPayment?.image ?? "",
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-              ),
+              child: (neftPayment?.image == null ||
+                      (neftPayment?.image?.isEmpty ?? false))
+                  ?const ImageFallbackWidget(h: 120, w: 120)
+                  : CachedNetworkImage(
+                      imageUrl: neftPayment!.image!,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) =>const ImageFallbackWidget(
+                        h: 120,
+                        w: 120,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 10),

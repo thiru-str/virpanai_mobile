@@ -14,7 +14,7 @@ class CurrencyUtil {
   }
 
   // Append the currency symbol to a value
-  static String appendCurrency(String value) {
+  static String appendCurrency(String? value) {
     final currencySymbol = getCurrencySymbol();
     return '$currencySymbol$value';
   }

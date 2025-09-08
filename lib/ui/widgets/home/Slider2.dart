@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
 import '../../../utility/page_route_utils.dart';
@@ -11,7 +12,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Slider2 extends StatelessWidget {
-  final Content content;
+  final Content? content;
 
   const Slider2({Key? key, required this.content}) : super(key: key);
 
@@ -25,27 +26,29 @@ class Slider2 extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                content.layoutTitle ?? '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Expanded(
+                child: Text(
+                  content?.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
                 ),
               ),
-              if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+              if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
                 GestureDetector(
                   onTap: () {
                     // Handle redirection
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
-                      redirectData: content.redirectData!,
+                      redirectData: content!.redirectData!,
                     );
                   },
                   child: Row(
                     children: [
                       Text(
-                        content.layoutRedirectTitle!,
+                        content?.layoutRedirectTitle ?? "",
                         style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -65,15 +68,15 @@ class Slider2 extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: content.layoutData!.length,
+            itemCount: content?.layoutData?.length ?? 0,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final layoutData = content.layoutData![index];
+              final layoutData = content?.layoutData?[index];
               return GestureDetector(
                 onTap: () {
                   RedirectUtils.handleContentRedirect(
                     context: context,
-                    layoutOption: content.layoutOption!,
+                    layoutOption: content?.layoutOption ?? "",
                     layoutData: layoutData,
                   );
                 },
@@ -100,8 +103,12 @@ class Slider2 extends StatelessWidget {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
                                 child: CachedNetworkImage(
-                                  imageUrl: layoutData.image!,
+                                  imageUrl: layoutData!.image!,
                                   fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                  const    ImageFallbackWidget(
+                                    h: 80,
+                                  ),
                                 ),
                               ),
                             ),
@@ -119,10 +126,11 @@ class Slider2 extends StatelessWidget {
 
                       // Discount badge floating on top
                       if (layoutData.prices != null &&
-                          layoutData.prices!.discountedPrice != null &&
-                          layoutData.prices!.discountedPrice != "0")
+                          layoutData.prices?.discountedPrice != null &&
+                          layoutData.prices?.discountedPrice != "0")
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.blueGrey.shade800,
                             borderRadius: BorderRadius.circular(20),
@@ -138,9 +146,7 @@ class Slider2 extends StatelessWidget {
                         ),
                     ],
                   ),
-                )
-                ,
-
+                ),
               );
             },
           ),
@@ -149,4 +155,3 @@ class Slider2 extends StatelessWidget {
     );
   }
 }
-
