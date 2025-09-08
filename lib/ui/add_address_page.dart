@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:waioz/api/api_service.dart';
@@ -160,11 +161,15 @@ class _AddAddressPage extends State<AddAddressPage> {
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
+                          maxLength: 10,
                           hintText: AppStrings.phone_number,
                           controller: phoneNumberController,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           keyboardType: TextInputType.phone,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.isEmpty || value.length < 10) {
                               return AppStrings.phone_number_required;
                             }
                             return null;
@@ -174,6 +179,8 @@ class _AddAddressPage extends State<AddAddressPage> {
                         CustomTextField(
                           hintText: AppStrings.city,
                           controller: cityController,
+                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),],
+                          keyboardType: TextInputType.name,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return AppStrings.city_required;
@@ -188,6 +195,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                               child: CustomTextField(
                                 hintText: AppStrings.state,
                                 controller: stateController,
+                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),],
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return AppStrings.state_required;

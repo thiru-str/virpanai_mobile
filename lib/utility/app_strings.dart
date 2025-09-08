@@ -75,10 +75,10 @@ class AppStrings {
   static const String currency_symbol = 'currency_symbol';
   static const String view_cart = ' View Cart';
 
-  static const String state = "state";
-  static const String city = "city";
+  static const String state = "State";
+  static const String city = "City";
   static const String zip_code = "Postal Code";
-  static const String phone_number = "phone number";
+  static const String phone_number = "Phone number";
 
   static const String phone_number_required = "phone numer is required";
   static const String lastname_required = "Lastname is required";
