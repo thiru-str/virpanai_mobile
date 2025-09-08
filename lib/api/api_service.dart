@@ -565,7 +565,7 @@ class ApiService {
       'store/carts/$cartId/line-items/$cartItemId',
       null,
       null,
-      (json) => DeleteResponse.fromJson(json),
+          (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
