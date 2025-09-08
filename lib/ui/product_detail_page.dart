@@ -206,37 +206,42 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildProductImages() {
+    final images = product?.images ?? [];
+
+    final itemCount = images.isNotEmpty ? images.length : 1;
+
     return SizedBox(
       height: 250,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: product?.images?.length ?? 0,
+        itemCount: itemCount,
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
+          final url = images.isNotEmpty ? images[index].url : null;
+
           return GestureDetector(
             onTap: () {
-              // Open fullscreen carousel
-              if (product?.images?.isNotEmpty ?? false) {
+              if (images.isNotEmpty) {
                 PageRouteUtils.pushWithFade(
-                    context,
-                    FullscreenImageCarousel(
-                      imageUrls: product!.images!,
-                      initialIndex: index,
-                    ));
+                  context,
+                  FullscreenImageCarousel(
+                    imageUrls: images,
+                    initialIndex: index,
+                  ),
+                );
               }
             },
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: CachedNetworkImage(
-                imageUrl: product!.images![index].url!,
+              child: (url != null && url.isNotEmpty)
+                  ? CachedNetworkImage(
+                imageUrl: url,
                 height: 250,
                 fit: BoxFit.cover,
-                errorWidget: (context, url, error) => ImageFallbackWidget(
-                  h: 120,
-                  w: 120,
-                ),
-              ),
+                errorWidget: (context, _, __) => const ImageFallbackWidget(h: 250,),
+              )
+                  : const ImageFallbackWidget(h: 250,),
             ),
           );
         },
