@@ -30,6 +30,7 @@ class CustomTextField extends StatelessWidget {
       obscureText: isPassword,
       keyboardType: keyboardType,
       maxLines: maxLines,
+      textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
