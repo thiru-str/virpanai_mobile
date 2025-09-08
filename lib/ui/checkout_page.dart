@@ -54,9 +54,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
   CartResponse? cartResponse;
   ShippingResponse? shippingResponse;
   bool apiLoading = true;
-  bool addAddress = false;
+  bool addAddress = true;
   bool addPaymentMethod = false;
-  bool addShippingOption = true;
+  bool addShippingOption = false;
   RegisterResponse.Address? selectedAddress;
   String? pp_id;
   String? pp_title;
