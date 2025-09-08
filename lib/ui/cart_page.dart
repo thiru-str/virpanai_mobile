@@ -327,7 +327,10 @@ class _CartPageState extends State<CartPage>
                       message: AppStrings.cart_empty,
                       buttonText: AppStrings.explore_categories,
                       iconPath: AppAssets.ic_cart_empty,
-                      onButtonTap: () {})),
+                      showExplore: (widget.isFromBottomNav),
+                      onButtonTap: () {
+                        eventBus.fire(TabSwitchEvent(1));
+                      })),
     );
   }
 
