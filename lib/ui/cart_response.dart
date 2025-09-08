@@ -54,7 +54,7 @@ class Cart {
   num? originalShippingTaxTotal;
   num? originalShippingSubtotal;
   num? originalShippingTotal;
-  dynamic metadata;
+  Metadata? metadata;
   String? salesChannelId;
   String? shippingAddressId;
   String? customerId;
@@ -135,7 +135,7 @@ class Cart {
     originalShippingTaxTotal: json["original_shipping_tax_total"],
     originalShippingSubtotal: json["original_shipping_subtotal"],
     originalShippingTotal: json["original_shipping_total"],
-    metadata: json["metadata"],
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
     salesChannelId: json["sales_channel_id"],
     shippingAddressId: json["shipping_address_id"],
     customerId: json["customer_id"],
@@ -500,14 +500,21 @@ class Item {
 
 
 class Metadata {
-  Metadata();
+  String? customerDetails;
+
+  Metadata({
+    this.customerDetails,
+  });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    customerDetails: json["customer_details"],
   );
 
   Map<String, dynamic> toJson() => {
+    "customer_details": customerDetails,
   };
 }
+
 
 class Product {
   String? id;

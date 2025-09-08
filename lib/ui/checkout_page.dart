@@ -22,6 +22,8 @@ import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/shipping_method_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/show_create_customer_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/show_phone_bottom_sheet.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
@@ -54,12 +56,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
   CartResponse? cartResponse;
   ShippingResponse? shippingResponse;
   bool apiLoading = true;
+  bool checkOutLoading = false;
   bool addAddress = true;
-  bool addPaymentMethod = false;
-  bool addShippingOption = false;
+  bool addPaymentMethod = true;
+  bool addShippingOption = true;
+  bool addCustomerDetails = false;
   RegisterResponse.Address? selectedAddress;
   String? pp_id;
   String? pp_title;
+  String? customerData;
   bool placeOrderApiLoading = false;
   ShippingOption? shippingOption;
 
@@ -70,6 +75,23 @@ class _CheckOutPageState extends State<CheckOutPage> {
     // TODO: implement initState
     super.initState();
     cartResponse = widget.cartResponse;
+    String customerDetailsString = cartResponse?.cart?.metadata?.customerDetails??'';
+    if (customerDetailsString.isNotEmpty)
+    {
+      Map<String, dynamic> customerDetails = json.decode(customerDetailsString);
+
+      String firstName = customerDetails['first_name'] ?? '';
+      String email = customerDetails['email'] ?? '';
+
+      print('First Name: $firstName');
+      print('Email: $email');
+
+      setState(() {
+        addCustomerDetails = true;
+        customerData = '$firstName | $email';
+      });
+    }
+
     getShippingInfo();
   }
 
@@ -119,43 +141,57 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               //             },
                               //           ));
                               //     }),
+                              // CheckoutItemCard(
+                              //     title: AppStrings.shipping_method,
+                              //     subtitle: addShippingOption
+                              //         ? shippingOption?.name ??
+                              //             AppStrings.add_shipping_method
+                              //         : AppStrings.add_shipping_method,
+                              //     onTap: () async {
+                              //       if (!addAddress) {
+                              //         AppUtils.showToast(
+                              //             AppStrings.choose_shipping_address);
+                              //         return;
+                              //       }
+                              //       showShippingBottomSheet(context,
+                              //           shippingResponse!.shippingOptions!);
+                              //     }),
+                              // CheckoutItemCard(
+                              //     title: AppStrings.payemnt_method,
+                              //     subtitle: addPaymentMethod
+                              //         ? pp_title!
+                              //         : AppStrings.add_payment_method,
+                              //     onTap: () async {
+                              //       if (!addAddress) {
+                              //         AppUtils.showToast(
+                              //             AppStrings.choose_shipping_address);
+                              //         return;
+                              //       } else if (!addShippingOption) {
+                              //         AppUtils.showToast(
+                              //             AppStrings.choose_shipping_address);
+                              //         return;
+                              //       }
+                              //       Global? global = await getGlobal();
+                              //       if (global != null) {
+                              //         print(jsonEncode(global
+                              //             .toJson())); // Convert and print JSON
+                              //         showPaymentMethodsBottomSheet(
+                              //             context, global.paymentProvider!);
+                              //       }
+                              //     }),
                               CheckoutItemCard(
-                                  title: AppStrings.shipping_method,
-                                  subtitle: addShippingOption
-                                      ? shippingOption?.name ??
-                                          AppStrings.add_shipping_method
-                                      : AppStrings.add_shipping_method,
+                                  title: 'Customer Details',
+                                  subtitle: addCustomerDetails
+                                      ? customerData??''
+                                      : 'Add Customer Details',
                                   onTap: () async {
-                                    if (!addAddress) {
-                                      AppUtils.showToast(
-                                          AppStrings.choose_shipping_address);
-                                      return;
-                                    }
-                                    showShippingBottomSheet(context,
-                                        shippingResponse!.shippingOptions!);
-                                  }),
-                              CheckoutItemCard(
-                                  title: AppStrings.payemnt_method,
-                                  subtitle: addPaymentMethod
-                                      ? pp_title!
-                                      : AppStrings.add_payment_method,
-                                  onTap: () async {
-                                    if (!addAddress) {
-                                      AppUtils.showToast(
-                                          AppStrings.choose_shipping_address);
-                                      return;
-                                    } else if (!addShippingOption) {
-                                      AppUtils.showToast(
-                                          AppStrings.choose_shipping_address);
-                                      return;
-                                    }
-                                    Global? global = await getGlobal();
-                                    if (global != null) {
-                                      print(jsonEncode(global
-                                          .toJson())); // Convert and print JSON
-                                      showPaymentMethodsBottomSheet(
-                                          context, global.paymentProvider!);
-                                    }
+                                    showPhoneBottomSheet(
+                                      context: context,
+                                      onSubmit: (phoneNumber) {
+                                        debugPrint("Entered phone number: $phoneNumber");
+                                        getCustomerApi(phoneNumber);
+                                      },
+                                    );
                                   }),
                             ],
                           ),
@@ -215,7 +251,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 ? Center(
                     child: Lottie.asset(AppAssets.place_order_lottie,
                         fit: BoxFit.cover))
-                : CartButton(
+                : checkOutLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):CartButton(
                     amount: CurrencyUtil.appendCurrency(
                         (cartResponse?.cart?.total ?? 0).toStringAsFixed(2)),
                     title: AppStrings.place_order,
@@ -226,6 +262,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         AppUtils.showToast(AppStrings.add_shipping_method);
                       } else if (!addPaymentMethod) {
                         AppUtils.showToast(AppStrings.add_payment_method);
+                      }  else if (!addCustomerDetails) {
+                        AppUtils.showToast('Enter Customer Details');
                       } else {
                         // validations done proceed to place order
                         updatePaymentMethod(pp_id!);
@@ -339,11 +377,100 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         apiLoading = false;
       });
+
+      String customerDetailsString = cartResponse?.cart?.metadata?.customerDetails??'';
+      if (customerDetailsString.isNotEmpty) {
+        Map<String, dynamic> customerDetails = json.decode(customerDetailsString);
+
+        String firstName = customerDetails['first_name'] ?? '';
+        String email = customerDetails['email'] ?? '';
+
+        print('First Name: $firstName');
+        print('Email: $email');
+
+        setState(() {
+          addCustomerDetails = true;
+          customerData = '$firstName | $email';
+        });
+      }
     } catch (e) {
       setState(() {
         apiLoading = false;
       });
       print(e);
+    }
+  }
+
+  void getCustomerApi(String phoneNo) async {
+    try {
+      setState(() {
+        checkOutLoading = true;
+      });
+      final ApiService apiService = ApiService();
+      final response = await apiService.getCustomerDetails(context,phoneNo);
+      if(response.status??false){
+        setState(() {
+          addCustomerDetails = true;
+          checkOutLoading = false;
+          customerData = '${response.data?.firstName} | ${response.data?.email}';
+        });
+      }
+      else{
+        setState(() {
+          checkOutLoading = false;
+        });
+        showCreateCustomerBottomSheet(
+          context: context,
+          onSubmit: (name, phone, email) async {
+            debugPrint("Name: $name");
+            debugPrint("Phone: $phone");
+            debugPrint("Email: $email");
+            setState(() {
+              checkOutLoading = true;
+            });
+            final response = await apiService.createCustomerMetaData(context, name, phone, email!);
+            if (response.status ?? false) {
+              setState(() {
+                checkOutLoading = false;
+              });
+              try {
+                // Extract and parse the customer details
+                String customerDetailsString = response.metadata?.customerDetails ?? '';
+
+                if (customerDetailsString.isNotEmpty) {
+                  Map<String, dynamic> customerDetails = json.decode(customerDetailsString);
+
+                  String firstName = customerDetails['first_name'] ?? '';
+                  String email = customerDetails['email'] ?? '';
+
+                  print('First Name: $firstName');
+                  print('Email: $email');
+
+                  setState(() {
+                    addCustomerDetails = true;
+                    customerData = '$firstName | $email';
+                  });
+
+                  // You can now use these values in your app
+                } else {
+                  print('Customer details are empty');
+                }
+              } catch (e) {
+                print('Error parsing customer details: $e');
+              }
+            }
+            setState(() {
+              checkOutLoading = false;
+            });
+          },
+        );
+      }
+    } catch (e) {
+      print(e);
+    }finally{
+      setState(() {
+        checkOutLoading = false;
+      });
     }
   }
 

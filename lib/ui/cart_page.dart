@@ -97,7 +97,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         body: Column(
           children: [
             Visibility(
-              visible: cartResponse!.cart!.items!.isNotEmpty,
+              visible: false,
               child: DeliveryAddressWidget(
                 address: _buildShippingAddress(cartResponse),
                 label: null,

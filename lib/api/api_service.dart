@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/customer_detail_response.dart';
+import 'package:waioz/model/customer_meta_data_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
@@ -821,6 +823,21 @@ class ApiService {
     await addToken();
     return _makePostRequest('store/cancel-order/$orderId', null,
             (data) => CancelOrderResponse.fromJson(data),context);
+  }
+
+  Future<CustomerDetailResponse> getCustomerDetails(BuildContext context,String phone) async {
+    await addToken();
+    return _makePostRequest('store/check-customer-details', {"phone": phone},
+            (data) => CustomerDetailResponse.fromJson(data),context);
+  }
+
+  Future<CustomerMetaDataResponse> createCustomerMetaData(BuildContext context,String name,String phone,String email) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest('store/cart-metadata', {"cart_id": cartId,"phone": phone,"email": email,"first_name": name,"last_name": '',"metadata": {
+      "country_code":'+91',
+    }},
+            (data) => CustomerMetaDataResponse.fromJson(data),context);
   }
 
   Future<void> addToken() async {

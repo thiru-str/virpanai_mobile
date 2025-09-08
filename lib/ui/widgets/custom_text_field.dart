@@ -35,7 +35,7 @@ class CustomTextField extends StatelessWidget {
       obscureText: isPassword,
       keyboardType: keyboardType,
       maxLength: maxLength,
-      textCapitalization: TextCapitalization.sentences,
+      textCapitalization: keyboardType == TextInputType.emailAddress?TextCapitalization.none:TextCapitalization.sentences,
       maxLines: maxLines,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
