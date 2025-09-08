@@ -169,6 +169,29 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     print(value);
                   },
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (!_isResendVisible)
+                      Text(
+                        "Resend OTP in : 00:${_remainingSeconds.toString().padLeft(2, '0')}",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    if (_isResendVisible)
+                      GestureDetector(
+                        onTap:resendOtp,
+                        child: Text(
+                          "Resend OTP",
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
                 const SizedBox(height: 32),
               ],
             ),
@@ -191,6 +214,34 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             true, // Ensures keyboard does not cause overflow
       ),
     );
+  }
+
+  void sendOtp() async {
+    try {
+      setState(() {
+        apiCalling = true;
+      });
+      final ApiService apiService = ApiService();
+      final sendOtpResponse = await apiService.sendOtp(context, widget.countryCode, widget.phoneNo);
+
+      if ((sendOtpResponse.otp ?? '').isNotEmpty) {
+        setState(() {
+          _otpController.text = sendOtpResponse.otp ?? '';
+        });
+      }
+
+      setState(() {
+        apiCalling = false;
+      });
+
+
+
+    } catch (e) {
+      setState(() {
+        apiCalling = false;
+      });
+      print(e);
+    }
   }
 
   void verifyOtp() async {
