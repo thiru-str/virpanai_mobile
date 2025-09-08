@@ -38,7 +38,7 @@ class _ProductPageState extends State<ProductPage> {
   List<String> selectedCategoriesList = [];
 
   int currentPage = 0;
-  final int pageSize = 10;
+  final int pageSize = 20;
   bool hasMore = true;
   bool isPaginating = false;
   ScrollController scrollController = ScrollController();

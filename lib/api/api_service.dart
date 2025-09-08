@@ -293,7 +293,7 @@ class ApiService {
       String collectionId,
       String searchString, {
         int offset = 0,
-        int limit = 10,
+        int limit = 20,
       }) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, dynamic>{};
