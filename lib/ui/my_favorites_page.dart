@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
@@ -64,19 +65,14 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: GridView.builder(
+                    child: MasonryGridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16, // Space between columns
+                      mainAxisSpacing: 16, // Space between rows
                       scrollDirection: Axis.vertical,
                       itemCount: wishListResponse?.products?.length ?? 0,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // Number of columns
-                        crossAxisSpacing: 16, // Space between columns
-                        mainAxisSpacing: 16, // Space between rows
-                        childAspectRatio: (MediaQuery.of(context).size.width / 2) /
-                        (265 + 16 + 16 + 32 + 24), // Adjust this for proper card proportions
-                      ),
                       itemBuilder: (context, index) {
                         final product = wishListResponse!.products?[index];
                         return GestureDetector(
