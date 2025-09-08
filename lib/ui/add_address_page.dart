@@ -64,6 +64,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       firstNameController.text = address.firstName ?? '';
       lastNameController.text = address.lastName ?? '';
       phoneNumberController.text = address.phone ?? '';
+      streetAddressController.text = '${address.address1 ?? ''} ${address.address2 ?? ''}';
       cityController.text = address.city??'';
       stateController.text = address.province??'';
       zipCodeController.text = address.postalCode ?? '';
