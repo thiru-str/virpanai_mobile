@@ -149,15 +149,18 @@ class CartItemCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: onRemoveAll,
-                    child: const Text(
-                      "Remove All",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                        decorationColor: Colors.red,
-                        decoration: TextDecoration.underline,
+                  Visibility(
+                    visible: quantity>1,
+                    child: GestureDetector(
+                      onTap: onRemoveAll,
+                      child: const Text(
+                        "Remove All",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                          decorationColor: Colors.red,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),
