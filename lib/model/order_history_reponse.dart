@@ -806,9 +806,9 @@ class Summary {
 
 class PaymentCollection {
   String? status;
-  int? amount;
-  int? capturedAmount;
-  int? refundedAmount;
+  num? amount;
+  num? capturedAmount;
+  num? refundedAmount;
   String? id;
   List<Payment>? payments;
 
@@ -855,7 +855,7 @@ class Payment {
   DateTime? updatedAt;
   dynamic deletedAt;
   String? paymentSessionId;
-  int? amount;
+  num? amount;
 
   Payment({
     this.id,
