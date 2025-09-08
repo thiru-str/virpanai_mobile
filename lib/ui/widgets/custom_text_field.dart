@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -7,8 +8,10 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?) validator;
   final bool isPassword;
   final TextInputType keyboardType;
+  final int? maxLength; // Optional: Allows multi-line input
   final int maxLines; // Optional: Allows multi-line input
   final bool enabled; // Optional: Allows multi-line input
+  final List<TextInputFormatter>? inputFormatters;
 
 
   const CustomTextField({
@@ -18,8 +21,10 @@ class CustomTextField extends StatelessWidget {
     required this.validator,
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
+    this.maxLength,
     this.maxLines = 1, // Default single-line, can be changed
     this.enabled = true,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -29,8 +34,10 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType,
-      maxLines: maxLines,
+      maxLength: maxLength,
       textCapitalization: TextCapitalization.sentences,
+      maxLines: maxLines,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
