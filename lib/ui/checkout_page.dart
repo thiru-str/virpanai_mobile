@@ -409,6 +409,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       builder: (context) {
         return ShippingMethodBottomSheet(
           shippingOptions: shippingOptions,
+          selectedOption: shippingOption,
           onShippingSelected: (ShippingOption shippingOption) {
             setState(() {
               addShippingOption = true;
