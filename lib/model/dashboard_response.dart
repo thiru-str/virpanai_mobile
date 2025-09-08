@@ -10,6 +10,7 @@ String dashboardResponseToJson(DashboardResponse data) => json.encode(data.toJso
 
 class DashboardResponse {
   String? totalRevenue;
+  num? rawTotalRevenue;
   int? totalOrders;
   int? deliveredOrders;
   int? pendingOrders;
@@ -18,6 +19,7 @@ class DashboardResponse {
 
   DashboardResponse({
     this.totalRevenue,
+    this.rawTotalRevenue,
     this.totalOrders,
     this.deliveredOrders,
     this.pendingOrders,
@@ -27,6 +29,7 @@ class DashboardResponse {
 
   factory DashboardResponse.fromJson(Map<String, dynamic> json) => DashboardResponse(
     totalRevenue: json["total_revenue"],
+    rawTotalRevenue: json["raw_total_revenue"],
     totalOrders: json["total_orders"],
     deliveredOrders: json["delivered_orders"],
     pendingOrders: json["pending_orders"],
@@ -36,6 +39,7 @@ class DashboardResponse {
 
   Map<String, dynamic> toJson() => {
     "total_revenue": totalRevenue,
+    "raw_total_revenue": rawTotalRevenue,
     "total_orders": totalOrders,
     "delivered_orders": deliveredOrders,
     "pending_orders": pendingOrders,

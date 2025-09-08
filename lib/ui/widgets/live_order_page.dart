@@ -96,7 +96,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                 alignment: Alignment.center,
                 children: [
                   SvgPicture.asset(
-                    AppAssets.order_bg,
+                    (_liveOrdersResponse?.rawLedgerBalance??0)>=0?AppAssets.order_bg:AppAssets.order_bg_red,
                     height: 120,
                     fit: BoxFit.fill,
                   ),

@@ -76,7 +76,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0),
                       child: SvgPicture.asset(
-                        AppAssets.order_bg,
+                        (_dashboardResponse?.rawTotalRevenue??0)>=0?AppAssets.order_bg:AppAssets.order_bg_red,
                         height: 120,
                         fit: BoxFit.fill,
                       ),
