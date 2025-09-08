@@ -47,7 +47,7 @@ class _Item2State extends State<Item2> {
                     RedirectUtils.handleContentRedirect(
                       context: context,
                       layoutOption: widget.content?.layoutOption ?? "",
-                      layoutData: layoutData,
+                      layoutData: layoutData!,
                     );
                   },
                   child: ClipRRect(

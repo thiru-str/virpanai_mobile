@@ -75,7 +75,7 @@ class Banner2 extends StatelessWidget {
                     RedirectUtils.handleContentRedirect(
                       context: context,
                       layoutOption: content.layoutOption??'',
-                      layoutData: layoutData,
+                      layoutData: layoutData!,
                     );
                   },
                   child: isVideo
