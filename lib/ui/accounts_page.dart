@@ -27,6 +27,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
   List<ContentData> storeContentList = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -128,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
           // Profile Items Section
           Expanded(
-            child: ListView(
+            child: isLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,)):ListView(
               children: [
                 _buildProfileItem(AppStrings.address, () {
                   PageRouteUtils.pushWithSlide(context,
@@ -196,10 +197,21 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> fetchStoreContentAPI() async {
-    final storeContent = await ApiService().getStoreContent(context);
-    setState(() {
-      storeContentList = storeContent.data ?? [];
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      final storeContent = await ApiService().getStoreContent(context);
+      setState(() {
+            storeContentList = storeContent.data ?? [];
+          });
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<Customer?> getCustomerResponse() async {
