@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/ui/filter_page.dart';
 import 'package:waioz/ui/product_detail_page.dart';
@@ -229,39 +230,27 @@ class _ProductPageState extends State<ProductPage> {
                       );
                     }
 
-                    return GridView.builder(
+                    return MasonryGridView.count(
                       controller: scrollController,
                       padding: EdgeInsets.zero,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio:
-                            (MediaQuery.of(context).size.width / 2) /
-                                (265 + 16 + 16 + 32 + 24),
-                      ),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
                       itemCount: filteredProducts.length + (isPaginating ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == filteredProducts.length && isPaginating) {
-                          return Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: CircularProgressIndicator(color: AppColors.primary,),
-                            ),
+                          return const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(child: CircularProgressIndicator()),
                           );
                         }
-
                         final product = filteredProducts[index];
                         return ProductCard(
-                          imageUrl: product.thumbnail!,
-                          title: product.title ?? "",
-                          price: (product.variants?.isNotEmpty ?? false)
-                              ? CurrencyUtil.appendCurrency(product
-                                      .variants?[0]
-                                      .calculatedPrice
-                                      ?.rawCalculatedAmount
-                                      ?.value ??
-                                  '')
+                          imageUrl: product.thumbnail ?? '',
+                          title: product.title ?? '',
+                          price: product.variants!.isNotEmpty
+                              ? CurrencyUtil.appendCurrency(
+                              product.variants?[0].calculatedPrice?.rawCalculatedAmount?.value ?? '')
                               : '',
                           onTapCard: () {
                             PageRouteUtils.pushWithSlide(
