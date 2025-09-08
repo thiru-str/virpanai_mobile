@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
@@ -62,47 +63,36 @@ class _CategoryPageState extends State<CategoryPage> {
                       height: 10,
                     ),
                     Expanded(
-                      child: GridView.builder(
-                        scrollDirection: Axis.vertical,
-                        itemCount: productCategoriesResponse
-                                ?.productCategories?.length ??
-                            0,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio:
-                              (MediaQuery.of(context).size.width / 2) /
-                                  (200 + 12 + 12),
-                        ),
+                      child: MasonryGridView.count(
+                        crossAxisCount: 2,
+                        itemCount: productCategoriesResponse!.productCategories!.length,
                         itemBuilder: (context, index) {
-                          final productCategory = productCategoriesResponse
-                              ?.productCategories?[index];
+                          final productCategory =
+                          productCategoriesResponse!.productCategories![index];
+
                           return CategoryCard(
-                              imagePath: productCategory?.image ?? '',
-                              title: productCategory?.name ?? "",
-                              onTap: () {
-                                if ((productCategory
-                                        ?.categoryChildren?.isNotEmpty ??
-                                    false)) {
-                                  PageRouteUtils.pushWithFade(
-                                      context,
-                                      SubCategoryPage(
-                                        categoryTitle:
-                                            productCategory?.name ?? "",
-                                        productCategory:
-                                            productCategory?.categoryChildren ??
-                                                [],
-                                      ));
-                                } else {
-                                  PageRouteUtils.pushWithFade(
-                                      context,
-                                      ProductPage(
-                                        categoryId: productCategory!.id!,
-                                      ));
-                                }
-                              });
+                            imagePath: productCategory.image ?? '',
+                            title: productCategory.name!,
+                            onTap: () {
+                              if (productCategory.categoryChildren!.isNotEmpty) {
+                                PageRouteUtils.pushWithFade(
+                                  context,
+                                  SubCategoryPage(
+                                    categoryTitle: productCategory.name!,
+                                    productCategory: productCategory.categoryChildren!,
+                                  ),
+                                );
+                              } else {
+                                PageRouteUtils.pushWithFade(
+                                  context,
+                                  ProductPage(categoryId: productCategory.id!),
+                                );
+                              }
+                            },
+                          );
                         },
                       ),
-                    ),
+                    )
                   ],
                 ),
               ));
