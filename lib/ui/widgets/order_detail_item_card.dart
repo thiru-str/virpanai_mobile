@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/image_fallback_widget.dart';
+
+import '../../utility/app_assets.dart';
 
 class OrderDetailItemCard extends StatelessWidget {
   final String imageUrl;
@@ -30,21 +32,17 @@ class OrderDetailItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Row(
-        mainAxisAlignment:
-            MainAxisAlignment.center, // Vertically center the content in Column
+        mainAxisAlignment: MainAxisAlignment.center, // Vertically center the content in Column
         children: [
           // Product Image
           ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: CachedNetworkImage(
-              imageUrl: imageUrl,
+              imageUrl:imageUrl,
               width: 60,
               height: 60,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) =>const ImageFallbackWidget(
-                w: 60,
-                h: 60,
-              ),
+              errorWidget: (context, _, __) => _fallbackWidget(),
             ),
           ),
           const SizedBox(width: 12.0),
@@ -66,11 +64,14 @@ class OrderDetailItemCard extends StatelessWidget {
                 // Product Size and Color
                 Row(
                   children: [
-                    Text(
-                      size,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
+                    Expanded(
+                      child: Text(
+                        size,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                   ],
@@ -91,4 +92,18 @@ class OrderDetailItemCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fallbackWidget() {
+    return Container(
+      height: 60,
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 30,
+        height: 30,
+      ),
+    );
+  }
+
 }
