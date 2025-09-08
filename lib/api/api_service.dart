@@ -294,19 +294,28 @@ class ApiService {
         int limit = 10,
       }) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    final queryParams = <String, String>{};
+    final queryParams = <String, dynamic>{};
 
     if (regionId != null && regionId.isNotEmpty) {
       queryParams['region_id'] = regionId;
     }
 
     if (categoryId.trim().isNotEmpty) {
-      queryParams['category_id[]'] = categoryId;
+      final categories =
+      categoryId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (categories.isNotEmpty) {
+        queryParams['category_id[]'] = categories;
+      }
     }
 
-    if (collectionId.isNotEmpty) {
-      queryParams['collection_id[]'] = collectionId;
+    if (collectionId.trim().isNotEmpty) {
+      final collections =
+      collectionId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (collections.isNotEmpty) {
+        queryParams['collection_id[]'] = collections;
+      }
     }
+
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
