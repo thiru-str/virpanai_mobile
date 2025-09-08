@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 class FullscreenImageCarousel extends StatefulWidget {
   final List<dynamic> imageUrls;
@@ -29,7 +30,7 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
 
   void _nextPage() {
     if (_currentIndex == widget.imageUrls.length - 1) {
-      _pageController.jumpToPage(0);  // Loop back to the first image
+      _pageController.jumpToPage(0); // Loop back to the first image
     } else {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -40,7 +41,8 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
 
   void _previousPage() {
     if (_currentIndex == 0) {
-      _pageController.jumpToPage(widget.imageUrls.length - 1);  // Loop back to the last image
+      _pageController.jumpToPage(
+          widget.imageUrls.length - 1); // Loop back to the last image
     } else {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -54,18 +56,19 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        automaticallyImplyLeading: false,
-        actions: [Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ),]
-      ),
+          backgroundColor: Colors.black,
+          automaticallyImplyLeading: false,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ]),
       body: Stack(
         children: [
           PageView.builder(
@@ -80,6 +83,7 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
               return CachedNetworkImage(
                 imageUrl: widget.imageUrls[index].url!,
                 fit: BoxFit.contain,
+                errorWidget: (context, url, error) => ImageFallbackWidget(),
               );
             },
           ),
@@ -99,7 +103,8 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
                   style: const TextStyle(color: Colors.white),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                  icon:
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white),
                   onPressed: _nextPage,
                 ),
               ],

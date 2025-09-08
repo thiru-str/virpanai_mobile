@@ -52,7 +52,7 @@ class Order {
   num? displayId;
   num? total;
   String? currencyCode;
-  dynamic metadata;
+  Metadata? metadata;
   DateTime? createdAt;
   DateTime? updatedAt;
   num? subtotal;
@@ -91,7 +91,7 @@ class Order {
     displayId: json["display_id"],
     total: json["total"],
     currencyCode: json["currency_code"],
-    metadata: json["metadata"],
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     subtotal: json["subtotal"],
@@ -111,7 +111,7 @@ class Order {
     "display_id": displayId,
     "total": total,
     "currency_code": currencyCode,
-    "metadata": metadata,
+    "metadata": metadata?.toJson(),
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "subtotal": subtotal,
@@ -121,6 +121,22 @@ class Order {
     "payment_collections": paymentCollections == null ? [] : List<dynamic>.from(paymentCollections!.map((x) => x.toJson())),
     "cart": cart?.toJson(),
     "payment_status": paymentStatus,
+    "fulfillment_status": fulfillmentStatus,
+  };
+}
+
+class Metadata {
+  String? fulfillmentStatus;
+
+  Metadata({
+    this.fulfillmentStatus,
+  });
+
+  factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    fulfillmentStatus: json["fulfillment_status"],
+  );
+
+  Map<String, dynamic> toJson() => {
     "fulfillment_status": fulfillmentStatus,
   };
 }
@@ -712,17 +728,6 @@ class Detail {
     "written_off_quantity": writtenOffQuantity,
   };
 }
-
-class Metadata {
-  Metadata();
-
-  factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
-  );
-
-  Map<String, dynamic> toJson() => {
-  };
-}
-
 class Summary {
   num? paidTotal;
   num? differenceSum;
@@ -801,9 +806,9 @@ class Summary {
 
 class PaymentCollection {
   String? status;
-  int? amount;
-  int? capturedAmount;
-  int? refundedAmount;
+  num? amount;
+  num? capturedAmount;
+  num? refundedAmount;
   String? id;
   List<Payment>? payments;
 
@@ -850,7 +855,7 @@ class Payment {
   DateTime? updatedAt;
   dynamic deletedAt;
   String? paymentSessionId;
-  int? amount;
+  num? amount;
 
   Payment({
     this.id,

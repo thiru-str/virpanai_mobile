@@ -19,6 +19,7 @@ class PublicDetailsResponse {
   String? restrictLocationBy;
   BankDetails? bankDetails;
   UpiDetails? upiDetails;
+  StoreDetails? storeDetails;
 
   PublicDetailsResponse({
     this.maintainance,
@@ -31,6 +32,7 @@ class PublicDetailsResponse {
     this.restrictLocationBy,
     this.bankDetails,
     this.upiDetails,
+    this.storeDetails,
   });
 
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
@@ -44,6 +46,7 @@ class PublicDetailsResponse {
     restrictLocationBy: json["restrictLocationBy"],
     bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
     upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
+      storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"])
   );
 
   Map<String, dynamic> toJson() => {
@@ -57,6 +60,43 @@ class PublicDetailsResponse {
     "restrictLocationBy": restrictLocationBy,
     "bankDetails": bankDetails?.toJson(),
     "upiDetails": upiDetails?.toJson(),
+    "storeDetails": storeDetails?.toJson(),
+  };
+}
+
+class StoreDetails {
+  StoreMetadata? storeMetadata;
+
+  StoreDetails({
+    this.storeMetadata,
+  });
+
+  factory StoreDetails.fromJson(Map<String, dynamic> json) => StoreDetails(
+    storeMetadata: json["storeMetadata"] == null ? null : StoreMetadata.fromJson(json["storeMetadata"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "storeMetadata": storeMetadata?.toJson(),
+  };
+}
+
+class StoreMetadata {
+  bool? skipLogin;
+  int? minimumOrderValue;
+
+  StoreMetadata({
+    this.skipLogin,
+    this.minimumOrderValue,
+  });
+
+  factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
+    skipLogin: json["skip_login"],
+    minimumOrderValue: json["minimum_order_value"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "skip_login": skipLogin,
+    "minimum_order_value": minimumOrderValue,
   };
 }
 

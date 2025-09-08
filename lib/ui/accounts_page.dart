@@ -3,6 +3,7 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
@@ -52,13 +53,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Container(
                     child: Center(
                       child: Text(
-                          (customer?.firstName ?? "C").substring(0, 1), // The letter to display
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        )
-                      ),
+                          (customer?.firstName ?? "C")
+                              .substring(0, 1), // The letter to display
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )),
                     ),
                   ),
                 ),
@@ -66,7 +67,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary,
+                    border: Border.all(color: AppColors.primary, width: 1.5),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Row(
@@ -78,7 +79,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           children: [
                             Text(
                               customer != null
-                                  ? '${customer!.firstName!} ${customer!.lastName}'
+                                  ? '${customer?.firstName} ${customer?.lastName}'
                                   : '',
                               overflow: TextOverflow.ellipsis,
                               style: FontUtils.primaryFontStyle(
@@ -89,7 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              customer != null ? customer!.email! : '',
+                              customer?.email ?? "",
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
                                 color: Colors.black54,
@@ -101,7 +102,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       // Edit Button
                       TextButton(
                         onPressed: () async {
-                          final result = await PageRouteUtils.pushWithSlide(context, EditProfilePage());
+                          final result = await PageRouteUtils.pushWithSlide(
+                              context, EditProfilePage());
                           if (result == true) {
                             setState(() {
                               getCustomerInfo();
@@ -129,7 +131,8 @@ class _SettingsPageState extends State<SettingsPage> {
             child: ListView(
               children: [
                 _buildProfileItem(AppStrings.address, () {
-                  PageRouteUtils.pushWithSlide(context, AddressListPage(onSelectedAddress: (address) {}));
+                  PageRouteUtils.pushWithSlide(context,
+                      AddressListPage(onSelectedAddress: (address) {}));
                 }),
                 _buildProfileItem(AppStrings.favourites, () {
                   PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
@@ -137,14 +140,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 _buildProfileItem(AppStrings.orders, () {
                   PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
                 }),
-                ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
-                  if (contentItem.content?.data != null) {
-                    PageRouteUtils.pushWithSlide(
-                      context,
-                      StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
-                    );
-                  }
-                }))
+                ...storeContentList.map((contentItem) =>
+                    _buildProfileItem(contentItem.name ?? "Unknown", () {
+                      if (contentItem.content?.data != null) {
+                        PageRouteUtils.pushWithSlide(
+                          context,
+                          StaticPage(
+                              pageTitle: contentItem.name ?? "",
+                              htmlData: contentItem.content!.data!),
+                        );
+                      }
+                    }))
               ],
             ),
           ),
@@ -213,10 +219,15 @@ class _SettingsPageState extends State<SettingsPage> {
           content: AppStrings.signout_confirm_msg,
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
-          onTapOk: () {
+          onTapOk: () async {
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
-            SharedPreferencesUtil().clear();
-            PageRouteUtils.pushAndRemoveUntil(context, PhoneNumberPage());
+            await SharedPreferencesUtil().clear();
+            if (mounted) {
+              PageRouteUtils.pushAndRemoveUntil(
+                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+            }
           },
         );
       },

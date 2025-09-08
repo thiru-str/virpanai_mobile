@@ -54,7 +54,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   CartResponse? cartResponse;
   ShippingResponse? shippingResponse;
   bool apiLoading = true;
-  bool addAddress = false;
+  bool addAddress = true;
   bool addPaymentMethod = false;
   bool addShippingOption = false;
   RegisterResponse.Address? selectedAddress;
@@ -99,32 +99,32 @@ class _CheckOutPageState extends State<CheckOutPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // CheckoutItemCard(
+                              //     title: AppStrings.shipping_address,
+                              //     subtitle: addAddress
+                              //         ? selectedAddress!.address1!
+                              //         : AppStrings.add_shipping_address,
+                              //     onTap: () {
+                              //       PageRouteUtils.pushWithSlide(
+                              //           context,
+                              //           AddressListPage(
+                              //             isFromCheckout: true,
+                              //             onSelectedAddress: (address) {
+                              //               setState(() {
+                              //                 addAddress = true;
+                              //                 selectedAddress = address;
+                              //                 apiLoading = true;
+                              //               });
+                              //               updateAddress(address);
+                              //             },
+                              //           ));
+                              //     }),
                               CheckoutItemCard(
-                                  title: AppStrings.shipping_address,
-                                  subtitle: addAddress
-                                      ? selectedAddress!.address1!
-                                      : AppStrings.add_shipping_address,
-                                  onTap: () {
-                                    PageRouteUtils.pushWithSlide(
-                                        context,
-                                        AddressListPage(
-                                          isFromCheckout: true,
-                                          onSelectedAddress: (address) {
-                                            setState(() {
-                                              addAddress = true;
-                                              selectedAddress = address;
-                                              apiLoading = true;
-                                            });
-                                            updateAddress(address);
-                                            },
-                                        ));
-                                  }),
-                              CheckoutItemCard(
-                                  title:  AppStrings.shipping_method,
+                                  title: AppStrings.shipping_method,
                                   subtitle: addShippingOption
                                       ? shippingOption?.name ??
-                                           AppStrings.add_shipping_method
-                                      :  AppStrings.add_shipping_method,
+                                          AppStrings.add_shipping_method
+                                      : AppStrings.add_shipping_method,
                                   onTap: () async {
                                     if (!addAddress) {
                                       AppUtils.showToast(
@@ -138,15 +138,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                   title: AppStrings.payemnt_method,
                                   subtitle: addPaymentMethod
                                       ? pp_title!
-                                      :  AppStrings.add_payment_method,
+                                      : AppStrings.add_payment_method,
                                   onTap: () async {
                                     if (!addAddress) {
                                       AppUtils.showToast(
-                                         AppStrings.choose_shipping_address);
+                                          AppStrings.choose_shipping_address);
                                       return;
                                     } else if (!addShippingOption) {
                                       AppUtils.showToast(
-                                            AppStrings.choose_shipping_address);
+                                          AppStrings.choose_shipping_address);
                                       return;
                                     }
                                     Global? global = await getGlobal();
@@ -189,8 +189,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                   cartResponse!.cart!.shippingSubtotal! > 0,
                               child: CartCalculation(
                                 keyText: '${AppStrings.shipping}:',
-                                valueText:
-                                    CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
+                                valueText: CurrencyUtil.appendCurrency(
+                                    cartResponse!.cart!.shippingSubtotal!
+                                        .toStringAsFixed(2)),
                               )),
                           CartCalculation(
                             keyText: '${AppStrings.tax}:',
@@ -216,8 +217,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         fit: BoxFit.cover))
                 : CartButton(
                     amount: CurrencyUtil.appendCurrency(
-                        cartResponse!.cart!.total!.toStringAsFixed(2)),
-                    title:AppStrings.place_order,
+                        (cartResponse?.cart?.total ?? 0).toStringAsFixed(2)),
+                    title: AppStrings.place_order,
                     onPressed: () {
                       if (!addAddress) {
                         AppUtils.showToast(AppStrings.add_shipping_address);
@@ -290,13 +291,12 @@ class _CheckOutPageState extends State<CheckOutPage> {
         paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: clientSecret,
             merchantDisplayName: AppConfig.appName,
-
             googlePay: const PaymentSheetGooglePay(
               merchantCountryCode: AppStrings.country_code,
               testEnv: true,
             ),
             style: ThemeMode.light,
-            appearance:  PaymentSheetAppearance(
+            appearance: PaymentSheetAppearance(
                 primaryButton: PaymentSheetPrimaryButtonAppearance(
                     colors: PaymentSheetPrimaryButtonTheme(
                         light: PaymentSheetPrimaryButtonThemeColors(
@@ -319,13 +319,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void makeNEFTPayCall() {
     CustomPopupWidget.show(
       context,
-      title:AppStrings.neft_payment_instruct,
-      
-      description:AppStrings.neft_payment_desc,
-      
-      buttonText:AppStrings.place_your_order,
+      title: AppStrings.neft_payment_instruct,
+      description: AppStrings.neft_payment_desc,
+      buttonText: AppStrings.place_your_order,
       icon: Icons.info,
-      onConfirm: (){
+      onConfirm: () {
         setState(() {
           placeOrderApiLoading = true;
         });
@@ -333,6 +331,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       },
     );
   }
+
   void getCartApi() async {
     try {
       final ApiService apiService = ApiService();
@@ -387,6 +386,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       builder: (context) {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
+          providerId: pp_id,
           onPaymentSelected: (PaymentProvider paymentProvider) {
             setState(() {
               addPaymentMethod = true;
@@ -410,6 +410,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       builder: (context) {
         return ShippingMethodBottomSheet(
           shippingOptions: shippingOptions,
+          selectedOption: shippingOption,
           onShippingSelected: (ShippingOption shippingOption) {
             setState(() {
               addShippingOption = true;
@@ -447,7 +448,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+      PageRouteUtils.pushAndRemoveUntil(context,  OrderPlacedPage(orderId: '',));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
@@ -459,11 +460,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
   void completeCart() async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.completeCart(context);
+      final response = await apiService.completeCart(context);
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+      PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../utility/app_assets.dart';
+import '../../utility/page_route_utils.dart';
 
 class CommonHeader extends StatelessWidget {
   final String headerType;
@@ -39,7 +41,7 @@ class CommonHeader extends StatelessWidget {
           "header-4" => _buildHeader4(),
           "header-5" => _buildHeader5(),
           "header-6" => _buildHeader6(),
-          "header-7" => _buildHeader7(),
+          "header-7" => _buildHeader7(context),
           _ => _buildHeader1(), // Default case
         },
       ],
@@ -182,35 +184,40 @@ class CommonHeader extends StatelessWidget {
 
 
   /// Header 7: Profile + Address + Search Bar
-  Widget _buildHeader7() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _buildIcon(Icons.account_circle,color: Colors.grey, size: 40),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children:  [
-                Text(AppStrings.fast_delivery,
-                    style: FontUtils.secondaryFontStyle(fontWeight: FontWeight.bold, color: AppColors.textColor)),
-                Row(
-                    mainAxisSize: MainAxisSize.min,
-                  children: [Text(title.isEmpty ? "14/1, 3rd Cross Street, P And..." : title,
-                      style: FontUtils.secondaryFontStyle(color: AppColors.textColor)),
-                    const SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down, color: AppColors.textColor, size: 20),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 4,),
-        _buildSearchBar(),
-      ],
+  Widget _buildHeader7(BuildContext context) {
+    return GestureDetector(
+      onTap: (){
+        PageRouteUtils.pushWithSlide(context, SearchAddressPage());
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildIcon(Icons.account_circle,color: Colors.grey, size: 40),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children:  [
+                  Text(AppStrings.fast_delivery,
+                      style: FontUtils.secondaryFontStyle(fontWeight: FontWeight.bold, color: AppColors.textColor)),
+                  Row(
+                      mainAxisSize: MainAxisSize.min,
+                    children: [Text(title.isEmpty ? "14/1, 3rd Cross Street, P And..." : title,
+                        style: FontUtils.secondaryFontStyle(color: AppColors.textColor)),
+                      const SizedBox(width: 4),
+                      Icon(Icons.keyboard_arrow_down, color: AppColors.textColor, size: 20),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 4,),
+          _buildSearchBar(),
+        ],
+      ),
     );
   }
 

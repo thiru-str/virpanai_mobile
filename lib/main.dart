@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -35,8 +36,10 @@ Future<void> main() async {
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
-  await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
+  await SharedPreferencesUtil().saveBool('google_map_usage', false);
   await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
+  bool skipLogin = publicDetailsResponse.storeDetails?.storeMetadata?.skipLogin?? false;
+  await SharedPreferencesUtil().saveBool('skip_login', skipLogin);
 
 
   FontUtils.updateFonts(
@@ -51,17 +54,18 @@ Future<void> main() async {
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
-  runApp( HomeScreen());
+  runApp(HomeScreen(skipLogin: skipLogin,));
 }
 
 class HomeScreen extends StatelessWidget {
-   HomeScreen({super.key});
+   final bool skipLogin;
+   HomeScreen({super.key,this.skipLogin = false});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return  MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashPage(),
+      home: SplashPage(skipLogin: skipLogin),
     );
   }
 

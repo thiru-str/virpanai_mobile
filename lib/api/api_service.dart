@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
@@ -24,6 +25,7 @@ import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/shipping_response.dart';
+import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -31,6 +33,8 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/cancel_order_response.dart';
+import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../ui/phone_number_page.dart';
 import '../utility/app_utils.dart';
@@ -285,28 +289,53 @@ class ApiService {
   }
 
   Future<ProductsResponse> listProducts(
-      BuildContext context, String categoryId, String collectionId) async {
+      BuildContext context,
+      String categoryId,
+      String collectionId,
+      String searchString, {
+        int offset = 0,
+        int limit = 20,
+      }) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    final queryParams = <String, String>{};
+    final queryParams = <String, dynamic>{};
+
     if (regionId != null && regionId.isNotEmpty) {
       queryParams['region_id'] = regionId;
     }
 
     if (categoryId.trim().isNotEmpty) {
-      queryParams['category_id[]'] = categoryId;
+      final categories =
+      categoryId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (categories.isNotEmpty) {
+        queryParams['category_id[]'] = categories;
+      }
     }
 
-    if (collectionId.isNotEmpty) {
-      queryParams['collection_id[]'] = collectionId;
+    if (collectionId.trim().isNotEmpty) {
+      final collections =
+      collectionId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (collections.isNotEmpty) {
+        queryParams['collection_id[]'] = collections;
+      }
     }
+
+
+    if (searchString.isNotEmpty) {
+      queryParams['q'] = searchString;
+    }
+
+    queryParams['offset'] = offset.toString();
+    queryParams['limit'] = limit.toString();
+
     return _makeGetRequest<ProductsResponse>(
       'store/products',
       null,
       queryParams,
-      (json) => ProductsResponse.fromJson(json),
+          (json) => ProductsResponse.fromJson(json),
       context,
     );
   }
+
 
   Future<ProductsResponse> listBrands(
       BuildContext context, String tagId) async {
@@ -325,7 +354,7 @@ class ApiService {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makeGetRequest<ProductDetailReponse>(
       'store/products',
-      productId,
+      '$productId?fields=+variants.inventory_quantity',
       {"region_id": regionId},
       (json) => ProductDetailReponse.fromJson(json),
       context,
@@ -368,7 +397,7 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v4',
+      'store/get_home_page/v7',
         null,
       (json) => HomePageResponse.fromJson(json),
       context,
@@ -488,6 +517,17 @@ class ApiService {
     );
   }
 
+  Future<CartResponse> removePromoCode(
+      BuildContext context,List<String> promoCodes) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeDeleteRequest(
+      'store/carts/$cartId/promotions', null,{"promo_codes": promoCodes},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> addFavourite(
       BuildContext context, String productId) async {
     await addToken();
@@ -539,7 +579,7 @@ class ApiService {
       'store/carts/$cartId/line-items/$cartItemId',
       null,
       null,
-      (json) => DeleteResponse.fromJson(json),
+          (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
@@ -645,14 +685,14 @@ class ApiService {
     );
   }
 
-  Future<dynamic> completeCart(
+  Future<PlaceOrderResponse> completeCart(
       BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId/complete',
       null,
-          (json) => json,
+          (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }
@@ -737,11 +777,51 @@ class ApiService {
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<RelatedProductsResponse>(
-      'store/related-product/${productId}',
+      'store/related-product/$productId',
       {"region_id": regionId},
           (json) => RelatedProductsResponse.fromJson(json),
       context,
     );
+  }
+
+  Future<UpSellProductsResponse> upSellingProducts(
+      BuildContext context) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest<UpSellProductsResponse>(
+      'store/up-selling-product/$cartId',
+      {"region_id": regionId},
+          (json) => UpSellProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<AddOnProductsResponse> addOnProducts(
+      BuildContext context,String productId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makePostRequest<AddOnProductsResponse>(
+      'store/addon-product/$productId',
+      {"region_id": regionId},
+          (json) => AddOnProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
+    await addToken();
+    return _makeGetRequest<OrderHistoryIndividualReponse>(
+      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
+      null,
+      null,
+          (json) => OrderHistoryIndividualReponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
+    await addToken();
+    return _makePostRequest('store/cancel-order/$orderId', null,
+            (data) => CancelOrderResponse.fromJson(data),context);
   }
 
   Future<void> addToken() async {

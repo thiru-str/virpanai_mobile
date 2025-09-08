@@ -57,6 +57,7 @@ class Product {
   dynamic material;
   DateTime? createdAt;
   DateTime? updatedAt;
+  dynamic? metadata;
   dynamic type;
   Tion? collection;
   List<Image>? options;
@@ -65,6 +66,7 @@ class Product {
   List<Variant>? variants;
   List<ProductWishlistElement>? productReview;
   ProductWishlistElement? productWishlist;
+  bool isSelected;
 
   Product({
     this.id,
@@ -87,6 +89,7 @@ class Product {
     this.material,
     this.createdAt,
     this.updatedAt,
+    this.metadata,
     this.type,
     this.collection,
     this.options,
@@ -95,6 +98,7 @@ class Product {
     this.variants,
     this.productReview,
     this.productWishlist,
+    this.isSelected = false,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -118,6 +122,7 @@ class Product {
     material: json["material"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    metadata: json["metadata"],
     type: json["type"],
     collection: json["collection"] == null ? null : Tion.fromJson(json["collection"]),
     options: json["options"] == null ? [] : List<Image>.from(json["options"]!.map((x) => Image.fromJson(x))),
@@ -150,6 +155,7 @@ class Product {
     "material": material,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
+    "metadata": metadata,
     "type": type,
     "collection": collection?.toJson(),
     "options": options == null ? [] : List<dynamic>.from(options!.map((x) => x.toJson())),

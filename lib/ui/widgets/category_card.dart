@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 class CategoryCard extends StatelessWidget {
   final String imagePath;
@@ -25,7 +27,8 @@ class CategoryCard extends StatelessWidget {
           margin: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: Colors.white, // Set the background to white
-            borderRadius: BorderRadius.circular(16.0), // Adjusted for rounded corners
+            borderRadius:
+                BorderRadius.circular(16.0), // Adjusted for rounded corners
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1), // Light shadow
@@ -44,17 +47,26 @@ class CategoryCard extends StatelessWidget {
                   topRight: Radius.circular(16.0),
                 ),
                 child: imagePath.isNotEmpty
-                    ? Image.network(
-                  imagePath,
-                  height: 140, // Adjusted image height
-                  width: double.infinity, // Take full width
-                  fit: BoxFit.cover, // Fill the card space
-                )
+                    ? CachedNetworkImage(
+                        imageUrl: imagePath,
+                        height: 140, // Adjusted image height
+                        width: double.infinity, // Take full width
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) =>
+                            const ImageFallbackWidget(
+                          w: double.infinity,
+                          h: 140,
+                        ), // Fill the card space
+                      )
                     : Container(
-                  height: 140,
-                  width: double.infinity,
-                  color: Colors.grey[200], // Placeholder background
-                ),
+                        height: 140,
+                        width: double.infinity,
+                        color: Colors.grey[200],
+                        child: const ImageFallbackWidget(
+                          w: 110,
+                          h: 110,
+                        ), // Placeholder background
+                      ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -75,7 +87,6 @@ class CategoryCard extends StatelessWidget {
     );
   }
 
-
   /// Generates a color with the given base color and opacity.
   Color generateBackgroundColor(Color baseColor, double opacity) {
     return baseColor.withOpacity(opacity);
@@ -90,5 +101,5 @@ class CategoryCard extends StatelessWidget {
       random.nextInt(256), // Green value
       random.nextInt(256), // Blue value
     );
-}
+  }
 }

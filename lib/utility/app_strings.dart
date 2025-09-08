@@ -61,6 +61,7 @@ class AppStrings {
   static const String product = 'Product';
   static const String category = 'Category';
   static const String brand = 'Brand';
+  static const String custom = 'Custom';
   static const String delete = 'DELETE';
   static const String order = 'ORDER';
 
@@ -76,10 +77,10 @@ class AppStrings {
   static const String currency_symbol = 'currency_symbol';
   static const String view_cart = ' View Cart';
 
-  static const String state = "state";
-  static const String city = "city";
+  static const String state = "State";
+  static const String city = "City";
   static const String zip_code = "Postal Code";
-  static const String phone_number = "phone number";
+  static const String phone_number = "Phone number";
 
   static const String phone_number_required = "phone numer is required";
   static const String lastname_required = "Lastname is required";
@@ -185,4 +186,11 @@ class AppStrings {
   static const String account_no = 'Account No';
   static const String bank_name = 'Bank Name';
   static const String related_products = 'Related Products';
+
+  static const String reDirectSearch = 'Search';
+  static const String reDirectProduct = 'Product';
+  static const String reDirectLink = 'Link';
+
+  static const String exitApp = 'Exit App?';
+  static const String exitDescription = 'Are you sure you want to exit?';
 }

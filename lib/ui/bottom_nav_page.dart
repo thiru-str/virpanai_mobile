@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
@@ -9,6 +10,7 @@ import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -18,6 +20,7 @@ import 'package:waioz/utility/font_utils.dart';
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart';
+import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
 class BottomNavPage extends StatefulWidget {
@@ -37,6 +40,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
 
   int? cartItems;
   late StreamSubscription<ViewCartModel> _eventSubscription;
+  late StreamSubscription<TabSwitchEvent> _tabSwitchSub;
+  bool isLoggedIn = false;
 
   @override
   void initState() {
@@ -61,8 +66,13 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       _animationController.forward();
     });
 
-    initializePages();
-    listenToEvents();
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+      initializePages();
+      listenToEvents();
+    });
   }
 
   void listenToEvents() {
@@ -73,13 +83,20 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
         });
       }
     });
+    _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          _currentIndex = event.tabIndex;
+        });
+      }
+    });
   }
 
   Future<void> initializePages() async {
     try {
       await Future.wait([
         getCustomerApi(), // Wait for customer API
-        getHomePageApi() // Wait for home page API
+        //getHomePageApi() // Wait for home page API
       ]);
       setState(() {
         _isLoading = false;
@@ -103,7 +120,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       case 3:
         return const MyFavoritesPage(isFromBottomNav: true);
       case 4:
-        return SettingsPage();
+        return isLoggedIn ? SettingsPage() : const HomePage();
       default:
         return const HomePage();
     }
@@ -113,92 +130,129 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   void dispose() {
     _animationController.dispose();
     _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _isLoading
-          ?  Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
-          : _getPage(), // Dynamically build the current page
-      bottomNavigationBar: SlideTransition(
-        position: _slideAnimation,
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
+    return PopScope(
+        canPop: false, // Disable default back behavior
+        onPopInvoked: (bool didPop) async {
+          if (didPop) return;
+
+          // If not on the first tab, go back to the previous tab
+          if (_currentIndex > 0) {
             setState(() {
-              _currentIndex = index; // Update selected tab
+              _currentIndex--; // Move to the previous tab
             });
-          },
-          items: [
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-              label: AppStrings.shop,
-            ),
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-              label: AppStrings.categories,
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                  if ((cartItems?? 0) > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          cartItems!.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              label: AppStrings.cart,
-            ),
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-              label: AppStrings.favourite,
-            ),
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-              label: AppStrings.account,
-            ),
-          ],
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.tabInActivecolor,
-          showUnselectedLabels: true,
+            return; // Don't proceed to exit dialog
+          }
+
+          final shouldExit = await showDialog(
+            context: context,
+            builder: (context) => CommonAlertDialog(
+                title: AppStrings.exitApp,
+                content: AppStrings.exitDescription,
+                contentOk: AppStrings.yes,
+                contentCancel: AppStrings.no,
+                onTapOk: () => Navigator.of(context).pop(true)),
+          );
+          if (shouldExit == true) {
+            if (mounted) {
+              SystemNavigator.pop(); // Close the app
+            }
+          }
+        },
+        child:  Scaffold(
           backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: FontUtils.primaryFontStyle(),
-          unselectedLabelStyle: FontUtils.primaryFontStyle(),
-        ),
-      ),
+          body: _isLoading
+              ?  Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          )
+              : _getPage(), // Dynamically build the current page
+          bottomNavigationBar: SlideTransition(
+            position: _slideAnimation,
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index; // Update selected tab
+                });
+              },
+              items: [
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                  label: AppStrings.shop,
+                ),
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+                  label: AppStrings.categories,
+                ),
+                BottomNavigationBarItem(
+                  icon: Stack(
+                    children: [
+                      const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                      if ((cartItems?? 0) > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              cartItems!.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  label: AppStrings.cart,
+                ),
+                if(isLoggedIn)
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+                    label: AppStrings.favourite,
+                  ),
+                if(isLoggedIn)
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                    label: AppStrings.account,
+                  ),
+              ],
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.tabInActivecolor,
+              showUnselectedLabels: true,
+              backgroundColor: Colors.white,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: FontUtils.primaryFontStyle(),
+              unselectedLabelStyle: FontUtils.primaryFontStyle(),
+            ),
+          ),)
     );
   }
 
 
   Future<void> getCustomerApi() async {
     try {
+
+      if(!isLoggedIn) {
+        debugPrint('calling here');
+        return;
+      }
+
       Customer? customer = await getCustomerResponse();
       if (customer == null) {
         final ApiService apiService = ApiService();

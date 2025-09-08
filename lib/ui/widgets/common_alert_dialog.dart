@@ -35,7 +35,7 @@ class CommonAlertDialog extends StatelessWidget {
           onPressed: () {
             onTapOk();
           },
-          child: Text(contentOk,style:FontUtils.primaryFontStyle(color: AppColors.textColor)),
+          child: Text(contentOk,style:FontUtils.primaryFontStyle(color: AppColors.primary)),
         ),
       ],
     );
