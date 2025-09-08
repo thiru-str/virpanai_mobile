@@ -517,6 +517,26 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     return false;
   }
 
+  int getMaxQuantity(ProductResponse.Variant? variant, List<Item> cartItems) {
+    if (variant == null) return 10;
+
+    // how many of this variant already in cart
+    final cartQuantity = cartItems.fold<int>(0, (sum, item) {
+      if (item.variantId == variant.id) {
+        return sum + item.quantity!;
+      }
+      return sum;
+    });
+
+    // if variant has inventory_quantity
+    if (variant.inventoryQuantity != null) {
+      return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
+    }
+
+    // default max = 10
+    return (10 - cartQuantity).clamp(0, 10);
+  }
+
   Widget buildProductDescription() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
