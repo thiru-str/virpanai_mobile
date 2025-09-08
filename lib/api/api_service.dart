@@ -691,7 +691,7 @@ class ApiService {
     return _makePostRequest(
       'store/carts/$cartId/complete',
       null,
-          (json) => json,
+          (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }
