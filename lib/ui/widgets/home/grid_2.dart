@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
@@ -60,16 +61,11 @@ class Grid2 extends StatelessWidget {
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: GridView.builder(
+          child: MasonryGridView.count(
+            crossAxisCount: 2,
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: items?.length ?? 0,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 5,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.60,
-            ),
             itemBuilder: (context, index) {
               final layoutData = items?[index];
               return GestureDetector(
