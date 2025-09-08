@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -37,18 +39,58 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   bool apiCalling = true;
   VerifyOtpResponse? verifyOtpResponse;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _otpController.text = widget.otp;
-  }
+  int _remainingSeconds = 30;
+  Timer? _timer;
+  bool _isResendVisible = false;
 
   @override
   void dispose() {
+    _timer?.cancel();
     _otpController.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
+    if(widget.otp.isNotEmpty) {
+      _otpController.text = widget.otp;
+    }
+
+    startTimer();
+  }
+
+  void startTimer() {
+    setState(() {
+      _remainingSeconds = 30;
+      _isResendVisible = false;
+    });
+
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds == 0) {
+        timer.cancel();
+        setState(() {
+          _isResendVisible = true;
+        });
+      } else {
+        setState(() {
+          _remainingSeconds--;
+        });
+      }
+    });
+  }
+
+  void resendOtp() async {
+
+    sendOtp();
+
+    // Restart timer
+    startTimer();
   }
 
   @override
