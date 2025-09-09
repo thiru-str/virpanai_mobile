@@ -7,6 +7,7 @@ import '../../utility/font_utils.dart';
 
 Future<void> showCreateCustomerBottomSheet({
   required BuildContext context,
+  required String phone,
   required Function(String name, String phone, String? email) onSubmit,
 }) {
   final _formKey = GlobalKey<FormState>();
@@ -21,6 +22,7 @@ Future<void> showCreateCustomerBottomSheet({
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) {
+      phoneController.text = phone;
       return Padding(
         padding: EdgeInsets.only(
           left: 20,
@@ -78,6 +80,7 @@ Future<void> showCreateCustomerBottomSheet({
               ),
               const SizedBox(height: 6),
               CustomTextField(
+                enabled: false,
                 maxLength: 10,
                 hintText: "Enter phone number",
                 controller: phoneController,

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:waioz/model/customer_detail_response.dart';
+import 'package:waioz/model/customer_meta_data_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
@@ -62,7 +64,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   bool addShippingOption = true;
   bool addCustomerDetails = false;
   RegisterResponse.Address? selectedAddress;
-  String? pp_id;
+  String? pp_id = 'pp_system_default';
   String? pp_title;
   String? customerData;
   bool placeOrderApiLoading = false;
@@ -403,74 +405,90 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void getCustomerApi(String phoneNo) async {
     try {
-      setState(() {
-        checkOutLoading = true;
-      });
+      setState(() => checkOutLoading = true);
+
       final ApiService apiService = ApiService();
-      final response = await apiService.getCustomerDetails(context,phoneNo);
-      if(response.status??false){
-        setState(() {
-          addCustomerDetails = true;
-          checkOutLoading = false;
-          customerData = '${response.data?.firstName} | ${response.data?.email}';
-        });
-      }
-      else{
-        setState(() {
-          checkOutLoading = false;
-        });
-        showCreateCustomerBottomSheet(
-          context: context,
-          onSubmit: (name, phone, email) async {
-            debugPrint("Name: $name");
-            debugPrint("Phone: $phone");
-            debugPrint("Email: $email");
-            setState(() {
-              checkOutLoading = true;
-            });
-            final response = await apiService.createCustomerMetaData(context, name, phone, email!);
-            if (response.status ?? false) {
-              setState(() {
-                checkOutLoading = false;
-              });
-              try {
-                // Extract and parse the customer details
-                String customerDetailsString = response.metadata?.customerDetails ?? '';
+      final response = await apiService.getCustomerDetails(context, phoneNo);
 
-                if (customerDetailsString.isNotEmpty) {
-                  Map<String, dynamic> customerDetails = json.decode(customerDetailsString);
-
-                  String firstName = customerDetails['first_name'] ?? '';
-                  String email = customerDetails['email'] ?? '';
-
-                  print('First Name: $firstName');
-                  print('Email: $email');
-
-                  setState(() {
-                    addCustomerDetails = true;
-                    customerData = '$firstName | $email';
-                  });
-
-                  // You can now use these values in your app
-                } else {
-                  print('Customer details are empty');
-                }
-              } catch (e) {
-                print('Error parsing customer details: $e');
-              }
-            }
-            setState(() {
-              checkOutLoading = false;
-            });
-          },
-        );
+      if (response.status ?? false) {
+        await _handleExistingCustomer(response, apiService);
+      } else {
+        await _handleNewCustomer(phoneNo, apiService);
       }
     } catch (e) {
-      print(e);
-    }finally{
-      setState(() {
-        checkOutLoading = false;
-      });
+      print('Error in getCustomerApi: $e');
+    } finally {
+      setState(() => checkOutLoading = false);
+    }
+  }
+
+  Future<void> _handleExistingCustomer(CustomerDetailResponse response, ApiService apiService) async {
+    setState(() {
+      addCustomerDetails = true;
+      customerData = '${response.data?.firstName} | ${response.data?.email}';
+    });
+
+    // Create customer metadata
+    final metadataResponse = await apiService.createCustomerMetaData(
+        context,
+        response.data?.firstName ?? '',
+        response.data?.phone ?? '',
+        response.data?.email ?? ''
+    );
+
+    if (metadataResponse.status ?? false) {
+      await _parseAndUpdateCustomerDetails(metadataResponse);
+    }
+  }
+
+  Future<void> _handleNewCustomer(String phoneNo, ApiService apiService) async {
+    showCreateCustomerBottomSheet(
+      context: context,
+      phone: phoneNo,
+      onSubmit: (name, phone, email) async {
+        setState(() => checkOutLoading = true);
+
+        final response = await apiService.createCustomerMetaData(context, name, phone, email!);
+
+        if (response.status ?? false) {
+          await _parseAndUpdateCustomerDetails(response);
+        }
+
+        setState(() => checkOutLoading = false);
+      },
+    );
+  }
+
+  Future<void> _parseAndUpdateCustomerDetails(CustomerMetaDataResponse response) async {
+    try {
+      final customerDetails = _parseCustomerDetails(response.metadata?.customerDetails);
+
+      if (customerDetails != null) {
+        setState(() {
+          addCustomerDetails = true;
+          customerData = '${customerDetails['first_name']} | ${customerDetails['email']}';
+        });
+
+        print('First Name: ${customerDetails['first_name']}');
+        print('Email: ${customerDetails['email']}');
+      } else {
+        print('Customer details are empty or invalid');
+      }
+    } catch (e) {
+      print('Error parsing customer details: $e');
+    }
+  }
+
+  Map<String, dynamic>? _parseCustomerDetails(String? customerDetailsString) {
+    if (customerDetailsString == null || customerDetailsString.isEmpty) {
+      return null;
+    }
+
+    try {
+      return json.decode(customerDetailsString) as Map<String, dynamic>;
+    } catch (e) {
+      print('JSON parsing error: $e');
+      return null;
     }
   }
 
