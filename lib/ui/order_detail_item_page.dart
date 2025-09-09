@@ -31,7 +31,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
     "pp_razorpay_razorpay": "Razorpay",
-    "pp_neft_neft": "NEFT",
+    "pp_neft_neft": "UPI",
   };
   bool apiLoading = true;
 

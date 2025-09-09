@@ -620,7 +620,7 @@ class ApiService {
   Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
     await addToken();
     return _makeGetRequest<OrderHistoryIndividualReponse>(
-      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,',
+      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
       null,
       null,
       (json) => OrderHistoryIndividualReponse.fromJson(json),
@@ -823,19 +823,7 @@ class ApiService {
     return _makeDeleteRequest("store/customers/delete", null, null,
             (data) => RegisterResponse.fromJson(data), context);
   }
-
-
-
-  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
-    await addToken();
-    return _makeGetRequest<OrderHistoryIndividualReponse>(
-      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
-      null,
-      null,
-          (json) => OrderHistoryIndividualReponse.fromJson(json),
-      context,
-    );
-  }
+  
 
   Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
     await addToken();

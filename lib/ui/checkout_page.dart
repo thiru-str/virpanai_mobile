@@ -33,6 +33,7 @@ import 'package:lottie/lottie.dart';
 
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
+import '../model/order_history_reponse.dart';
 import '../utility/app_utils.dart';
 import '../utility/currency_util.dart';
 import '../utility/page_route_utils.dart';
@@ -40,6 +41,7 @@ import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
 import '../utility/stripe_service.dart';
+import 'order_detail_item_page.dart';
 
 class CheckOutPage extends StatefulWidget {
   final CartResponse? cartResponse;
@@ -469,7 +471,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         PageRouteUtils.pushAndRemoveUntil(context, OrderDetailItemPage(orderId: order.id));
       }
       else {
-        PageRouteUtils.pushAndRemoveUntil(context, const OrderPlacedPage());
+        PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: '',));
       }
     } catch (e) {
       setState(() {

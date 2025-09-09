@@ -165,7 +165,7 @@ class _Grid1Card extends StatelessWidget {
                     imageUrl: layoutData.image ?? '',
                     height: 180,
                     width: double.infinity,
-                    fit: BoxFit.contain,
+                    fit: BoxFit.cover,
                     errorWidget: (context, url, error) => _fallbackWidget(),
                   ),
                 ),
