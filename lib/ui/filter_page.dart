@@ -370,7 +370,7 @@ class FilterOption extends StatelessWidget {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             const SizedBox(width: 8),
-            Text(title, style: FontUtils.primaryFontStyle(fontSize: 16)),
+            Flexible(child: Text(title, style: FontUtils.primaryFontStyle(fontSize: 16))),
           ],
         ),
       ),
