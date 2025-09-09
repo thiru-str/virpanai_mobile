@@ -136,10 +136,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       AddressListPage(onSelectedAddress: (address) {}));
                 }),
                 _buildProfileItem(AppStrings.favourites, () {
-                  PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
+                  PageRouteUtils.pushWithSlide(context, const MyFavoritesPage());
                 }),
                 _buildProfileItem(AppStrings.orders, () {
-                  PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
+                  PageRouteUtils.pushWithSlide(context, const OrdersHistoryPage(isFromBottomNav: true,));
                 }),
                 ...storeContentList.map((contentItem) =>
                     _buildProfileItem(contentItem.name ?? "Unknown", () {
