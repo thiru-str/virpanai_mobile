@@ -429,17 +429,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       customerData = '${response.data?.firstName} | ${response.data?.email}';
     });
 
-    // Create customer metadata
-    final metadataResponse = await apiService.createCustomerMetaData(
-        context,
-        response.data?.firstName ?? '',
-        response.data?.phone ?? '',
-        response.data?.email ?? ''
-    );
-
-    if (metadataResponse.status ?? false) {
-      await _parseAndUpdateCustomerDetails(metadataResponse);
-    }
+    eventBus.fire(ReloadEvent(true));
   }
 
   Future<void> _handleNewCustomer(String phoneNo, ApiService apiService) async {

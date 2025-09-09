@@ -827,7 +827,8 @@ class ApiService {
 
   Future<CustomerDetailResponse> getCustomerDetails(BuildContext context,String phone) async {
     await addToken();
-    return _makePostRequest('store/check-customer-details', {"phone": phone},
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest('store/check-customer-details', {"cart_id": cartId,"phone": phone},
             (data) => CustomerDetailResponse.fromJson(data),context);
   }
 

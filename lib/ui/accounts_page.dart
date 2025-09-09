@@ -131,10 +131,10 @@ class _SettingsPageState extends State<SettingsPage> {
           Expanded(
             child: isLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,)):ListView(
               children: [
-                _buildProfileItem(AppStrings.address, () {
-                  PageRouteUtils.pushWithSlide(context,
-                      AddressListPage(onSelectedAddress: (address) {}));
-                }),
+                // _buildProfileItem(AppStrings.address, () {
+                //   PageRouteUtils.pushWithSlide(context,
+                //       AddressListPage(onSelectedAddress: (address) {}));
+                // }),
                 _buildProfileItem(AppStrings.favourites, () {
                   PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
                 }),
