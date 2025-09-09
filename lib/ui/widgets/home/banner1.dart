@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/font_utils.dart';
@@ -45,7 +46,7 @@ class Banner1 extends StatelessWidget {
                       );
                     },
                     child: Text(
-                      content.layoutRedirectTitle!,
+                      content.layoutRedirectTitle ?? "",
                       style: FontUtils.primaryFontStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -62,15 +63,15 @@ class Banner1 extends StatelessWidget {
             height: 180,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData!.length,
+              itemCount: content.layoutData?.length ?? 0,
               separatorBuilder: (_, __) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                final layoutData = content.layoutData![index];
+                final layoutData = content.layoutData?[index];
                 return GestureDetector(
                   onTap: () {
                     RedirectUtils.handleContentRedirect(
                       context: context,
-                      layoutOption: content.layoutOption!,
+                      layoutOption: content.layoutOption ?? "",
                       layoutData: layoutData,
                     );
                   },
@@ -85,8 +86,12 @@ class Banner1 extends StatelessWidget {
                             width: 150,
                             height: 150,
                             child: CachedNetworkImage(
-                              imageUrl: layoutData.image!,
+                              imageUrl: layoutData!.image!,
                               fit: BoxFit.cover,
+                              errorWidget: (context, url, error) =>
+                                  ImageFallbackWidget(
+                                h: 120,
+                              ),
                             ),
                           ),
                         ),
@@ -111,4 +116,3 @@ class Banner1 extends StatelessWidget {
     );
   }
 }
-

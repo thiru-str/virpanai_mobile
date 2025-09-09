@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -16,6 +17,8 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
+
+import '../../../utility/app_assets.dart';
 
 class Grid1 extends StatelessWidget {
   final Content content;
@@ -83,6 +86,7 @@ class Grid1 extends StatelessWidget {
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                errorWidget: (context, url, error) => _fallbackWidget(),
               ),
             ),
           ),
@@ -120,6 +124,19 @@ class Grid1 extends StatelessWidget {
   }
 }
 
+Widget _fallbackWidget() {
+  return Container(
+    height: 150,
+    color: AppColors.secondary,
+    alignment: Alignment.center,
+    child: SvgPicture.asset(
+      AppAssets.ic_no_image,
+      width: 48,
+      height: 48,
+    ),
+  );
+}
+
 class _Grid1Card extends StatelessWidget {
   final LayoutDatum layoutData;
   final VoidCallback onTap;
@@ -146,9 +163,10 @@ class _Grid1Card extends StatelessWidget {
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   child: CachedNetworkImage(
                     imageUrl: layoutData.image ?? '',
-                    height: 130,
+                    height: 180,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
+                    errorWidget: (context, url, error) => _fallbackWidget(),
                   ),
                 ),
                 Visibility(

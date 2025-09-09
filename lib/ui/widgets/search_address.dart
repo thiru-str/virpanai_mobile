@@ -127,152 +127,155 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CommonHeaderAppBar(
-        title: AppStrings.your_location,
-        onBackTap: () {
-          Navigator.of(context).pop();
-        },
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: AppStrings.show_new_address,
-                hintStyle: FontUtils.primaryFontStyle(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(color: Colors.grey),
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: CommonHeaderAppBar(
+          title: AppStrings.your_location,
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search Bar
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: AppStrings.show_new_address,
+                  hintStyle: FontUtils.primaryFontStyle(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _predictions = [];
+                        _isSearching = false;
+                      });
+                    },
+                  )
+                      : null,
                 ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _predictions = [];
-                      _isSearching = false;
-                    });
-                  },
-                )
-                    : null,
+                style: FontUtils.primaryFontStyle(),
+                onChanged: _onSearchChanged,
               ),
-              style: FontUtils.primaryFontStyle(),
-              onChanged: _onSearchChanged,
-            ),
 
-            const SizedBox(height: 24.0),
+              const SizedBox(height: 24.0),
 
-            // Current Location Section (Only Show When Search is Empty)
-            if (!_isSearching) ...[
-              GestureDetector(
-                onTap: () async {
-                  if(mounted) {
-                    final result = await PageRouteUtils.push(context, MapPage(doublePop: true,));
-                    if (result == true) {
-                      getAddressListApi();
+              // Current Location Section (Only Show When Search is Empty)
+              if (!_isSearching) ...[
+                GestureDetector(
+                  onTap: () async {
+                    if(mounted) {
+                      final result = await PageRouteUtils.push(context, MapPage(doublePop: true,));
+                      if (result == true) {
+                        getAddressListApi();
+                      }
                     }
-                  }
-                },
-                child:  Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.my_location, color: Colors.purple),
-                        SizedBox(width: 8.0),
-                        Text(
-                          AppStrings.current_location,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.purple,
+                  },
+                  child:  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.my_location, color: Colors.purple),
+                          SizedBox(width: 8.0),
+                          Text(
+                            AppStrings.current_location,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.purple,
+                            ),
                           ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 32.0),
+                        child: Text(
+                         AppStrings.location_mode,
+                          style: FontUtils.primaryFontStyle(color: Colors.grey),
                         ),
-                      ],
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 32.0),
-                      child: Text(
-                       AppStrings.location_mode,
-                        style: FontUtils.primaryFontStyle(color: Colors.grey),
                       ),
-                    ),
-                    SizedBox(height: 16.0),
-                  ],
+                      SizedBox(height: 16.0),
+                    ],
+                  ),
                 ),
-              ),
 
+              ],
+
+              // Search Results List
+              if (_isSearching)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _predictions.length,
+                    itemBuilder: (context, index) {
+                      final prediction = _predictions[index];
+                      return ListTile(
+                        leading:  Icon(Icons.location_on,color: AppColors.primary,),
+                        title: Text(prediction['description'],style: FontUtils.primaryFontStyle(),),
+                        onTap: () =>
+                            _onLocationSelected(prediction['place_id'], prediction['description']),
+                      );
+                    },
+                  ),
+                ),
+
+              // Saved Location Section (Will be implemented separately)
+              if (!_isSearching) ...[
+                const SizedBox(height: 16.0),
+                Text(
+                 AppStrings.saved_location,
+                  style: FontUtils.primaryFontStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8.0),
+                addressListResponse?.addresses?.isNotEmpty ?? false
+                    ? Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    itemCount: addressListResponse?.addresses?.length ??
+                        0, // Dynamic count of AddressCard widgets
+                    itemBuilder: (context, index) {
+                      Address? address =
+                      addressListResponse?.addresses?[index];
+                      return GestureDetector(
+                        child: AddressCard(
+                          isFromEdit: false,
+                          title: address?.addressName ??
+                              AppStrings.others, // If address name is null, show 'Untitled'
+                          address:
+                          '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
+                          icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
+                          onDelete: () {
+
+                          },
+                          onEdit: () async {
+                          },
+                        ),
+                        onTap: (){
+                          if (widget.onTapAddress != null) {
+                                  widget.onTapAddress!(address!);
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                      );
+                    },
+                  ),
+                )
+                 : _SavedLocationsWidget(), // Placeholder for saved locations
+              ],
             ],
-
-            // Search Results List
-            if (_isSearching)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _predictions.length,
-                  itemBuilder: (context, index) {
-                    final prediction = _predictions[index];
-                    return ListTile(
-                      leading:  Icon(Icons.location_on,color: AppColors.primary,),
-                      title: Text(prediction['description'],style: FontUtils.primaryFontStyle(),),
-                      onTap: () =>
-                          _onLocationSelected(prediction['place_id'], prediction['description']),
-                    );
-                  },
-                ),
-              ),
-
-            // Saved Location Section (Will be implemented separately)
-            if (!_isSearching) ...[
-              const SizedBox(height: 16.0),
-              Text(
-               AppStrings.saved_location,
-                style: FontUtils.primaryFontStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8.0),
-              addressListResponse?.addresses?.isNotEmpty ?? false
-                  ? Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  itemCount: addressListResponse?.addresses?.length ??
-                      0, // Dynamic count of AddressCard widgets
-                  itemBuilder: (context, index) {
-                    Address? address =
-                    addressListResponse?.addresses?[index];
-                    return GestureDetector(
-                      child: AddressCard(
-                        isFromEdit: false,
-                        title: address?.addressName ??
-                            AppStrings.others, // If address name is null, show 'Untitled'
-                        address:
-                        '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                        icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
-                        onDelete: () {
-
-                        },
-                        onEdit: () async {
-                        },
-                      ),
-                      onTap: (){
-                        if (widget.onTapAddress != null) {
-                                widget.onTapAddress!(address!);
-                                Navigator.of(context).pop();
-                              }
-                            },
-                    );
-                  },
-                ),
-              )
-               : _SavedLocationsWidget(), // Placeholder for saved locations
-            ],
-          ],
+          ),
         ),
       ),
     );

@@ -262,12 +262,14 @@ class RedirectData {
   final RedirectProductData? redirectProductData;
   final RedirectSearchData? redirectSearchData;
   final RedirectUrlData? redirectUrlData;
+  final RedirectOrderData? redirectOrderData;
 
   RedirectData({
     this.redirectType,
     this.redirectProductData,
     this.redirectSearchData,
     this.redirectUrlData,
+    this.redirectOrderData,
   });
 
   factory RedirectData.fromJson(Map<String, dynamic> json) {
@@ -281,6 +283,9 @@ class RedirectData {
           : null,
       redirectUrlData: json['redirect_url_data'] != null
           ? RedirectUrlData.fromJson(json['redirect_url_data'])
+          : null,
+      redirectOrderData: json['redirect_order_data'] != null
+          ? RedirectOrderData.fromJson(json['redirect_order_data'])
           : null,
     );
   }
@@ -309,6 +314,22 @@ class RedirectProductData {
   Map<String, dynamic> toJson() => {
     'product_id': productId,
     'variant_id': variantId,
+  };
+}
+
+class RedirectOrderData {
+  final String? orderId;
+
+  RedirectOrderData({this.orderId});
+
+  factory RedirectOrderData.fromJson(Map<String, dynamic> json) {
+    return RedirectOrderData(
+      orderId: json['order_id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'order_id': orderId,
   };
 }
 

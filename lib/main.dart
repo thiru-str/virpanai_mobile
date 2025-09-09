@@ -36,7 +36,7 @@ Future<void> main() async {
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
-  await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
+  await SharedPreferencesUtil().saveBool('google_map_usage', false);
   await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
   bool skipLogin = publicDetailsResponse.storeDetails?.storeMetadata?.skipLogin?? false;
   await SharedPreferencesUtil().saveBool('skip_login', skipLogin);

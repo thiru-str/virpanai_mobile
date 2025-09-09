@@ -38,7 +38,7 @@ class _ProductPageState extends State<ProductPage> {
   List<String> selectedCategoriesList = [];
 
   int currentPage = 0;
-  final int pageSize = 10;
+  final int pageSize = 20;
   bool hasMore = true;
   bool isPaginating = false;
   ScrollController scrollController = ScrollController();
@@ -49,7 +49,7 @@ class _ProductPageState extends State<ProductPage> {
     getProductsApi(categoryIds: widget.categoryId,collectionIds: widget.collectionId);
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
-              scrollController.position.maxScrollExtent &&
+          scrollController.position.maxScrollExtent &&
           hasMore &&
           !isPaginating) {
         loadMoreProducts();
@@ -97,10 +97,10 @@ class _ProductPageState extends State<ProductPage> {
         filteredProducts = productsResponse?.products ?? [];
       } else {
         filteredProducts = productsResponse?.products
-                ?.where((product) => product.title!
-                    .toLowerCase()
-                    .contains(searchController.text.toLowerCase()))
-                .toList() ??
+            ?.where((product) => product.title!
+            .toLowerCase()
+            .contains(searchController.text.toLowerCase()))
+            .toList() ??
             [];
       }
     });
@@ -138,16 +138,16 @@ class _ProductPageState extends State<ProductPage> {
                         hintText: AppStrings.search_product,
                         border: InputBorder.none,
                         prefixIcon:
-                            const Icon(Icons.search, color: Colors.grey),
+                        const Icon(Icons.search, color: Colors.grey),
                         suffixIcon: searchController.text.isNotEmpty
                             ? IconButton(
-                                icon:
-                                    const Icon(Icons.clear, color: Colors.grey),
-                                onPressed: () => searchController.clear(),
-                              )
+                          icon:
+                          const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () => searchController.clear(),
+                        )
                             : null,
                         contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 16),
+                        const EdgeInsets.symmetric(horizontal: 16),
                       ),
                     ),
                   ),
@@ -166,9 +166,9 @@ class _ProductPageState extends State<ProductPage> {
                     if (result != null && mounted) {
                       final data = result as Map<String, dynamic>;
                       selectedCategoriesList =
-                          List<String>.from(data['selectedCategories'] ?? []);
+                      List<String>.from(data['selectedCategories'] ?? []);
                       selectedCollectionsList =
-                          List<String>.from(data['selectedCollections'] ?? []);
+                      List<String>.from(data['selectedCollections'] ?? []);
                       final categoryIds = selectedCategoriesList.isNotEmpty
                           ? selectedCategoriesList.join(',')
                           : widget.categoryId;
@@ -226,6 +226,7 @@ class _ProductPageState extends State<ProductPage> {
                       buttonText: AppStrings.explore_categories,
                       iconPath: AppAssets.ic_cart_empty,
                       onButtonTap: () {},
+                      showExplore: false,
                     );
                   }
 
@@ -247,10 +248,7 @@ class _ProductPageState extends State<ProductPage> {
                       return ProductCard(
                         imageUrl: product.thumbnail ?? '',
                         title: product.title ?? '',
-                        price: product.variants!.isNotEmpty
-                            ? CurrencyUtil.appendCurrency(
-                            product.variants?[0].calculatedPrice?.rawCalculatedAmount?.value ?? '')
-                            : '',
+                        product: product,
                         onTapCard: () {
                           PageRouteUtils.pushWithSlide(
                             context,

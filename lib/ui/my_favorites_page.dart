@@ -9,6 +9,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/view_cart_model.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
 import '../utility/currency_util.dart';
@@ -70,7 +71,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                       crossAxisSpacing: 16, // Space between columns
                       mainAxisSpacing: 16, // Space between rows
                       scrollDirection: Axis.vertical,
-                      itemCount: wishListResponse?.products?.length,
+                      itemCount: wishListResponse?.products?.length ?? 0,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
@@ -81,7 +82,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               imageUrl:
                               product?.thumbnail ?? "",
                               title: product?.title ?? "",
-                              price: CurrencyUtil.appendCurrency((product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString()),
+                              product: product!,
                               onTapFavorite: () {
                                 String currentCustomerId = customer?.id ?? "";
                                 var currentWishlistEntry;
@@ -120,7 +121,9 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   message: AppStrings.no_wishlist_yet,
                   buttonText: AppStrings.explore_categories,
                   iconPath: AppAssets.ic_cart_empty,
+                  showExplore: (widget.isFromBottomNav ?? false),
                   onButtonTap: () {
+                    eventBus.fire(TabSwitchEvent(1));
                   },
                 ),
     );

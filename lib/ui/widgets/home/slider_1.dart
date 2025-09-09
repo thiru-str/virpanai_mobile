@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
 import 'dart:async';
@@ -45,10 +46,10 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 5),
     )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _nextSlide();
-      }
-    });
+        if (status == AnimationStatus.completed) {
+          _nextSlide();
+        }
+      });
 
     _controller.forward();
   }
@@ -73,36 +74,36 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
     final currentData = layoutData[_currentIndex];
 
     return Column(
-       crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Visibility(
-          visible: (widget.content.layoutTitle??'').isNotEmpty,
+          visible: (widget.content.layoutTitle ?? '').isNotEmpty,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
-                  widget.content.layoutTitle??'',
+                  widget.content.layoutTitle ?? '',
                   style: FontUtils.primaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor
-                  ),
+                      color: AppColors.textColor),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              SizedBox(height: 8,),
+              SizedBox(
+                height: 8,
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
-                  widget.content.layoutSubTitle??'',
+                  widget.content.layoutSubTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textColor
-                  ),
+                      color: AppColors.textColor),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -113,10 +114,10 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: GestureDetector(
-            onTap: (){
+            onTap: () {
               RedirectUtils.handleContentRedirect(
                 context: context,
-                layoutOption: widget.content.layoutOption!,
+                layoutOption: widget.content.layoutOption ?? "",
                 layoutData: currentData,
               );
             },
@@ -124,11 +125,15 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
               borderRadius: BorderRadius.circular(20),
               child: Stack(
                 children: [
-                  Image.network(
-                    currentData.image ?? '',
-                    width: double.infinity,
+                  Container(
                     height: 500,
-                    fit: BoxFit.cover,
+                    child: Image.network(
+                      currentData.image ?? '',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, url, error) =>
+                         const ImageFallbackWidget(h: 220, fit: BoxFit.contain),
+                    ),
                   ),
 
                   // Bottom gradient overlay
@@ -192,7 +197,8 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
 
                             return Expanded(
                               child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 3),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 3),
                                 height: 4,
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
@@ -224,15 +230,3 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

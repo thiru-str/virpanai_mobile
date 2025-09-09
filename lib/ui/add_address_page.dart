@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:waioz/api/api_service.dart';
@@ -48,6 +49,7 @@ class _AddAddressPage extends State<AddAddressPage> {
 
   String selectedLocation = AppStrings.home; // Default location selection
   bool apiCalling = true;
+  bool isUpdating = false;
   RegisterResponse? registerResponse;
   double latitude = 0;
   double longitude = 0;
@@ -62,6 +64,10 @@ class _AddAddressPage extends State<AddAddressPage> {
       firstNameController.text = address.firstName ?? '';
       lastNameController.text = address.lastName ?? '';
       phoneNumberController.text = address.phone ?? '';
+      streetAddressController.text = '${address.address1 ?? ''} ${address.address2 ?? ''}';
+      cityController.text = address.city??'';
+      stateController.text = address.province??'';
+      zipCodeController.text = address.postalCode ?? '';
       selectedLocation = address.addressName ?? AppStrings.home;
 
       if (selectedLocation != AppStrings.home && selectedLocation != AppStrings.work) {
@@ -91,197 +97,207 @@ class _AddAddressPage extends State<AddAddressPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CommonHeaderAppBar(
-        title: AppStrings.save,
-        onBackTap: () {
-          Navigator.of(context).pop();
-        },
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                // Makes the body scrollable
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CustomTextField(
-                              hintText: AppStrings.firstname,
-                              controller: firstNameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return AppStrings.firstname;
-                                }
-                                return null;
-                              },
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: CommonHeaderAppBar(
+          title: AppStrings.save,
+          onBackTap: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  // Makes the body scrollable
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomTextField(
+                                hintText: AppStrings.firstname,
+                                controller: firstNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppStrings.firstname;
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: CustomTextField(
-                              hintText: AppStrings.lastname,
-                              controller: lastNameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return AppStrings.lastname_required;
-                                }
-                                return null;
-                              },
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: CustomTextField(
+                                hintText: AppStrings.lastname,
+                                controller: lastNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppStrings.lastname_required;
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        hintText: AppStrings.street_address,
-                        controller: streetAddressController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.street_address_required;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        hintText: AppStrings.phone_number,
-                        controller: phoneNumberController,
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.phone_number_required;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        hintText: AppStrings.city,
-                        controller: cityController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.city_required;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CustomTextField(
-                              hintText: AppStrings.state,
-                              controller: stateController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return AppStrings.state_required;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: CustomTextField(
-                              hintText: AppStrings.zip_code,
-                              controller: zipCodeController,
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return AppStrings.zip_code_required;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        AppStrings.location,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primary,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildHorizontalLocationList(),
-                      const SizedBox(height: 24),
-                      if (selectedLocation == AppStrings.others)
-                        TextFormField(
-                            controller: otherAddressName,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: AppColors.secondary,
-                              hintText: AppStrings.ex_friend_house,
-                              border: InputBorder.none,
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2.0,
-                                ),
-                              ),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppColors.primary,
-                                  width: 1.0,
-                                ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: AppStrings.street_address,
+                          controller: streetAddressController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.street_address_required;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          maxLength: 10,
+                          hintText: AppStrings.phone_number,
+                          controller: phoneNumberController,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value == null || value.isEmpty || value.length < 10) {
+                              return AppStrings.phone_number_required;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: AppStrings.city,
+                          controller: cityController,
+                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),],
+                          keyboardType: TextInputType.name,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.city_required;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomTextField(
+                                hintText: AppStrings.state,
+                                controller: stateController,
+                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),],
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppStrings.state_required;
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppStrings.enter_address;
-                              }
-                              return null;
-                            }),
-                    ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: CustomTextField(
+                                hintText: AppStrings.zip_code,
+                                controller: zipCodeController,
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppStrings.zip_code_required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          AppStrings.location,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildHorizontalLocationList(),
+                        const SizedBox(height: 24),
+                        if (selectedLocation == AppStrings.others)
+                          TextFormField(
+                              controller: otherAddressName,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: AppColors.secondary,
+                                hintText: AppStrings.ex_friend_house,
+                                border: InputBorder.none,
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AppColors.primary,
+                                    width: 2.0,
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AppColors.primary,
+                                    width: 1.0,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return AppStrings.enter_address;
+                                }
+                                return null;
+                              }),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      print("Form is valid. Proceed to Create Address.");
-                      createOrUpdateAddress();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: isUpdating? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        print("Form is valid. Proceed to Create Address.");
+                        createOrUpdateAddress();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      minimumSize: const Size(double.infinity, 52),
                     ),
-                    minimumSize: const Size(double.infinity, 52),
-                  ),
-                  child: Text(
-                    widget.selectedAddress != null
-                        ? AppStrings.save
-                        : AppStrings.add_address,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.secondary,
+                    child: Text(
+                      widget.selectedAddress != null
+                          ? AppStrings.save
+                          : AppStrings.add_address,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.secondary,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -358,6 +374,9 @@ class _AddAddressPage extends State<AddAddressPage> {
 
   void createOrUpdateAddress() async {
     try {
+      setState(() {
+        isUpdating = true;
+      });
       final ApiService apiService = ApiService();
       selectedLocation = selectedLocation == AppStrings.others
           ? otherAddressName.text
@@ -377,7 +396,7 @@ class _AddAddressPage extends State<AddAddressPage> {
           latitude.toString(),
           longitude.toString());
       setState(() {
-        apiCalling = false;
+        isUpdating = false;
       });
       Navigator.pop(context, true);
       if (widget.doublePop) {
@@ -385,7 +404,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       }
     } catch (e) {
       setState(() {
-        apiCalling = false;
+        isUpdating = false;
       });
       print(e);
     }

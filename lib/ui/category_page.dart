@@ -14,14 +14,13 @@ import 'widgets/common_header_app_bar.dart';
 
 class CategoryPage extends StatefulWidget {
   final bool isFromBottomNav;
-  const CategoryPage({super.key,this.isFromBottomNav = false});
+  const CategoryPage({super.key, this.isFromBottomNav = false});
 
   @override
   State<CategoryPage> createState() => _CategoryPageState();
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-
   ProductCategoriesResponse? productCategoriesResponse;
   bool apiLoading = true;
 
@@ -31,64 +30,72 @@ class _CategoryPageState extends State<CategoryPage> {
     super.initState();
     getCategoriesApi();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-      CommonHeaderAppBar(
-        title: AppStrings.categories,
-        leading: widget.isFromBottomNav ? false : true,
-        onBackTap: () {
-          Navigator.pop(context,true);
-        },
-      ),
-      backgroundColor: Colors.white,
-      body: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-          :Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(AppStrings.all_category,style: FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor)),
+        appBar: CommonHeaderAppBar(
+          title: AppStrings.categories,
+          leading: widget.isFromBottomNav ? false : true,
+          onBackTap: () {
+            Navigator.pop(context, true);
+          },
+        ),
+        backgroundColor: Colors.white,
+        body: apiLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
                 ),
-                const SizedBox(height: 10,),
-                Expanded(
-                  child: MasonryGridView.count(
-                    crossAxisCount: 2,
-                    itemCount: productCategoriesResponse!.productCategories!.length,
-                    itemBuilder: (context, index) {
-                      final productCategory =
-                      productCategoriesResponse!.productCategories![index];
+              )
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(AppStrings.all_category,
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 16, color: AppColors.textColor)),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                      child: MasonryGridView.count(
+                        crossAxisCount: 2,
+                        itemCount: productCategoriesResponse!.productCategories!.length,
+                        itemBuilder: (context, index) {
+                          final productCategory =
+                          productCategoriesResponse!.productCategories![index];
 
-                      return CategoryCard(
-                        imagePath: productCategory.image ?? '',
-                        title: productCategory.name!,
-                        onTap: () {
-                          if (productCategory.categoryChildren!.isNotEmpty) {
-                            PageRouteUtils.pushWithFade(
-                              context,
-                              SubCategoryPage(
-                                categoryTitle: productCategory.name!,
-                                productCategory: productCategory.categoryChildren!,
-                              ),
-                            );
-                          } else {
-                            PageRouteUtils.pushWithFade(
-                              context,
-                              ProductPage(categoryId: productCategory.id!),
-                            );
-                          }
+                          return CategoryCard(
+                            imagePath: productCategory.image ?? '',
+                            title: productCategory.name!,
+                            onTap: () {
+                              if (productCategory.categoryChildren!.isNotEmpty) {
+                                PageRouteUtils.pushWithFade(
+                                  context,
+                                  SubCategoryPage(
+                                    categoryTitle: productCategory.name!,
+                                    productCategory: productCategory.categoryChildren!,
+                                  ),
+                                );
+                              } else {
+                                PageRouteUtils.pushWithFade(
+                                  context,
+                                  ProductPage(categoryId: productCategory.id!),
+                                );
+                              }
+                            },
+                          );
                         },
-                      );
-                    },
-                  ),
-                )
+                      ),
+                    )
                   ],
-            ),
-          )
-    );
+                ),
+              ));
   }
 
   void getCategoriesApi() async {
@@ -100,6 +107,9 @@ class _CategoryPageState extends State<CategoryPage> {
         productCategoriesResponse;
       });
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         apiLoading = false;
       });

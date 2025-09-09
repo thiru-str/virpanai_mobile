@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
-import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
-import '../utility/app_utils.dart';
+import '../model/register_response.dart' as RegisterResponse;
+import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 import '../utility/currency_util.dart';
+import 'address_list_page.dart';
 
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
@@ -30,44 +31,40 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
-  UpSellProductsResponse? upSellProductsResponse;
   bool apiLoading = true;
+  bool cartLoading = false;
+  bool addressLoading = false;
   bool isAnimating = false;
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
-  bool isLoggedIn = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getCartApi();
 
-    AppUtils.isLoggedIn().then((value) {
-      setState(() {
-        isLoggedIn = value;
-      });
-      getCartApi();
+    // Initialize the animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
 
-      // Initialize the animation controller
-      _animationController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 200),
-      );
+    // Define the animation's starting and ending positions
+    _animation = Tween<Offset>(
+      begin: const Offset(0, 1), // Start just below the screen
+      end: Offset.zero, // End at its natural position
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
 
-      // Define the animation's starting and ending positions
-      _animation = Tween<Offset>(
-        begin: const Offset(0, 1), // Start just below the screen
-        end: Offset.zero, // End at its natural position
-      ).animate(CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ));
+    // Delay animation start by 300ms
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _animationController.forward();
+    });
 
-      // Delay animation start by 300ms
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _animationController.forward();
-      });
-      });
+
   }
 
   @override
@@ -80,242 +77,246 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonHeaderAppBar(
-              title: AppStrings.cart,
-              leading: widget.isFromBottomNav ? false : true,
-              onBackTap: () {
-                Navigator.pop(context,true);
-              },
-            ),
+        title: AppStrings.cart,
+        leading: widget.isFromBottomNav ? false : true,
+        onBackTap: () {
+          Navigator.pop(context,true);
+        },
+      ),
       backgroundColor: Colors.white,
       /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
       body: apiLoading
           ?  Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      )
           : cartResponse?.cart?.items?.isNotEmpty?? false
-              ? Scaffold(
-                  backgroundColor: Colors.white,
-                  body: Column(
+          ? Scaffold(
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            Visibility(
+              visible: cartResponse!.cart!.items!.isNotEmpty,
+              child: DeliveryAddressWidget(
+                address: _buildShippingAddress(cartResponse),
+                label: null,
+                isLoading: addressLoading,
+                onAddAddress: () {
+                  //Navigator.push(context, AddAddressPage.route());
+                  PageRouteUtils.pushWithSlide(
+                      context,
+                      AddressListPage(
+                        isFromCheckout: true,
+                        onSelectedAddress: (address) {
+                          setState(() {
+                            addressLoading = true;
+                          });
+                          updateAddress(address);
+                        },
+                      ));
+                },
+                onChangeAddress: () {
+                  PageRouteUtils.pushWithSlide(
+                      context,
+                      AddressListPage(
+                        isFromCheckout: true,
+                        onSelectedAddress: (address) {
+                          setState(() {
+                            addressLoading = true;
+                          });
+                          updateAddress(address);
+                        },
+                      ));
+                },
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 10),
-                                ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: cartResponse!.cart!.items!.length,
-                                  itemBuilder: (context, index) {
-                                    final cartItem =
-                                        cartResponse!.cart!.items![index];
-                                    return CartItemCard(
-                                      imageUrl: cartItem.thumbnail!,
-                                      productName: cartItem.productTitle!,
-                                      size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
-                                      color: 'color',
-                                      // Replace with actual color
-                                      price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
-                                      quantity: cartItem.quantity!,
-                                      isUpdating: cartItem.isUpdating!,
-                                      onIncrease: () {
-                                        setState(() {
-                                          cartResponse!.cart!.items![index].isUpdating = true;
-                                        });
-                                        updateCart(cartItem.quantity!+1,cartItem.id!,index);
-                                      },
-                                      onDecrease:
-                                          () {
-                                            setState(() {
-                                              cartResponse!.cart!.items![index].isUpdating = true;
-                                            });
-                                            if (cartItem.quantity! - 1 <= 0) {
-                                              removeCart(cartItem.id!);
-                                        } else {
-                                          updateCart(cartItem.quantity! - 1,
-                                              cartItem.id!,index);
-                                        }
-                                      }, // Handle quantity decrease
-                                    );
-                                  },
-                                ),
-                                buildUpSellProducts(),
-                                Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      CartCalculation(
-                                        keyText: '${AppStrings.subTotal}:',
-                                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
-                                      ),
-                                      Visibility(
-                                          visible: cartResponse!.cart!.discountSubtotal!>0,
-                                          child: CartCalculation(
-                                            keyText: '${AppStrings.discount}:',
-                                            valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                                          )),
-                                      Visibility(
-                                          visible: cartResponse!.cart!.shippingSubtotal!>0,
-                                          child: CartCalculation(
-                                            keyText: '${AppStrings.shipping}:',
-                                            valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
-                                          )),
-                                      CartCalculation(
-                                        keyText: '${AppStrings.tax}:',
-                                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                                      ),
-                                      CartCalculation(
-                                        keyText: '${AppStrings.total}:',
-                                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
-                                      ),
-                                      const SizedBox(height: 10,),
-                                      GestureDetector(
-                                        onTap: () {
-                                          showPromoCodeBottomSheet(context);
-                                        },
-                                        child: Container(
-                                          height: 50,
-                                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.secondary,
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child:  Row(
-                                            children: [
-                                              const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  AppStrings.enter_promo_code,
-                                                  style: FontUtils.primaryFontStyle(color: AppColors.textColor),
-                                                ),
-                                              ),
-                                              Text(
-                                                AppStrings.apply,
-                                                style: FontUtils.secondaryFontStyle(color: AppColors.primary),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      const SizedBox(height: 10),
+                      ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: cartResponse!.cart!.items!.length,
+                        itemBuilder: (context, index) {
+                          final cartItem =
+                          cartResponse!.cart!.items![index];
+                          return CartItemCard(
+                            imageUrl: cartItem.thumbnail??'',
+                            productName: cartItem.productTitle!,
+                            size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
+                            color: 'color',
+                            // Replace with actual color
+                            price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
+                            quantity: cartItem.quantity!,
+                            isUpdating: cartItem.isUpdating!,
+                            onRemoveAll: () {
+                              setState(() {
+                                cartResponse!.cart!.items![index].isUpdating = true;
+                              });
+                              //updateCart(0,cartItem.id!,index);
+                              removeCart(cartItem.id!,index);
+                            },onIncrease: () {
+                            setState(() {
+                              cartResponse!.cart!.items![index].isUpdating = true;
+                            });
+                            updateCart(cartItem.quantity!+1,cartItem.id!,index);
+                          },
+                            onDecrease:
+                                () {
+                              setState(() {
+                                cartResponse!.cart!.items![index].isUpdating = true;
+                              });
+                              if (cartItem.quantity! - 1 <= 0) {
+                                removeCart(cartItem.id!,index);
+                              } else {
+                                updateCart(cartItem.quantity! - 1,
+                                    cartItem.id!,index);
+                              }
+                            }, // Handle quantity decrease
+                          );
+                        },
                       ),
-
                     ],
                   ),
-                  bottomNavigationBar: SlideTransition(
-                    position: _animation,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CartCalculation(
+                    keyText: '${AppStrings.subTotal}:',
+                    valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
+                  ),
+                  Visibility(
+                      visible: cartResponse!.cart!.discountSubtotal!>0,
+                      child: CartCalculation(
+                        keyText: '${AppStrings.discount}:',
+                        valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                      )),
+                  Visibility(
+                      visible: cartResponse!.cart!.shippingSubtotal!>0,
+                      child: CartCalculation(
+                        keyText: '${AppStrings.shipping}:',
+                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
+                      )),
+                  CartCalculation(
+                    keyText: '${AppStrings.tax}:',
+                    valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                  ),
+                  CartCalculation(
+                    keyText: '${AppStrings.total}:',
+                    valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
+                  ),
+                  const SizedBox(height: 10,),
+                  GestureDetector(
+                    onTap: () {
+                      if((cartResponse?.cart?.promotions??[]).isEmpty) {
+                        showPromoCodeBottomSheet(context);
+                      }
+                      else{
+                        List<String> promotionCodes = cartResponse?.cart?.promotions
+                            ?.map((promotion) => promotion.code)
+                            .where((code) => code != null)
+                            .cast<String>()
+                            .toList() ?? [];
+                        removePromoCode(promotionCodes);
+                      }
+                    },
+                    child: Container(
+                      height: 50,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child:  Row(
+                        children: [
+                          const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.enter_promo_code:cartResponse?.cart?.promotions?.firstOrNull?.code??'',
+                              style: FontUtils.primaryFontStyle(color: AppColors.textColor),
+                            ),
                           ),
-                          minimumSize: const Size(
-                              double.infinity, 56), // Full width button
-                        ),
-                        onPressed: () {
-                          // Add checkout logic here
-                          PageRouteUtils.pushWithSlide(context, CheckOutPage(cartResponse: cartResponse,));
-                        },
-                        child:  Text(
-                          AppStrings.check_out,
-                          style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
-                        ),
+                          Text(
+                            (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
+                            style: FontUtils.secondaryFontStyle(color: AppColors.primary),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                )
-              : Center(
-                  child: NoOrdersWidget(
-                      message: AppStrings.cart_empty,
-                      buttonText: AppStrings.explore_categories,
-                      iconPath: AppAssets.ic_cart_empty,
-                      onButtonTap: () {})),
-    );
-  }
-
-  Widget buildUpSellProducts() {
-
-    if((upSellProductsResponse?.products?.length?? 0) == 0) {
-      return const SizedBox();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 20),
-        Text(
-          'Suggested for You',
-          style: FontUtils.secondaryFontStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: SlideTransition(
+          position: _animation,
+          child: Padding(
+            padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
+            child: cartLoading? SizedBox(height:100,child: Center(child: CircularProgressIndicator(color: AppColors.primary,),)):ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                minimumSize: const Size(
+                    double.infinity, 56), // Full width button
+              ),
+              onPressed: () {
+                // Add checkout logic here
+                if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
+                  AppUtils.showToast(
+                      'Please add address to proceed');
+                  return;
+                }
+                if(!addressLoading) {
+                  PageRouteUtils.pushWithSlide(context,
+                      CheckOutPage(cartResponse: cartResponse,));
+                }
+              },
+              child:  Text(
+                AppStrings.check_out,
+                style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 310,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            itemCount: upSellProductsResponse?.products?.length?? 0,
-            separatorBuilder: (context, index) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final product =  upSellProductsResponse?.products![index];
-              return ProductCard(
-                imageUrl: product?.thumbnail??'',
-                title: product?.title??'',
-                price: CurrencyUtil.appendCurrency(
-                    product?.variants?.firstOrNull?.calculatedPrice?.rawCalculatedAmount?.value??''),
-                onTapCard: () {
-                  PageRouteUtils.pushWithSlide(
-                    context,
-                    ProductDetailPage(productId: product?.id?? ''),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
+      )
+          : Center(
+          child: NoOrdersWidget(
+              message: AppStrings.cart_empty,
+              buttonText: AppStrings.explore_categories,
+              iconPath: AppAssets.ic_cart_empty,
+              showExplore: (widget.isFromBottomNav),
+              onButtonTap: () {
+                eventBus.fire(TabSwitchEvent(1));
+              })),
     );
   }
 
   void getCartApi() async {
     try {
-      if (!isLoggedIn) {
-        setState(() {
-          apiLoading = false;
-        });
-        return;
-      }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);
-      upSellProductsResponse = await apiService.upSellingProducts(context);
       setState(() {
-        upSellProductsResponse;
         apiLoading = false;
       });
-
     } catch (e) {
       setState(() {
         apiLoading = false;
@@ -325,23 +326,69 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void emitEvent(CartResponse cartResponse) {
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    final totalQty = cartResponse.cart!.items!
+        .map((item) => item.quantity ?? 0) // pick quantity, default to 0
+        .fold<int>(0, (sum, qty) => sum + qty);
+    print('total qty ${totalQty}');
+    eventBus.fire(ViewCartModel(totalQty,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
   }
 
   void addPromoCode(String promoCode) async {
     try {
-      final ApiService apiService = ApiService();
-      cartResponse = await apiService.addPromoCode(context,promoCode);
       setState(() {
-        cartResponse;
+        cartLoading = true;
+      });
+      final ApiService apiService = ApiService();
+      final response = await apiService.addPromoCode(context,promoCode);
+      if ((response.cart?.promotions?.firstOrNull?.code ?? '')
+          .isNotEmpty) {
+        AppUtils.showToast(
+            '${response.cart?.promotions?.firstOrNull?.code ?? ''} Promo code applied successfully');
+      }
+      else{
+        AppUtils.showToast(
+            'Promo code not applied.Please double check your cart items');
+      }
+      setState(() {
+        cartResponse =  response;
+        cartLoading = false;
       });
     } catch (e) {
+      setState(() {
+        cartLoading = false;
+      });
       print(e);
     }
   }
 
+  void removePromoCode(List<String> promoCodes) async {
+    try {
+      setState(() {
+        cartLoading = true;
+      });
+      final ApiService apiService = ApiService();
+      final response = await apiService.removePromoCode(context,promoCodes);
+      if ((response.cart?.promotions?.firstOrNull?.code ?? '')
+          .isEmpty) {
+        AppUtils.showToast(
+            'Promo code removed successfully');
+      }
+      setState(() {
+        cartResponse =  response;
+        cartLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        cartLoading = false;
+      });
+      print(e);
+    }
+  }
+
+
   void updateCart(int qty,String cartItemId,int index) async {
     try {
+      debugPrint('calling update');
       final ApiService apiService = ApiService();
       cartResponse = await apiService.updateCart(context,qty,cartItemId);
       setState(() {
@@ -350,22 +397,25 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
           cartResponse!.cart!.items![index].isUpdating = false;
         });
       });
+      emitEvent(cartResponse!);
     } catch (e) {
       setState(() {
-
+        cartResponse!.cart!.items![index].isUpdating = false;
       });
       print(e);
     }
   }
 
-  void removeCart(String cartItemId) async {
+  void removeCart(String cartItemId,int index) async {
     try {
       final ApiService apiService = ApiService();
       await apiService.removeCart(context,cartItemId);
       getCartApi();
     } catch (e) {
       setState(() {
-
+        setState(() {
+          cartResponse!.cart!.items![index].isUpdating = false;
+        });
       });
       print(e);
     }
@@ -441,7 +491,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                   }
                 },
                 child: Text(
-                  AppStrings.apply,
+                  (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
                   style: FontUtils.primaryFontStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
@@ -452,7 +502,52 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
+  String? _buildShippingAddress(CartResponse? cartResponse) {
+    final address = cartResponse?.cart?.shippingAddress;
+    if (address == null || address.address1 == null) return null;
 
+    return [
+      address.address1,
+      address.city,
+      address.postalCode,
+      address.province ?? '',
+    ].where((e) => e != null && e.toString().isNotEmpty).join(', ');
+  }
+
+  void updateAddress(RegisterResponse.Address address) async {
+    try {
+      final ApiService apiService = ApiService();
+      cartResponse = await apiService.updateAddress(
+          context, convertToShippingAddress(address));
+      setState(() {
+        addressLoading = false;
+        cartResponse;
+      });
+    } catch (e) {
+      setState(() {
+        addressLoading = false;
+      });
+      print(e);
+    }
+  }
+
+  CheckOut.ShippingAddress convertToShippingAddress(
+      RegisterResponse.Address address) {
+    return CheckOut.ShippingAddress(
+      // Map the fields from Address to ShippingAddress
+      address1: address.address1 ?? '',
+      address2: address.address2 ?? '',
+      firstName: address.firstName ?? '',
+      lastName: address.lastName ?? '',
+      phone: address.phone ?? '',
+      company: address.company ?? '',
+      postalCode: address.postalCode ?? '',
+      countryCode: address.countryCode ?? '',
+      province: address.province ?? '',
+      city: address.city ?? '',
+    );
+  }
 
 
 }
+

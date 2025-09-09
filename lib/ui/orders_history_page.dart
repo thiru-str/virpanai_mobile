@@ -9,7 +9,6 @@ import 'package:waioz/ui/widgets/order_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -59,40 +58,40 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         ),
       ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
       Padding(padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
-      child: Column(
-        children: [
-          Expanded(
-            child: _buildOrdersList(),
-          ),
-          // const SizedBox(height: 20),
-          // CustomScrollableTabBar(
-          //   tabController: _tabController,
-          //   tabs: const [
-          //     Tab(text: "Processing"),
-          //     Tab(text: "Shipped"),
-          //     Tab(text: "Delivered"),
-          //     Tab(text: "Returned"),
-          //     Tab(text: "Cancelled"),
-          //   ],
-          // ),
-          // const SizedBox(height: 20),
-          // Expanded(
-          //   child: Padding(
-          //     padding: EdgeInsets.symmetric(horizontal: 25),
-          //     child: TabBarView(
-          //       controller: _tabController,
-          //       children: [
-          //         _buildOrdersList(["#428912", "#427364"]),
-          //         _buildOrdersList(["#458912", "#457364"]),
-          //         _buildOrdersList(["#453219"]),
-          //         _buildOrdersList(["#451234", "#450678"]),
-          //         _buildOrdersList(["#459876"]),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-        ],
-      ),) : NoOrdersWidget(
+        child: Column(
+          children: [
+            Expanded(
+              child: _buildOrdersList(),
+            ),
+            // const SizedBox(height: 20),
+            // CustomScrollableTabBar(
+            //   tabController: _tabController,
+            //   tabs: const [
+            //     Tab(text: "Processing"),
+            //     Tab(text: "Shipped"),
+            //     Tab(text: "Delivered"),
+            //     Tab(text: "Returned"),
+            //     Tab(text: "Cancelled"),
+            //   ],
+            // ),
+            // const SizedBox(height: 20),
+            // Expanded(
+            //   child: Padding(
+            //     padding: EdgeInsets.symmetric(horizontal: 25),
+            //     child: TabBarView(
+            //       controller: _tabController,
+            //       children: [
+            //         _buildOrdersList(["#428912", "#427364"]),
+            //         _buildOrdersList(["#458912", "#457364"]),
+            //         _buildOrdersList(["#453219"]),
+            //         _buildOrdersList(["#451234", "#450678"]),
+            //         _buildOrdersList(["#459876"]),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+          ],
+        ),) : NoOrdersWidget(
         message: AppStrings.no_order_yet,
         buttonText: AppStrings.explore_categories,
         iconPath: AppAssets.ic_cart_empty,
@@ -115,15 +114,21 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         return OrderWidget(
           orderId: (orderHistoryResponse?.orders?[index].displayId ?? 1).toString(),
           itemCount: (orderHistoryResponse?.orders?[index].items?.length ?? 1).toString(),
-          createdAt: (orderHistoryResponse?.orders?[index].createdAt??DateTime.now()),
+          createdAt: toIST(orderHistoryResponse?.orders?[index].createdAt??DateTime.now()),
           itemPrice: (orderHistoryResponse?.orders?[index].total?? 0),
           onTap: () {
-            PageRouteUtils.push(context, OrderDetailItemPage(orderId: orderHistoryResponse?.orders?[index].id??'',));
+            // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
+            PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(orderId: orderHistoryResponse?.orders?[index].id??'',));
           },
         );
       },
     );
   }
+
+  DateTime toIST(DateTime utcTime) {
+    return utcTime.add(Duration(hours: 5, minutes: 30));
+  }
+
   void getOrderHistoryAPI() async {
     try {
       final ApiService apiService = ApiService();

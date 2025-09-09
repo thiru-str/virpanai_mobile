@@ -34,6 +34,8 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/cancel_order_response.dart';
+import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -292,7 +294,7 @@ class ApiService {
       String collectionId,
       String searchString, {
         int offset = 0,
-        int limit = 10,
+        int limit = 20,
       }) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, dynamic>{};
@@ -352,7 +354,7 @@ class ApiService {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makeGetRequest<ProductDetailReponse>(
       'store/products',
-      productId,
+      '$productId?fields=+variants.inventory_quantity',
       {"region_id": regionId},
       (json) => ProductDetailReponse.fromJson(json),
       context,
@@ -515,6 +517,17 @@ class ApiService {
     );
   }
 
+  Future<CartResponse> removePromoCode(
+      BuildContext context,List<String> promoCodes) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeDeleteRequest(
+      'store/carts/$cartId/promotions', null,{"promo_codes": promoCodes},
+          (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> addFavourite(
       BuildContext context, String productId) async {
     await addToken();
@@ -566,7 +579,7 @@ class ApiService {
       'store/carts/$cartId/line-items/$cartItemId',
       null,
       null,
-      (json) => DeleteResponse.fromJson(json),
+          (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
@@ -812,6 +825,23 @@ class ApiService {
   }
 
 
+
+  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
+    await addToken();
+    return _makeGetRequest<OrderHistoryIndividualReponse>(
+      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
+      null,
+      null,
+          (json) => OrderHistoryIndividualReponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
+    await addToken();
+    return _makePostRequest('store/cancel-order/$orderId', null,
+            (data) => CancelOrderResponse.fromJson(data),context);
+  }
 
   Future<void> addToken() async {
     _dio.options.headers['Authorization'] =

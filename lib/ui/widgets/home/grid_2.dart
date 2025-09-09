@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../model/home_page_response.dart';
+import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
@@ -60,46 +62,69 @@ class Grid2 extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: MasonryGridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: 5,
+            mainAxisSpacing: 16,
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: items.length,
             itemBuilder: (context, index) {
               final layoutData = items[index];
               return GestureDetector(
-                onTap: () {
-                  RedirectUtils.handleContentRedirect(
-                    context: context,
-                    layoutOption: content.layoutOption!,
-                    layoutData: layoutData,
-                  );
-                },
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: CachedNetworkImage(
-                        imageUrl: layoutData.image!,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                  onTap: () {
+                    RedirectUtils.handleContentRedirect(
+                      context: context,
+                      layoutOption: content.layoutOption!,
+                      layoutData: layoutData,
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: layoutData.image??'',
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => _fallbackWidget(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      layoutData.title ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 11),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: 60,
+                        height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Text(
+                            layoutData.title ?? '',
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: FontUtils.primaryFontStyle(fontSize: 11),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+
+
+  Widget _fallbackWidget() {
+    return Container(
+      color: AppColors.secondary,
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AppAssets.ic_no_image,
+        width: 48,
+        height: 48,
+      ),
     );
   }
 }

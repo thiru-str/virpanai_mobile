@@ -27,6 +27,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
   List<ContentData> storeContentList = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -79,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           children: [
                             Text(
                               customer != null
-                                  ? '${customer!.firstName!} ${customer!.lastName}'
+                                  ? '${customer?.firstName} ${customer?.lastName}'
                                   : '',
                               overflow: TextOverflow.ellipsis,
                               style: FontUtils.primaryFontStyle(
@@ -90,7 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              customer != null ? customer!.email! : '',
+                              customer?.email ?? "",
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
                                 color: Colors.black54,
@@ -128,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
           // Profile Items Section
           Expanded(
-            child: ListView(
+            child: isLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,)):ListView(
               children: [
                 _buildProfileItem(AppStrings.address, () {
                   PageRouteUtils.pushWithSlide(context,
@@ -200,10 +201,21 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> fetchStoreContentAPI() async {
-    final storeContent = await ApiService().getStoreContent(context);
-    setState(() {
-      storeContentList = storeContent.data ?? [];
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      final storeContent = await ApiService().getStoreContent(context);
+      setState(() {
+            storeContentList = storeContent.data ?? [];
+          });
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<Customer?> getCustomerResponse() async {
