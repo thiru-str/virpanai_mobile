@@ -139,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   PageRouteUtils.pushWithSlide(context, const MyFavoritesPage());
                 }),
                 _buildProfileItem(AppStrings.orders, () {
-                  PageRouteUtils.pushWithSlide(context, const OrdersHistoryPage(isFromBottomNav: true,));
+                  PageRouteUtils.pushWithSlide(context, const OrdersHistoryPage());
                 }),
                 ...storeContentList.map((contentItem) =>
                     _buildProfileItem(contentItem.name ?? "Unknown", () {

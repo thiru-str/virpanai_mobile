@@ -15,8 +15,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import 'widgets/no_orders_widget.dart';
 
 class OrdersHistoryPage extends StatefulWidget {
-  final bool isFromBottomNav;
-  const OrdersHistoryPage({super.key,this.isFromBottomNav = false});
+  const OrdersHistoryPage({super.key});
 
   @override
   State<OrdersHistoryPage> createState() => _OrdersHistoryPageState();
@@ -96,7 +95,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         message: AppStrings.no_order_yet,
         buttonText: AppStrings.explore_categories,
         iconPath: AppAssets.ic_cart_empty,
-        showExplore: !widget.isFromBottomNav,
+        showExplore: false,
         onButtonTap: () async {
           // final result = await PageRouteUtils.pushWithSlide(
           //     context,
