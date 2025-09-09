@@ -82,7 +82,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               imageUrl:
                               product?.thumbnail ?? "",
                               title: product?.title ?? "",
-                              price: CurrencyUtil.appendCurrency((product?.variants?.first.calculatedPrice?.calculatedAmount ?? 0).toString()),
+                              product: product!,
                               onTapFavorite: () {
                                 String currentCustomerId = customer?.id ?? "";
                                 var currentWishlistEntry;
