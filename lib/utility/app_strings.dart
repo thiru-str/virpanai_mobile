@@ -110,11 +110,11 @@ class AppStrings {
   static const String cart_empty = "Your Cart is Empty";
   static const String all_category = 'All categories';
   static const String promo_code = "Promo Code";
-  static const String check_out = "Checkout";
+  static const String check_out = "Get Quote";
   static const String shipping_address = 'Shipping Address';
   static const String add_shipping_address = 'Add Shipping Address';
   static const String add_payment_method = 'Add Payment Method';
-  static const String place_order = 'Place Order';
+  static const String place_order = 'Add Quote';
   static const String company = 'Company';
   static const String company_required = "company is required";
   static const String firstname_required = "firstname is required";

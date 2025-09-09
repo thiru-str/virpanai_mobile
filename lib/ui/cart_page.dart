@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -38,11 +40,13 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
+  late StreamSubscription<ReloadEvent> _streamSubscription;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCartApi();
+    listenToEvents();
 
     // Initialize the animation controller
     _animationController = AnimationController(
@@ -67,8 +71,19 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   }
 
+  void listenToEvents() {
+    _streamSubscription = eventBus.on<ReloadEvent>().listen((event) {
+      if (mounted) {
+        if(event.reload) {
+          getCartApi();
+        }
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _streamSubscription.cancel();
     _animationController.dispose();
     super.dispose();
   }

@@ -16,6 +16,7 @@ Future<void> showCreateCustomerBottomSheet({
   final emailController = TextEditingController();
 
   return showModalBottomSheet(
+    backgroundColor: Colors.white,
     context: context,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
@@ -41,7 +42,7 @@ Future<void> showCreateCustomerBottomSheet({
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Enter Your Details",
+                    "Enter Customer Details",
                     style: FontUtils.primaryFontStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

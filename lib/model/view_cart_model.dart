@@ -18,6 +18,11 @@ class TabSwitchEvent {
   TabSwitchEvent(this.tabIndex);
 }
 
+class ReloadEvent {
+  final bool reload;
+  ReloadEvent(this.reload);
+}
+
 class ProfileEvent {
   final Customer? customer;
   ProfileEvent(this.customer);

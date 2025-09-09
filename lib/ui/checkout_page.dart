@@ -9,6 +9,7 @@ import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/shipping_response.dart';
+import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -471,6 +472,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
         print('First Name: ${customerDetails['first_name']}');
         print('Email: ${customerDetails['email']}');
+        eventBus.fire(ReloadEvent(true));
       } else {
         print('Customer details are empty or invalid');
       }

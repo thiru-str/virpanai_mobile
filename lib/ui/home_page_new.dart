@@ -181,7 +181,7 @@ class _HomePageNewState extends State<HomePageNew> {
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: GestureDetector(
                     onTap: (){
-                      PageRouteUtils.pushWithSlide(context, const CartPage());
+                      eventBus.fire(TabSwitchEvent(2));
                     },
                     child: ViewCartWidget(
                       totalItems: cartItems!,
