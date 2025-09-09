@@ -279,10 +279,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               return ProductCard(
                 imageUrl: product?.thumbnail ?? '',
                 title: product?.title ?? '',
-                price: product!.variants!.isNotEmpty
-                    ? CurrencyUtil.appendCurrency(product.variants?[0]
-                        .calculatedPrice?.rawCalculatedAmount?.value)
-                    : '',
+                product: product!,
                 onTapCard: () {
                   PageRouteUtils.pushWithSlide(
                     context,
@@ -1080,11 +1077,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   void emitEvent(CartResponse cartResponse) {
     setState(() {
-      cartItems = cartResponse.cart!.items!.length;
-      cartItemImages =
-          cartResponse.cart!.items!.map((item) => item.thumbnail!).toList();
+      cartItems = cartResponse.cart?.items?.length;
+      cartItemImages = cartResponse.cart?.items
+          ?.map((item) => item.thumbnail ?? "")
+          .toList();
     });
-    eventBus.fire(ViewCartModel(cartResponse.cart!.items!.length,
-        cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    if ((cartResponse.cart?.items?.length ?? 0) > 0) {
+      final qtyMap = <String, int>{};
+      for (var item in cartResponse.cart?.items ?? []) {
+        qtyMap[item.variantId] = item.quantity;
+      }
+      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
+    }
   }
 }

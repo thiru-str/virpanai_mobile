@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:waioz/model/product_response.dart';
+
 WishlistResponse wishlistResponseFromJson(String str) => WishlistResponse.fromJson(json.decode(str));
 
 String wishlistResponseToJson(WishlistResponse data) => json.encode(data.toJson());
@@ -32,129 +34,129 @@ class WishlistResponse {
   };
 }
 
-class Product {
-  String? id;
-  String? title;
-  String? handle;
-  String? subtitle;
-  String? description;
-  bool? isGiftcard;
-  String? status;
-  String? thumbnail;
-  dynamic weight;
-  dynamic length;
-  dynamic height;
-  dynamic width;
-  dynamic originCountry;
-  dynamic hsCode;
-  dynamic midCode;
-  dynamic material;
-  bool? discountable;
-  dynamic externalId;
-  dynamic metadata;
-  dynamic typeId;
-  dynamic type;
-  String? collectionId;
-  Collection? collection;
-  DateTime? createdAt;
-  DateTime? updatedAt;
-  dynamic deletedAt;
-  List<Variant>? variants;
-  dynamic productWishlist;
-
-  Product({
-    this.id,
-    this.title,
-    this.handle,
-    this.subtitle,
-    this.description,
-    this.isGiftcard,
-    this.status,
-    this.thumbnail,
-    this.weight,
-    this.length,
-    this.height,
-    this.width,
-    this.originCountry,
-    this.hsCode,
-    this.midCode,
-    this.material,
-    this.discountable,
-    this.externalId,
-    this.metadata,
-    this.typeId,
-    this.type,
-    this.collectionId,
-    this.collection,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.variants,
-    this.productWishlist,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) => Product(
-    id: json["id"],
-    title: json["title"],
-    handle: json["handle"],
-    subtitle: json["subtitle"],
-    description: json["description"],
-    isGiftcard: json["is_giftcard"],
-    status: json["status"],
-    thumbnail: json["thumbnail"],
-    weight: json["weight"],
-    length: json["length"],
-    height: json["height"],
-    width: json["width"],
-    originCountry: json["origin_country"],
-    hsCode: json["hs_code"],
-    midCode: json["mid_code"],
-    material: json["material"],
-    discountable: json["discountable"],
-    externalId: json["external_id"],
-    metadata: json["metadata"],
-    typeId: json["type_id"],
-    type: json["type"],
-    collectionId: json["collection_id"],
-    collection: json["collection"] == null ? null : Collection.fromJson(json["collection"]),
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-    variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
-    productWishlist: json["product_wishlist"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "handle": handle,
-    "subtitle": subtitle,
-    "description": description,
-    "is_giftcard": isGiftcard,
-    "status": status,
-    "thumbnail": thumbnail,
-    "weight": weight,
-    "length": length,
-    "height": height,
-    "width": width,
-    "origin_country": originCountry,
-    "hs_code": hsCode,
-    "mid_code": midCode,
-    "material": material,
-    "discountable": discountable,
-    "external_id": externalId,
-    "metadata": metadata,
-    "type_id": typeId,
-    "type": type,
-    "collection_id": collectionId,
-    "collection": collection?.toJson(),
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-    "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
-    "product_wishlist": productWishlist,
-  };
-}
+// class Product {
+//   String? id;
+//   String? title;
+//   String? handle;
+//   String? subtitle;
+//   String? description;
+//   bool? isGiftcard;
+//   String? status;
+//   String? thumbnail;
+//   dynamic weight;
+//   dynamic length;
+//   dynamic height;
+//   dynamic width;
+//   dynamic originCountry;
+//   dynamic hsCode;
+//   dynamic midCode;
+//   dynamic material;
+//   bool? discountable;
+//   dynamic externalId;
+//   dynamic metadata;
+//   dynamic typeId;
+//   dynamic type;
+//   String? collectionId;
+//   Collection? collection;
+//   DateTime? createdAt;
+//   DateTime? updatedAt;
+//   dynamic deletedAt;
+//   List<Variant>? variants;
+//   dynamic productWishlist;
+//
+//   Product({
+//     this.id,
+//     this.title,
+//     this.handle,
+//     this.subtitle,
+//     this.description,
+//     this.isGiftcard,
+//     this.status,
+//     this.thumbnail,
+//     this.weight,
+//     this.length,
+//     this.height,
+//     this.width,
+//     this.originCountry,
+//     this.hsCode,
+//     this.midCode,
+//     this.material,
+//     this.discountable,
+//     this.externalId,
+//     this.metadata,
+//     this.typeId,
+//     this.type,
+//     this.collectionId,
+//     this.collection,
+//     this.createdAt,
+//     this.updatedAt,
+//     this.deletedAt,
+//     this.variants,
+//     this.productWishlist,
+//   });
+//
+//   factory Product.fromJson(Map<String, dynamic> json) => Product(
+//     id: json["id"],
+//     title: json["title"],
+//     handle: json["handle"],
+//     subtitle: json["subtitle"],
+//     description: json["description"],
+//     isGiftcard: json["is_giftcard"],
+//     status: json["status"],
+//     thumbnail: json["thumbnail"],
+//     weight: json["weight"],
+//     length: json["length"],
+//     height: json["height"],
+//     width: json["width"],
+//     originCountry: json["origin_country"],
+//     hsCode: json["hs_code"],
+//     midCode: json["mid_code"],
+//     material: json["material"],
+//     discountable: json["discountable"],
+//     externalId: json["external_id"],
+//     metadata: json["metadata"],
+//     typeId: json["type_id"],
+//     type: json["type"],
+//     collectionId: json["collection_id"],
+//     collection: json["collection"] == null ? null : Collection.fromJson(json["collection"]),
+//     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+//     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+//     deletedAt: json["deleted_at"],
+//     variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
+//     productWishlist: json["product_wishlist"],
+//   );
+//
+//   Map<String, dynamic> toJson() => {
+//     "id": id,
+//     "title": title,
+//     "handle": handle,
+//     "subtitle": subtitle,
+//     "description": description,
+//     "is_giftcard": isGiftcard,
+//     "status": status,
+//     "thumbnail": thumbnail,
+//     "weight": weight,
+//     "length": length,
+//     "height": height,
+//     "width": width,
+//     "origin_country": originCountry,
+//     "hs_code": hsCode,
+//     "mid_code": midCode,
+//     "material": material,
+//     "discountable": discountable,
+//     "external_id": externalId,
+//     "metadata": metadata,
+//     "type_id": typeId,
+//     "type": type,
+//     "collection_id": collectionId,
+//     "collection": collection?.toJson(),
+//     "created_at": createdAt?.toIso8601String(),
+//     "updated_at": updatedAt?.toIso8601String(),
+//     "deleted_at": deletedAt,
+//     "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
+//     "product_wishlist": productWishlist,
+//   };
+// }
 
 class Collection {
   String? id;
