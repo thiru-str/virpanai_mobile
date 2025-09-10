@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
@@ -19,6 +21,8 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/view_cart_model.dart';
+
 class SettingsPage extends StatefulWidget {
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -35,6 +39,26 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
+    listenToEvents();
+  }
+
+  late StreamSubscription<ProfileEvent> _eventSubscription;
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ProfileEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          if(event.customer!=null) {
+            customer = event.customer;
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel();
+    super.dispose();
   }
 
   @override
