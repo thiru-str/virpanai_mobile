@@ -56,9 +56,8 @@ class CategoryCard extends StatelessWidget {
               )
                   :_imageFallback(),
             ),
-            const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 title,
                 maxLines: 2,
