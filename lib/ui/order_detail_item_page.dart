@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
+import 'package:waioz/ui/widgets/order_status_widget.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -73,21 +75,14 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    // First check if canceled
-    final isCanceled = order?.status == 'canceled';
 
+    //First check if canceled
+    final isCanceled = order?.status == 'canceled';
     // Map fulfillmentStatus
     final fulfillmentStatus = order?.metadata?.fulfillmentStatus ?? '';
 
-    final (statusTitle, statusColor) = isCanceled
-        ? ('Canceled', Colors.red)
-        : switch (fulfillmentStatus) {
-      'not_fulfilled' => ('Order Processing', Colors.grey),
-      'fulfilled' => ('Ready For Dispatch', Colors.blue),
-      'shipped' => ('Shipped', Colors.orange),
-      'delivered' => ('Delivered', Colors.green),
-      _ => ('Processing', Colors.grey),
-    };
+    final steps = buildOrderSteps(order?.status, order?.metadata?.fulfillmentStatus);
+    final currentStep = getCurrentStep(order?.status, order?.metadata?.fulfillmentStatus);
 
     return PopScope(
         canPop: false, // Disable default back button
@@ -125,7 +120,14 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               // Use a Column to arrange the widgets vertically
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                OrderStatusWidget(
+                  currentStep: currentStep,
+                  steps: steps,
+                  isCanceled: order?.status == 'canceled',
+                ),
+                const SizedBox(height: 10), // List of order items
                 _buildOrdersList(),
+                const SizedBox(height: 10), // List of order items
                 _buildSectionTitle('Billing details'),
                 const SizedBox(height: 10), // List of order items
                 Container(
@@ -136,34 +138,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Status',
-                            style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                color: AppColors.textColor50),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              statusTitle,
-                              style: FontUtils.primaryFontStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
                       CartPaymentMethodWidget(
                         paymentMethod: paymentType,
                         // Or any other payment method
@@ -208,7 +182,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 _buildSectionTitle('Shipping details'),
                 const SizedBox(height: 20), // List of order items
                 _buildShippingDetailsCard(), // Shipping details card
-                const SizedBox(height: 20), // List of order items
+                const SizedBox(height: 20),
                 Visibility(
                   visible: fulfillmentStatus == 'not_fulfilled' &&
                       !isCanceled,
@@ -326,4 +300,58 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           ],
         ));
   }
+
+  List<OrderStatusStep> buildOrderSteps(String? orderStatus, String? fulfillmentStatus) {
+    if (orderStatus == 'canceled') {
+      return [
+        OrderStatusStep(
+          label: 'Processing',
+          svgAsset: AppAssets.order_processing,
+          activeColor: Colors.grey,
+        ),
+        OrderStatusStep(
+          label: 'Cancelled',
+          svgAsset: AppAssets.order_canceled,
+          activeColor: Colors.red,
+        ),
+      ];
+    }
+
+    return [
+      OrderStatusStep(
+        label: 'Order Processing',
+        svgAsset: AppAssets.order_processing,
+        activeColor: Colors.grey,
+      ),
+      OrderStatusStep(
+        label: 'Ready For Dispatch',
+        svgAsset: AppAssets.order_dispatch,
+        activeColor: Colors.blue,
+      ),
+      OrderStatusStep(
+        label: 'Shipped',
+        svgAsset: AppAssets.order_shipped,
+        activeColor: Colors.orange,
+      ),
+      OrderStatusStep(
+        label: 'Delivered',
+        svgAsset: AppAssets.order_delivered,
+        activeColor: Colors.green,
+      ),
+    ];
+  }
+
+
+  int getCurrentStep(String? orderStatus, String? fulfillmentStatus) {
+    if (orderStatus == 'canceled') return 1;
+
+    return switch (fulfillmentStatus) {
+      'not_fulfilled' => 0,
+      'fulfilled'     => 1,
+      'shipped'       => 2,
+      'delivered'     => 3,
+      _               => 0,
+    };
+  }
+
 }
