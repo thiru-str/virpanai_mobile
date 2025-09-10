@@ -22,46 +22,46 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 200, // Adjusted height to match the image
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: Colors.white, // Set the background to white
-            borderRadius: BorderRadius.circular(16.0), // Adjusted for rounded corners
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1), // Light shadow
-                spreadRadius: 1,
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.white, // Set the background to white
+          borderRadius: BorderRadius.circular(16.0), // Adjusted for rounded corners
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1), // Light shadow
+              spreadRadius: 1,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16.0),
+                topRight: Radius.circular(16.0),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16.0),
-                  topRight: Radius.circular(16.0),
-                ),
-                child: imagePath.isNotEmpty
-                    ? CachedNetworkImage(
-                  imageUrl: imagePath,
-                  height: 140, // Adjusted image height
-                  width: double.infinity, // Take full width
-                  fit: BoxFit.cover, // Fill the card space
-                  errorWidget: (context, error, stackTrace) => _imageFallback(),
-                )
-                    :_imageFallback(),
-              ),
-              const SizedBox(height: 12),
-              Text(
+              child: imagePath.isNotEmpty
+                  ? CachedNetworkImage(
+                imageUrl: imagePath,
+                height: 140, // Adjusted image height
+                width: double.infinity, // Take full width
+                fit: BoxFit.cover, // Fill the card space
+                errorWidget: (context, error, stackTrace) => _imageFallback(),
+              )
+                  :_imageFallback(),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Text(
                 title,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: FontUtils.primaryFontStyle(
@@ -70,8 +70,8 @@ class CategoryCard extends StatelessWidget {
                   color: Colors.black87,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
