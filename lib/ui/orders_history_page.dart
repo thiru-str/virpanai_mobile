@@ -116,7 +116,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           orderId: (orderHistoryResponse?.orders?[index].displayId ?? 1).toString(),
           itemCount: (orderHistoryResponse?.orders?[index].items?.length ?? 1).toString(),
           createdAt: toIST(orderHistoryResponse?.orders?[index].createdAt??DateTime.now()),
-          itemPrice: (orderHistoryResponse?.orders?[index].total?? 0),
+          itemPrice: (orderHistoryResponse?.orders?[index].status??'').toLowerCase() =='canceled'?(orderHistoryResponse?.orders?[index].subtotal?? 0):(orderHistoryResponse?.orders?[index].total?? 0),
           onTap: () {
             // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
             PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(orderId: orderHistoryResponse?.orders?[index].id??'',));

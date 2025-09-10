@@ -84,10 +84,7 @@ class _FilterPageState extends State<FilterPage> {
 
   Future<void> _loadCategories() async {
     try {
-      final response = await ApiService().listCategories(
-        context,
-        widget.parentCategoryId,
-      );
+      final response = await ApiService().listCategories(context);
       setState(() {
         categoryList = response.productCategories ?? [];
         isLoadingCategories = false;
