@@ -23,5 +23,10 @@ class AppAssets {
   static const String bg_top = 'images/bg_top.svg';
   static const String bg_bottom = 'images/bg_bottom.svg';
   static const String ic_no_image = 'images/ic_no_image.svg';
+  static const String order_shipped = 'images/order_shipped.svg';
+  static const String order_processing = 'images/order_processing.svg';
+  static const String order_dispatch = 'images/order_dispatch.svg';
+  static const String order_delivered = 'images/order_delivered.svg';
+  static const String order_canceled = 'images/order_canceled.svg';
 // Add more assets as needed
 }
