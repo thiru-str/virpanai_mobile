@@ -16,6 +16,7 @@ import '../../model/live_order_detail_response.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
+import 'common_alert_dialog.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final String orderId;
@@ -79,6 +80,42 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     //     fit: BoxFit.cover,
                     //   ),
                     // ),
+                    Visibility(
+                      visible: (_liveOrderDetailResponse?.data?.paymentMethod ?? '').isNotEmpty,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 16),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Payment Mode',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.green),
+                                ),
+                                child: Text(
+                                  _liveOrderDetailResponse?.data?.paymentMethod ?? '',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ]),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24.0, vertical: 16),
@@ -140,32 +177,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             horizontal: 16.0, vertical: 8),
                         child: completeOrderLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                           onPressed: () async {
-                            setState(() {
-                              completeOrderLoading = true;
-                            });
-
-                            try {
-                              final response = await ApiService().completeOrder(
-                                context,
-                                _liveOrderDetailResponse?.data?.orderId ?? '',
-                                _liveOrderDetailResponse?.data?.fulfillmentId ?? '',
-                              );
-
-                              if ((response.message ?? '').isNotEmpty) {
-                                AppUtils.showToast(response.message!);
-                              }
-
-                              setState(() {
-                                _liveOrderDetailResponse?.data?.orderStatus = 'Completed';
-                                eventBus.fire(ReloadEvent(true));
-                              });
-
-                            } catch (error) {
-                              debugPrint('$error');
-                            } finally {
-                              setState(() {
-                                completeOrderLoading = false;
-                              });
+                            if((_liveOrderDetailResponse?.data?.paymentMethod ?? '').toLowerCase() == 'cod') {
+                              _showPaymentConfirmation(context);
+                            }else {
+                              markAsComplete(context);
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -193,6 +208,35 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           );
   }
 
+  Future<void> markAsComplete(BuildContext context) async {
+    setState(() {
+      completeOrderLoading = true;
+    });
+    try {
+      final response = await ApiService().completeOrder(
+        context,
+        _liveOrderDetailResponse?.data?.orderId ?? '',
+        _liveOrderDetailResponse?.data?.fulfillmentId ?? '',
+      );
+
+      if ((response.message ?? '').isNotEmpty) {
+        AppUtils.showToast(response.message!);
+      }
+
+      setState(() {
+        _liveOrderDetailResponse?.data?.orderStatus = 'Completed';
+        eventBus.fire(ReloadEvent(true));
+      });
+
+    } catch (error) {
+      debugPrint('$error');
+    } finally {
+      setState(() {
+        completeOrderLoading = false;
+      });
+    }
+  }
+
   void getApis() async {
     try {
       final ApiService apiService = ApiService();
@@ -208,5 +252,23 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       });
       print(e);
     }
+  }
+
+  void _showPaymentConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: 'COD Order',
+          content: 'This is a Cash on Delivery order. Please ensure payment is collected before proceeding.',
+          contentOk: 'Proceed',
+          contentCancel: 'Cancel',
+          onTapOk: () {
+            Navigator.pop(context);
+            markAsComplete(context);
+          },
+        );
+      },
+    );
   }
 }
