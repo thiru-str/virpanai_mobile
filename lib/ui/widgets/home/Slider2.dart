@@ -25,24 +25,31 @@ class Slider2 extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                content.layoutTitle ?? '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Expanded(
+                child: Text(
+                  content.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
               ),
-              if ((content.layoutRedirectTitle ?? '').isNotEmpty)
-                GestureDetector(
+              const SizedBox(width: 4), // Add some spacing between title and redirect
+              Visibility(
+                visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                child: GestureDetector(
                   onTap: () {
-                    // Handle redirection
+                    // Handle section-level redirection if needed
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
                       redirectData: content.redirectData!,
                     );
                   },
                   child: Row(
+                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
                     children: [
                       Text(
                         content.layoutRedirectTitle!,
@@ -52,10 +59,11 @@ class Slider2 extends StatelessWidget {
                           color: AppColors.textColor,
                         ),
                       ),
-                      const Icon(Icons.chevron_right, size: 18)
+                      const Icon(Icons.chevron_right, size: 18),
                     ],
                   ),
                 ),
+              ),
             ],
           ),
         ),

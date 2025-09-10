@@ -17,8 +17,6 @@ class Item4 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasViewAll =
-        (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -36,34 +34,37 @@ class Item4 extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor,
                   ),
-                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
               ),
-
-              if (hasViewAll) const SizedBox(width: 12),
-
-              if (hasViewAll)
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Text(
-                      content.layoutRedirectTitle!,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+              const SizedBox(width: 4), // Add some spacing between title and redirect
+              Visibility(
+                visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle section-level redirection if needed
+                    RedirectUtils.handleContentRedirectViewAll(
+                      context: context,
+                      redirectData: content.redirectData!,
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                    children: [
+                      Text(
+                        content.layoutRedirectTitle!,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
                       ),
-                    ),
+                      const Icon(Icons.chevron_right, size: 18),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
           const SizedBox(height: 16),

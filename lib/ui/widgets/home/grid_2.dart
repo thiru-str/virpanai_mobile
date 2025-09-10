@@ -26,14 +26,19 @@ class Grid2 extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                content.layoutTitle ?? '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Expanded(
+                child: Text(
+                  content.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
               ),
+              const SizedBox(width: 4), // Add some spacing between title and redirect
               Visibility(
                 visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
                 child: GestureDetector(
@@ -45,6 +50,7 @@ class Grid2 extends StatelessWidget {
                     );
                   },
                   child: Row(
+                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
                     children: [
                       Text(
                         content.layoutRedirectTitle!,
