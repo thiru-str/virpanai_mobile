@@ -44,7 +44,12 @@ class Banner2 extends StatelessWidget {
                 Visibility(
                   visible: content.layoutRedirectTitle!.isNotEmpty,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content!.redirectData!,
+                      );
+                    },
                     child: Text(
                       content.layoutRedirectTitle!,
                       style: FontUtils.primaryFontStyle(

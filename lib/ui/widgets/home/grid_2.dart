@@ -39,6 +39,10 @@ class Grid2 extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     // Handle section-level redirection if needed
+                    RedirectUtils.handleContentRedirectViewAll(
+                      context: context,
+                      redirectData: content.redirectData!,
+                    );
                   },
                   child: Row(
                     children: [
