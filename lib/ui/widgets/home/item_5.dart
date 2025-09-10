@@ -32,33 +32,39 @@ class Item5 extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  content?.layoutTitle ?? "",
+                  content?.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
               ),
+              const SizedBox(width: 4), // Add some spacing between title and redirect
               Visibility(
-                visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
+                visible: (content?.layoutRedirectTitle ?? '').isNotEmpty,
                 child: GestureDetector(
                   onTap: () {
+                    // Handle section-level redirection if needed
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
                       redirectData: content!.redirectData!,
                     );
                   },
                   child: Row(
+                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
                     children: [
                       Text(
-                        content?.layoutRedirectTitle ?? "",
+                        content?.layoutRedirectTitle??'',
                         style: FontUtils.primaryFontStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textColor,
                         ),
                       ),
-                      const Icon(Icons.chevron_right, size: 18)
+                      const Icon(Icons.chevron_right, size: 18),
                     ],
                   ),
                 ),

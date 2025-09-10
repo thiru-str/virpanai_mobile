@@ -31,35 +31,7 @@ class Item4 extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    content?.layoutTitle ?? "",
-                    style: FontUtils.secondaryFontStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor),
-                  ),
-                ),
-                Visibility(
-                  visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
-                  child: GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content!.redirectData!,
-                      );
-                    },
-                    child: Text(
-                      content?.layoutRedirectTitle ?? "",
-                      style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor),
-                    ),
-                  ),
-                ),
-              ],
+
             ),
           ),
           const SizedBox(height: 16),
