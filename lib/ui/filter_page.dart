@@ -252,6 +252,7 @@ class _FilterPageState extends State<FilterPage> {
           title: Text(option, style: FontUtils.primaryFontStyle(fontSize: 16)),
           value: option,
           groupValue: sortBy,
+          activeColor: AppColors.primary,
           onChanged: (value) => setState(() => sortBy = value!),
           contentPadding: const EdgeInsets.symmetric(horizontal: 5),
           visualDensity: VisualDensity.compact,
