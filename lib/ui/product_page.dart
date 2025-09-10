@@ -38,9 +38,10 @@ class _ProductPageState extends State<ProductPage> {
   List<String> selectedCategoriesList = [];
 
   int currentPage = 0;
-  final int pageSize = 10;
+  final int pageSize = 20;
   bool hasMore = true;
   bool isPaginating = false;
+  bool isFilterApplied = false;
   ScrollController scrollController = ScrollController();
 
   @override
@@ -108,166 +109,164 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        appBar: CommonHeaderAppBar(
-          title: AppStrings.product,
-          onBackTap: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        backgroundColor: Colors.white,
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search bar + Filter icon
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: TextField(
-                        controller: searchController,
-                        textAlignVertical: TextAlignVertical.center,
-                        decoration: InputDecoration(
-                          hintText: AppStrings.search_product,
-                          border: InputBorder.none,
-                          prefixIcon:
-                          const Icon(Icons.search, color: Colors.grey),
-                          suffixIcon: searchController.text.isNotEmpty
-                              ? IconButton(
-                            icon:
-                            const Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () => searchController.clear(),
-                          )
-                              : null,
-                          contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
-                        ),
+    return Scaffold(
+      appBar: CommonHeaderAppBar(
+        title: AppStrings.product,
+        onBackTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar + Filter icon
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: TextField(
+                      controller: searchController,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        hintText: AppStrings.search_product,
+                        border: InputBorder.none,
+                        prefixIcon:
+                        const Icon(Icons.search, color: Colors.grey),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                          icon:
+                          const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () => searchController.clear(),
+                        )
+                            : null,
+                        contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final result = await PageRouteUtils.push(
-                        context,
-                        FilterPage(
-                          parentCategoryId: widget.categoryId,
-                          preSelectedCollections: selectedCollectionsList,
-                          preSelectedCategories: selectedCategoriesList,
-                        ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () async {
+                    final result = await PageRouteUtils.push(
+                      context,
+                      FilterPage(
+                        parentCategoryId: widget.categoryId,
+                        preSelectedCollections: selectedCollectionsList,
+                        preSelectedCategories: selectedCategoriesList,
+                      ),
+                    );
+                    if (result != null && mounted) {
+                      final data = result as Map<String, dynamic>;
+                      selectedCategoriesList =
+                      List<String>.from(data['selectedCategories'] ?? []);
+                      selectedCollectionsList =
+                      List<String>.from(data['selectedCollections'] ?? []);
+                      final categoryIds = selectedCategoriesList.isNotEmpty
+                          ? selectedCategoriesList.join(',')
+                          : widget.categoryId;
+                      final collectionIds = selectedCollectionsList.join(',');
+                      currentPage = 0;
+                      filteredProducts.clear();
+                      getProductsApi(
+                        categoryIds: categoryIds,
+                        collectionIds: collectionIds,
                       );
-                      if (result != null && mounted) {
-                        final data = result as Map<String, dynamic>;
-                        selectedCategoriesList =
-                        List<String>.from(data['selectedCategories'] ?? []);
-                        selectedCollectionsList =
-                        List<String>.from(data['selectedCollections'] ?? []);
-                        final categoryIds = selectedCategoriesList.isNotEmpty
-                            ? selectedCategoriesList.join(',')
-                            : widget.categoryId;
-                        final collectionIds = selectedCollectionsList.join(',');
-                        currentPage = 0;
-                        filteredProducts.clear();
-                        getProductsApi(
-                          categoryIds: categoryIds,
-                          collectionIds: collectionIds,
+                      setState(() {
+                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty;
+                      });
+
+                    }
+                  },
+                  child: Container(
+                    height: 48,
+                    width: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Icon(Icons.filter_list, color: isFilterApplied? AppColors.primary: Colors.grey),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Title
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                AppStrings.all_product,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 16,
+                  color: AppColors.textColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Main Content Area
+            Expanded(
+              child: Builder(
+                builder: (_) {
+                  if (apiLoading && currentPage == 0) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    );
+                  }
+
+                  if (filteredProducts.isEmpty) {
+                    return NoOrdersWidget(
+                      message: AppStrings.no_product,
+                      buttonText: AppStrings.explore_categories,
+                      iconPath: AppAssets.ic_cart_empty,
+                      onButtonTap: () {},
+                      showExplore: false,
+                    );
+                  }
+
+                  return MasonryGridView.count(
+                    controller: scrollController,
+                    padding: EdgeInsets.zero,
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    itemCount: filteredProducts.length + (isPaginating ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == filteredProducts.length && isPaginating) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
                         );
                       }
-                    },
-                    child: Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Icon(Icons.filter_list, color: Colors.grey),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Title
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  AppStrings.all_product,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 16,
-                    color: AppColors.textColor,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Main Content Area
-              Expanded(
-                child: Builder(
-                  builder: (_) {
-                    if (apiLoading && currentPage == 0) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      );
-                    }
-
-                    if (filteredProducts.isEmpty) {
-                      return NoOrdersWidget(
-                        message: AppStrings.no_product,
-                        buttonText: AppStrings.explore_categories,
-                        iconPath: AppAssets.ic_cart_empty,
-                        showExplore: false,
-                        onButtonTap: () {},
-                      );
-                    }
-
-                    return MasonryGridView.count(
-                      controller: scrollController,
-                      padding: EdgeInsets.zero,
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      itemCount: filteredProducts.length + (isPaginating ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == filteredProducts.length && isPaginating) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Center(child: CircularProgressIndicator()),
+                      final product = filteredProducts[index];
+                      return ProductCard(
+                        imageUrl: product.thumbnail ?? '',
+                        title: product.title ?? '',
+                        product: product,
+                        onTapCard: () {
+                          PageRouteUtils.pushWithSlide(
+                            context,
+                            ProductDetailPage(productId: product.id!),
                           );
-                        }
-                        final product = filteredProducts[index];
-                        return ProductCard(
-                          imageUrl: product.thumbnail ?? '',
-                          title: product.title ?? '',
-                          price: product.variants!.isNotEmpty
-                              ? CurrencyUtil.appendCurrency(
-                              product.variants?[0].calculatedPrice?.rawCalculatedAmount?.value ?? '')
-                              : '',
-                          onTapCard: () {
-                            PageRouteUtils.pushWithSlide(
-                              context,
-                              ProductDetailPage(productId: product.id!),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
+                        },
+                      );
+                    },
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
