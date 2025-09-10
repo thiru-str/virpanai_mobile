@@ -1,5 +1,6 @@
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
@@ -19,6 +20,12 @@ import 'api/api_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock orientation to portrait only
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Set Stripe publishable key
   Stripe.publishableKey = AppConfig.publishableKeyStripe;
