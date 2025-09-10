@@ -95,6 +95,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         message: AppStrings.no_order_yet,
         buttonText: AppStrings.explore_categories,
         iconPath: AppAssets.ic_cart_empty,
+        showExplore: false,
         onButtonTap: () async {
           // final result = await PageRouteUtils.pushWithSlide(
           //     context,
