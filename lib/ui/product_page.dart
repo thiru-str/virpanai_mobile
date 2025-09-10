@@ -41,6 +41,7 @@ class _ProductPageState extends State<ProductPage> {
   final int pageSize = 20;
   bool hasMore = true;
   bool isPaginating = false;
+  bool isFilterApplied = false;
   ScrollController scrollController = ScrollController();
 
   @override
@@ -179,6 +180,10 @@ class _ProductPageState extends State<ProductPage> {
                         categoryIds: categoryIds,
                         collectionIds: collectionIds,
                       );
+                      setState(() {
+                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty;
+                      });
+
                     }
                   },
                   child: Container(
@@ -188,7 +193,7 @@ class _ProductPageState extends State<ProductPage> {
                       color: AppColors.secondary,
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: const Icon(Icons.filter_list, color: Colors.grey),
+                    child: Icon(Icons.filter_list, color: isFilterApplied? AppColors.primary: Colors.grey),
                   ),
                 ),
               ],
