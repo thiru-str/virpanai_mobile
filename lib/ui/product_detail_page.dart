@@ -300,10 +300,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               return ProductCard(
                 imageUrl: product?.thumbnail??'',
                 title: product?.title??'',
-                price: product!.variants!.isNotEmpty
-                    ? CurrencyUtil.appendCurrency(
-                    product.variants![0].calculatedPrice!.rawCalculatedAmount!.value!)
-                    : '',
+                product: product!,
                 onTapCard: () {
                   PageRouteUtils.pushWithSlide(
                     context,
