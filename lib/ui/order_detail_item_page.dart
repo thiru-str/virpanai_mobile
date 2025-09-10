@@ -75,21 +75,11 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    // First check if canceled
-    // final isCanceled = order?.status == 'canceled';
-    //
-    // // Map fulfillmentStatus
-    // final fulfillmentStatus = order?.metadata?.fulfillmentStatus ?? '';
-    //
-    // final (statusTitle, statusColor) = isCanceled
-    //     ? ('Canceled', Colors.red)
-    //     : switch (fulfillmentStatus) {
-    //   'not_fulfilled' => ('Order Processing', Colors.grey),
-    //   'fulfilled' => ('Ready For Dispatch', Colors.blue),
-    //   'shipped' => ('Shipped', Colors.orange),
-    //   'delivered' => ('Delivered', Colors.green),
-    //   _ => ('Processing', Colors.grey),
-    // };
+
+    //First check if canceled
+    final isCanceled = order?.status == 'canceled';
+    // Map fulfillmentStatus
+    final fulfillmentStatus = order?.metadata?.fulfillmentStatus ?? '';
 
     final steps = buildOrderSteps(order?.status, order?.metadata?.fulfillmentStatus);
     final currentStep = getCurrentStep(order?.status, order?.metadata?.fulfillmentStatus);
@@ -192,24 +182,24 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                       _buildSectionTitle('Shipping details'),
                       const SizedBox(height: 20), // List of order items
                       _buildShippingDetailsCard(), // Shipping details card
-                      const SizedBox(height: 20), // List of order items
-                      // Visibility(
-                      //   visible: fulfillmentStatus == 'not_fulfilled' &&
-                      //       !isCanceled,
-                      //   child: GestureDetector(
-                      //     onTap: (){
-                      //       _showCancellation(context,order?.id??'');
-                      //     },
-                      //     child: Text(
-                      //       'Cancel Order',
-                      //       style: FontUtils.primaryFontStyle(
-                      //         fontSize: 15,
-                      //         color: Colors.red,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // )
+                      const SizedBox(height: 20),
+                      Visibility(
+                        visible: fulfillmentStatus == 'not_fulfilled' &&
+                            !isCanceled,
+                        child: GestureDetector(
+                          onTap: (){
+                            _showCancellation(context,order?.id??'');
+                          },
+                          child: Text(
+                            'Cancel Order',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 15,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
