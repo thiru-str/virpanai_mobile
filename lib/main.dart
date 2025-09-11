@@ -10,14 +10,12 @@ import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/push_notification_service.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../ui/splash_page.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
-import 'api/push_notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -39,9 +37,6 @@ Future<void> main() async {
   await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
   await Firebase.initializeApp();
-
-  final pushNotificationService = PushNotificationService();
-  await pushNotificationService.initializeFCM();
 
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
