@@ -240,7 +240,7 @@ class ApiService {
 
   Future<VerifyOtpResponse> verifyOtp(
       BuildContext context,String countryCode,String phone, String otp) async {
-    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
+    String? deviceId = await _updateToken();
     return _makePostRequest(
         "store/customers/verify-otp",
         {"device_id": deviceId,"country_code":countryCode,"phone": phone, "otp": otp},
@@ -295,7 +295,7 @@ class ApiService {
       String phone,
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
-    String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
+    String? deviceId = await _updateToken();
     return _makePostRequest(
         "store/customers",
         {
