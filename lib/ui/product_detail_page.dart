@@ -18,6 +18,7 @@ import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/add_on_product_card.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
@@ -716,15 +717,32 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
 
               if (!isLoggedIn) {
-                      AppUtils.showToast('Please login to Continue');
-                      PageRouteUtils.push(
-                          context,
-                          PhoneNumberPage(
-                            redirectPage: ProductDetailPage(
-                              productId: widget.productId,
-                              isFromLogin: true,
-                            ),
-                          ));
+                      showDialog(
+                        context: context,
+                        builder: (_) => Dialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: LoginPrompt(
+                            showClose: true,
+                            onClosePressed: (){
+                              Navigator.pop(context);
+                            },
+                            onButtonPressed: () {
+                              Navigator.pop(context);
+                              PageRouteUtils.push(
+                                  context,
+                                  PhoneNumberPage(
+                                    redirectPage: ProductDetailPage(
+                                      productId: widget.productId,
+                                      isFromLogin: true,
+                                    ),
+                                  ));
+                            },
+                          ),
+                        ),
+                      );
                       return;
                     }
                     if ((addOnProductsCount ?? 0) > 0) {

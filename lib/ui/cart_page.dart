@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
+import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -38,10 +40,18 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
+  bool isLoggedIn = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    AppUtils.isLoggedIn().then((value) {
+      setState(() {
+        isLoggedIn = value;
+      });
+    });
+
     getCartApi();
 
     // Initialize the animation controller
@@ -298,14 +308,18 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         ),
       )
           : Center(
-          child: NoOrdersWidget(
+          child: isLoggedIn?NoOrdersWidget(
               message: AppStrings.cart_empty,
               buttonText: AppStrings.explore_categories,
               iconPath: AppAssets.ic_cart_empty,
               showExplore: (widget.isFromBottomNav),
               onButtonTap: () {
                 eventBus.fire(TabSwitchEvent(1));
-              })),
+              }):LoginPrompt(
+            onButtonPressed: () {
+              PageRouteUtils.push(context, const PhoneNumberPage());
+            },
+          )),
     );
   }
 
