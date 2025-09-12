@@ -851,7 +851,7 @@ class ApiService {
     );
   }
 
-  Future<FilterCategoryResponse> listCategories(BuildContext context, String parentId) async {
+  Future<FilterCategoryResponse> listCategories(BuildContext context) async {
     return _makeGetRequest<FilterCategoryResponse>(
       'store/product-custom-categories',
       null,
