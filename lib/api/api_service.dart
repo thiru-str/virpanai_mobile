@@ -33,6 +33,7 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/pin_code_response.dart';
@@ -341,6 +342,9 @@ class ApiService {
       BuildContext context,
       String categoryId,
       String collectionId,
+      double minPrice,
+      double maxPrice,
+      String sortBy,
       String searchString, {
         int offset = 0,
         int limit = 10,
@@ -368,6 +372,15 @@ class ApiService {
       }
     }
 
+    //if (minPrice!=1) {
+      queryParams['min_price'] = minPrice;
+    //}
+    //if (maxPrice!=99999) {
+      queryParams['max_price'] = maxPrice;
+    //}
+
+    queryParams['order'] = sortBy == AppStrings.low_high? 'price':'-price';
+
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
@@ -377,7 +390,7 @@ class ApiService {
     queryParams['limit'] = limit.toString();
 
     return _makeGetRequest<ProductsResponse>(
-      'store/products',
+      'store/list-products',
       null,
       queryParams,
           (json) => ProductsResponse.fromJson(json),

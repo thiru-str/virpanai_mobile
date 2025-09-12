@@ -17,11 +17,17 @@ class FilterPage extends StatefulWidget {
   final String parentCategoryId;
   final List<String> preSelectedCollections;
   final List<String> preSelectedCategories;
+  final double preMinPrice;
+  final double preMaxPrice;
+  final String preSortBy;
   const FilterPage({
     super.key,
     required this.parentCategoryId,
     this.preSelectedCollections = const [],
     this.preSelectedCategories = const [],
+    this.preMinPrice = 1,
+    this.preMaxPrice = 99999,
+    this.preSortBy = AppStrings.low_high,
   });
 
   @override
@@ -31,9 +37,9 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   Set<String> selectedCollections = {};
   Set<String> selectedCategories = {};
-  double minPrice = 500;
-  double maxPrice = 10000;
-  String sortBy = AppStrings.recommended;
+  double minPrice = 1;
+  double maxPrice = 99999;
+  String sortBy = AppStrings.low_high;
 
   FilterSection selectedSection = FilterSection.collections;
   bool isLoadingCollections = true;
@@ -43,8 +49,6 @@ class _FilterPageState extends State<FilterPage> {
   List<ProductCategory> categoryList = [];
 
   static const sortOptions = [
-    'Recommended',
-    'Newest',
     'Lowest - Highest Price',
     'Highest - Lowest Price'
   ];
@@ -61,6 +65,9 @@ class _FilterPageState extends State<FilterPage> {
     super.initState();
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
+    minPrice = widget.preMinPrice;
+    maxPrice = widget.preMaxPrice;
+    sortBy = widget.preSortBy;
     _fetchInitialData();
   }
 
@@ -267,9 +274,13 @@ class _FilterPageState extends State<FilterPage> {
       child: Row(
         children: [
           _buildBottomButton(AppStrings.apply, AppColors.primary, () {
+            debugPrint('sort by ${sortBy}');
             Navigator.pop(context, {
               'selectedCollections': selectedCollections.toList(),
               'selectedCategories': selectedCategories.toList(),
+              'minPrice': minPrice,
+              'maxPrice': maxPrice,
+              'sortBy': sortBy,
             });
           }),
           VerticalDivider(width: 1, color: Colors.grey.shade300),
@@ -301,8 +312,8 @@ class _FilterPageState extends State<FilterPage> {
     setState(() {
       selectedCategories.clear();
       selectedCollections.clear();
-      minPrice = 500;
-      maxPrice = 10000;
+      minPrice = 1;
+      maxPrice = 99999;
       sortBy = sortOptions.first;
     });
   }

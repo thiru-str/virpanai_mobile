@@ -131,7 +131,7 @@ class AppStrings {
       "You've selected NEFT as your payment method. Your order will be placed immediately. Please transfer the amount using the bank details available via the 'NEFT' button on the order details page. After payment, upload a screenshot and provide the receipt number and transfer date for verification.";
 
   static const String clear_all = "Clear All";
-  static const String recommended = "Recommended";
+  static const String low_high = "Lowest - Highest Price";
 
   static const String wishlist_found = ' Wishlist entry found';
   static const String billing_details = 'Billing details';
