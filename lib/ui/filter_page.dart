@@ -17,11 +17,19 @@ class FilterPage extends StatefulWidget {
   final String parentCategoryId;
   final List<String> preSelectedCollections;
   final List<String> preSelectedCategories;
+  final double? preMinPrice;
+  final double? preMaxPrice;
+  final String preSortBy;
+  final FilterSection preSelectedSection;
   const FilterPage({
     super.key,
     required this.parentCategoryId,
     this.preSelectedCollections = const [],
     this.preSelectedCategories = const [],
+    this.preMinPrice,
+    this.preMaxPrice,
+    this.preSortBy = AppStrings.low_high,
+    this.preSelectedSection = FilterSection.collections,
   });
 
   @override
@@ -31,9 +39,9 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   Set<String> selectedCollections = {};
   Set<String> selectedCategories = {};
-  double minPrice = 500;
-  double maxPrice = 10000;
-  String sortBy = AppStrings.recommended;
+  double? minPrice;
+  double? maxPrice;
+  String sortBy = AppStrings.low_high;
 
   FilterSection selectedSection = FilterSection.collections;
   bool isLoadingCollections = true;
@@ -43,8 +51,6 @@ class _FilterPageState extends State<FilterPage> {
   List<ProductCategory> categoryList = [];
 
   static const sortOptions = [
-    'Recommended',
-    'Newest',
     'Lowest - Highest Price',
     'Highest - Lowest Price'
   ];
@@ -61,6 +67,14 @@ class _FilterPageState extends State<FilterPage> {
     super.initState();
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
+    if(widget.preMinPrice!=null) {
+      minPrice = widget.preMinPrice!;
+    }
+    if(widget.preMaxPrice!=null) {
+      maxPrice = widget.preMaxPrice!;
+    }
+    sortBy = widget.preSortBy;
+    selectedSection = widget.preSelectedSection;
     _fetchInitialData();
   }
 
@@ -84,7 +98,10 @@ class _FilterPageState extends State<FilterPage> {
 
   Future<void> _loadCategories() async {
     try {
-      final response = await ApiService().listCategories(context);
+      final response = await ApiService().listCategories(
+        context,
+        widget.parentCategoryId,
+      );
       setState(() {
         categoryList = response.productCategories ?? [];
         isLoadingCategories = false;
@@ -117,7 +134,7 @@ class _FilterPageState extends State<FilterPage> {
               child: Text(
                 AppStrings.clear_all,
                 style:
-                    FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
+                FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
               ),
             ),
           ],
@@ -172,22 +189,22 @@ class _FilterPageState extends State<FilterPage> {
         return isLoadingCollections
             ? const Center(child: CircularProgressIndicator())
             : _buildFilterList(
-                collectionsList.map((e) => e.id ?? '').toList(),
-                selectedCollections,
-                labelMap: Map.fromEntries(collectionsList
-                    .where((e) => e.id != null && e.title != null)
-                    .map((e) => MapEntry(e.id!, e.title!))),
-              );
+          collectionsList.map((e) => e.id ?? '').toList(),
+          selectedCollections,
+          labelMap: Map.fromEntries(collectionsList
+              .where((e) => e.id != null && e.title != null)
+              .map((e) => MapEntry(e.id!, e.title!))),
+        );
       case FilterSection.categories:
         return isLoadingCategories
             ? const Center(child: CircularProgressIndicator())
             : _buildFilterList(
-                categoryList.map((e) => e.id ?? '').toList(),
-                selectedCategories,
-                labelMap: Map.fromEntries(categoryList
-                    .where((e) => e.id != null && e.name != null)
-                    .map((e) => MapEntry(e.id!, e.name!))),
-              );
+          categoryList.map((e) => e.id ?? '').toList(),
+          selectedCategories,
+          labelMap: Map.fromEntries(categoryList
+              .where((e) => e.id != null && e.name != null)
+              .map((e) => MapEntry(e.id!, e.name!))),
+        );
       case FilterSection.price:
         return _buildPriceFilter();
       case FilterSection.sortBy:
@@ -196,10 +213,10 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildFilterList(
-    List<String> items,
-    Set<String> selectedSet, {
-    Map<String, String>? labelMap,
-  }) {
+      List<String> items,
+      Set<String> selectedSet, {
+        Map<String, String>? labelMap,
+      }) {
     return ListView(
       children: items.map((id) {
         final isSelected = selectedSet.contains(id);
@@ -218,18 +235,18 @@ class _FilterPageState extends State<FilterPage> {
   Widget _buildPriceFilter() {
     return Column(
       children: [
-        _buildPriceInput('Min: ', minPrice, (value) {
-          setState(() => minPrice = double.tryParse(value) ?? minPrice);
+        _buildPriceInput('Min: ', 1,minPrice, (value) {
+          setState(() => minPrice = value.isEmpty ? null : double.tryParse(value));
         }),
-        _buildPriceInput('Max: ', maxPrice, (value) {
-          setState(() => maxPrice = double.tryParse(value) ?? maxPrice);
+        _buildPriceInput('Max: ', 999999,maxPrice, (value) {
+          setState(() => maxPrice = value.isEmpty ? null : double.tryParse(value));
         }),
       ],
     );
   }
 
   Widget _buildPriceInput(
-      String label, double value, ValueChanged<String> onChanged) {
+      String label, double hint,double? value, ValueChanged<String> onChanged) {
     return Row(
       children: [
         Text(label),
@@ -237,7 +254,7 @@ class _FilterPageState extends State<FilterPage> {
         Expanded(
           child: TextField(
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(hintText: '₹${value.toInt()}'),
+            decoration: InputDecoration(hintText: '₹${hint.toInt()}'),
             onChanged: onChanged,
           ),
         ),
@@ -252,6 +269,7 @@ class _FilterPageState extends State<FilterPage> {
           title: Text(option, style: FontUtils.primaryFontStyle(fontSize: 16)),
           value: option,
           groupValue: sortBy,
+          activeColor: AppColors.primary,
           onChanged: (value) => setState(() => sortBy = value!),
           contentPadding: const EdgeInsets.symmetric(horizontal: 5),
           visualDensity: VisualDensity.compact,
@@ -266,9 +284,14 @@ class _FilterPageState extends State<FilterPage> {
       child: Row(
         children: [
           _buildBottomButton(AppStrings.apply, AppColors.primary, () {
+            debugPrint('sort by ${sortBy}');
             Navigator.pop(context, {
               'selectedCollections': selectedCollections.toList(),
               'selectedCategories': selectedCategories.toList(),
+              'minPrice': minPrice,
+              'maxPrice': maxPrice,
+              'sortBy': sortBy,
+              'selectedSection': selectedSection,
             });
           }),
           VerticalDivider(width: 1, color: Colors.grey.shade300),
@@ -300,8 +323,8 @@ class _FilterPageState extends State<FilterPage> {
     setState(() {
       selectedCategories.clear();
       selectedCollections.clear();
-      minPrice = 500;
-      maxPrice = 10000;
+      minPrice = 1;
+      maxPrice = 99999;
       sortBy = sortOptions.first;
     });
   }
@@ -326,7 +349,7 @@ class SidebarItem extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
           color:
-              selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
+          selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
           border: Border(
             left: BorderSide(
               color: selected ? AppColors.primary : Colors.transparent,
