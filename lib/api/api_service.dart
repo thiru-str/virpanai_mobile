@@ -329,9 +329,12 @@ class ApiService {
       BuildContext context,
       String categoryId,
       String collectionId,
+      double? minPrice,
+      double? maxPrice,
+      String sortBy,
       String searchString, {
         int offset = 0,
-        int limit = 20,
+        int limit = 10,
       }) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, dynamic>{};
@@ -341,21 +344,35 @@ class ApiService {
     }
 
     if (categoryId.trim().isNotEmpty) {
-      final categories =
-      categoryId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final categories = categoryId
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
       if (categories.isNotEmpty) {
         queryParams['category_id[]'] = categories;
       }
     }
 
     if (collectionId.trim().isNotEmpty) {
-      final collections =
-      collectionId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final collections = collectionId
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
       if (collections.isNotEmpty) {
         queryParams['collection_id[]'] = collections;
       }
     }
 
+    if (minPrice != null) {
+      queryParams['min_price'] = minPrice;
+    }
+    if (maxPrice != null) {
+      queryParams['max_price'] = maxPrice;
+    }
+
+    queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
@@ -365,7 +382,7 @@ class ApiService {
     queryParams['limit'] = limit.toString();
 
     return _makeGetRequest<ProductsResponse>(
-      'store/products',
+      'store/list-products',
       null,
       queryParams,
           (json) => ProductsResponse.fromJson(json),
