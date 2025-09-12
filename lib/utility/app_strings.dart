@@ -132,6 +132,7 @@ class AppStrings {
 
   static const String clear_all = "Clear All";
   static const String recommended = "Recommended";
+  static const String low_high = "Lowest - Highest Price";
 
   static const String wishlist_found = ' Wishlist entry found';
   static const String billing_details = 'Billing details';
