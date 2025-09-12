@@ -1,6 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 
+import '../../../utility/app_assets.dart';
+import '../../../utility/app_colors.dart';
 import '../../../utility/redirect_utils.dart';
 
 
@@ -97,11 +101,12 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
 
             child: Stack(
               children: [
-                Image.network(
+                CachedNetworkImage(imageUrl:
                   currentData.image ?? '',
                   width: double.infinity,
                   height: 500,
                   fit: BoxFit.cover,
+                  errorWidget: (context, _, __) => _fallbackWidget(),
                 ),
 
                 // Bottom gradient overlay
@@ -186,6 +191,18 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
       ),
     );
   }
+}
+
+Widget _fallbackWidget() {
+  return Container(
+    height: 500,
+    color: AppColors.secondary,
+    alignment: Alignment.center,
+    child: SvgPicture.asset(
+      AppAssets.ic_no_image,
+      height: 500 * 0.5,
+    ),
+  );
 }
 
 
