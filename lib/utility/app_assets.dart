@@ -25,5 +25,9 @@ class AppAssets {
   static const String order_dispatch = 'images/order_dispatch.svg';
   static const String order_delivered = 'images/order_delivered.svg';
   static const String order_canceled = 'images/order_canceled.svg';
+  static const String mobile_speaker = 'images/mobile_speaker.svg';
+  static const String mobile_update = 'images/mobile_update.svg';
+  static const String mobile_frame = 'images/mobile_frame.svg';
+  static const String mobile_settings = 'images/mobile_settings.svg';
 // Add more assets as needed
 }
