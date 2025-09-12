@@ -36,6 +36,10 @@ class _ProductPageState extends State<ProductPage> {
   List<Product> filteredProducts = [];
   List<String> selectedCollectionsList = [];
   List<String> selectedCategoriesList = [];
+  double? minPrice;
+  double? maxPrice;
+  String sortBy = AppStrings.low_high;
+  FilterSection selectedSection = FilterSection.collections;
 
   int currentPage = 0;
   final int pageSize = 20;
@@ -68,6 +72,9 @@ class _ProductPageState extends State<ProductPage> {
       categoryIds: widget.categoryId,
       collectionIds: selectedCollectionsList.join(','),
       searchString: searchController.text,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      sortBy: sortBy,
     );
   }
 
@@ -162,6 +169,10 @@ class _ProductPageState extends State<ProductPage> {
                         parentCategoryId: widget.categoryId,
                         preSelectedCollections: selectedCollectionsList,
                         preSelectedCategories: selectedCategoriesList,
+                        preMinPrice: minPrice,
+                        preMaxPrice: maxPrice,
+                        preSortBy: sortBy,
+                        preSelectedSection: selectedSection,
                       ),
                     );
                     if (result != null && mounted) {
@@ -170,6 +181,14 @@ class _ProductPageState extends State<ProductPage> {
                       List<String>.from(data['selectedCategories'] ?? []);
                       selectedCollectionsList =
                       List<String>.from(data['selectedCollections'] ?? []);
+                      if(data['minPrice']!=null) {
+                        minPrice = data['minPrice'];
+                      }
+                      if (data['maxPrice']!= null) {
+                        maxPrice = data['maxPrice'];
+                      }
+                      sortBy = data['sortBy'] ??AppStrings.low_high;
+                      selectedSection = data['selectedSection'] ??selectedSection;
                       final categoryIds = selectedCategoriesList.isNotEmpty
                           ? selectedCategoriesList.join(',')
                           : widget.categoryId;
@@ -179,9 +198,12 @@ class _ProductPageState extends State<ProductPage> {
                       getProductsApi(
                         categoryIds: categoryIds,
                         collectionIds: collectionIds,
+                        minPrice: minPrice,
+                        maxPrice: maxPrice,
+                        sortBy: sortBy,
                       );
                       setState(() {
-                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty;
+                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || (minPrice != null || maxPrice != null)|| sortBy!=AppStrings.low_high;
                       });
 
                     }
@@ -272,7 +294,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  void getProductsApi({String? categoryIds, String? collectionIds, String? searchString}) async {
+  void getProductsApi({String? categoryIds, String? collectionIds, String? searchString,double? minPrice,double? maxPrice,String? sortBy}) async {
     if (currentPage == 0) {
       setState(() {
         apiLoading = true;
@@ -289,6 +311,9 @@ class _ProductPageState extends State<ProductPage> {
         context,
         categoryIds ?? '',
         collectionIds ?? '',
+        minPrice,
+        maxPrice,
+        sortBy ?? AppStrings.low_high,
         searchString ?? '',
         offset: currentPage * pageSize,
         limit: pageSize,
