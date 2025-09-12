@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/product_category_response.dart';
@@ -47,6 +48,9 @@ class _FilterPageState extends State<FilterPage> {
   bool isLoadingCollections = true;
   bool isLoadingCategories = true;
 
+  TextEditingController minPriceController = TextEditingController();
+  TextEditingController maxPriceController = TextEditingController();
+
   List<Collection> collectionsList = [];
   List<ProductCategory> categoryList = [];
 
@@ -68,10 +72,10 @@ class _FilterPageState extends State<FilterPage> {
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
     if(widget.preMinPrice!=null) {
-      minPrice = widget.preMinPrice!;
+      minPriceController.text = '${widget.preMinPrice!.toInt()}';
     }
     if(widget.preMaxPrice!=null) {
-      maxPrice = widget.preMaxPrice!;
+      maxPriceController.text = '${widget.preMaxPrice!.toInt()}';
     }
     sortBy = widget.preSortBy;
     selectedSection = widget.preSelectedSection;
@@ -234,10 +238,10 @@ class _FilterPageState extends State<FilterPage> {
   Widget _buildPriceFilter() {
     return Column(
       children: [
-        _buildPriceInput('Min: ', 1,minPrice, (value) {
+        _buildPriceInput('Min: ',minPriceController, 1,minPrice, (value) {
           setState(() => minPrice = value.isEmpty ? null : double.tryParse(value));
         }),
-        _buildPriceInput('Max: ', 999999,maxPrice, (value) {
+        _buildPriceInput('Max: ',maxPriceController, 999999,maxPrice, (value) {
           setState(() => maxPrice = value.isEmpty ? null : double.tryParse(value));
         }),
       ],
@@ -245,14 +249,18 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Widget _buildPriceInput(
-      String label, double hint,double? value, ValueChanged<String> onChanged) {
+      String label, TextEditingController textController,double hint,double? value, ValueChanged<String> onChanged) {
     return Row(
       children: [
         Text(label),
         const SizedBox(width: 8),
         Expanded(
           child: TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             keyboardType: TextInputType.number,
+            controller: textController,
             decoration: InputDecoration(hintText: '₹${hint.toInt()}'),
             onChanged: onChanged,
           ),
