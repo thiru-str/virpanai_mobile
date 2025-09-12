@@ -196,7 +196,7 @@ class _ProductPageState extends State<ProductPage> {
                         sortBy: sortBy,
                       );
                       setState(() {
-                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || (minPrice!=1 && maxPrice!=99999);
+                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || (minPrice!=1 && maxPrice!=99999)|| sortBy!=AppStrings.low_high;
                       });
 
                     }
