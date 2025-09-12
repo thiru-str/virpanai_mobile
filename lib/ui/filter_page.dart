@@ -100,7 +100,6 @@ class _FilterPageState extends State<FilterPage> {
     try {
       final response = await ApiService().listCategories(
         context,
-        widget.parentCategoryId,
       );
       setState(() {
         categoryList = response.productCategories ?? [];
