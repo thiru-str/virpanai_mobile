@@ -39,6 +39,7 @@ class _ProductPageState extends State<ProductPage> {
   double minPrice = 1;
   double maxPrice = 99999;
   String sortBy = AppStrings.low_high;
+  FilterSection selectedSection = FilterSection.collections;
 
   int currentPage = 0;
   final int pageSize = 20;
@@ -171,6 +172,7 @@ class _ProductPageState extends State<ProductPage> {
                         preMinPrice: minPrice,
                         preMaxPrice: maxPrice,
                         preSortBy: sortBy,
+                        preSelectedSection: selectedSection,
                       ),
                     );
                     if (result != null && mounted) {
@@ -182,6 +184,7 @@ class _ProductPageState extends State<ProductPage> {
                       minPrice = data['minPrice'] ??1;
                       maxPrice = data['maxPrice'] ??99999;
                       sortBy = data['sortBy'] ??AppStrings.low_high;
+                      selectedSection = data['selectedSection'] ??selectedSection;
                       final categoryIds = selectedCategoriesList.isNotEmpty
                           ? selectedCategoriesList.join(',')
                           : widget.categoryId;

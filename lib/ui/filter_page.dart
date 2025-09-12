@@ -20,6 +20,7 @@ class FilterPage extends StatefulWidget {
   final double preMinPrice;
   final double preMaxPrice;
   final String preSortBy;
+  final FilterSection preSelectedSection;
   const FilterPage({
     super.key,
     required this.parentCategoryId,
@@ -28,6 +29,7 @@ class FilterPage extends StatefulWidget {
     this.preMinPrice = 1,
     this.preMaxPrice = 99999,
     this.preSortBy = AppStrings.low_high,
+    this.preSelectedSection = FilterSection.collections,
   });
 
   @override
@@ -68,6 +70,7 @@ class _FilterPageState extends State<FilterPage> {
     minPrice = widget.preMinPrice;
     maxPrice = widget.preMaxPrice;
     sortBy = widget.preSortBy;
+    selectedSection = widget.preSelectedSection;
     _fetchInitialData();
   }
 
@@ -107,51 +110,54 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: Colors.grey.shade300,
-            height: 1,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              color: Colors.grey.shade300,
+              height: 1,
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: _clearAllFilters,
+              child: Text(
+                AppStrings.clear_all,
+                style:
+                    FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: _clearAllFilters,
-            child: Text(
-              AppStrings.clear_all,
-              style:
-                  FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                _buildSidebar(),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _buildFilterContent(),
+        body: Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  _buildSidebar(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildFilterContent(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            height: 1,
-            color: Colors.grey.shade300,
-          ),
-        ],
+            Container(
+              height: 1,
+              color: Colors.grey.shade300,
+            ),
+          ],
+        ),
+        bottomNavigationBar: _buildBottomAppBar(),
       ),
-      bottomNavigationBar: _buildBottomAppBar(),
     );
   }
 
@@ -281,6 +287,7 @@ class _FilterPageState extends State<FilterPage> {
               'minPrice': minPrice,
               'maxPrice': maxPrice,
               'sortBy': sortBy,
+              'selectedSection': selectedSection,
             });
           }),
           VerticalDivider(width: 1, color: Colors.grey.shade300),
