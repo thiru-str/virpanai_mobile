@@ -36,8 +36,8 @@ class _ProductPageState extends State<ProductPage> {
   List<Product> filteredProducts = [];
   List<String> selectedCollectionsList = [];
   List<String> selectedCategoriesList = [];
-  double minPrice = 1;
-  double maxPrice = 99999;
+  double? minPrice;
+  double? maxPrice;
   String sortBy = AppStrings.low_high;
   FilterSection selectedSection = FilterSection.collections;
 
@@ -181,8 +181,12 @@ class _ProductPageState extends State<ProductPage> {
                       List<String>.from(data['selectedCategories'] ?? []);
                       selectedCollectionsList =
                       List<String>.from(data['selectedCollections'] ?? []);
-                      minPrice = data['minPrice'] ??1;
-                      maxPrice = data['maxPrice'] ??99999;
+                      if(data['minPrice']!=null) {
+                        minPrice = data['minPrice'];
+                      }
+                      if (data['maxPrice']!= null) {
+                        maxPrice = data['maxPrice'];
+                      }
                       sortBy = data['sortBy'] ??AppStrings.low_high;
                       selectedSection = data['selectedSection'] ??selectedSection;
                       final categoryIds = selectedCategoriesList.isNotEmpty
@@ -199,7 +203,7 @@ class _ProductPageState extends State<ProductPage> {
                         sortBy: sortBy,
                       );
                       setState(() {
-                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || (minPrice!=1 && maxPrice!=99999)|| sortBy!=AppStrings.low_high;
+                        isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || (minPrice != null || maxPrice != null)|| sortBy!=AppStrings.low_high;
                       });
 
                     }
@@ -307,8 +311,8 @@ class _ProductPageState extends State<ProductPage> {
         context,
         categoryIds ?? '',
         collectionIds ?? '',
-        minPrice ?? 1,
-        maxPrice ?? 99999,
+        minPrice,
+        maxPrice,
         sortBy ?? AppStrings.low_high,
         searchString ?? '',
         offset: currentPage * pageSize,

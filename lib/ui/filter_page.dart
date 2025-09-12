@@ -17,8 +17,8 @@ class FilterPage extends StatefulWidget {
   final String parentCategoryId;
   final List<String> preSelectedCollections;
   final List<String> preSelectedCategories;
-  final double preMinPrice;
-  final double preMaxPrice;
+  final double? preMinPrice;
+  final double? preMaxPrice;
   final String preSortBy;
   final FilterSection preSelectedSection;
   const FilterPage({
@@ -26,8 +26,8 @@ class FilterPage extends StatefulWidget {
     required this.parentCategoryId,
     this.preSelectedCollections = const [],
     this.preSelectedCategories = const [],
-    this.preMinPrice = 1,
-    this.preMaxPrice = 99999,
+    this.preMinPrice,
+    this.preMaxPrice,
     this.preSortBy = AppStrings.low_high,
     this.preSelectedSection = FilterSection.collections,
   });
@@ -39,8 +39,8 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   Set<String> selectedCollections = {};
   Set<String> selectedCategories = {};
-  double minPrice = 1;
-  double maxPrice = 99999;
+  double? minPrice;
+  double? maxPrice;
   String sortBy = AppStrings.low_high;
 
   FilterSection selectedSection = FilterSection.collections;
@@ -67,8 +67,12 @@ class _FilterPageState extends State<FilterPage> {
     super.initState();
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
-    minPrice = widget.preMinPrice;
-    maxPrice = widget.preMaxPrice;
+    if(widget.preMinPrice!=null) {
+      minPrice = widget.preMinPrice!;
+    }
+    if(widget.preMaxPrice!=null) {
+      maxPrice = widget.preMaxPrice!;
+    }
     sortBy = widget.preSortBy;
     selectedSection = widget.preSelectedSection;
     _fetchInitialData();
@@ -231,18 +235,18 @@ class _FilterPageState extends State<FilterPage> {
   Widget _buildPriceFilter() {
     return Column(
       children: [
-        _buildPriceInput('Min: ', minPrice, (value) {
-          setState(() => minPrice = double.tryParse(value) ?? minPrice);
+        _buildPriceInput('Min: ', 1,minPrice, (value) {
+          setState(() => minPrice = value.isEmpty ? null : double.tryParse(value));
         }),
-        _buildPriceInput('Max: ', maxPrice, (value) {
-          setState(() => maxPrice = double.tryParse(value) ?? maxPrice);
+        _buildPriceInput('Max: ', 999999,maxPrice, (value) {
+          setState(() => maxPrice = value.isEmpty ? null : double.tryParse(value));
         }),
       ],
     );
   }
 
   Widget _buildPriceInput(
-      String label, double value, ValueChanged<String> onChanged) {
+      String label, double hint,double? value, ValueChanged<String> onChanged) {
     return Row(
       children: [
         Text(label),
@@ -250,7 +254,7 @@ class _FilterPageState extends State<FilterPage> {
         Expanded(
           child: TextField(
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(hintText: '₹${value.toInt()}'),
+            decoration: InputDecoration(hintText: '₹${hint.toInt()}'),
             onChanged: onChanged,
           ),
         ),

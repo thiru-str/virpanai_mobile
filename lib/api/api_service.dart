@@ -342,8 +342,8 @@ class ApiService {
       BuildContext context,
       String categoryId,
       String collectionId,
-      double minPrice,
-      double maxPrice,
+      double? minPrice,
+      double? maxPrice,
       String sortBy,
       String searchString, {
         int offset = 0,
@@ -357,30 +357,35 @@ class ApiService {
     }
 
     if (categoryId.trim().isNotEmpty) {
-      final categories =
-      categoryId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final categories = categoryId
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
       if (categories.isNotEmpty) {
         queryParams['category_id[]'] = categories;
       }
     }
 
     if (collectionId.trim().isNotEmpty) {
-      final collections =
-      collectionId.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final collections = collectionId
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
       if (collections.isNotEmpty) {
         queryParams['collection_id[]'] = collections;
       }
     }
 
-    //if (minPrice!=1) {
+    if (minPrice != null) {
       queryParams['min_price'] = minPrice;
-    //}
-    //if (maxPrice!=99999) {
+    }
+    if (maxPrice != null) {
       queryParams['max_price'] = maxPrice;
-    //}
+    }
 
-    queryParams['order'] = sortBy == AppStrings.low_high? 'price':'-price';
-
+    queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
@@ -397,6 +402,7 @@ class ApiService {
       context,
     );
   }
+
 
   Future<ProductsResponse> listBrands(
       BuildContext context, String tagId) async {
