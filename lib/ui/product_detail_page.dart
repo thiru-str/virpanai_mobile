@@ -268,27 +268,30 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 24),
-        SizedBox(
-          height: 310,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            itemCount: relatedProductsResponse?.products?.length ?? 0,
-            separatorBuilder: (context, index) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final product = relatedProductsResponse?.products![index];
-              return ProductCard(
-                product: product!,
-                onTapCard: () {
-                  PageRouteUtils.pushWithSlide(
-                    context,
-                    ProductDetailPage(productId: product.id ?? ''),
-                  );
-                },
-              );
-            },
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(
+              relatedProductsResponse?.products?.length ?? 0,
+                  (index) {
+                final product = relatedProductsResponse?.products![index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10), // spacing like separator
+                  child: ProductCard(
+                    product: product!,
+                    onTapCard: () {
+                      PageRouteUtils.pushWithSlide(
+                        context,
+                        ProductDetailPage(productId: product.id ?? ''),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+        )
+
       ],
     );
   }
