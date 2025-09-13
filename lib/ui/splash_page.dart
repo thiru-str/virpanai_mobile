@@ -160,6 +160,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     if (mounted) {
       showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         isDismissible: false,
         enableDrag: false,
         builder: (_) => SoftUpdateBottomSheet(
