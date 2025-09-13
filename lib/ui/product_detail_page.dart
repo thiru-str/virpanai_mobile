@@ -278,8 +278,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             itemBuilder: (context, index) {
               final product = relatedProductsResponse?.products![index];
               return ProductCard(
-                imageUrl: product?.thumbnail ?? '',
-                title: product?.title ?? '',
                 product: product!,
                 onTapCard: () {
                   PageRouteUtils.pushWithSlide(

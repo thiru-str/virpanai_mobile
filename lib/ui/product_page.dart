@@ -262,7 +262,7 @@ class _ProductPageState extends State<ProductPage> {
                     padding: EdgeInsets.zero,
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
+                    crossAxisSpacing: 8,
                     itemCount: filteredProducts.length + (isPaginating ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == filteredProducts.length && isPaginating) {
@@ -273,8 +273,6 @@ class _ProductPageState extends State<ProductPage> {
                       }
                       final product = filteredProducts[index];
                       return ProductCard(
-                        imageUrl: product.thumbnail ?? '',
-                        title: product.title ?? '',
                         product: product,
                         onTapCard: () {
                           PageRouteUtils.pushWithSlide(
