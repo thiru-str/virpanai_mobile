@@ -135,9 +135,9 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   void _openStore() {
     if (Platform.isAndroid) {
-      VersionUtils.launchPlayStore("com.rodeodigital.wellmartmas");
+      VersionUtils.launchPlayStore();
     } else if (Platform.isIOS) {
-      VersionUtils.launchAppStore("1611964854");
+      VersionUtils.launchAppStore();
     }
   }
 

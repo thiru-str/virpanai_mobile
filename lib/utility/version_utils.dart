@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 class VersionUtils {
   static Future<Map<String, dynamic>> parseVersionConfig(String versionCheckJson) async {
@@ -27,7 +28,7 @@ class VersionUtils {
     return int.tryParse(info.buildNumber) ?? 0; // e.g. 12
   }
 
-  static Future<void> launchPlayStore(String packageName) async {
+  static Future<void> launchPlayStore({String packageName = AppStrings.androidPackage}) async {
     final url = Uri.parse("https://play.google.com/store/apps/details?id=$packageName");
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -36,7 +37,7 @@ class VersionUtils {
     }
   }
 
-  static Future<void> launchAppStore(String appId) async {
+  static Future<void> launchAppStore({String appId = AppStrings.appId}) async {
     final url = Uri.parse("https://apps.apple.com/app/id$appId");
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
