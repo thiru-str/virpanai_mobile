@@ -104,12 +104,10 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         final currentBuild = await VersionUtils.getCurrentBuildNumber();
         final minBuild = androidConfig['min_version_code'];
         final latestBuild = androidConfig['current_version_code'];
-        debugPrint('min build $minBuild');
-        debugPrint('latest build $latestBuild');
 
         if (currentBuild < minBuild) {
-          _showSoftUpdate();
-                    return;
+          _showForceUpdate();
+          return;
         } else if (currentBuild < latestBuild && !forceUpdate) {
           _showSoftUpdate();
           return;
