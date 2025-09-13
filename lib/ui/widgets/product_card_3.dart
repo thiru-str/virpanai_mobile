@@ -209,29 +209,31 @@ class ProductCard3 extends StatelessWidget {
             // ---- Add to Cart Button ----
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: onAddToCart,
-                icon: const Icon(Icons.shopping_cart_outlined,
-                    size: 16, color: Colors.brown),
-                label: const Text(
-                  "ADD TO CART",
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.brown,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown[50],
-                  foregroundColor: Colors.brown,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
+                child: ElevatedButton.icon(
+                  onPressed: onAddToCart,
+                  icon: const Icon(Icons.shopping_cart_outlined,
+                      size: 16, color: Colors.brown),
+                  label: const Text(
+                    "ADD TO CART",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.brown,
                     ),
                   ),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown[50],
+                    foregroundColor: Colors.brown,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(0),
+                        bottomRight: Radius.circular(0),
+                      ),
+                    ),
+                    elevation: 0,
+                  ),
                 ),
               ),
             ),
