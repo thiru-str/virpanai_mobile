@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/app_assets.dart';
 import '../../utility/currency_util.dart';
 
 class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
   final Product product;
   final VoidCallback onTapCard;
   final VoidCallback? onTapFavorite;
@@ -18,8 +17,6 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({
     Key? key,
-    required this.imageUrl,
-    required this.title,
     required this.product,
     required this.onTapCard,
     this.onTapFavorite,
@@ -32,8 +29,8 @@ class ProductCard extends StatelessWidget {
     if (p.variants?.isEmpty ?? true) return null;
     final vals = p.variants!
         .map((v) => double.tryParse(
-      v.calculatedPrice?.rawCalculatedAmount?.value ?? '',
-    ))
+              v.calculatedPrice?.rawCalculatedAmount?.value ?? '',
+            ))
         .whereType<double>()
         .toList();
     if (vals.isEmpty) return null;
@@ -44,8 +41,8 @@ class ProductCard extends StatelessWidget {
     if (p.variants?.isEmpty ?? true) return null;
     final vals = p.variants!
         .map((v) => double.tryParse(
-      v.calculatedPrice?.rawOriginalAmount?.value ?? '',
-    ))
+              v.calculatedPrice?.rawOriginalAmount?.value ?? '',
+            ))
         .whereType<double>()
         .toList();
     if (vals.isEmpty) return null;
@@ -94,7 +91,7 @@ class ProductCard extends StatelessWidget {
                     top: Radius.circular(12),
                   ),
                   child: CachedNetworkImage(
-                    imageUrl: imageUrl,
+                    imageUrl: product.thumbnail ?? '',
                     height: 225,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -152,7 +149,7 @@ class ProductCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                title,
+                product.title??'',
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
@@ -196,14 +193,16 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
+
 Widget _fallbackWidget() {
   return Container(
+    height: 60,
     color: AppColors.secondary,
     alignment: Alignment.center,
     child: SvgPicture.asset(
       AppAssets.ic_no_image,
-      width: 48,
-      height: 48,
+      width: 30,
+      height: 30,
     ),
   );
 }

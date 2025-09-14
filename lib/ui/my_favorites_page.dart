@@ -79,9 +79,6 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   return GestureDetector(
                     onTap: () {},
                     child: ProductCard(
-                        imageUrl:
-                        product?.thumbnail ?? "",
-                        title: product?.title ?? "",
                         product: product!,
                         onTapFavorite: () {
                           String currentCustomerId = customer?.id ?? "";
