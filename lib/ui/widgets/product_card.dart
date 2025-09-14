@@ -1,12 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
-import '../../utility/app_assets.dart';
 import '../../utility/currency_util.dart';
 
 class ProductCard extends StatelessWidget {
@@ -95,7 +93,8 @@ class ProductCard extends StatelessWidget {
                     height: 225,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => _fallbackWidget(),
+                    errorWidget: (context, url, error) =>
+                        const ImageFallbackWidget(w: 60, h: 60),
                   ),
                 ),
 
@@ -192,17 +191,4 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _fallbackWidget() {
-  return Container(
-    height: 60,
-    color: AppColors.secondary,
-    alignment: Alignment.center,
-    child: SvgPicture.asset(
-      AppAssets.ic_no_image,
-      width: 30,
-      height: 30,
-    ),
-  );
 }

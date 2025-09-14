@@ -273,8 +273,6 @@ class _ProductPageState extends State<ProductPage> {
                       }
                       final product = filteredProducts[index];
                       return ProductCard(
-                        imageUrl: product.thumbnail ?? '',
-                        title: product.title ?? '',
                         product: product,
                         onTapCard: () {
                           PageRouteUtils.pushWithSlide(
