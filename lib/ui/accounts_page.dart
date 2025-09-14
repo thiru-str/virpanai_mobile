@@ -20,6 +20,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/utility/version_utils.dart';
 
 import '../model/view_cart_model.dart';
 
@@ -32,6 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
   List<ContentData> storeContentList = [];
   bool isLoading = false;
+  String? _appVersion;
 
   @override
   void initState() {
@@ -40,6 +42,14 @@ class _SettingsPageState extends State<SettingsPage> {
     getCustomerInfo();
     fetchStoreContentAPI();
     listenToEvents();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final version = await VersionUtils.getCurrentAppVersion();
+    setState(() {
+      _appVersion = version;
+    });
   }
 
   late StreamSubscription<ProfileEvent> _eventSubscription;
@@ -196,6 +206,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
+          Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey),)
         ],
       )),
     );
