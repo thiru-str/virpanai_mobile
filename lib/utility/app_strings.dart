@@ -192,4 +192,7 @@ class AppStrings {
 
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
+
+  static const String androidPackage = 'com.rodeodigital.wellmartmas';
+  static const String appId = '1611964854';
 }
