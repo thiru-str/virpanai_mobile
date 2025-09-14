@@ -36,17 +36,17 @@ class PublicDetailsResponse {
   });
 
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
-    maintainance: json["maintainance"],
-    token: json["token"],
-    theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
-    googleMapUsage: json["googleMapUsage"],
-    showLocationAtStart: json["showLocationAtStart"],
-    restrictLocation: json["restrictLocation"],
-    singleShippingAddress: json["singleShippingAddress"],
-    restrictLocationBy: json["restrictLocationBy"],
-    bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
-    upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
-    storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"]),
+      maintainance: json["maintainance"],
+      token: json["token"],
+      theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
+      googleMapUsage: json["googleMapUsage"],
+      showLocationAtStart: json["showLocationAtStart"],
+      restrictLocation: json["restrictLocation"],
+      singleShippingAddress: json["singleShippingAddress"],
+      restrictLocationBy: json["restrictLocationBy"],
+      bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
+      upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
+      storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"])
   );
 
   Map<String, dynamic> toJson() => {
@@ -61,6 +61,46 @@ class PublicDetailsResponse {
     "bankDetails": bankDetails?.toJson(),
     "upiDetails": upiDetails?.toJson(),
     "storeDetails": storeDetails?.toJson(),
+  };
+}
+
+class StoreDetails {
+  StoreMetadata? storeMetadata;
+
+  StoreDetails({
+    this.storeMetadata,
+  });
+
+  factory StoreDetails.fromJson(Map<String, dynamic> json) => StoreDetails(
+    storeMetadata: json["storeMetadata"] == null ? null : StoreMetadata.fromJson(json["storeMetadata"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "storeMetadata": storeMetadata?.toJson(),
+  };
+}
+
+class StoreMetadata {
+  bool? skipLogin;
+  String? versionCheck;
+  int? minimumOrderValue;
+
+  StoreMetadata({
+    this.skipLogin,
+    this.versionCheck,
+    this.minimumOrderValue,
+  });
+
+  factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
+    skipLogin: json["skip_login"],
+    versionCheck: json["version_check"],
+    minimumOrderValue: json["minimum_order_value"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "skip_login": skipLogin,
+    "version_check": versionCheck,
+    "minimum_order_value": minimumOrderValue,
   };
 }
 
@@ -100,103 +140,43 @@ class BankDetails {
   };
 }
 
-class StoreDetails {
-  StoreMetadata? storeMetadata;
-
-  StoreDetails({
-    this.storeMetadata,
-  });
-
-  factory StoreDetails.fromJson(Map<String, dynamic> json) => StoreDetails(
-    storeMetadata: json["storeMetadata"] == null ? null : StoreMetadata.fromJson(json["storeMetadata"]),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "storeMetadata": storeMetadata?.toJson(),
-  };
-}
-
-class StoreMetadata {
-  String? android;
-  String? dealerRename;
-  String? versionCheck;
-  String? printStoreGst;
-  int? printStorePhone;
-  String? printStoreAddress;
-  String? printStoreBottomText;
-
-  StoreMetadata({
-    this.android,
-    this.dealerRename,
-    this.versionCheck,
-    this.printStoreGst,
-    this.printStorePhone,
-    this.printStoreAddress,
-    this.printStoreBottomText,
-  });
-
-  factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
-    android: json["android"],
-    dealerRename: json["dealer_rename"],
-    versionCheck: json["version_check"],
-    printStoreGst: json["print_store_gst"],
-    printStorePhone: json["print_store_phone"],
-    printStoreAddress: json["print_store_address"],
-    printStoreBottomText: json["print_store_bottom_text"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "android": android,
-    "dealer_rename": dealerRename,
-    "version_check": versionCheck,
-    "print_store_gst": printStoreGst,
-    "print_store_phone": printStorePhone,
-    "print_store_address": printStoreAddress,
-    "print_store_bottom_text": printStoreBottomText,
-  };
-}
-
 class Theme {
   String? fontFamily;
   String? primaryColor;
   String? secondaryColor;
-  String? fontColor;
-  String? titleFont;
-  String? contentFont;
   String? header;
   String? productView;
+  String? titleFont;
+  String? contentFont;
 
   Theme({
     this.fontFamily,
     this.primaryColor,
     this.secondaryColor,
-    this.fontColor,
-    this.titleFont,
-    this.contentFont,
     this.header,
     this.productView,
+    this.titleFont,
+    this.contentFont,
   });
 
   factory Theme.fromJson(Map<String, dynamic> json) => Theme(
     fontFamily: json["fontFamily"],
     primaryColor: json["primaryColor"],
     secondaryColor: json["secondaryColor"],
-    fontColor: json["fontColor"],
-    titleFont: json["titleFont"],
-    contentFont: json["contentFont"],
     header: json["header"],
     productView: json["productView"],
+    titleFont: json["titleFont"],
+    contentFont: json["contentFont"],
   );
 
   Map<String, dynamic> toJson() => {
     "fontFamily": fontFamily,
     "primaryColor": primaryColor,
     "secondaryColor": secondaryColor,
-    "fontColor": fontColor,
-    "titleFont": titleFont,
-    "contentFont": contentFont,
     "header": header,
     "productView": productView,
+    "titleFont": titleFont,
+    "contentFont": contentFont,
   };
 }
 

@@ -59,19 +59,20 @@ Future<void> main() async {
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
-  runApp(HomeScreen(skipLogin: skipLogin,));
+  runApp(HomeScreen(skipLogin: false,publicDetailsResponse: publicDetailsResponse,));
 }
 
 class HomeScreen extends StatelessWidget {
-   final bool skipLogin;
-   HomeScreen({super.key,this.skipLogin = false});
+  final bool skipLogin;
+  final PublicDetailsResponse? publicDetailsResponse;
+  HomeScreen({super.key,this.skipLogin = false,this.publicDetailsResponse});
 
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: SplashPage(skipLogin: skipLogin),
+      home: SplashPage(skipLogin: skipLogin,publicDetailsResponse: publicDetailsResponse,),
     );
   }
 
