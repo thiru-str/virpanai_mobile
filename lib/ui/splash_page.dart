@@ -74,11 +74,112 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 
   void navToNextPage() async {
-    String? token = await SharedPreferencesUtil().getString('token');
-    Widget nextPage = token == null ? widget.skipLogin ? const BottomNavPage():  WelcomePage() : const BottomNavPage();
+    final versionCheckJson = widget.publicDetailsResponse
+        ?.storeDetails
+        ?.storeMetadata
+        ?.versionCheck;
 
-    // Delay navigation until the animation completes
-    await Future.delayed(const Duration(seconds: 3));
+    debugPrint('min build calling ${versionCheckJson}');
+
+
+    if (versionCheckJson != null && versionCheckJson.isNotEmpty) {
+      final versionConfig = await VersionUtils.parseVersionConfig(versionCheckJson);
+
+      final bool forceUpdate = versionConfig['force_update'] ?? false;
+      final androidConfig = versionConfig['android'];
+      final iosConfig = versionConfig['ios'];
+
+      if (Platform.isAndroid) {
+        final currentBuild = await VersionUtils.getCurrentBuildNumber();
+        final minBuild = androidConfig['min_version_code'];
+        final latestBuild = androidConfig['current_version_code'];
+
+        if (currentBuild < minBuild) {
+          _showForceUpdate();
+          return;
+        } else if (currentBuild < latestBuild && !forceUpdate) {
+          _showSoftUpdate();
+          return;
+        }
+      } else if (Platform.isIOS) {
+        final currentVersion = await VersionUtils.getCurrentAppVersion();
+        final minVersion = iosConfig['min_version'];
+        final latestVersion = iosConfig['current_version'];
+
+        if (_isVersionLower(currentVersion, minVersion)) {
+          _showForceUpdate();
+          return;
+        } else if (_isVersionLower(currentVersion, latestVersion) && !forceUpdate) {
+          _showSoftUpdate();
+          return;
+        }
+      }
+    }
+    else{
+      debugPrint('min build calling');
+    }
+
+    _navigateToHome();
+  }
+
+  void _openStore() {
+    if (Platform.isAndroid) {
+      VersionUtils.launchPlayStore();
+    } else if (Platform.isIOS) {
+      VersionUtils.launchAppStore();
+    }
+  }
+
+  void _showForceUpdate() {
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ForceUpdateScreen(
+            onUpdateNow: _openStore,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showSoftUpdate() {
+    if (mounted) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: false,
+        enableDrag: false,
+        builder: (_) => SoftUpdateBottomSheet(
+          onUpdateNow: _openStore,
+          onContinue: () {
+            Navigator.pop(context);
+            _navigateToHome();
+          },
+        ),
+      );
+    }
+  }
+
+
+  bool _isVersionLower(String current, String latest) {
+    final currentParts = current.split('.').map(int.parse).toList();
+    final latestParts = latest.split('.').map(int.parse).toList();
+
+    for (int i = 0; i < latestParts.length; i++) {
+      final cur = (i < currentParts.length) ? currentParts[i] : 0;
+      final lat = latestParts[i];
+      if (cur < lat) return true;
+      if (cur > lat) return false;
+    }
+    return false;
+  }
+
+  void _navigateToHome() async {
+    String? token = await SharedPreferencesUtil().getString('token');
+    Widget nextPage = token == null
+        ? widget.skipLogin ? const BottomNavPage() : WelcomePage()
+        : const BottomNavPage();
 
     if (mounted) {
       PageRouteUtils.pushWithZoom(context, nextPage);
