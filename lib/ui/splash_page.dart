@@ -20,6 +20,7 @@ import '../utility/shared_preferences_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../utility/version_utils.dart';
 import 'force_update_page.dart';
 
 class SplashPage extends StatefulWidget {
