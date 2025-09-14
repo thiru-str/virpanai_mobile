@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -185,7 +186,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   void _navigateToHome() async {
     String? token = await SharedPreferencesUtil().getString('token');
     Widget nextPage = token == null
-        ? widget.skipLogin ? const BottomNavPage() : WelcomePage()
+        ? widget.skipLogin ? const BottomNavPage() : const PhoneNumberPage()
         : const BottomNavPage();
 
     if (mounted) {
