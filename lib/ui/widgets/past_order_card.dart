@@ -63,7 +63,7 @@ class PastOrderCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'No of Product',
+                            'No of Orders',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
@@ -71,7 +71,7 @@ class PastOrderCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '$productCount Product',
+                           int.parse(productCount)>1?'$productCount Orders':'$productCount Order',
                             style: const TextStyle(
                               color: Colors.teal,
                               fontWeight: FontWeight.bold,

@@ -65,10 +65,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Live Orders',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
                 // Ledger Balance Card
                 Stack(
                   alignment: Alignment.center,
@@ -83,10 +79,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     ),
                     Column(
                       children: [
-                        Text(
-                          'Ledger Balance',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
-                        ),
                         Text(
                           _dashboardResponse?.totalRevenue??'',
                           style: TextStyle(
@@ -112,7 +104,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: TodayRevenueChart(heading:_selectedIndex == 0? 'Today Revenue':'Overall Revenue',data: _dashboardResponse?.graphData??[]), // just pass!
+                child: TodayRevenueChart(heading:'Revenue Chart',data: _dashboardResponse?.graphData??[]), // just pass!
               ),
             ),
                 const SizedBox(height: 16),

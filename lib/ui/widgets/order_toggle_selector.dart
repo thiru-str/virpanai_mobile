@@ -25,7 +25,7 @@ class _OrderToggleSelectorState extends State<OrderToggleSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> options = ['Today Order', 'Overall Order'];
+    final List<String> options = ['Today\'s Order', 'Overall Order'];
 
     return Container(
       decoration: BoxDecoration(

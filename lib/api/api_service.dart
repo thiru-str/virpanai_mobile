@@ -794,7 +794,7 @@ class ApiService {
     return _makeGetRequest<DashboardResponse>(
       'dealer/dashboard/$type',
       null,
-      {"year": year},
+      {"year": '2025'},
           (json) => DashboardResponse.fromJson(json),
       context,
     );
