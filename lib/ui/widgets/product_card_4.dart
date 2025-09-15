@@ -106,7 +106,8 @@ class _ProductCard4State extends State<ProductCard4> {
                       itemBuilder: (context, index) {
                         return CachedNetworkImage(
                           imageUrl: images[index].url ?? '',
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
+                          alignment: Alignment.center,
                           width: double.infinity,
                           errorWidget: (c, u, e) =>
                           const ImageFallbackWidget(w: 80, h: 80),
@@ -132,7 +133,7 @@ class _ProductCard4State extends State<ProductCard4> {
                         child: Icon(
                           widget.isFavorite ? Icons.favorite : Icons.favorite_border,
                           size: 16,
-                          color: widget.isFavorite ? Colors.red : Colors.red,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
@@ -148,12 +149,12 @@ class _ProductCard4State extends State<ProductCard4> {
                     onPressed: widget.onAddToCart,
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(Colors.white), // solid white
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.red),   // red text/icon
-                      overlayColor: MaterialStateProperty.all<Color>(Colors.red.withOpacity(0.1)), // ripple
+                      foregroundColor: MaterialStateProperty.all<Color>(AppColors.primary),   // red text/icon
+                      overlayColor: MaterialStateProperty.all<Color>(AppColors.primary.withOpacity(0.1)), // ripple
                       shadowColor: MaterialStateProperty.all<Color>(Colors.transparent), // no shadow
                       surfaceTintColor: MaterialStateProperty.all<Color>(Colors.transparent),
                       side: MaterialStateProperty.all<BorderSide>(
-                        const BorderSide(color: Colors.red, width: 1),
+                        BorderSide(color: AppColors.primary, width: 1),
                       ),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
