@@ -433,7 +433,7 @@ class ApiService {
     return _makeGetRequest<ProductCategoriesResponse>(
       'store/product-custom-categories',
       null,
-      null,
+      {"limit":1000},
       (json) => ProductCategoriesResponse.fromJson(json),
       context,
     );
