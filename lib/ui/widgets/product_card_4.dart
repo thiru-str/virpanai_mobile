@@ -168,10 +168,10 @@ class _ProductCard4State extends State<ProductCard4> {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       elevation: MaterialStateProperty.all<double>(0),
                     ),
-                    child: const Text(
+                    child: Text(
                       "ADD",
                       style: TextStyle(
-                        color: Colors.red,
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),

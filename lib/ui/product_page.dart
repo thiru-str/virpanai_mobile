@@ -267,9 +267,9 @@ class _ProductPageState extends State<ProductPage> {
                     itemCount: filteredProducts.length + (isPaginating ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == filteredProducts.length && isPaginating) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(child: CircularProgressIndicator()),
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
                         );
                       }
                       final product = filteredProducts[index];
