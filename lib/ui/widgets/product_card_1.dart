@@ -94,7 +94,9 @@ class _ProductCard1State extends State<ProductCard1> {
                   borderRadius: const BorderRadius.all(Radius.circular(4)),
                   child: SizedBox(
                     height: 225,
-                    child: PageView.builder(
+                    child: images.isEmpty
+                        ? const ImageFallbackWidget(h: 225, w: double.infinity, fit: BoxFit.contain)
+                        : PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
                         setState(() {
@@ -107,7 +109,7 @@ class _ProductCard1State extends State<ProductCard1> {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           errorWidget: (context, url, error) =>
-                          const ImageFallbackWidget(w: 60, h: 60),
+                          const ImageFallbackWidget(h: 225, w: double.infinity, fit: BoxFit.contain)
                         );
                       },
                     ),

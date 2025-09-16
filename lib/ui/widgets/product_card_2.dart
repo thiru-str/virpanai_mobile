@@ -98,7 +98,9 @@ class _ProductCard2State extends State<ProductCard2> {
                   ),
                   child: SizedBox(
                     height: 160,
-                    child: PageView.builder(
+                    child: images.isEmpty
+                        ? const ImageFallbackWidget(h: 160, w: double.infinity, fit: BoxFit.contain)
+                        : PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
                         setState(() {
@@ -111,7 +113,7 @@ class _ProductCard2State extends State<ProductCard2> {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           errorWidget: (context, url, error) =>
-                          const ImageFallbackWidget(w: 60, h: 60),
+                          const ImageFallbackWidget(h: 160, w: double.infinity, fit: BoxFit.contain)
                         );
                       },
                     ),

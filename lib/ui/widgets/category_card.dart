@@ -64,7 +64,7 @@ class CategoryCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 16, // Adjusted for better readability
+                  fontSize: 14, // Adjusted for better readability
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),

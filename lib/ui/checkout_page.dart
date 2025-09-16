@@ -56,7 +56,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   bool apiLoading = true;
   bool addAddress = true;
   bool addPaymentMethod = false;
-  bool addShippingOption = false;
+  bool addShippingOption = true;
   RegisterResponse.Address? selectedAddress;
   String? pp_id;
   String? pp_title;
@@ -119,21 +119,21 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               //               },
                               //           ));
                               //     }),
-                              CheckoutItemCard(
-                                  title:  AppStrings.shipping_method,
-                                  subtitle: addShippingOption
-                                      ? shippingOption?.name ??
-                                           AppStrings.add_shipping_method
-                                      :  AppStrings.add_shipping_method,
-                                  onTap: () async {
-                                    if (!addAddress) {
-                                      AppUtils.showToast(
-                                          AppStrings.choose_shipping_address);
-                                      return;
-                                    }
-                                    showShippingBottomSheet(context,
-                                        shippingResponse!.shippingOptions!);
-                                  }),
+                              // CheckoutItemCard(
+                              //     title:  AppStrings.shipping_method,
+                              //     subtitle: addShippingOption
+                              //         ? shippingOption?.name ??
+                              //              AppStrings.add_shipping_method
+                              //         :  AppStrings.add_shipping_method,
+                              //     onTap: () async {
+                              //       if (!addAddress) {
+                              //         AppUtils.showToast(
+                              //             AppStrings.choose_shipping_address);
+                              //         return;
+                              //       }
+                              //       showShippingBottomSheet(context,
+                              //           shippingResponse!.shippingOptions!);
+                              //     }),
                               CheckoutItemCard(
                                   title: AppStrings.payemnt_method,
                                   subtitle: addPaymentMethod

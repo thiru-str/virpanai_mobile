@@ -349,6 +349,7 @@ class ApiService {
         int offset = 0,
         int limit = 10,
       }) async {
+    await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, dynamic>{};
 
@@ -419,6 +420,7 @@ class ApiService {
   Future<ProductDetailReponse> productDetail(
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
+    await addToken();
     return _makeGetRequest<ProductDetailReponse>(
       'store/products',
       '$productId?fields=+variants.inventory_quantity,+metadata',
@@ -853,7 +855,7 @@ class ApiService {
 
   Future<FilterCategoryResponse> listCategories(BuildContext context) async {
     return _makeGetRequest<FilterCategoryResponse>(
-      'store/product-custom-categories',
+      'store/product-categories',
       null,
       null,
           (json) => FilterCategoryResponse.fromJson(json),

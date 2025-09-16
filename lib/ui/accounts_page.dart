@@ -90,9 +90,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     const SizedBox(height: 30),
                     Container(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.primary, width: 1.5),
+                        border: Border.all(color: AppColors.primary, width: 1),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Row(
@@ -108,7 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                       : '',
                                   overflow: TextOverflow.ellipsis,
                                   style: FontUtils.primaryFontStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),

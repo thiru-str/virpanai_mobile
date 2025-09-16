@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -96,7 +97,9 @@ class _ProductCard4State extends State<ProductCard4> {
                   child: Container(
                     height: 140,
                     color: Colors.grey[100],
-                    child: PageView.builder(
+                    child: images.isEmpty
+                        ? const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain)
+                        : PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
                         setState(() {
@@ -104,21 +107,26 @@ class _ProductCard4State extends State<ProductCard4> {
                         });
                       },
                       itemBuilder: (context, index) {
-                        return CachedNetworkImage(
-                          imageUrl: images[index].url ?? '',
+                        final url = images[index].url ?? '';
+                        return url.isEmpty
+                            ? const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain)
+                            : CachedNetworkImage(
+                          imageUrl: url,
                           fit: BoxFit.contain,
                           alignment: Alignment.center,
                           width: double.infinity,
                           errorWidget: (c, u, e) =>
-                          const ImageFallbackWidget(w: 80, h: 80),
+                          const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain),
                         );
                       },
                     ),
+
+
                   ),
                 ),
 
                 // Wishlist button
-
+                  if(widget.onTapFavorite!=null)
                   Positioned(
                     top: 6,
                     right: 6,
@@ -240,17 +248,20 @@ class _ProductCard4State extends State<ProductCard4> {
               ),
             ),
 
-            Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
-              child: Text(
-                product.description ?? "Add a short section",
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black54,
+            Visibility(
+              visible: (product.description??'').isNotEmpty,
+              child: Padding(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+                child: Text(
+                  product.description ?? "Add a short section",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black54,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
 

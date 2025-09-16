@@ -37,7 +37,7 @@ class Item5 extends StatelessWidget {
                 child: Text(
                   content.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor,
                   ),
@@ -62,7 +62,7 @@ class Item5 extends StatelessWidget {
                       Text(
                         content.layoutRedirectTitle!,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textColor,
                         ),
@@ -146,7 +146,8 @@ class _Item5Card extends StatelessWidget {
                     image: CachedNetworkImageProvider(layoutData.image??''),
                     height: 280,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
                     errorBuilder: (context, error, stackTrace) => _imageFallback(),
                   ):_imageFallback(),
                 ),
@@ -197,8 +198,8 @@ class _Item5Card extends StatelessWidget {
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textColor,
                 ),
                 maxLines: 2,
@@ -218,7 +219,7 @@ class _Item5Card extends StatelessWidget {
                       layoutData.prices?.sellingPrice ?? '0',
                     ),
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 21,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textColor,
                     ),

@@ -244,7 +244,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ? CachedNetworkImage(
                 imageUrl: url,
                 height: 250,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
+                alignment: Alignment.center,
                 errorWidget: (context, _, __) => _fallbackWidget(),
               )
                   : _fallbackWidget(),
