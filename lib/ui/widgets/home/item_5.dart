@@ -151,14 +151,14 @@ class _Item5Card extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => _imageFallback(),
                   ):_imageFallback(),
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Icon(
-                    Icons.favorite_border,
-                    color: AppColors.secondary,
-                  ),
-                ),
+                // Positioned(
+                //   top: 8,
+                //   right: 8,
+                //   child: Icon(
+                //     Icons.favorite_border,
+                //     color: AppColors.secondary,
+                //   ),
+                // ),
                 if (_hasDiscount)
                   Positioned(
                     top: 0,
