@@ -171,7 +171,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
         apiLoading = false;
         if(_liveOrdersResponse?.hasPending??false)
           {
-            showPendingOrdersDialog(context);
+            //showPendingOrdersDialog(context);
           }
       });
     } catch (e) {
