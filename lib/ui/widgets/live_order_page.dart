@@ -105,14 +105,9 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                   ),
               Column(
                     children: [
-                      GestureDetector(
-                        onTap: (){
-                          showPendingOrdersDialog(context);
-                        },
-                        child: const Text(
-                          'Ledger Balance',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
-                        ),
+                      const Text(
+                        'Ledger Balance',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                       Text(
                         _liveOrdersResponse?.ledgerBalance??'',
