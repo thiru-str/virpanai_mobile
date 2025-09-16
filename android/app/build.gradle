@@ -14,15 +14,11 @@ if (localPropertiesFile.exists()) {
 }
 
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+def flutterVersionCode = project.hasProperty('flutter.versionCode') ? project['flutter.versionCode'].toInteger() : 1
+def flutterVersionName = project.hasProperty('flutter.versionName') ? project['flutter.versionName'] : "1.0.0"
+def flutterCompileSdkVersion = project.hasProperty('flutter.compileSdkVersion') ? project['flutter.compileSdkVersion'] : 35
+def flutterTargetSdkVersion = project.hasProperty('flutter.targetSdkVersion') ? project['flutter.targetSdkVersion'] : 35
+def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? project['flutter.minSdkVersion'] : 21
 
 android {
     namespace "com.gowelmart.user"
