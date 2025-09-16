@@ -267,20 +267,23 @@ class _ProductCard4State extends State<ProductCard4> {
 
             // ---- Ratings row (instead of mins) ----
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.star, size: 14, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${4.5} (${3})",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black87,
+              Visibility(
+                visible: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.star, size: 14, color: Colors.green),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${4.5} (${3})",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
           ],
