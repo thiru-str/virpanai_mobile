@@ -1,4 +1,4 @@
-package com.gowelmart.agent
+package com.gowelmart.gwmagent
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import android.os.Bundle
