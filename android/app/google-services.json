@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:a5a9e4d350833f9bee0214",
+        "mobilesdk_app_id": "1:177578656637:android:3fca4d6e7a121b85ee0214",
         "android_client_info": {
-          "package_name": "com.gowelmart.user"
+          "package_name": "com.rodeodigital.wellmartmas"
         }
       },
       "oauth_client": [],

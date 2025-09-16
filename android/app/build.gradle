@@ -21,7 +21,7 @@ def flutterTargetSdkVersion = project.hasProperty('flutter.targetSdkVersion') ? 
 def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? project['flutter.minSdkVersion'] : 21
 
 android {
-    namespace "com.gowelmart.user"
+    namespace "com.rodeodigital.wellmartmas"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
@@ -40,7 +40,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.gowelmart.user"
+        applicationId "com.rodeodigital.wellmartmas"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
