@@ -44,6 +44,9 @@ class _FilterPageState extends State<FilterPage> {
   double? maxPrice;
   String sortBy = AppStrings.low_high;
 
+  TextEditingController categorySearchController = TextEditingController();
+  String categorySearchQuery = '';
+
   FilterSection selectedSection = FilterSection.collections;
   bool isLoadingCollections = true;
   bool isLoadingCategories = true;
@@ -201,13 +204,67 @@ class _FilterPageState extends State<FilterPage> {
       case FilterSection.categories:
         return isLoadingCategories
             ? const Center(child: CircularProgressIndicator())
-            : _buildFilterList(
-                categoryList.map((e) => e.id ?? '').toList(),
+            : Column(
+          children: [
+            // 🔎 Minimal search field with underline + clear
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: TextField(
+                controller: categorySearchController,
+                decoration: InputDecoration(
+                  hintText: "Search categories",
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                  border: const UnderlineInputBorder(), // ✅ underline
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey), // light grey line
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary, width: 2), // highlight on focus
+                  ),
+                  suffixIcon: categorySearchQuery.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                    onPressed: () {
+                      categorySearchController.clear();
+                      setState(() {
+                        categorySearchQuery = '';
+                      });
+                    },
+                  )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: (value) {
+                  setState(() {
+                    categorySearchQuery = value.toLowerCase();
+                  });
+                },
+              ),
+            ),
+
+            // Filtered list
+            Expanded(
+              child: _buildFilterList(
+                categoryList
+                    .where((e) =>
+                e.name != null &&
+                    e.name!.toLowerCase().contains(categorySearchQuery))
+                    .map((e) => e.id ?? '')
+                    .toList(),
                 selectedCategories,
-                labelMap: Map.fromEntries(categoryList
-                    .where((e) => e.id != null && e.name != null)
-                    .map((e) => MapEntry(e.id!, e.name!))),
-              );
+                labelMap: Map.fromEntries(
+                  categoryList
+                      .where((e) =>
+                  e.id != null &&
+                      e.name != null &&
+                      e.name!.toLowerCase().contains(categorySearchQuery))
+                      .map((e) => MapEntry(e.id!, e.name!)),
+                ),
+              ),
+            ),
+          ],
+        );
       case FilterSection.price:
         return _buildPriceFilter();
       case FilterSection.sortBy:
