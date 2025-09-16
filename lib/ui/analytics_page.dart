@@ -119,7 +119,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     DashboardStatCard(
                       count: _dashboardResponse?.totalOrders??0,
                       countLabel: 'Order',
-                      title: 'Today’s Orders',
+                      title: _selectedIndex == 0?'Today’s Orders':'Overall Orders',
                       subtitle: 'Total number of orders placed today',
                     ),
                     DashboardStatCard(
