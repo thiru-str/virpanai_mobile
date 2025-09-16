@@ -208,13 +208,13 @@ class _FilterPageState extends State<FilterPage> {
           children: [
             // 🔎 Minimal search field with underline + clear
             Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.only(bottom: 4.0),
               child: TextField(
                 controller: categorySearchController,
                 decoration: InputDecoration(
                   hintText: "Search categories",
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                  border: const UnderlineInputBorder(), // ✅ underline
+                  border: const UnderlineInputBorder(),
                   enabledBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey), // light grey line
                   ),
@@ -232,7 +232,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   )
                       : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
                 ),
                 style: const TextStyle(fontSize: 14),
                 onChanged: (value) {
