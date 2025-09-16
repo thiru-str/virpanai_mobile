@@ -105,7 +105,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
                 child: PastOrderCard(
                   dateLabel: item?.date??'',
                   imageUrls:item?.data?.customerImages??[],
-                  productCount: item?.data?.noOfProducts??'',
+                  productCount: item?.data?.totalOrders??0,
                   totalPrice: item?.data?.totalPrice??'',
                 ),
               );

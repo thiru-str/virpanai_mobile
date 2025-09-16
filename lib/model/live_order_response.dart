@@ -14,6 +14,7 @@ class LiveOrdersResponse {
   int? limit;
   int? offset;
   String? ledgerBalance;
+  bool? hasPending;
   num? rawLedgerBalance;
   List<LiveOrder>? liveOrders;
 
@@ -23,6 +24,7 @@ class LiveOrdersResponse {
     this.limit,
     this.offset,
     this.ledgerBalance,
+    this.hasPending,
     this.rawLedgerBalance,
     this.liveOrders,
   });
@@ -33,6 +35,7 @@ class LiveOrdersResponse {
     limit: json["limit"],
     offset: json["offset"],
     ledgerBalance: json["ledger_balance"],
+    hasPending: json["has_pending"],
     rawLedgerBalance: json["raw_ledger_balance"],
     liveOrders: json["live_orders"] == null ? [] : List<LiveOrder>.from(json["live_orders"]!.map((x) => LiveOrder.fromJson(x))),
   );
@@ -43,6 +46,7 @@ class LiveOrdersResponse {
     "limit": limit,
     "offset": offset,
     "ledger_balance": ledgerBalance,
+    "has_pending": hasPending,
     "raw_ledger_balance": rawLedgerBalance,
     "live_orders": liveOrders == null ? [] : List<dynamic>.from(liveOrders!.map((x) => x.toJson())),
   };

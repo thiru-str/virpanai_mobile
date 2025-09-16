@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/dealer_response.dart';
 import 'package:waioz/model/live_order_response.dart';
+import 'package:waioz/ui/pending_order_details.dart';
 import 'package:waioz/ui/profile_page.dart';
+import 'package:waioz/ui/widgets/clear_pending_orders.dart';
 import 'package:waioz/ui/widgets/empty_view.dart';
 import 'package:waioz/ui/widgets/order_item_card.dart';
 import 'package:waioz/ui/widgets/past_order_card.dart';
@@ -12,6 +14,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
+import '../../model/view_cart_model.dart';
 import '../../utility/page_route_utils.dart';
 import 'order_details.dart';
 
@@ -102,9 +105,14 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                   ),
               Column(
                     children: [
-                      const Text(
-                        'Ledger Balance',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      GestureDetector(
+                        onTap: (){
+                          showPendingOrdersDialog(context);
+                        },
+                        child: const Text(
+                          'Ledger Balance',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
                       ),
                       Text(
                         _liveOrdersResponse?.ledgerBalance??'',
@@ -166,6 +174,10 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
         _dealerResponse = dealerResponse;
         _liveOrdersResponse = liveOrderResponse;
         apiLoading = false;
+        if(_liveOrdersResponse?.hasPending??false)
+          {
+            showPendingOrdersDialog(context);
+          }
       });
     } catch (e) {
       setState(() {
@@ -173,5 +185,25 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
       });
       print(e);
     }
+  }
+
+  void showPendingOrdersDialog(BuildContext context,) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+        builder: (BuildContext context) {
+
+          eventBus.on<ClosePendingOrdersDialogEvent>().listen((event) {
+            Navigator.of(context, rootNavigator: true).pop();
+            Navigator.pop(context);
+          });
+
+          return ClearPendingOrdersDialog(
+            onJoin: () async {
+              PageRouteUtils.push(context, const PendingOrderDetailsPage());
+            },
+          );
+        },
+    );
   }
 }

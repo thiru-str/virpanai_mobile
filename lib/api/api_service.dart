@@ -42,6 +42,7 @@ import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/duplicate_response_model.dart';
+import '../model/pending_order_detail_response.dart';
 import '../model/refresh_token_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -830,6 +831,19 @@ class ApiService {
       null,
       queryParams,
           (json) => PastOrderDetailResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<PendingOrderDetailResponse> pendingOrderDetail(
+      BuildContext context) async {
+    await addToken();
+
+    return _makeGetRequest<PendingOrderDetailResponse>(
+      'dealer/get-pending-orders',
+      null,
+          null,
+          (json) => PendingOrderDetailResponse.fromJson(json),
       context,
     );
   }

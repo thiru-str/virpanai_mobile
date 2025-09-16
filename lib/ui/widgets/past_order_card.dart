@@ -7,7 +7,7 @@ import '../../utility/app_colors.dart';
 
 class PastOrderCard extends StatelessWidget {
   final String dateLabel;
-  final String productCount;
+  final int productCount;
   final String totalPrice;
   final List<String> imageUrls;
   final VoidCallback? onTap;
@@ -71,7 +71,7 @@ class PastOrderCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                           int.parse(productCount)>1?'$productCount Orders':'$productCount Order',
+                           productCount>1?'$productCount Orders':'$productCount Order',
                             style: const TextStyle(
                               color: Colors.teal,
                               fontWeight: FontWeight.bold,

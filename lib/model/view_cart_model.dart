@@ -15,3 +15,5 @@ class ReloadEvent {
   final bool reload;
   ReloadEvent(this.reload);
 }
+
+class ClosePendingOrdersDialogEvent {}
