@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -73,6 +74,11 @@ class AppUtils {
 
     final token = await SharedPreferencesUtil().getString('token');
     return token != null && token.isNotEmpty;
+  }
+
+  static Future<String> getCurrentAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    return info.version; // e.g. "1.2.0"
   }
 
 }

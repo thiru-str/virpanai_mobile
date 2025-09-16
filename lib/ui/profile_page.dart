@@ -5,15 +5,39 @@ import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/distributor_detail_page.dart';
+import 'package:waioz/utility/app_utils.dart';
 
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
+import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+
+
+class _ProfilePageState extends State<ProfilePage> {
+  String? _appVersion;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final version = await AppUtils.getCurrentAppVersion();
+    setState(() {
+      _appVersion = version;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +113,8 @@ class ProfilePage extends StatelessWidget {
                   _showLogout(context);
                 },
               ),
+              Spacer(),
+              Center(child: Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey),))
             ],
           ),
         ),
@@ -114,7 +140,6 @@ class ProfilePage extends StatelessWidget {
       },
     );
   }
-
 }
 
 class ProfileOptionTile extends StatelessWidget {
