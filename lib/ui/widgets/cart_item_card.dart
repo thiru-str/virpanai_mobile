@@ -39,8 +39,8 @@ class CartItemCard extends StatelessWidget {
       children: [
         // Card Content
         Container(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          padding: const EdgeInsets.all(12.0),
+          margin: const EdgeInsets.symmetric(vertical: 6.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
           decoration: BoxDecoration(
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(12.0),
@@ -49,15 +49,19 @@ class CartItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Product Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: imageUrl.isNotEmpty?CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  width: 60,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, _, __) => _imageFallback(60,80),
-                ):_imageFallback(60,80),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: imageUrl.isNotEmpty?CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    errorWidget: (context, _, __) => _imageFallback(60,60),
+                  ):_imageFallback(60,60),
+                ),
               ),
               const SizedBox(width: 12.0),
               // Product Details
@@ -71,7 +75,7 @@ class CartItemCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -97,8 +101,8 @@ class CartItemCard extends StatelessWidget {
                   Text(
                     price,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
                   ),
@@ -116,7 +120,7 @@ class CartItemCard extends StatelessWidget {
                           child: Icon(
                             Icons.remove,
                             color: Colors.white,
-                            size: 16,
+                            size: 14,
                           ),
                         ),
                       ),
@@ -141,7 +145,7 @@ class CartItemCard extends StatelessWidget {
                           child: Icon(
                             Icons.add,
                             color: Colors.white,
-                            size: 16,
+                            size: 14,
                           ),
                         ),
                       ),

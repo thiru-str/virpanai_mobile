@@ -253,7 +253,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                     ),
                                     Text(
                                       (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
-                                      style: FontUtils.secondaryFontStyle(color: AppColors.primary),
+                                      style: FontUtils.secondaryFontStyle(color: AppColors.primary,fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -291,7 +291,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                         },
                         child:  Text(
                           AppStrings.check_out,
-                          style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+                          style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight:FontWeight.bold,color: Colors.white),
                         ),
                       ),
                     ),
@@ -459,7 +459,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
               // Promo Code Input
               Text(
                 AppStrings.enter_promo_code,
-                style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -492,7 +492,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 },
                 child: Text(
                   (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
-                  style: FontUtils.primaryFontStyle(fontSize: 16, color: Colors.white),
+                  style: FontUtils.primaryFontStyle(fontSize: 16,fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
             ],

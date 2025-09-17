@@ -30,7 +30,7 @@ class ProfileItemWidget extends StatelessWidget {
             Text(
               title,
               style: FontUtils.primaryFontStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

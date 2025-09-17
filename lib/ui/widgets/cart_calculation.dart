@@ -20,17 +20,17 @@ class CartCalculation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             keyText,
-            style: keyStyle ?? FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor50),
+            style: keyStyle ?? FontUtils.primaryFontStyle(fontSize: 14,color: AppColors.textColor50),
           ),
           Text(
             valueText,
-            style: valueStyle ??  FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor),
+            style: valueStyle ??  FontUtils.primaryFontStyle(fontSize: 14,fontWeight:FontWeight.w600,color: AppColors.textColor),
           ),
         ],
       ),
@@ -61,7 +61,7 @@ class CartPaymentMethodWidget extends StatelessWidget {
         Text(
          AppStrings.payemnt_method,
           style: FontUtils.primaryFontStyle(
-              fontSize: 16, color: AppColors.textColor50),
+              fontSize: 14, fontWeight:FontWeight.w500,color: AppColors.textColor50),
         ),
         GestureDetector(
           onTap: isActionable ? onTap : null, // Actionable if NEFT

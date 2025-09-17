@@ -39,8 +39,8 @@ class OrderDetailItemCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(8.0),
             child: CachedNetworkImage(
               imageUrl:imageUrl,
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
               fit: BoxFit.cover,
               errorWidget: (context, _, __) => _fallbackWidget(),
             ),
@@ -55,8 +55,8 @@ class OrderDetailItemCard extends StatelessWidget {
                 Text(
                   productName,
                   style: FontUtils.primaryFontStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
@@ -69,7 +69,7 @@ class OrderDetailItemCard extends StatelessWidget {
                         size,
                         overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: Colors.black54,
                         ),
                       ),
@@ -80,12 +80,15 @@ class OrderDetailItemCard extends StatelessWidget {
             ),
           ),
           // Product Price
-          Text(
-            '$price',
-            style: FontUtils.primaryFontStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              '$price',
+              style: FontUtils.primaryFontStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
           ),
         ],

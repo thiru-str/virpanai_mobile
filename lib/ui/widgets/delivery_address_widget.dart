@@ -96,7 +96,7 @@ class DeliveryAddressWidget extends StatelessWidget {
                 RichText(
                   text: TextSpan(
                     style: FontUtils.primaryFontStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 14, fontWeight: FontWeight.bold),
                     children: [
                       const TextSpan(text: "Delivery Address "),
                       if (label != null) TextSpan(text: "($label)"),
@@ -106,7 +106,7 @@ class DeliveryAddressWidget extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   address!,
-                  style: FontUtils.primaryFontStyle(fontSize: 14),
+                  style: FontUtils.primaryFontStyle(fontSize: 12),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -142,9 +142,9 @@ class DeliveryAddressWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: const Text(
+            child: Text(
               "Change",
-              style: TextStyle(color: Colors.white),
+              style: FontUtils.secondaryFontStyle(color: Colors.white),
             ),
           )
 

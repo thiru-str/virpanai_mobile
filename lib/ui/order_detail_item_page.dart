@@ -210,7 +210,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     return Text(
       title,
       style: FontUtils.primaryFontStyle(
-        fontSize: 17,
+        fontSize: 14,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -278,7 +278,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   Widget _buildShippingDetailsCard() {
     return Container(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
         width: double.infinity, // Full width
         decoration: BoxDecoration(
           color: AppColors.secondary, // Background color
@@ -293,10 +293,10 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               '${order?.cart?.shippingAddress?.address1}, '
               '${order?.cart?.shippingAddress?.city}, '
               '${order?.cart?.shippingAddress?.postalCode}, '
-              '${order?.cart?.shippingAddress?.province ?? ''}.',
+              '${order?.cart?.shippingAddress?.province ?? ''}.',style: FontUtils.primaryFontStyle(fontSize: 12),
             ),
-            SizedBox(height: 8),
-            Text('${order?.cart?.shippingAddress?.phone ?? ''}'),
+            SizedBox(height: 4),
+            Text('${order?.cart?.shippingAddress?.phone ?? ''}',style: FontUtils.secondaryFontStyle(fontSize: 12),),
           ],
         ));
   }

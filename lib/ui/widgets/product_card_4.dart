@@ -178,7 +178,7 @@ class _ProductCard4State extends State<ProductCard4> {
                     ),
                     child: Text(
                       "ADD",
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
@@ -200,8 +200,8 @@ class _ProductCard4State extends State<ProductCard4> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -210,7 +210,7 @@ class _ProductCard4State extends State<ProductCard4> {
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: const TextStyle(
+                      style: FontUtils.secondaryFontStyle(
                         fontSize: 12,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
@@ -225,7 +225,7 @@ class _ProductCard4State extends State<ProductCard4> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "SAVE ₹${(orig! - calc!).toStringAsFixed(0)}",
-                  style: const TextStyle(
+                  style: FontUtils.secondaryFontStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.green,
@@ -238,8 +238,8 @@ class _ProductCard4State extends State<ProductCard4> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
               child: Text(
                 product.title ?? '',
-                style: const TextStyle(
-                  fontSize: 13,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
@@ -255,7 +255,7 @@ class _ProductCard4State extends State<ProductCard4> {
                 const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   product.description ?? "Add a short section",
-                  style: const TextStyle(
+                  style: FontUtils.secondaryFontStyle(
                     fontSize: 12,
                     color: Colors.black54,
                   ),
@@ -264,6 +264,7 @@ class _ProductCard4State extends State<ProductCard4> {
                 ),
               ),
             ),
+            SizedBox(height: 4,),
 
             // ---- Ratings row (instead of mins) ----
 
