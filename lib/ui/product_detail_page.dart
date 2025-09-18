@@ -170,44 +170,45 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           },
           isFavorite: isFavorite, // Pass the updated favorite status here
         ),
-        backgroundColor: Colors.white,
-        body: apiLoading
-            ? Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        )
-            : SafeArea(
-          child: Stack(children: [
-            Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          buildProductImages(),
-                          const SizedBox(height: 25),
-                          buildProductDetails(),
-                          buildCartSection(),
-                          const SizedBox(height: 15),
-                          buildProductDescription(),
-                          buildRelatedProducts(),
-                          /*buildShippingAndReturns(),
+        body:Container(
+          decoration: BoxDecoration(gradient: AppColors.linearGradient),
+          child:  apiLoading
+              ? Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          )
+              : SafeArea(
+            child: Stack(children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            buildProductImages(),
+                            const SizedBox(height: 25),
+                            buildProductDetails(),
+                            buildCartSection(),
+                            const SizedBox(height: 15),
+                            buildProductDescription(),
+                            buildRelatedProducts(),
+                            /*buildShippingAndReturns(),
                           const SizedBox(height: 15),*/
-                          buildReviews(),
-                          const SizedBox(height: 90),
+                            buildReviews(),
+                            const SizedBox(height: 90),
 
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            buildBottomButton()
-          ]),
-        ),
+                ],
+              ),
+              buildBottomButton()
+            ]),
+          ),)
       ),
     );
   }
@@ -325,18 +326,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           product?.title ?? '',
           style: FontUtils.secondaryFontStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 14,
             color: AppColors.textColor,
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 8),
         Row(
           children: [
             Text(
               getDisplayedPrice(),
               style: FontUtils.secondaryFontStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 14,
                 color: AppColors.primary,
               ),
             ),
@@ -352,7 +353,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '0'),
                 style: FontUtils.secondaryFontStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Colors.grey,
                   decoration: TextDecoration.lineThrough,
                 ),
@@ -427,7 +428,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         Text(
           AppStrings.select_qty,
           style: FontUtils.secondaryFontStyle(
-              fontSize: 16, fontWeight: FontWeight.bold),
+              fontSize: 14, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         buildQuantitySelector(),
@@ -450,7 +451,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           Text(
             "$title: ${selectedOptions[option.id!]?.value ?? 'Select'}",
             style: FontUtils.secondaryFontStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -472,17 +473,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: isSelected ? Colors.black : Colors.grey,
+                        color: isSelected ? AppColors.primary : Colors.grey,
                       ),
                       borderRadius: BorderRadius.circular(5),
-                      color: isSelected ? Colors.black : Colors.white,
+                      color: isSelected ? AppColors.primary : Colors.white,
                     ),
                     child: Text(
                       optionValue.value ?? '',
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 14,
                         color: isSelected ? Colors.white : Colors.black,
                         fontWeight: FontWeight.w500,
                       ),
@@ -571,7 +573,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           AppStrings.description,
           style: FontUtils.secondaryFontStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 14,
             color: AppColors.textColor,
           ),
         ),
@@ -704,7 +706,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       children: [
         // Quantity Input Field with fixed width
         Container(
-          width: 80,
+          width: 50,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
@@ -713,6 +715,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           child: TextField(
             controller: quantityController,
             keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
             inputFormatters: [
               LengthLimitingTextInputFormatter(2), // ✅ limits to 2 digits
               FilteringTextInputFormatter.digitsOnly, // ✅ only numbers

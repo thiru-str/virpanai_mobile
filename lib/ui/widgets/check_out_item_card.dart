@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/font_utils.dart';
 
+import '../../utility/app_colors.dart';
+
 class CheckoutItemCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -20,9 +22,10 @@ class CheckoutItemCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12.0),
+        decoration:BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.primary.withAlpha(50)),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

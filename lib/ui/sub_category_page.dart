@@ -35,52 +35,55 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
           },
         ),
         backgroundColor: Colors.white,
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('${AppStrings.all_category} > ',
-                        style: FontUtils.primaryFontStyle(
-                            fontSize: 16, color: AppColors.textColor)),
-                    Text('${widget.categoryTitle}',
-                        style: FontUtils.primaryFontStyle(
-                            fontSize: 16, color: AppColors.primary)),
-                  ],
+        body: Container(
+          decoration: BoxDecoration(gradient: AppColors.linearGradient),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('${AppStrings.all_category} > ',
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 16, color: AppColors.textColor)),
+                      Text('${widget.categoryTitle}',
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 16, color: AppColors.primary)),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Expanded(
-                child: MasonryGridView.count(
-                  crossAxisCount: 2,
-                  scrollDirection: Axis.vertical,
-                  itemCount: widget.productCategory.length,
-                  itemBuilder: (context, index) {
-                    final productCategory = widget.productCategory[index];
-                    return GestureDetector(
-                      onTap: () {},
-                      child: CategoryCard(
-                          imagePath: productCategory.image ?? '',
-                          title: productCategory.name!,
-                          onTap: () {
-                            PageRouteUtils.pushWithFade(
-                                context,
-                                ProductPage(
-                                  categoryId: productCategory.id!,
-                                ));
-                          }),
-                    );
-                  },
+                const SizedBox(
+                  height: 10,
                 ),
-              ),
-            ],
+                Expanded(
+                  child: MasonryGridView.count(
+                    crossAxisCount: 2,
+                    scrollDirection: Axis.vertical,
+                    itemCount: widget.productCategory.length,
+                    itemBuilder: (context, index) {
+                      final productCategory = widget.productCategory[index];
+                      return GestureDetector(
+                        onTap: () {},
+                        child: CategoryCard(
+                            imagePath: productCategory.image ?? '',
+                            title: productCategory.name!,
+                            onTap: () {
+                              PageRouteUtils.pushWithFade(
+                                  context,
+                                  ProductPage(
+                                    categoryId: productCategory.id!,
+                                  ));
+                            }),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ));
   }

@@ -103,61 +103,64 @@ class _HomePageState extends State<HomePage> {
           },
         ) : null,
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-              :SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                        //PageRouteUtils.pushWithSlide(context, const CartPage());
+      body: Container(
+        decoration: BoxDecoration(gradient: AppColors.linearGradient),
+        child: SafeArea(
+          child: Stack(
+            children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
+                :SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
+                          //PageRouteUtils.pushWithSlide(context, const CartPage());
+                          eventBus.fire(TabSwitchEvent(2));
+                        },onSearchClick: (){
+                          PageRouteUtils.pushWithFade(
+                              context,
+                              const ProductPage(categoryId: '',));
+                        },addressType: addressType,),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 16.0),
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) => const SizedBox(height: 16),
+                          scrollDirection: Axis.vertical,
+                          itemCount: homePageResponse!.content!.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            final homePageContent = homePageResponse!.content![index];
+                            return getLayoutWidget(homePageContent);
+                          },
+                        ),
+                      ),
+                      Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
+                    ],
+                  ),
+                ),
+              Visibility(
+                visible: cartItems!= null && cartItems != 0,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: cartItems!=null ?Padding(
+                    padding: const EdgeInsets.only(bottom: 20.0),
+                    child: GestureDetector(
+                      onTap: (){
                         eventBus.fire(TabSwitchEvent(2));
-                      },onSearchClick: (){
-                        PageRouteUtils.pushWithFade(
-                            context,
-                            const ProductPage(categoryId: '',));
-                      },addressType: addressType,),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 16.0),
-                      child: ListView.separated(
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        scrollDirection: Axis.vertical,
-                        itemCount: homePageResponse!.content!.length,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final homePageContent = homePageResponse!.content![index];
-                          return getLayoutWidget(homePageContent);
-                        },
+                        //PageRouteUtils.pushWithSlide(context, const CartPage());
+                      },
+                      child: ViewCartWidget(
+                        totalItems: cartItems!,
+                        itemImages:  cartItemImages??[]
                       ),
                     ),
-                    Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
-                  ],
+                  ): const SizedBox(),
                 ),
               ),
-            Visibility(
-              visible: cartItems!= null && cartItems != 0,
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: cartItems!=null ?Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: GestureDetector(
-                    onTap: (){
-                      eventBus.fire(TabSwitchEvent(2));
-                      //PageRouteUtils.pushWithSlide(context, const CartPage());
-                    },
-                    child: ViewCartWidget(
-                      totalItems: cartItems!,
-                      itemImages:  cartItemImages??[]
-                    ),
-                  ),
-                ): const SizedBox(),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       )
     );

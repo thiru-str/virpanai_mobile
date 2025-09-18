@@ -32,9 +32,9 @@ class CategoryCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1), // Light shadow
-              spreadRadius: 1,
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              spreadRadius: 0,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -66,7 +66,7 @@ class CategoryCard extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 14, // Adjusted for better readability
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColors.primary,
                 ),
               ),
             ),

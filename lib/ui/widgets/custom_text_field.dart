@@ -29,25 +29,31 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      enabled: enabled,
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: keyboardType,
-      maxLength: maxLength,
-      textCapitalization: TextCapitalization.sentences,
-      maxLines: maxLines,
-      inputFormatters: inputFormatters,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: AppColors.secondary,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide.none,
-        ),
+    return Container(
+      height: 48,
+      decoration:BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.primary.withAlpha(50)),
+        borderRadius: BorderRadius.circular(10),
       ),
-      validator: validator,
+      child: TextFormField(
+        enabled: enabled,
+        controller: controller,
+        obscureText: isPassword,
+        keyboardType: keyboardType,
+        maxLength: maxLength,
+        textCapitalization: TextCapitalization.sentences,
+        maxLines: maxLines,
+        inputFormatters: inputFormatters,
+        decoration: InputDecoration(
+          counterText: '',
+          hintText: hintText,
+          filled: true,
+          fillColor: Colors.transparent,
+          border: InputBorder.none,
+        ),
+        validator: validator,
+      ),
     );
   }
 }

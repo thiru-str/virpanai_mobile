@@ -130,6 +130,15 @@ flutter:
     - family: Gabarito
       fonts:
         - asset: fonts/gabarito_regular.ttf
+    - family: MyCustomFont
+      fonts:
+        - asset: fonts/font_regular.ttf
+        - asset: fonts/font_medium.ttf
+          weight: 500
+        - asset: fonts/font_semi_bold.ttf
+          weight: 600
+        - asset: fonts/font_bold.ttf
+          weight: 700
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

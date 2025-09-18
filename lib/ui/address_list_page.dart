@@ -54,109 +54,112 @@ class _AddressListPageState extends State<AddressListPage> {
           Navigator.of(context).pop();
         },
       ),
-      body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
-          : addressListResponse?.addresses?.isNotEmpty ?? false
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          itemCount: addressListResponse?.addresses?.length ??
-                              0, // Dynamic count of AddressCard widgets
-                          itemBuilder: (context, index) {
-                            Address? address =
-                                addressListResponse?.addresses?[index];
-                            return GestureDetector(
-                              child: AddressCard(
-                                title: address?.addressName ??
-                                    'Others', // If address name is null, show 'Untitled'
-                                address:
-                                    '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
-                                icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
-                                onDelete: () {
-                                  _showDeleteDialog(context, address?.id);
-                                },
-                                onEdit: () async {
-                                  bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
-                                  final result = await PageRouteUtils.pushWithSlide(
-                                      context,
-                                      isGoogleMapUsage? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0):AddAddressPage(
-                                        selectedAddress: address,
-                                      ));
-                                  if (result == true) {
-                                    getAddressListApi();
-                                  }
-                                },
-                              ),
-                              onTap: (){
-                                if(widget.isFromCheckout) {
-                                  widget.onSelectedAddress(address!);
-                                  Navigator.pop(context);
-                                }
-                              },
-                            );
-                          },
-                        ),
+      body:Container(
+        decoration: BoxDecoration(gradient: AppColors.linearGradient),
+        child:  apiLoading
+            ? Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
+          ),
+        )
+            : addressListResponse?.addresses?.isNotEmpty ?? false
+            ? Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  itemCount: addressListResponse?.addresses?.length ??
+                      0, // Dynamic count of AddressCard widgets
+                  itemBuilder: (context, index) {
+                    Address? address =
+                    addressListResponse?.addresses?[index];
+                    return GestureDetector(
+                      child: AddressCard(
+                        title: address?.addressName ??
+                            'Others', // If address name is null, show 'Untitled'
+                        address:
+                        '${address?.address1}, ${address?.city}, ${address?.province}, ${address?.postalCode}',
+                        icon: address?.addressName == "Home" ? Icons.home : address?.addressName == "Work" ? Icons.work : Icons.location_pin, // Or choose another icon based on address data
+                        onDelete: () {
+                          _showDeleteDialog(context, address?.id);
+                        },
+                        onEdit: () async {
+                          bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
+                          final result = await PageRouteUtils.pushWithSlide(
+                              context,
+                              isGoogleMapUsage? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0):AddAddressPage(
+                                selectedAddress: address,
+                              ));
+                          if (result == true) {
+                            getAddressListApi();
+                          }
+                        },
                       ),
-                      SafeArea(
-                        child: Visibility(
-                          visible: (addressListResponse?.addresses?.length ?? 0) < 1,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
-                                final result = await PageRouteUtils.pushWithSlide(
-                                    context,
-                                    isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
-                                if (result == true) {
-                                  getAddressListApi();
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ),
-                                minimumSize: const Size(
-                                    double.infinity, 52), // Full-width button
-                              ),
-                              child: Text(
-                                AppStrings.add_address,
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : NoOrdersWidget(
-                  message: AppStrings.no_address_yet,
-                  buttonText: AppStrings.add_address,
-                  iconPath: AppAssets.ic_cart_empty,
-                  onButtonTap: () async {
-                    bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
-                    final result = await PageRouteUtils.pushWithSlide(
-                        context,
-                        isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
-                    if (result == true) {
-                      getAddressListApi();
-                    }
+                      onTap: (){
+                        if(widget.isFromCheckout) {
+                          widget.onSelectedAddress(address!);
+                          Navigator.pop(context);
+                        }
+                      },
+                    );
                   },
                 ),
+              ),
+              SafeArea(
+                child: Visibility(
+                  visible: (addressListResponse?.addresses?.length ?? 0) < 1,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
+                        final result = await PageRouteUtils.pushWithSlide(
+                            context,
+                            isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
+                        if (result == true) {
+                          getAddressListApi();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        minimumSize: const Size(
+                            double.infinity, 52), // Full-width button
+                      ),
+                      child: Text(
+                        AppStrings.add_address,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )
+            : NoOrdersWidget(
+          message: AppStrings.no_address_yet,
+          buttonText: AppStrings.add_address,
+          iconPath: AppAssets.ic_cart_empty,
+          onButtonTap: () async {
+            bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
+            final result = await PageRouteUtils.pushWithSlide(
+                context,
+                isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
+            if (result == true) {
+              getAddressListApi();
+            }
+          },
+        ),
+      )
     );
   }
 

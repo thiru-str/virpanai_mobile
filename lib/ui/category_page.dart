@@ -43,7 +43,9 @@ class _CategoryPageState extends State<CategoryPage> {
           },
         ),
         backgroundColor: Colors.white,
-        body: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),)
+        body: Container(
+          decoration: BoxDecoration(gradient: AppColors.linearGradient),
+          child: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),)
             :Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -87,7 +89,7 @@ class _CategoryPageState extends State<CategoryPage> {
               )
             ],
           ),
-        )
+        ),)
     );
   }
 

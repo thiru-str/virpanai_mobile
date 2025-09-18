@@ -22,7 +22,8 @@ class AppAssets {
   static const String splash_logo = 'images/splash_logo.png';
   static const String bg_top = 'images/bg_top.svg';
   static const String bg_bottom = 'images/bg_bottom.svg';
-  static const String ic_no_image = 'images/ic_no_image.svg';
+  static const String ic_no_image = 'images/app_icon_svg.svg';
+  static const String app_icon_svg = 'images/app_icon_svg.svg';
   static const String order_shipped = 'images/order_shipped.svg';
   static const String order_processing = 'images/order_processing.svg';
   static const String order_dispatch = 'images/order_dispatch.svg';
@@ -32,5 +33,6 @@ class AppAssets {
   static const String mobile_update = 'images/mobile_update.svg';
   static const String mobile_frame = 'images/mobile_frame.svg';
   static const String mobile_settings = 'images/mobile_settings.svg';
+  static const String filter = 'images/filter.svg';
 // Add more assets as needed
 }

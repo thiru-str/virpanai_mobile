@@ -39,7 +39,6 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         resizeToAvoidBottomInset: false, // Prevents Stack from resizing on keyboard open
-        backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -52,147 +51,150 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: Stack(
-          children: [
+        body: Container(
+          decoration: BoxDecoration(gradient: AppColors.linearGradient),
+          child: Stack(
+            children: [
 
-            Positioned(top: 0, right: 0, child: SvgPicture.asset(AppAssets.bg_top)),
-            Positioned(bottom: 0, left: 0, child: SvgPicture.asset(AppAssets.bg_bottom)),
+              Positioned(top: 0, right: 0, child: SvgPicture.asset(AppAssets.bg_top)),
+              Positioned(bottom: 0, left: 0, child: SvgPicture.asset(AppAssets.bg_bottom)),
 
-            Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.7)),
-            ),
+              Positioned.fill(
+                child: Container(color: Colors.white.withOpacity(0.7)),
+              ),
 
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: SafeArea(
-                      top: true,
-                      bottom: false,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-                        child: IntrinsicHeight(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Title
-                              Text(
-                                AppStrings.enter_mob_no,
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: SafeArea(
+                        top: true,
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title
+                                Text(
+                                  AppStrings.enter_mob_no,
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 24),
+                                const SizedBox(height: 24),
 
-                              // Form
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      AppStrings.mobile_number,
-                                      style: FontUtils.primaryFontStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey[700]!,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    IntlPhoneField(
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      decoration: InputDecoration(
-                                        filled: true,
-                                        fillColor: Colors.transparent,
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            vertical: 16, horizontal: 12),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12.0),
-                                          borderSide: BorderSide(
-                                              color: AppColors.primary, width: 1.5),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12.0),
-                                          borderSide: BorderSide(
-                                              color: AppColors.primary, width: 1.5),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12.0),
-                                          borderSide: BorderSide(
-                                              color: AppColors.primary, width: 1.5),
+                                // Form
+                                Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppStrings.mobile_number,
+                                        style: FontUtils.primaryFontStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[700]!,
                                         ),
                                       ),
-                                      initialCountryCode: AppStrings.country_code,
-                                      showDropdownIcon: true,
-                                      onChanged: (phone) {
-                                        setState(() {
-                                          _phoneNumber = phone.number;
-                                          _countryCode = phone.countryCode;
-                                        });
-                                      },
-                                      validator: (value) {
-                                        if (value == null || value.number.isEmpty) {
-                                          return AppStrings.enter_valid_mob_no;
-                                        } else if (value.number.length < 10 ||
-                                            value.number.length > 15) {
-                                          return AppStrings.digit_range;
-                                        }
-                                        return null;
-                                      },
-                                      dropdownTextStyle: FontUtils.primaryFontStyle(
-                                        fontSize: 16,
-                                        color: Colors.black,
+                                      const SizedBox(height: 8),
+                                      IntlPhoneField(
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                        ],
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.transparent,
+                                          contentPadding: const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 12),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary, width: 1.5),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary, width: 1.5),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary, width: 1.5),
+                                          ),
+                                        ),
+                                        initialCountryCode: AppStrings.country_code,
+                                        showDropdownIcon: true,
+                                        onChanged: (phone) {
+                                          setState(() {
+                                            _phoneNumber = phone.number;
+                                            _countryCode = phone.countryCode;
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null || value.number.isEmpty) {
+                                            return AppStrings.enter_valid_mob_no;
+                                          } else if (value.number.length < 10 ||
+                                              value.number.length > 15) {
+                                            return AppStrings.digit_range;
+                                          }
+                                          return null;
+                                        },
+                                        dropdownTextStyle: FontUtils.primaryFontStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                  ],
+                                      const SizedBox(height: 16),
+                                    ],
+                                  ),
                                 ),
-                              ),
 
-                              const Spacer(),
-                              const SizedBox(height: 20),
-                            ],
+                                const Spacer(),
+                                const SizedBox(height: 20),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-
-            Positioned(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 60,
-              right: 24,
-              child: FloatingActionButton(
-                elevation: 0,
-                shape: const CircleBorder(),
-                backgroundColor: AppColors.primary,
-                onPressed: () {
-                  AppLogger.print('pressed', 'message');
-                  if (_formKey.currentState!.validate()) {
-                    if (_phoneNumber != null) {
-                      sendOtp();
-                    } else {
-                      AppUtils.showToast(AppStrings.enter_mob_no);
-                    }
-                  }
+                  );
                 },
-                child: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.white,
+              ),
+
+              Positioned(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 60,
+                right: 24,
+                child: FloatingActionButton(
+                  elevation: 0,
+                  shape: const CircleBorder(),
+                  backgroundColor: AppColors.primary,
+                  onPressed: () {
+                    AppLogger.print('pressed', 'message');
+                    if (_formKey.currentState!.validate()) {
+                      if (_phoneNumber != null) {
+                        sendOtp();
+                      } else {
+                        AppUtils.showToast(AppStrings.enter_mob_no);
+                      }
+                    }
+                  },
+                  child: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

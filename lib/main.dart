@@ -76,15 +76,28 @@ class HomeScreen extends StatelessWidget {
     return  MaterialApp(
       navigatorKey: navigatorKey, // if you're using it for global navigation
       debugShowCheckedModeBanner: false,
+      theme: theme,
       home: SplashPage(skipLogin: skipLogin,publicDetailsResponse: publicDetailsResponse,),
     );
   }
 
    ThemeData theme = ThemeData(
-     textTheme: TextTheme(
-       displayLarge: FontUtils.primaryFontStyle(fontWeight: FontWeight.w800, fontSize: 14.0),
-       displayMedium: FontUtils.secondaryFontStyle(fontWeight: FontWeight.w500, fontSize: 14.0),
-       displaySmall: FontUtils.primaryFontStyle(fontWeight: FontWeight.w400, fontSize: 24.0),
+     textTheme: const TextTheme(
+       displayLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 57),
+       displayMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 45),
+       displaySmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 36),
+       headlineLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 32),
+       headlineMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 28),
+       headlineSmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 24),
+       titleLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 22),
+       titleMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 16),
+       titleSmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 14),
+       bodyLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 16),
+       bodyMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 14),
+       bodySmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 12),
+       labelLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 14),
+       labelMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 12),
+       labelSmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 11),
      ),
    );
 

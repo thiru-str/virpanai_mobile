@@ -56,7 +56,9 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
           Navigator.of(context).pop();
         },
       ),
-      body: apiLoading
+      body: Container(
+        decoration: BoxDecoration(gradient: AppColors.linearGradient),
+        child: apiLoading
           ?  Center(
         child: CircularProgressIndicator(
           color: AppColors.primary,
@@ -123,7 +125,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
         onButtonTap: () {
           eventBus.fire(TabSwitchEvent(1));
         },
-      ),
+      ),)
     );
   }
 

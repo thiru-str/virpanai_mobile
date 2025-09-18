@@ -76,162 +76,131 @@ class _CheckOutPageState extends State<CheckOutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CommonHeaderAppBar(
-          title: AppStrings.check_out,
-          onBackTap: () {
-            Navigator.of(context).pop();
+      backgroundColor: const Color(0xFFFEFFFE),
+      appBar: CommonHeaderAppBar(
+        title: AppStrings.check_out,
+        onBackTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.linearGradient, // your gradient
+        ),
+        child: apiLoading
+            ? const Center(
+          child: CircularProgressIndicator(),
+        )
+            : Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CheckoutItemCard(
+                        title: AppStrings.payemnt_method,
+                        subtitle: addPaymentMethod
+                            ? pp_title!
+                            : AppStrings.add_payment_method,
+                        onTap: () async {
+                          if (!addAddress) {
+                            AppUtils.showToast(
+                                AppStrings.choose_shipping_address);
+                            return;
+                          } else if (!addShippingOption) {
+                            AppUtils.showToast(
+                                AppStrings.choose_shipping_address);
+                            return;
+                          }
+                          Global? global = await getGlobal();
+                          if (global != null) {
+                            showPaymentMethodsBottomSheet(
+                                context, global.paymentProvider!);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: const BoxDecoration(
+                color: Colors.white, // ✅ solid background for summary
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CartCalculation(
+                    keyText: '${AppStrings.subTotal}:',
+                    valueText: CurrencyUtil.appendCurrency(cartResponse!
+                        .cart!.itemSubtotal!
+                        .toStringAsFixed(2)),
+                  ),
+                  Visibility(
+                    visible: cartResponse!.cart!.discountSubtotal! > 0,
+                    child: CartCalculation(
+                      keyText: '${AppStrings.discount}:',
+                      valueText:
+                      '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                    ),
+                  ),
+                  Visibility(
+                    visible: cartResponse!.cart!.shippingSubtotal! > 0,
+                    child: CartCalculation(
+                      keyText: '${AppStrings.shipping}:',
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!
+                          .cart!.shippingSubtotal!
+                          .toStringAsFixed(2)),
+                    ),
+                  ),
+                  CartCalculation(
+                    keyText: '${AppStrings.tax}:',
+                    valueText: CurrencyUtil.appendCurrency(
+                        cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                  ),
+                  CartCalculation(
+                    keyText: '${AppStrings.total}:',
+                    valueText: CurrencyUtil.appendCurrency(
+                        cartResponse!.cart!.total!.toStringAsFixed(2)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: placeOrderApiLoading
+            ? Center(
+            child: Lottie.asset(AppAssets.place_order_lottie,
+                fit: BoxFit.cover))
+            : CartButton(
+          amount: CurrencyUtil.appendCurrency(
+              cartResponse!.cart!.total!.toStringAsFixed(2)),
+          title: AppStrings.place_order,
+          onPressed: () {
+            if (!addAddress) {
+              AppUtils.showToast(AppStrings.add_shipping_address);
+            } else if (!addShippingOption) {
+              AppUtils.showToast(AppStrings.add_shipping_method);
+            } else if (!addPaymentMethod) {
+              AppUtils.showToast(AppStrings.add_payment_method);
+            } else {
+              updatePaymentMethod(pp_id!);
+            }
           },
         ),
-        backgroundColor: Colors.white,
-        /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
-        body: Scaffold(
-          backgroundColor: Colors.white,
-          body: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // CheckoutItemCard(
-                              //     title: AppStrings.shipping_address,
-                              //     subtitle: addAddress
-                              //         ? selectedAddress!.address1!
-                              //         : AppStrings.add_shipping_address,
-                              //     onTap: () {
-                              //       PageRouteUtils.pushWithSlide(
-                              //           context,
-                              //           AddressListPage(
-                              //             isFromCheckout: true,
-                              //             onSelectedAddress: (address) {
-                              //               setState(() {
-                              //                 addAddress = true;
-                              //                 selectedAddress = address;
-                              //                 apiLoading = true;
-                              //               });
-                              //               updateAddress(address);
-                              //               },
-                              //           ));
-                              //     }),
-                              // CheckoutItemCard(
-                              //     title:  AppStrings.shipping_method,
-                              //     subtitle: addShippingOption
-                              //         ? shippingOption?.name ??
-                              //              AppStrings.add_shipping_method
-                              //         :  AppStrings.add_shipping_method,
-                              //     onTap: () async {
-                              //       if (!addAddress) {
-                              //         AppUtils.showToast(
-                              //             AppStrings.choose_shipping_address);
-                              //         return;
-                              //       }
-                              //       showShippingBottomSheet(context,
-                              //           shippingResponse!.shippingOptions!);
-                              //     }),
-                              CheckoutItemCard(
-                                  title: AppStrings.payemnt_method,
-                                  subtitle: addPaymentMethod
-                                      ? pp_title!
-                                      :  AppStrings.add_payment_method,
-                                  onTap: () async {
-                                    if (!addAddress) {
-                                      AppUtils.showToast(
-                                         AppStrings.choose_shipping_address);
-                                      return;
-                                    } else if (!addShippingOption) {
-                                      AppUtils.showToast(
-                                            AppStrings.choose_shipping_address);
-                                      return;
-                                    }
-                                    Global? global = await getGlobal();
-                                    if (global != null) {
-                                      print(jsonEncode(global
-                                          .toJson())); // Convert and print JSON
-                                      showPaymentMethodsBottomSheet(
-                                          context, global.paymentProvider!);
-                                    }
-                                  }),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CartCalculation(
-                            keyText: '${AppStrings.subTotal}:',
-                            valueText: CurrencyUtil.appendCurrency(cartResponse!
-                                .cart!.itemSubtotal!
-                                .toStringAsFixed(2)),
-                          ),
-                          Visibility(
-                              visible:
-                                  cartResponse!.cart!.discountSubtotal! > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.discount}:',
-                                valueText:
-                                    '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                              )),
-                          Visibility(
-                              visible:
-                                  cartResponse!.cart!.shippingSubtotal! > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.shipping}:',
-                                valueText:
-                                    CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
-                              )),
-                          CartCalculation(
-                            keyText: '${AppStrings.tax}:',
-                            valueText: CurrencyUtil.appendCurrency(cartResponse!
-                                .cart!.taxTotal!
-                                .toStringAsFixed(2)),
-                          ),
-                          CartCalculation(
-                            keyText: '${AppStrings.total}:',
-                            valueText: CurrencyUtil.appendCurrency(
-                                cartResponse!.cart!.total!.toStringAsFixed(2)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: placeOrderApiLoading
-                ? Center(
-                    child: Lottie.asset(AppAssets.place_order_lottie,
-                        fit: BoxFit.cover))
-                : CartButton(
-                    amount: CurrencyUtil.appendCurrency(
-                        cartResponse!.cart!.total!.toStringAsFixed(2)),
-                    title:AppStrings.place_order,
-                    onPressed: () {
-                      if (!addAddress) {
-                        AppUtils.showToast(AppStrings.add_shipping_address);
-                      } else if (!addShippingOption) {
-                        AppUtils.showToast(AppStrings.add_shipping_method);
-                      } else if (!addPaymentMethod) {
-                        AppUtils.showToast(AppStrings.add_payment_method);
-                      } else {
-                        // validations done proceed to place order
-                        updatePaymentMethod(pp_id!);
-                      }
-                    }),
-          ),
-        ));
+      ),
+    );
   }
 
   void makeRazorPayCall(String orderId) {

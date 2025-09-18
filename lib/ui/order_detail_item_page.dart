@@ -107,102 +107,105 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               }
             },
           ),
-          body: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
+          body:Container(
+            decoration: BoxDecoration(gradient: AppColors.linearGradient),
+            child:  apiLoading
+                ? Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            )
+                : SingleChildScrollView(
+              // Wrap the body with SingleChildScrollView for scrolling
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              child: Column(
+                // Use a Column to arrange the widgets vertically
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  OrderStatusWidget(
+                    currentStep: currentStep,
+                    steps: steps,
+                    isCanceled: order?.status == 'canceled',
                   ),
-                )
-              : SingleChildScrollView(
-                  // Wrap the body with SingleChildScrollView for scrolling
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  child: Column(
-                    // Use a Column to arrange the widgets vertically
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      OrderStatusWidget(
-                        currentStep: currentStep,
-                        steps: steps,
-                        isCanceled: order?.status == 'canceled',
-                      ),
-                      const SizedBox(height: 10), // List of order items
-                      _buildOrdersList(),
-                      const SizedBox(height: 10), // List of order items
-                      _buildSectionTitle('Billing details'),
-                      const SizedBox(height: 10), // List of order items
-                      Container(
-                        padding: const EdgeInsets.all(0.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CartPaymentMethodWidget(
-                              paymentMethod: paymentType,
-                              // Or any other payment method
-                              onTap: () {
-                                PageRouteUtils.pushWithSlide(
-                                    context,
-                                    TransactionDetailsScreen(
-                                      orderID: order?.id ?? "",
-                                    ));
-                              },
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Visibility(
-                              visible: (order?.subtotal ?? 0) > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.subTotal}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    (order?.subtotal ?? 0).toString()),
-                              ),
-                            ),
-                            Visibility(
-                              visible: (order?.taxTotal ?? 0) > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.tax}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    (order?.taxTotal ?? 0).toString()),
-                              ),
-                            ),
-                            Visibility(
-                              visible: (order?.total ?? 0) > 0,
-                              child: CartCalculation(
-                                  keyText: '${AppStrings.total}:',
-                                  valueText: CurrencyUtil.appendCurrency(
-                                      (order?.total ?? 0).toString())),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _buildSectionTitle('Shipping details'),
-                      const SizedBox(height: 20), // List of order items
-                      _buildShippingDetailsCard(), // Shipping details card
-                      const SizedBox(height: 20),
-                      Visibility(
-                        visible: fulfillmentStatus == 'not_fulfilled' &&
-                            !isCanceled,
-                        child: GestureDetector(
-                          onTap: (){
-                            _showCancellation(context,order?.id??'');
+                  const SizedBox(height: 10), // List of order items
+                  _buildOrdersList(),
+                  const SizedBox(height: 10), // List of order items
+                  _buildSectionTitle('Billing details'),
+                  const SizedBox(height: 10), // List of order items
+                  Container(
+                    padding: const EdgeInsets.all(0.0),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CartPaymentMethodWidget(
+                          paymentMethod: paymentType,
+                          // Or any other payment method
+                          onTap: () {
+                            PageRouteUtils.pushWithSlide(
+                                context,
+                                TransactionDetailsScreen(
+                                  orderID: order?.id ?? "",
+                                ));
                           },
-                          child: Text(
-                            'Cancel Order',
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 15,
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Visibility(
+                          visible: (order?.subtotal ?? 0) > 0,
+                          child: CartCalculation(
+                            keyText: '${AppStrings.subTotal}:',
+                            valueText: CurrencyUtil.appendCurrency(
+                                (order?.subtotal ?? 0).toString()),
                           ),
                         ),
-                      )
-                    ],
+                        Visibility(
+                          visible: (order?.taxTotal ?? 0) > 0,
+                          child: CartCalculation(
+                            keyText: '${AppStrings.tax}:',
+                            valueText: CurrencyUtil.appendCurrency(
+                                (order?.taxTotal ?? 0).toString()),
+                          ),
+                        ),
+                        Visibility(
+                          visible: (order?.total ?? 0) > 0,
+                          child: CartCalculation(
+                              keyText: '${AppStrings.total}:',
+                              valueText: CurrencyUtil.appendCurrency(
+                                  (order?.total ?? 0).toString())),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  _buildSectionTitle('Shipping details'),
+                  const SizedBox(height: 20), // List of order items
+                  _buildShippingDetailsCard(), // Shipping details card
+                  const SizedBox(height: 20),
+                  Visibility(
+                    visible: fulfillmentStatus == 'not_fulfilled' &&
+                        !isCanceled,
+                    child: GestureDetector(
+                      onTap: (){
+                        _showCancellation(context,order?.id??'');
+                      },
+                      child: Text(
+                        'Cancel Order',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 15,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          )
         ));
   }
 
@@ -281,7 +284,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
         width: double.infinity, // Full width
         decoration: BoxDecoration(
-          color: AppColors.secondary, // Background color
+          color: Colors.white,
+          border: Border.all(color: AppColors.primary.withAlpha(50)),
           borderRadius:
               BorderRadius.circular(8), // Border radius for rounded corners
         ),

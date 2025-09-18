@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -216,27 +217,31 @@ class CommonHeader extends StatelessWidget {
 
   /// Common Search Bar Widget (Optional Search Callbacks)
   Widget _buildSearchBar() {
-    return GestureDetector(
+    return SearchBarWithRollingHint(
+      onTap: onSearchClick!,
+    );
+     GestureDetector(
       onTap: onSearchClick,
       child: Container(
         margin: const EdgeInsets.only(top: 8),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         height: 48,
         decoration: BoxDecoration(
-          color: AppColors.searchBarColor,
+          color: Colors.white,
+          border: Border.all(color: AppColors.primary.withAlpha(50)),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.textColor),
+            Icon(Icons.search, color: AppColors.primary),
             const SizedBox(width: 8),
             Expanded(
               child: TextField(
                 enabled: false,
                 onChanged: onSearchTextChanged, // Call only if provided
                 decoration: InputDecoration(
-                  hintText: AppStrings.search,
-                  hintStyle: FontUtils.secondaryFontStyle(color: AppColors.textColor),
+                  hintText: 'Search products......',
+                  hintStyle: FontUtils.secondaryFontStyle(color: AppColors.primary),
                   border: InputBorder.none,
                 ),
                 style: FontUtils.secondaryFontStyle(color: Colors.white),

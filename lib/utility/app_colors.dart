@@ -16,4 +16,13 @@ class AppColors {
     primary = newPrimary ?? primary;
     secondary = newSecondary ?? secondary;
   }
+
+  static const LinearGradient linearGradient = LinearGradient(
+    colors: [
+      Color(0xFFF5FEF2), // #F5FEF2
+      Color(0xFFFEFFFE), // #FEFFFE
+    ],
+    begin: Alignment.topCenter,   // start from top
+    end: Alignment.bottomCenter,  //
+  );
 }

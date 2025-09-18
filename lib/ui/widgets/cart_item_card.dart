@@ -40,9 +40,10 @@ class CartItemCard extends StatelessWidget {
         // Card Content
         Container(
           margin: const EdgeInsets.symmetric(vertical: 6.0),
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0,vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: Colors.white,
+            border: Border.all(color: AppColors.primary.withAlpha(20), width: 1),
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Row(
@@ -175,7 +176,9 @@ class CartItemCard extends StatelessWidget {
         // Loading Indicator
         if (isUpdating)
           Container(
-            height: 100,
+            margin: const EdgeInsets.symmetric(vertical: 6.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0,vertical: 4),
+            height: 80,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12.0),

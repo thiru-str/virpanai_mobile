@@ -30,24 +30,21 @@ class CommonHeaderAppBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF5FEF2),
       elevation: 0,
+      scrolledUnderElevation: 0,
       centerTitle: true,
       automaticallyImplyLeading: false,
       leading: leading ? GestureDetector(
         onTap: onBackTap,
         child: Container(
           margin: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.secondary, // Background color
-          ),
           child: Center(
             child: SvgPicture.asset(
               AppAssets.ic_arrow_svg,
-              height: 19,
+              height: 16,
               width: 16,
-              color: Colors.black87,
+              color: AppColors.primary,
             ),
           ),
         ),
@@ -55,9 +52,9 @@ class CommonHeaderAppBar extends StatelessWidget
       title: Text(
         title,
         style: FontUtils.primaryFontStyle(
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: AppColors.primary,
         ),
       ),
       actions: [
@@ -70,8 +67,8 @@ class CommonHeaderAppBar extends StatelessWidget
           GestureDetector(
             onTap: onCartTap,
             child: Container(
-              width: 48,
-              height: 48,
+              width: 24,
+              height: 24,
               child: IconButton(onPressed: onCartTap, icon:  Icon(Icons.shopping_cart, color: AppColors.primary, size: 24)),
             ),
         ),
@@ -85,14 +82,14 @@ class CommonHeaderAppBar extends StatelessWidget
                 width: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary, // Background color
+                  color: Colors.transparent, // Background color
                 ),
                 child: Center(
                     child: Icon(
                   isFavorite ?? false
                       ? Icons.favorite // Filled icon if favorite
                       : Icons.favorite_border, // Outline icon if not favorite
-                  color: isFavorite ?? false ? Colors.red : Colors.grey[600],
+                  color: AppColors.primary,
                 )
 
                   // SvgPicture.asset(

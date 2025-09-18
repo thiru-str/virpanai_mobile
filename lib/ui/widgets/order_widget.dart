@@ -29,8 +29,9 @@ class OrderWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         margin: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.secondary,
+        decoration:BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.primary.withAlpha(50)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: IntrinsicHeight( // Ensures the Row matches the content height for vertical alignment
@@ -89,10 +90,10 @@ class OrderWidget extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(
+                            const Icon(
                               Icons.arrow_forward_ios,
                               size: 18,
-                              color: Colors.grey[600],
+                              color: Colors.black,
                             ),
                           ],
                         ),

@@ -27,9 +27,10 @@ class OrderDetailItemCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: AppColors.secondary,
-        borderRadius: BorderRadius.circular(12.0),
+      decoration:BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.primary.withAlpha(50)),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center, // Vertically center the content in Column

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 import '../../../utility/redirect_utils.dart';
 
@@ -26,7 +27,7 @@ class _Item2State extends State<Item2> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: SizedBox(
         height: widget.height,
         child: Stack(
@@ -52,7 +53,8 @@ class _Item2State extends State<Item2> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: CachedNetworkImage(
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
                       imageUrl: layoutData.image!,
                       width: double.infinity,
                     ),
@@ -72,8 +74,8 @@ class _Item2State extends State<Item2> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _currentIndex == index
-                          ? Colors.black
-                          : Colors.black.withOpacity(0.3),
+                          ? AppColors.primary
+                          : AppColors.primary.withOpacity(0.3),
                     ),
                   );
                 }),

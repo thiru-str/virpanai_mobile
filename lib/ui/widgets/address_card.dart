@@ -26,15 +26,16 @@ class AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: Colors.white,
+        border: Border.all(color: AppColors.primary.withAlpha(20), width: 1),
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 10,),
+          const SizedBox(height: 8,),
           Row(
             children: [
               Icon(
@@ -103,7 +104,7 @@ class AddressCard extends StatelessWidget {
             ),
           ),
           Visibility(visible: !isFromEdit,child:
-          const SizedBox(height: 10),)
+          const SizedBox(height: 8),)
         ],
       ),
     );

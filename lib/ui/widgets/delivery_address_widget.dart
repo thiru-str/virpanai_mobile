@@ -82,8 +82,7 @@ class DeliveryAddressWidget extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.primary.withAlpha(15),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

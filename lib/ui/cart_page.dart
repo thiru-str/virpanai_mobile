@@ -83,229 +83,232 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 Navigator.pop(context,true);
               },
             ),
-      backgroundColor: Colors.white,
       /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
-      body: apiLoading
-          ?  Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
+      body: Container(
+        decoration: BoxDecoration(gradient: AppColors.linearGradient),
+        child: apiLoading
+            ?  Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
+          ),
+        )
+            : cartResponse!.cart!.items!.isNotEmpty
+            ? Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+            children: [
+              Visibility(
+                visible: cartResponse!.cart!.items!.isNotEmpty,
+                child: DeliveryAddressWidget(
+                  address: _buildShippingAddress(cartResponse),
+                  label: null,
+                  isLoading: addressLoading,
+                  onAddAddress: () {
+                    //Navigator.push(context, AddAddressPage.route());
+                    PageRouteUtils.pushWithSlide(
+                        context,
+                        AddressListPage(
+                          isFromCheckout: true,
+                          onSelectedAddress: (address) {
+                            setState(() {
+                              addressLoading = true;
+                            });
+                            updateAddress(address);
+                          },
+                        ));
+                  },
+                  onChangeAddress: () {
+                    PageRouteUtils.pushWithSlide(
+                        context,
+                        AddressListPage(
+                          isFromCheckout: true,
+                          onSelectedAddress: (address) {
+                            setState(() {
+                              addressLoading = true;
+                            });
+                            updateAddress(address);
+                          },
+                        ));
+                  },
+                ),
               ),
-            )
-          : cartResponse!.cart!.items!.isNotEmpty
-              ? Scaffold(
-                  backgroundColor: Colors.white,
-                  body: Column(
-                    children: [
-                      Visibility(
-                        visible: cartResponse!.cart!.items!.isNotEmpty,
-                        child: DeliveryAddressWidget(
-                          address: _buildShippingAddress(cartResponse),
-                          label: null,
-                          isLoading: addressLoading,
-                          onAddAddress: () {
-                            //Navigator.push(context, AddAddressPage.route());
-                            PageRouteUtils.pushWithSlide(
-                                context,
-                                AddressListPage(
-                                  isFromCheckout: true,
-                                  onSelectedAddress: (address) {
-                                    setState(() {
-                                      addressLoading = true;
-                                    });
-                                    updateAddress(address);
-                                  },
-                                ));
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: cartResponse!.cart!.items!.length,
+                          itemBuilder: (context, index) {
+                            final cartItem =
+                            cartResponse!.cart!.items![index];
+                            return CartItemCard(
+                              imageUrl: cartItem.thumbnail??'',
+                              productName: cartItem.productTitle!,
+                              size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
+                              color: 'color',
+                              // Replace with actual color
+                              price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
+                              quantity: cartItem.quantity!,
+                              isUpdating: cartItem.isUpdating!,
+                              onRemoveAll: () {
+                                setState(() {
+                                  cartResponse!.cart!.items![index].isUpdating = true;
+                                });
+                                //updateCart(0,cartItem.id!,index);
+                                removeCart(cartItem.id!,index);
+                              },onIncrease: () {
+                              setState(() {
+                                cartResponse!.cart!.items![index].isUpdating = true;
+                              });
+                              updateCart(cartItem.quantity!+1,cartItem.id!,index);
+                            },
+                              onDecrease:
+                                  () {
+                                setState(() {
+                                  cartResponse!.cart!.items![index].isUpdating = true;
+                                });
+                                if (cartItem.quantity! - 1 <= 0) {
+                                  removeCart(cartItem.id!,index);
+                                } else {
+                                  updateCart(cartItem.quantity! - 1,
+                                      cartItem.id!,index);
+                                }
+                              }, // Handle quantity decrease
+                            );
                           },
-                          onChangeAddress: () {
-                            PageRouteUtils.pushWithSlide(
-                                context,
-                                AddressListPage(
-                                  isFromCheckout: true,
-                                  onSelectedAddress: (address) {
-                                    setState(() {
-                                      addressLoading = true;
-                                    });
-                                    updateAddress(address);
-                                  },
-                                ));
-                          },
                         ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 10),
-                                ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: cartResponse!.cart!.items!.length,
-                                  itemBuilder: (context, index) {
-                                    final cartItem =
-                                        cartResponse!.cart!.items![index];
-                                    return CartItemCard(
-                                      imageUrl: cartItem.thumbnail??'',
-                                      productName: cartItem.productTitle!,
-                                      size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
-                                      color: 'color',
-                                      // Replace with actual color
-                                      price: CurrencyUtil.appendCurrency((cartItem.unitPrice! * cartItem.quantity!).toStringAsFixed(2)),
-                                      quantity: cartItem.quantity!,
-                                      isUpdating: cartItem.isUpdating!,
-                                      onRemoveAll: () {
-                                        setState(() {
-                                          cartResponse!.cart!.items![index].isUpdating = true;
-                                        });
-                                        //updateCart(0,cartItem.id!,index);
-                                        removeCart(cartItem.id!,index);
-                                      },onIncrease: () {
-                                        setState(() {
-                                          cartResponse!.cart!.items![index].isUpdating = true;
-                                        });
-                                        updateCart(cartItem.quantity!+1,cartItem.id!,index);
-                                      },
-                                      onDecrease:
-                                          () {
-                                            setState(() {
-                                              cartResponse!.cart!.items![index].isUpdating = true;
-                                            });
-                                            if (cartItem.quantity! - 1 <= 0) {
-                                              removeCart(cartItem.id!,index);
-                                        } else {
-                                          updateCart(cartItem.quantity! - 1,
-                                              cartItem.id!,index);
-                                        }
-                                      }, // Handle quantity decrease
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: const BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CartCalculation(
+                      keyText: '${AppStrings.subTotal}:',
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
+                    ),
+                    Visibility(
+                        visible: cartResponse!.cart!.discountSubtotal!>0,
+                        child: CartCalculation(
+                          keyText: '${AppStrings.discount}:',
+                          valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                        )),
+                    Visibility(
+                        visible: cartResponse!.cart!.shippingSubtotal!>0,
+                        child: CartCalculation(
+                          keyText: '${AppStrings.shipping}:',
+                          valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
+                        )),
+                    CartCalculation(
+                      keyText: '${AppStrings.tax}:',
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                    ),
+                    CartCalculation(
+                      keyText: '${AppStrings.total}:',
+                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
+                    ),
+                    const SizedBox(height: 10,),
+                    GestureDetector(
+                      onTap: () {
+                        if((cartResponse?.cart?.promotions??[]).isEmpty) {
+                          showPromoCodeBottomSheet(context);
+                        }
+                        else{
+                          List<String> promotionCodes = cartResponse?.cart?.promotions
+                              ?.map((promotion) => promotion.code)
+                              .where((code) => code != null)
+                              .cast<String>()
+                              .toList() ?? [];
+                          removePromoCode(promotionCodes);
+                        }
+                      },
+                      child: Container(
+                        height: 50,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.primary.withAlpha(20), width: 1),
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child:  Row(
                           children: [
-                            CartCalculation(
-                              keyText: '${AppStrings.subTotal}:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
-                            ),
-                            Visibility(
-                                visible: cartResponse!.cart!.discountSubtotal!>0,
-                                child: CartCalculation(
-                                  keyText: '${AppStrings.discount}:',
-                                  valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                                )),
-                            Visibility(
-                                visible: cartResponse!.cart!.shippingSubtotal!>0,
-                                child: CartCalculation(
-                                  keyText: '${AppStrings.shipping}:',
-                                  valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
-                                )),
-                            CartCalculation(
-                              keyText: '${AppStrings.tax}:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                            ),
-                            CartCalculation(
-                              keyText: '${AppStrings.total}:',
-                              valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
-                            ),
-                            const SizedBox(height: 10,),
-                            GestureDetector(
-                              onTap: () {
-                                if((cartResponse?.cart?.promotions??[]).isEmpty) {
-                                  showPromoCodeBottomSheet(context);
-                                }
-                                else{
-                                  List<String> promotionCodes = cartResponse?.cart?.promotions
-                                      ?.map((promotion) => promotion.code)
-                                      .where((code) => code != null)
-                                      .cast<String>()
-                                      .toList() ?? [];
-                                  removePromoCode(promotionCodes);
-                                }
-                              },
-                              child: Container(
-                                height: 50,
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.secondary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child:  Row(
-                                  children: [
-                                    const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.enter_promo_code:cartResponse?.cart?.promotions?.firstOrNull?.code??'',
-                                        style: FontUtils.primaryFontStyle(color: AppColors.textColor),
-                                      ),
-                                    ),
-                                    Text(
-                                      (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
-                                      style: FontUtils.secondaryFontStyle(color: AppColors.primary,fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
+                            const ImageIcon(AssetImage(AppAssets.ic_discount),color: Colors.green,),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.enter_promo_code:cartResponse?.cart?.promotions?.firstOrNull?.code??'',
+                                style: FontUtils.primaryFontStyle(color: AppColors.textColor),
                               ),
-                            )
+                            ),
+                            Text(
+                              (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
+                              style: FontUtils.secondaryFontStyle(color: AppColors.primary,fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
-                    ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: SlideTransition(
+            position: _animation,
+            child: Padding(
+              padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
+              child: cartLoading? SizedBox(height:100,child: Center(child: CircularProgressIndicator(color: AppColors.primary,),)):ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  bottomNavigationBar: SlideTransition(
-                    position: _animation,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
-                      child: cartLoading? SizedBox(height:100,child: Center(child: CircularProgressIndicator(color: AppColors.primary,),)):ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: const Size(
-                              double.infinity, 56), // Full width button
-                        ),
-                        onPressed: () {
-                          // Add checkout logic here
-                          if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
-                                  AppUtils.showToast(
-                                      'Please add address to proceed');
-                                  return;
-                                }
-                                if(!addressLoading) {
-                            PageRouteUtils.pushWithSlide(context,
-                                CheckOutPage(cartResponse: cartResponse,));
-                          }
-                        },
-                        child:  Text(
-                          AppStrings.check_out,
-                          style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight:FontWeight.bold,color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              : Center(
-                  child: NoOrdersWidget(
-                      message: AppStrings.cart_empty,
-                      buttonText: AppStrings.explore_categories,
-                      iconPath: AppAssets.ic_cart_empty,
-                      showExplore: (widget.isFromBottomNav),
-                      onButtonTap: () {
-                        eventBus.fire(TabSwitchEvent(1));
-                      })),
+                  minimumSize: const Size(
+                      double.infinity, 56), // Full width button
+                ),
+                onPressed: () {
+                  // Add checkout logic here
+                  if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
+                    AppUtils.showToast(
+                        'Please add address to proceed');
+                    return;
+                  }
+                  if(!addressLoading) {
+                    PageRouteUtils.pushWithSlide(context,
+                        CheckOutPage(cartResponse: cartResponse,));
+                  }
+                },
+                child:  Text(
+                  AppStrings.check_out,
+                  style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight:FontWeight.bold,color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        )
+            : Center(
+            child: NoOrdersWidget(
+                message: AppStrings.cart_empty,
+                buttonText: AppStrings.explore_categories,
+                iconPath: AppAssets.ic_cart_empty,
+                showExplore: (widget.isFromBottomNav),
+                onButtonTap: () {
+                  eventBus.fire(TabSwitchEvent(1));
+                })),
+      ),
     );
   }
 

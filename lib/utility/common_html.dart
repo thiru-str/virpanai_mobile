@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 class CommonHtmlWidget extends StatelessWidget {
   final String htmlContent;
@@ -29,6 +30,8 @@ class CommonHtmlWidget extends StatelessWidget {
         ),
         "body": Style(
           color: Colors.black, // Default text color to white
+          fontSize: FontSize(14),
+          fontFamily: FontUtils.defaultFont
         ),
         "div": Style(
           margin: Margins.all(0),
@@ -41,6 +44,7 @@ class CommonHtmlWidget extends StatelessWidget {
         "p": Style(
           fontSize: FontSize(14),
           color: Colors.black,
+            fontFamily: FontUtils.defaultFont
         ),
         "a": Style(
           textDecoration: TextDecoration.underline

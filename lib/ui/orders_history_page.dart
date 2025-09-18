@@ -51,60 +51,65 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           Navigator.of(context).pop();
         },
       ),
-      body:  apiLoading
-          ?  Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.linearGradient, // your gradient
         ),
-      ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
-      Padding(padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
-      child: Column(
-        children: [
-          Expanded(
-            child: _buildOrdersList(),
+        child:  apiLoading
+            ?  Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
           ),
-          // const SizedBox(height: 20),
-          // CustomScrollableTabBar(
-          //   tabController: _tabController,
-          //   tabs: const [
-          //     Tab(text: "Processing"),
-          //     Tab(text: "Shipped"),
-          //     Tab(text: "Delivered"),
-          //     Tab(text: "Returned"),
-          //     Tab(text: "Cancelled"),
-          //   ],
-          // ),
-          // const SizedBox(height: 20),
-          // Expanded(
-          //   child: Padding(
-          //     padding: EdgeInsets.symmetric(horizontal: 25),
-          //     child: TabBarView(
-          //       controller: _tabController,
-          //       children: [
-          //         _buildOrdersList(["#428912", "#427364"]),
-          //         _buildOrdersList(["#458912", "#457364"]),
-          //         _buildOrdersList(["#453219"]),
-          //         _buildOrdersList(["#451234", "#450678"]),
-          //         _buildOrdersList(["#459876"]),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-        ],
-      ),) : NoOrdersWidget(
-        message: AppStrings.no_order_yet,
-        buttonText: AppStrings.explore_categories,
-        iconPath: AppAssets.ic_cart_empty,
-        showExplore: false,
-        onButtonTap: () async {
-          // final result = await PageRouteUtils.pushWithSlide(
-          //     context,
-          //     AddAddressPage());
-          // if (result == true) {
-          //   getAddressListApi();
-          // }
-        },
-      ),
+        ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
+        Padding(padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: _buildOrdersList(),
+              ),
+              // const SizedBox(height: 20),
+              // CustomScrollableTabBar(
+              //   tabController: _tabController,
+              //   tabs: const [
+              //     Tab(text: "Processing"),
+              //     Tab(text: "Shipped"),
+              //     Tab(text: "Delivered"),
+              //     Tab(text: "Returned"),
+              //     Tab(text: "Cancelled"),
+              //   ],
+              // ),
+              // const SizedBox(height: 20),
+              // Expanded(
+              //   child: Padding(
+              //     padding: EdgeInsets.symmetric(horizontal: 25),
+              //     child: TabBarView(
+              //       controller: _tabController,
+              //       children: [
+              //         _buildOrdersList(["#428912", "#427364"]),
+              //         _buildOrdersList(["#458912", "#457364"]),
+              //         _buildOrdersList(["#453219"]),
+              //         _buildOrdersList(["#451234", "#450678"]),
+              //         _buildOrdersList(["#459876"]),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+            ],
+          ),) : NoOrdersWidget(
+          message: AppStrings.no_order_yet,
+          buttonText: AppStrings.explore_categories,
+          iconPath: AppAssets.ic_cart_empty,
+          showExplore: false,
+          onButtonTap: () async {
+            // final result = await PageRouteUtils.pushWithSlide(
+            //     context,
+            //     AddAddressPage());
+            // if (result == true) {
+            //   getAddressListApi();
+            // }
+          },
+        ),
+      )
     );
   }
 
