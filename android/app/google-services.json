@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "177578656637",
-    "project_id": "virpanai-8c709",
-    "storage_bucket": "virpanai-8c709.firebasestorage.app"
+    "project_number": "1096422707406",
+    "project_id": "gowelmart-9b9c8",
+    "storage_bucket": "gowelmart-9b9c8.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:3fca4d6e7a121b85ee0214",
+        "mobilesdk_app_id": "1:1096422707406:android:6c5048c655e455e84dc09f",
         "android_client_info": {
-          "package_name": "com.rodeodigital.wellmartmas"
+          "package_name": "com.gowelmart.gwmagent"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
+          "current_key": "AIzaSyAFfmZapVFYZA5sIOOah2SfAR-yjp0JtXQ"
         }
       ],
       "services": {
@@ -26,15 +26,15 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:1ce87d25319951c7ee0214",
+        "mobilesdk_app_id": "1:1096422707406:android:40903f94448aca7b4dc09f",
         "android_client_info": {
-          "package_name": "com.waioz.cartel"
+          "package_name": "com.rodeodigital.wellmartmas"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
+          "current_key": "AIzaSyAFfmZapVFYZA5sIOOah2SfAR-yjp0JtXQ"
         }
       ],
       "services": {
