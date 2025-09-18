@@ -837,7 +837,7 @@ class PaymentSession {
   String? id;
   String? currencyCode;
   String? providerId;
-  Metadata? data;
+  Data? data;
   Metadata? context;
   String? status;
   dynamic authorizedAt;
@@ -868,7 +868,7 @@ class PaymentSession {
     id: json["id"],
     currencyCode: json["currency_code"],
     providerId: json["provider_id"],
-    data: json["data"] == null ? null : Metadata.fromJson(json["data"]),
+    data: json["data"] == null ? null : Data.fromJson(json["data"]),
     context: json["context"] == null ? null : Metadata.fromJson(json["context"]),
     status: json["status"],
     authorizedAt: json["authorized_at"],
@@ -894,5 +894,22 @@ class PaymentSession {
     "updated_at": updatedAt?.toIso8601String(),
     "deleted_at": deletedAt,
     "amount": amount,
+  };
+}
+
+class Data {
+  String? id;
+
+
+  Data({
+    this.id,
+  });
+
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+    id: json["id"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
   };
 }

@@ -341,8 +341,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                     return;
                   }
                   if(!addressLoading) {
-                    //placeOrder(pp_id!);
-                    PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse));
+                    placeOrder(pp_id!);
+                    //PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse));
                   }
                 },
                 child:  Text(
@@ -373,7 +373,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       emitEvent(cartResponse!);
       setState(() {
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
-        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.id??'';
+        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
         apiLoading = false;
       });
     } catch (e) {
