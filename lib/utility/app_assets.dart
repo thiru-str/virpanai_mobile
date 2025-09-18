@@ -34,5 +34,8 @@ class AppAssets {
   static const String mobile_frame = 'images/mobile_frame.svg';
   static const String mobile_settings = 'images/mobile_settings.svg';
   static const String filter = 'images/filter.svg';
+  static const String ic_payment_cash = 'images/ic_payment_cash.svg';
+  static const String ic_bank_transfer = 'images/ic_bank_transfer.svg';
+  static const String ic_online = 'images/ic_online.svg';
 // Add more assets as needed
 }
