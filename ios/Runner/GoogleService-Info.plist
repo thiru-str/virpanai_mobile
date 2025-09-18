@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyC4dfezRufMFU_k6-m_fG2CaPIW3WuhqM4</string>
+	<string>AIzaSyCYcQ9FM2-Qm3AI4YuWHm-EKU9OrDcHCG8</string>
 	<key>GCM_SENDER_ID</key>
-	<string>817601812747</string>
+	<string>1096422707406</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>id.waioz.cartel</string>
+	<string>com.gwmAgent.gowelmart</string>
 	<key>PROJECT_ID</key>
-	<string>cartel-ba03b</string>
+	<string>gowelmart-9b9c8</string>
 	<key>STORAGE_BUCKET</key>
-	<string>cartel-ba03b.firebasestorage.app</string>
+	<string>gowelmart-9b9c8.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:817601812747:ios:19e1b2711908089b4caa0e</string>
+	<string>1:1096422707406:ios:1e63e468fb27c4ca4dc09f</string>
 </dict>
 </plist>
