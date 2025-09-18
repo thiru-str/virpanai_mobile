@@ -65,6 +65,7 @@ class Cart {
   Customer? customer;
   Region? region;
   List<Promotion>? promotions;
+  PaymentCollection? paymentCollection;
 
   Cart({
     this.id,
@@ -105,6 +106,7 @@ class Cart {
     this.customer,
     this.region,
     this.promotions,
+    this.paymentCollection,
   });
 
   factory Cart.fromJson(Map<String, dynamic> json) => Cart(
@@ -150,6 +152,7 @@ class Cart {
         : List<Promotion>.from(
         json["promotions"]!.where((x) => x != null).map((x) => Promotion.fromJson(x))
     ),
+    paymentCollection: json["payment_collection"] == null ? null : PaymentCollection.fromJson(json["payment_collection"]),
 
   );
 
@@ -192,6 +195,7 @@ class Cart {
     "customer": customer?.toJson(),
     "region": region?.toJson(),
     "promotions": promotions == null ? [] : List<dynamic>.from(promotions!.map((x) => x)),
+    "payment_collection": paymentCollection?.toJson(),
   };
 }
 
@@ -750,5 +754,145 @@ class ShippingAddress {
     "country_code": countryCode,
     "province": province,
     "phone": phone,
+  };
+}
+
+class PaymentCollection {
+  String? id;
+  String? currencyCode;
+  dynamic completedAt;
+  String? status;
+  dynamic metadata;
+  dynamic rawAuthorizedAmount;
+  dynamic rawCapturedAmount;
+  dynamic rawRefundedAmount;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+  List<PaymentSession>? paymentSessions;
+  int? amount;
+  dynamic authorizedAmount;
+  dynamic capturedAmount;
+  dynamic refundedAmount;
+
+  PaymentCollection({
+    this.id,
+    this.currencyCode,
+    this.completedAt,
+    this.status,
+    this.metadata,
+    this.rawAuthorizedAmount,
+    this.rawCapturedAmount,
+    this.rawRefundedAmount,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.paymentSessions,
+    this.amount,
+    this.authorizedAmount,
+    this.capturedAmount,
+    this.refundedAmount,
+  });
+
+  factory PaymentCollection.fromJson(Map<String, dynamic> json) => PaymentCollection(
+    id: json["id"],
+    currencyCode: json["currency_code"],
+    completedAt: json["completed_at"],
+    status: json["status"],
+    metadata: json["metadata"],
+    rawAuthorizedAmount: json["raw_authorized_amount"],
+    rawCapturedAmount: json["raw_captured_amount"],
+    rawRefundedAmount: json["raw_refunded_amount"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+    paymentSessions: json["payment_sessions"] == null ? [] : List<PaymentSession>.from(json["payment_sessions"]!.map((x) => PaymentSession.fromJson(x))),
+    amount: json["amount"],
+    authorizedAmount: json["authorized_amount"],
+    capturedAmount: json["captured_amount"],
+    refundedAmount: json["refunded_amount"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "currency_code": currencyCode,
+    "completed_at": completedAt,
+    "status": status,
+    "metadata": metadata,
+    "raw_authorized_amount": rawAuthorizedAmount,
+    "raw_captured_amount": rawCapturedAmount,
+    "raw_refunded_amount": rawRefundedAmount,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+    "payment_sessions": paymentSessions == null ? [] : List<dynamic>.from(paymentSessions!.map((x) => x.toJson())),
+    "amount": amount,
+    "authorized_amount": authorizedAmount,
+    "captured_amount": capturedAmount,
+    "refunded_amount": refundedAmount,
+  };
+}
+
+class PaymentSession {
+  String? id;
+  String? currencyCode;
+  String? providerId;
+  Metadata? data;
+  Metadata? context;
+  String? status;
+  dynamic authorizedAt;
+  String? paymentCollectionId;
+  Metadata? metadata;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+  int? amount;
+
+  PaymentSession({
+    this.id,
+    this.currencyCode,
+    this.providerId,
+    this.data,
+    this.context,
+    this.status,
+    this.authorizedAt,
+    this.paymentCollectionId,
+    this.metadata,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.amount,
+  });
+
+  factory PaymentSession.fromJson(Map<String, dynamic> json) => PaymentSession(
+    id: json["id"],
+    currencyCode: json["currency_code"],
+    providerId: json["provider_id"],
+    data: json["data"] == null ? null : Metadata.fromJson(json["data"]),
+    context: json["context"] == null ? null : Metadata.fromJson(json["context"]),
+    status: json["status"],
+    authorizedAt: json["authorized_at"],
+    paymentCollectionId: json["payment_collection_id"],
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+    amount: json["amount"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "currency_code": currencyCode,
+    "provider_id": providerId,
+    "data": data?.toJson(),
+    "context": context?.toJson(),
+    "status": status,
+    "authorized_at": authorizedAt,
+    "payment_collection_id": paymentCollectionId,
+    "metadata": metadata?.toJson(),
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+    "amount": amount,
   };
 }

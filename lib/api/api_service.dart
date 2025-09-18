@@ -9,6 +9,7 @@ import 'package:waioz/model/cancel_order_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/duplicate_response_model.dart';
 import 'package:waioz/model/filter_category_response.dart';
+import 'package:waioz/model/payment_method_response.dart';
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
@@ -755,14 +756,14 @@ class ApiService {
     );
   }
 
-  Future<dynamic> updatePaymentMethod(
+  Future<PaymentMethodResponse> updatePaymentMethod(
       BuildContext context, String paymentProviderId,CartResponse cartResponse) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/update-payment-method/$cartId',
       paymentProviderId == 'pp_razorpay_razorpay'?{"payment_provider_id": paymentProviderId,"context":{"extra":cartResponse.cart}}:{"payment_provider_id": paymentProviderId},
-          (json) => json,
+          (json) => PaymentMethodResponse.fromJson(json),
       context,
     );
   }

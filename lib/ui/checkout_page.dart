@@ -73,6 +73,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
     getShippingInfo();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

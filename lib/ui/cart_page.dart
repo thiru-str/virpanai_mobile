@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
@@ -7,6 +8,8 @@ import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/payment_method_row.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -15,10 +18,14 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/home_page_response.dart';
 import '../model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
+import '../utility/app_config.dart';
 import '../utility/currency_util.dart';
+import '../utility/shared_preferences_util.dart';
 import 'address_list_page.dart';
+import 'order_placed_page.dart';
 
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
@@ -38,10 +45,18 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   late AnimationController _animationController;
   late Animation<Offset> _animation;
+
+  Global? global;
+  List<PaymentProvider> paymentProviders = [];
+  String? pp_id;
+  String? orderId;
+  Razorpay razorpay = Razorpay();
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    initGlobal();
     getCartApi();
 
     // Initialize the animation controller
@@ -66,6 +81,35 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
 
   }
+
+  Future<void> initGlobal() async {
+    var global = await getGlobal();
+
+    if (global?.paymentProvider != null) {
+      setState(() {
+        paymentProviders = global!.paymentProvider!;
+      });
+    }
+  }
+
+  Future<Global?> getGlobal() async {
+    dynamic global = await SharedPreferencesUtil().getMap('global');
+    if (global != null) {
+      return Global.fromJson(global);
+    }
+    return null;
+  }
+
+  String _getProviderName(String? providerId, List<PaymentProvider> providers) {
+    if (providerId == null) return "Cash on Delivery";
+
+    final match = providers.firstWhere(
+          (p) => p.id == providerId,
+      orElse: () => PaymentProvider(id: providerId, name: "Cash on Delivery"),
+    );
+    return match.name ?? "Cash on Delivery";
+  }
+
 
   @override
   void dispose() {
@@ -196,6 +240,14 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    PaymentMethodRow(
+                      selectedMethod: _getProviderName(pp_id, paymentProviders),
+                      onTap: () {
+                        // open bottom sheet / payment method selector
+                        showPaymentMethodsBottomSheet(
+                            context, paymentProviders);
+                      },
+                    ),
                     CartCalculation(
                       keyText: '${AppStrings.subTotal}:',
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
@@ -218,6 +270,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                     ),
                     CartCalculation(
                       keyText: '${AppStrings.total}:',
+                      keyStyle: FontUtils.primaryFontStyle(fontSize: 14,color: AppColors.primary,fontWeight: FontWeight.bold),
+                      valueStyle: FontUtils.primaryFontStyle(fontSize: 14,color: AppColors.primary,fontWeight: FontWeight.bold),
                       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                     ),
                     const SizedBox(height: 10,),
@@ -287,12 +341,12 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                     return;
                   }
                   if(!addressLoading) {
-                    PageRouteUtils.pushWithSlide(context,
-                        CheckOutPage(cartResponse: cartResponse,));
+                    //placeOrder(pp_id!);
+                    PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse));
                   }
                 },
                 child:  Text(
-                  AppStrings.check_out,
+                  'Place Order',
                   style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight:FontWeight.bold,color: Colors.white),
                 ),
               ),
@@ -318,6 +372,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);
       setState(() {
+        pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
+        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.id??'';
         apiLoading = false;
       });
     } catch (e) {
@@ -550,6 +606,137 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       city: address.city ?? '',
     );
   }
+
+  void updatePaymentMethod(String paymentProviderId) async {
+    try {
+      setState(() {
+        cartLoading =true;
+      });
+      final ApiService apiService = ApiService();
+      final response = await apiService.updatePaymentMethod(
+              context, paymentProviderId, cartResponse!);
+      setState(() {
+        pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
+      });
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        cartLoading =false;
+      });
+    }
+
+  }
+
+  void showPaymentMethodsBottomSheet(
+      BuildContext context, List<PaymentProvider> paymentProviders) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return PaymentMethodsBottomSheet(
+          paymentProviders: paymentProviders,
+          providerId: pp_id,
+          onPaymentSelected: (PaymentProvider paymentProvider) {
+            if (pp_id != paymentProvider.id) {
+              updatePaymentMethod(paymentProvider.id!);
+            }
+          },
+        );
+      },
+    );
+  }
+
+
+
+  void placeOrder(String paymentProviderId) async {
+    switch (paymentProviderId) {
+      case 'pp_razorpay_razorpay':
+        makeRazorPayCall(orderId!);
+        break;
+      case 'pp_system_default':
+        completeCart();
+        break;
+    }
+  }
+
+  String? extractOrderId(dynamic response) {
+    try {
+      return response["payment_collection"]["payment_sessions"]?[0]["data"]
+      ["id"];
+    } catch (e) {
+      print("Error extracting order ID: $e");
+      return null;
+    }
+  }
+
+  void completeCart() async {
+    try {
+      setState(() {
+        cartLoading = true;
+      });
+      final ApiService apiService = ApiService();
+      final response = await apiService.completeCart(context);
+      setState(() {
+        cartLoading = false;
+      });
+      PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
+    } catch (e) {
+      setState(() {
+        cartLoading = true;
+      });
+      print(e);
+    }
+  }
+
+  void makeRazorPayCall(String orderId) {
+    var options = {
+      'key': AppConfig.razorPayKey,
+      'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
+      'name': AppConfig.appName,
+      'description': 'Payment to ${AppConfig.appName}',
+      'order_id': orderId,
+      'retry': {'enabled': true, 'max_count': 1},
+      'send_sms_hash': true,
+      'prefill': {'contact': '8888888888', 'email': 'test@razorpay.com'},
+      'theme': {'color': AppUtils.colorToHex(AppColors.primary)},
+      'experiments.upi_turbo': true,
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
+    razorpay.open(options);
+  }
+
+  void handlePaymentErrorResponse(PaymentFailureResponse response) {
+    /*
+    * PaymentFailureResponse contains three values:
+    * 1. Error Code
+    * 2. Error Description
+    * 3. Metadata
+    * */
+    print(
+        "Payment Failed ,Code: ${response.code}\nDescription: ${response.message}\nMetadata:${response.error.toString()}");
+  }
+
+  void handlePaymentSuccessResponse(PaymentSuccessResponse response) {
+    /*
+    * Payment Success Response contains three values:
+    * 1. Order ID
+    * 2. Payment ID
+    * 3. Signature
+    * */
+    print("Payment Successful Payment ID: ${response.paymentId}");
+    completeCart();
+  }
+
+  void handleExternalWalletSelected(ExternalWalletResponse response) {}
 
 
 }
