@@ -97,18 +97,20 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             validator: validator,
             textCapitalization: inputType == TextInputType.emailAddress? TextCapitalization.none:TextCapitalization.sentences,
             decoration: InputDecoration(
+              fillColor: Colors.white,
+              filled: true,
               enabled: enabled,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.teal),
+                borderSide:BorderSide(color: AppColors.primary.withAlpha(50)),
                 borderRadius: BorderRadius.circular(10),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.teal),
+                borderSide: BorderSide(color: AppColors.primary),
                 borderRadius: BorderRadius.circular(10),
               ),
               disabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.teal.shade100),
+                borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
                 borderRadius: BorderRadius.circular(10),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -413,7 +415,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       child: GestureDetector(
         onTap: ()=> FocusScope.of(context).unfocus(),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Color(0xFFF5FEF2),
           resizeToAvoidBottomInset: false,
           body: LayoutBuilder(
             builder: (context, constraints) {

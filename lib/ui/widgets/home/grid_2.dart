@@ -22,7 +22,7 @@ class Grid2 extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -73,7 +73,7 @@ class Grid2 extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: MasonryGridView.count(
               crossAxisCount: 5,
-              mainAxisSpacing: 16,
+              mainAxisSpacing: 24,
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: items.length,
@@ -99,21 +99,29 @@ class Grid2 extends StatelessWidget {
                         errorWidget: (context, url, error) => _fallbackWidget(),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: 60,
-                      height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Text(
-                          layoutData.title ?? '',
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(fontSize: 11),
-                        ),
+                    Visibility(
+                      visible: (layoutData.title ?? '').isNotEmpty,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: 60,
+                            height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Text(
+                                layoutData.title ?? '',
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: FontUtils.primaryFontStyle(fontSize: 11),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+
                   ],
                 )
               );

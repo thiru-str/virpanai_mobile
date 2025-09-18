@@ -53,8 +53,7 @@ class _Item2State extends State<Item2> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: CachedNetworkImage(
-                      fit: BoxFit.contain,
-                      alignment: Alignment.center,
+                      fit: BoxFit.cover,
                       imageUrl: layoutData.image!,
                       width: double.infinity,
                     ),
@@ -64,21 +63,24 @@ class _Item2State extends State<Item2> {
             ),
             Positioned(
               bottom: 16.0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(widget.content.layoutData!.length, (index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    width: widget.indicatorSize,
-                    height: widget.indicatorSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentIndex == index
-                          ? AppColors.primary
-                          : AppColors.primary.withOpacity(0.3),
-                    ),
-                  );
-                }),
+              child: Visibility(
+                visible: (widget.content.layoutData?.length??0)>1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(widget.content.layoutData!.length, (index) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      width: widget.indicatorSize,
+                      height: widget.indicatorSize,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentIndex == index
+                            ? AppColors.primary
+                            : AppColors.primary.withOpacity(0.3),
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
           ],

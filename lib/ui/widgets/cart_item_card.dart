@@ -97,7 +97,7 @@ class CartItemCard extends StatelessWidget {
               // Price and Quantity Adjustment
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     price,

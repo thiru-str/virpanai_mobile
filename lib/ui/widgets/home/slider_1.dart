@@ -103,7 +103,7 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
               children: [
                 CachedNetworkImage(imageUrl:
                   currentData.image ?? '',
-                  width: double.infinity,
+                  width: MediaQuery.of(context).size.width,
                   height: 500,
                   fit: BoxFit.cover,
                   errorWidget: (context, _, __) => _fallbackWidget(),

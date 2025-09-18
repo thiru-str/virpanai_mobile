@@ -59,22 +59,25 @@ class _Item1State extends State<Item1> {
           ),
           Positioned(
             bottom: 16.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.content.layoutData!.length, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                  width: widget.indicatorSize,
-                  height: widget.indicatorSize,
-                  decoration: (widget.content.layoutData?.length ?? 0) > 1
-                      ? BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentIndex == index
-                        ? Colors.black
-                        : Colors.black.withOpacity(0.3),
-                  ):null,
-                );
-              }),
+            child: Visibility(
+              visible: (widget.content.layoutData?.length??0)>1,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(widget.content.layoutData!.length, (index) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    width: widget.indicatorSize,
+                    height: widget.indicatorSize,
+                    decoration: (widget.content.layoutData?.length ?? 0) > 1
+                        ? BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentIndex == index
+                          ? Colors.black
+                          : Colors.black.withOpacity(0.3),
+                    ):null,
+                  );
+                }),
+              ),
             ),
           ),
         ],

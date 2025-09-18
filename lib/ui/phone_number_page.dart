@@ -37,6 +37,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Color(0xFFF5FEF2),
         extendBodyBehindAppBar: true,
         resizeToAvoidBottomInset: false, // Prevents Stack from resizing on keyboard open
         appBar: AppBar(
@@ -52,7 +53,6 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
           ),
         ),
         body: Container(
-          decoration: BoxDecoration(gradient: AppColors.linearGradient),
           child: Stack(
             children: [
 
