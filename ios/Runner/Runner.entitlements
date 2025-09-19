@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:ecommerce.gowelmart.com</string>
+		<string>applinks:link.gowelmart.com</string>
 	</array>
 </dict>
 </plist>
