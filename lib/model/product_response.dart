@@ -60,7 +60,7 @@ class Product {
   dynamic? metadata;
   dynamic type;
   Tion? collection;
-  List<Image>? options;
+  List<ProductOption>? options;
   List<dynamic>? tags;
   List<Image>? images;
   List<Variant>? variants;
@@ -123,7 +123,10 @@ class Product {
     metadata: json["metadata"],
     type: json["type"],
     collection: json["collection"] == null ? null : Tion.fromJson(json["collection"]),
-    options: json["options"] == null ? [] : List<Image>.from(json["options"]!.map((x) => Image.fromJson(x))),
+    options: json["options"] == null
+        ? []
+        : List<ProductOption>.from(
+        json["options"].map((x) => ProductOption.fromJson(x))),
     tags: json["tags"] == null ? [] : List<dynamic>.from(json["tags"]!.map((x) => x)),
     images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
     variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
@@ -156,7 +159,9 @@ class Product {
     "metadata": metadata,
     "type": type,
     "collection": collection?.toJson(),
-    "options": options == null ? [] : List<dynamic>.from(options!.map((x) => x.toJson())),
+    "options": options == null
+        ? []
+        : List<dynamic>.from(options!.map((x) => x.toJson())),
     "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
     "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
     "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
@@ -572,3 +577,76 @@ class RawAmount {
     "precision": precision,
   };
 }
+
+class ProductOption {
+  String? id;
+  String? title;
+  List<Value>? values;
+
+  ProductOption({this.id, this.title, this.values});
+
+  factory ProductOption.fromJson(Map<String, dynamic> json) => ProductOption(
+    id: json["id"],
+    title: json["title"],
+    values: json["values"] == null
+        ? []
+        : List<Value>.from(
+        json["values"].map((x) => Value.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "values":
+    values == null ? [] : List<dynamic>.from(values!.map((x) => x.toJson())),
+  };
+}
+
+class ProductImage {
+  String? id;
+  String? url;
+  dynamic metadata;
+  int? rank;
+  String? productId;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+
+  ProductImage({
+    this.id,
+    this.url,
+    this.metadata,
+    this.rank,
+    this.productId,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  factory ProductImage.fromJson(Map<String, dynamic> json) => ProductImage(
+    id: json["id"],
+    url: json["url"],
+    metadata: json["metadata"],
+    rank: json["rank"],
+    productId: json["product_id"],
+    createdAt: json["created_at"] == null
+        ? null
+        : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null
+        ? null
+        : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "url": url,
+    "metadata": metadata,
+    "rank": rank,
+    "product_id": productId,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+  };
+}
+
