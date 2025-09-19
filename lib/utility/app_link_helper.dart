@@ -59,7 +59,7 @@ class AppLinkHelper {
       ) async {
     try {
 
-      final Uri link = Uri.parse('https://ecommerce.gowelmart.com/details?id=${productId}');
+      final Uri link = Uri.parse('https://link.gowelmart.com/details?id=${productId}');
 
       final String message = '''
 Check out this product on GoWelMart! 🛍️

@@ -37,7 +37,7 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="ecommerce.gowelmart.com"
+                    android:host="link.gowelmart.com"
                     android:pathPrefix="/details" />
             </intent-filter>
         </activity>
