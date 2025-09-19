@@ -387,7 +387,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    //queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
+    queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
@@ -397,7 +397,7 @@ class ApiService {
     queryParams['limit'] = limit.toString();
 
     return _makeGetRequest<ProductsResponse>(
-      'store/products',
+      'store/list-products',
       null,
       queryParams,
           (json) => ProductsResponse.fromJson(json),
