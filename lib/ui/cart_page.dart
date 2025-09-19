@@ -373,7 +373,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       emitEvent(cartResponse!);
       setState(() {
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
-        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
+        //orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
         apiLoading = false;
       });
     } catch (e) {

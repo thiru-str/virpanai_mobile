@@ -837,7 +837,7 @@ class PaymentSession {
   String? id;
   String? currencyCode;
   String? providerId;
-  Data? data;
+  //Data? data;
   Metadata? context;
   String? status;
   dynamic authorizedAt;
@@ -852,7 +852,7 @@ class PaymentSession {
     this.id,
     this.currencyCode,
     this.providerId,
-    this.data,
+    //this.data,
     this.context,
     this.status,
     this.authorizedAt,
@@ -868,7 +868,7 @@ class PaymentSession {
     id: json["id"],
     currencyCode: json["currency_code"],
     providerId: json["provider_id"],
-    data: json["data"] == null ? null : Data.fromJson(json["data"]),
+    //data: json["data"] == null ? null : Data.fromJson(json["data"]),
     context: json["context"] == null ? null : Metadata.fromJson(json["context"]),
     status: json["status"],
     authorizedAt: json["authorized_at"],
@@ -884,7 +884,7 @@ class PaymentSession {
     "id": id,
     "currency_code": currencyCode,
     "provider_id": providerId,
-    "data": data?.toJson(),
+    //"data": data?.toJson(),
     "context": context?.toJson(),
     "status": status,
     "authorized_at": authorizedAt,
@@ -897,19 +897,19 @@ class PaymentSession {
   };
 }
 
-class Data {
-  String? id;
-
-
-  Data({
-    this.id,
-  });
-
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-    id: json["id"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "id": id,
-  };
-}
+// class Data {
+//   String? id;
+//
+//
+//   Data({
+//     this.id,
+//   });
+//
+//   factory Data.fromJson(Map<String, dynamic> json) => Data(
+//     id: json["id"],
+//   );
+//
+//   Map<String, dynamic> toJson() => {
+//     "id": id,
+//   };
+// }
