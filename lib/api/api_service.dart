@@ -343,6 +343,7 @@ class ApiService {
       BuildContext context,
       String categoryId,
       String collectionId,
+      String tagId,
       double? minPrice,
       double? maxPrice,
       String sortBy,
@@ -366,6 +367,17 @@ class ApiService {
           .toList();
       if (categories.isNotEmpty) {
         queryParams['category_id[]'] = categories;
+      }
+    }
+
+    if (tagId.trim().isNotEmpty) {
+      final tags = tagId
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (tags.isNotEmpty) {
+        queryParams['tag_id[]'] = tags;
       }
     }
 

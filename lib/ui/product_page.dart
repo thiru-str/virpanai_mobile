@@ -22,10 +22,11 @@ import 'widgets/common_header_app_bar.dart';
 class ProductPage extends StatefulWidget {
   final String categoryId;
   final String collectionId;
+  final String tagId;
   final bool isFromBrand;
 
   const ProductPage(
-      {super.key, required this.categoryId, this.isFromBrand = false,this.collectionId = ''});
+      {super.key, required this.categoryId, this.isFromBrand = false,this.collectionId = '',this.tagId = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -53,7 +54,7 @@ class _ProductPageState extends State<ProductPage> {
   @override
   void initState() {
     super.initState();
-    getProductsApi(categoryIds: widget.categoryId,collectionIds: widget.collectionId);
+    getProductsApi(categoryIds: widget.categoryId,collectionIds: widget.collectionId,tagIds: widget.tagId);
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent &&
@@ -73,6 +74,7 @@ class _ProductPageState extends State<ProductPage> {
     getProductsApi(
       categoryIds: widget.categoryId,
       collectionIds: selectedCollectionsList.join(','),
+      tagIds: widget.collectionId,
       searchString: searchController.text,
       minPrice: minPrice,
       maxPrice: maxPrice,
@@ -89,6 +91,7 @@ class _ProductPageState extends State<ProductPage> {
       filteredProducts.clear();
       getProductsApi(
         categoryIds: widget.categoryId,
+        tagIds: widget.tagId,
         collectionIds: selectedCollectionsList.join(','),
         searchString: query,
       );
@@ -292,7 +295,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  void getProductsApi({String? categoryIds, String? collectionIds, String? searchString,double? minPrice,double? maxPrice,String? sortBy}) async {
+  void getProductsApi({String? categoryIds, String? collectionIds, String? tagIds,String? searchString,double? minPrice,double? maxPrice,String? sortBy}) async {
     if (currentPage == 0) {
       setState(() {
         apiLoading = true;
@@ -309,6 +312,7 @@ class _ProductPageState extends State<ProductPage> {
         context,
         categoryIds ?? '',
         collectionIds ?? '',
+        tagIds??'',
         minPrice,
         maxPrice,
         sortBy ?? AppStrings.low_high,

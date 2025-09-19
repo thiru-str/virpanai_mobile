@@ -98,9 +98,11 @@ class RedirectUtils {
 
     final collectionId = redirectData.redirectSearchData?.collection??'';
 
+    final tagId = redirectData.redirectSearchData?.tag??'';
+
     PageRouteUtils.pushWithSlide(
       context,
-      ProductPage(categoryId: categoryId!,collectionId: collectionId,),
+      ProductPage(categoryId: categoryId!,collectionId: collectionId,tagId: tagId,),
     );
   }
 
