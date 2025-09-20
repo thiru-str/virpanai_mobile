@@ -72,7 +72,7 @@ class _ProductPageState extends State<ProductPage> {
     isPaginating = true;
     currentPage++;
     getProductsApi(
-      categoryIds: widget.categoryId,
+      categoryIds: selectedCategoriesList.isNotEmpty? selectedCategoriesList.join(','): widget.categoryId,
       collectionIds: selectedCollectionsList.join(','),
       tagIds: widget.collectionId,
       searchString: searchController.text,
@@ -188,12 +188,8 @@ class _ProductPageState extends State<ProductPage> {
                         List<String>.from(data['selectedCategories'] ?? []);
                         selectedCollectionsList =
                         List<String>.from(data['selectedCollections'] ?? []);
-                        if(data['minPrice']!=null) {
-                          minPrice = data['minPrice'];
-                        }
-                        if (data['maxPrice']!= null) {
-                          maxPrice = data['maxPrice'];
-                        }
+                        minPrice = data['minPrice'];
+                        maxPrice = data['maxPrice'];
                         sortBy = data['sortBy'] ??AppStrings.low_high;
                         selectedSection = data['selectedSection'] ??selectedSection;
                         final categoryIds = selectedCategoriesList.isNotEmpty

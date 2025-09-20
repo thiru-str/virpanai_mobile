@@ -361,6 +361,7 @@ class _FilterPageState extends State<FilterPage> {
           VerticalDivider(width: 1, color: Colors.grey.shade300),
           _buildBottomButton(AppStrings.close, Colors.black, () {
             // Close action
+            Navigator.pop(context);
           }),
         ],
       ),
@@ -387,8 +388,10 @@ class _FilterPageState extends State<FilterPage> {
     setState(() {
       selectedCategories.clear();
       selectedCollections.clear();
-      minPrice = 1;
-      maxPrice = 99999;
+      minPrice = null;
+      maxPrice = null;
+      maxPriceController.text = '';
+      minPriceController.text = '';
       sortBy = sortOptions.first;
     });
   }
