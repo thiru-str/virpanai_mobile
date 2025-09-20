@@ -38,7 +38,7 @@ class CommonHeaderAppBar extends StatelessWidget
       leading: leading ? GestureDetector(
         onTap: onBackTap,
         child: Container(
-          margin: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16),
           child: Center(
             child: SvgPicture.asset(
               AppAssets.ic_arrow_svg,
