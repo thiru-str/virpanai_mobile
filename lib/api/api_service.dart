@@ -28,6 +28,7 @@ import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/shipping_response.dart';
+import 'package:waioz/model/tags_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -872,6 +873,16 @@ class ApiService {
       null,
       null,
           (json) => FilterCategoryResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<TagsResponse> listTags(BuildContext context) async {
+    return _makeGetRequest<TagsResponse>(
+      'store/product-tags',
+      '?fields=id,value',
+      null,
+          (json) => TagsResponse.fromJson(json),
       context,
     );
   }

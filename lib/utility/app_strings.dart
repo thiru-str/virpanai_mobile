@@ -122,6 +122,7 @@ class AppStrings {
   static const String Upadte = 'Update';
   static const String price = 'Price';
   static const String sort_by = 'Sort by';
+  static const String tags = 'Brands';
 
   static const String close = 'Close';
   static const String confirm_continue = 'Confirm and Continue';

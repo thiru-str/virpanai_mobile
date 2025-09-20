@@ -39,6 +39,7 @@ class _ProductPageState extends State<ProductPage> {
   List<Product> filteredProducts = [];
   List<String> selectedCollectionsList = [];
   List<String> selectedCategoriesList = [];
+  List<String> selectedTagsList = [];
   double? minPrice;
   double? maxPrice;
   String sortBy = AppStrings.low_high;
@@ -74,7 +75,7 @@ class _ProductPageState extends State<ProductPage> {
     getProductsApi(
       categoryIds: selectedCategoriesList.isNotEmpty? selectedCategoriesList.join(','): widget.categoryId,
       collectionIds: selectedCollectionsList.join(','),
-      tagIds: widget.collectionId,
+      tagIds: selectedTagsList.isNotEmpty? selectedTagsList.join(','):widget.tagId,
       searchString: searchController.text,
       minPrice: minPrice,
       maxPrice: maxPrice,
@@ -176,6 +177,7 @@ class _ProductPageState extends State<ProductPage> {
                           parentCategoryId: widget.categoryId,
                           preSelectedCollections: selectedCollectionsList,
                           preSelectedCategories: selectedCategoriesList,
+                          preSelectedTags: selectedTagsList,
                           preMinPrice: minPrice,
                           preMaxPrice: maxPrice,
                           preSortBy: sortBy,
@@ -188,6 +190,8 @@ class _ProductPageState extends State<ProductPage> {
                         List<String>.from(data['selectedCategories'] ?? []);
                         selectedCollectionsList =
                         List<String>.from(data['selectedCollections'] ?? []);
+                        selectedTagsList =
+                        List<String>.from(data['selectedTags'] ?? []);
                         minPrice = data['minPrice'];
                         maxPrice = data['maxPrice'];
                         sortBy = data['sortBy'] ??AppStrings.low_high;
@@ -196,17 +200,21 @@ class _ProductPageState extends State<ProductPage> {
                             ? selectedCategoriesList.join(',')
                             : widget.categoryId;
                         final collectionIds = selectedCollectionsList.join(',');
+                        final tagIds = selectedTagsList.isNotEmpty
+                            ? selectedTagsList.join(',')
+                            : widget.tagId;
                         currentPage = 0;
                         filteredProducts.clear();
                         getProductsApi(
                           categoryIds: categoryIds,
                           collectionIds: collectionIds,
+                          tagIds: tagIds,
                           minPrice: minPrice,
                           maxPrice: maxPrice,
                           sortBy: sortBy,
                         );
                         setState(() {
-                          isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || (minPrice != null || maxPrice != null)|| sortBy!=AppStrings.low_high;
+                          isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || selectedTagsList.isNotEmpty || (minPrice != null || maxPrice != null)|| sortBy!=AppStrings.low_high;
                         });
 
                       }
