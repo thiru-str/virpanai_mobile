@@ -347,7 +347,7 @@ class ApiService {
       String tagId,
       double? minPrice,
       double? maxPrice,
-      String sortBy,
+      String? sortBy,
       String searchString, {
         int offset = 0,
         int limit = 10,

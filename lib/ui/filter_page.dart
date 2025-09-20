@@ -23,7 +23,7 @@ class FilterPage extends StatefulWidget {
   final List<String> preSelectedTags;
   final double? preMinPrice;
   final double? preMaxPrice;
-  final String preSortBy;
+  final String? preSortBy;
   final FilterSection preSelectedSection;
   const FilterPage({
     super.key,
@@ -33,7 +33,7 @@ class FilterPage extends StatefulWidget {
     this.preSelectedTags = const [],
     this.preMinPrice,
     this.preMaxPrice,
-    this.preSortBy = AppStrings.low_high,
+    this.preSortBy,
     this.preSelectedSection = FilterSection.collections,
   });
 
@@ -89,7 +89,9 @@ class _FilterPageState extends State<FilterPage> {
     if(widget.preMaxPrice!=null) {
       maxPriceController.text = '${widget.preMaxPrice!.toInt()}';
     }
-    sortBy = widget.preSortBy;
+    if(widget.preSortBy!=null) {
+      sortBy = widget.preSortBy!;
+    }
     selectedSection = widget.preSelectedSection;
     _fetchInitialData();
   }

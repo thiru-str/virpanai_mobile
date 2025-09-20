@@ -42,7 +42,7 @@ class _ProductPageState extends State<ProductPage> {
   List<String> selectedTagsList = [];
   double? minPrice;
   double? maxPrice;
-  String sortBy = AppStrings.low_high;
+  String? sortBy;
   FilterSection selectedSection = FilterSection.collections;
 
   int currentPage = 0;
@@ -319,7 +319,7 @@ class _ProductPageState extends State<ProductPage> {
         tagIds??'',
         minPrice,
         maxPrice,
-        sortBy ?? AppStrings.low_high,
+        sortBy,
         searchString ?? '',
         offset: currentPage * pageSize,
         limit: pageSize,
