@@ -36,6 +36,7 @@ class CommonHeaderAppBar extends StatelessWidget
       centerTitle: true,
       automaticallyImplyLeading: false,
       leading: leading ? GestureDetector(
+        behavior: HitTestBehavior.translucent,
         onTap: onBackTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16),
