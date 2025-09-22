@@ -73,18 +73,21 @@ class AddressCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding:  EdgeInsets.zero, // Removes the default padding
-                      minimumSize: const Size(0, 0), // Ensures no extra size is added
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
-                    ),
-                    onPressed: onDelete,
-                    child:  Text(
-                     AppStrings.delete,
-                      style: FontUtils.primaryFontStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                  Visibility(
+                    visible:false,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding:  EdgeInsets.zero, // Removes the default padding
+                        minimumSize: const Size(0, 0), // Ensures no extra size is added
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
+                      ),
+                      onPressed: onDelete,
+                      child:  Text(
+                       AppStrings.delete,
+                        style: FontUtils.primaryFontStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
