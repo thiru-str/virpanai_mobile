@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/order_status_widget.dart';
+import 'package:waioz/ui/widgets/profile_item_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -201,12 +203,34 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         ),
                       ),
                     ),
+                  ),
+                  Visibility(
+                    visible: (order?.metadata?.invoice??'').isNotEmpty,
+                    child: ProfileItemWidget(
+                      title: 'Download Invoice',
+                      onTap: (){
+                        _launchURL(order?.metadata?.invoice??'');
+                      },
+                    ),
                   )
                 ],
               ),
             ),
           )
         ));
+  }
+
+  void _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication, // Opens in external browser
+      );
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   Widget _buildSectionTitle(String title) {

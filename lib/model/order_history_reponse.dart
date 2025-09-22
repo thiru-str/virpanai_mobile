@@ -127,17 +127,21 @@ class Order {
 
 class Metadata {
   String? fulfillmentStatus;
+  String? invoice;
 
   Metadata({
     this.fulfillmentStatus,
+    this.invoice,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     fulfillmentStatus: json["fulfillment_status"],
+    invoice: json["invoice"],
   );
 
   Map<String, dynamic> toJson() => {
     "fulfillment_status": fulfillmentStatus,
+    "invoice": invoice,
   };
 }
 
