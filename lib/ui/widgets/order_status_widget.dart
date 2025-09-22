@@ -105,12 +105,12 @@ class OrderStatusWidget extends StatelessWidget {
 
           return Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center, // ✅ align by circle center
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               circleWithLabel,
               if (index != steps.length - 1)
                 Align(
-                  alignment: Alignment.center, // ✅ aligns to circle center
+                  alignment: Alignment.center,
                   child: CustomPaint(
                     painter: DashedLinePainter(color: stepColor),
                     child: SizedBox(
