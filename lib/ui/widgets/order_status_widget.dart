@@ -29,89 +29,108 @@ class OrderStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: steps.asMap().entries.map((entry) {
-        final index = entry.key;
-        final step = entry.value;
+    final screenWidth = MediaQuery.of(context).size.width;
+    // 38 circle + 70 label + some padding ≈ 120 per step
+    const stepBaseWidth = 120.0;
+    final totalStepsWidth = steps.length * stepBaseWidth;
 
-        final bool isCancelledStep = isCanceled && index == currentStep;
-        final bool isCompleted = !isCanceled && index <= currentStep;
+    // Available width for lines = screenWidth - step content
+    final availableLineWidth = (screenWidth - totalStepsWidth) / (steps.length - 1);
 
-        final Color stepColor = isCancelledStep
-            ? Colors.red
-            : isCompleted
-            ? AppColors.primary
-            : Colors.grey;
+    // clamp to avoid negative/overflow values
+    final lineWidth = availableLineWidth.clamp(20.0, 60.0);
 
-        // Circle + label grouped together
-        final circleWithLabel = Column(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(color: stepColor, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 6,
-                    spreadRadius: 1,
-                  )
-                ],
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  step.svgAsset,
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(stepColor, BlendMode.srcIn),
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min, // shrink to fit
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: steps.asMap().entries.map((entry) {
+          final index = entry.key;
+          final step = entry.value;
+
+          final bool isCancelledStep = isCanceled && index == currentStep;
+          final bool isCompleted = !isCanceled && index <= currentStep;
+
+          final Color stepColor = isCancelledStep
+              ? Colors.red
+              : isCompleted
+              ? AppColors.primary
+              : Colors.grey;
+
+          final circleWithLabel = Column(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(color: stepColor, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    )
+                  ],
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    step.svgAsset,
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(stepColor, BlendMode.srcIn),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            SizedBox(
-              width: 70, // keeps label constrained
-              child: Text(
-                step.label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isCompleted || isCancelledStep
-                      ? FontWeight.w600
-                      : FontWeight.w400,
-                  color: stepColor,
+              const SizedBox(height: 4),
+              SizedBox(
+                width: 70,
+                child: Text(
+                  step.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isCompleted || isCancelledStep
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                    color: stepColor,
+                  ),
                 ),
               ),
-            ),
-          ],
-        );
+            ],
+          );
 
-        return Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center, // ✅ align by circle center
             children: [
               circleWithLabel,
               if (index != steps.length - 1)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 19), // centers line with circle
-                    child: CustomPaint(
-                      painter: DashedLinePainter(color: stepColor),
-                      child: const SizedBox(height: 2),
+                Align(
+                  alignment: Alignment.center, // ✅ aligns to circle center
+                  child: CustomPaint(
+                    painter: DashedLinePainter(color: stepColor),
+                    child: SizedBox(
+                      height: 2,
+                      width: lineWidth, // dynamic width from earlier
                     ),
                   ),
                 ),
             ],
-          ),
-        );
-      }).toList(),
+          );
+
+        }).toList(),
+      ),
     );
   }
+
+
+
+
+
 }
 
 

@@ -124,10 +124,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 // Use a Column to arrange the widgets vertically
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  OrderStatusWidget(
-                    currentStep: currentStep,
-                    steps: steps,
-                    isCanceled: order?.status == 'canceled',
+                  Center(
+                    child: OrderStatusWidget(
+                      currentStep: currentStep,
+                      steps: steps,
+                      isCanceled: order?.status == 'canceled',
+                    ),
                   ),
                   const SizedBox(height: 10), // List of order items
                   _buildOrdersList(),
