@@ -74,7 +74,7 @@ class _ProductPageState extends State<ProductPage> {
     currentPage++;
     getProductsApi(
       categoryIds: selectedCategoriesList.isNotEmpty? selectedCategoriesList.join(','): widget.categoryId,
-      collectionIds: selectedCollectionsList.join(','),
+      collectionIds: selectedCollectionsList.isNotEmpty?selectedCollectionsList.join(','):widget.collectionId,
       tagIds: selectedTagsList.isNotEmpty? selectedTagsList.join(','):widget.tagId,
       searchString: searchController.text,
       minPrice: minPrice,
@@ -85,16 +85,24 @@ class _ProductPageState extends State<ProductPage> {
 
   Timer? _debounce;
 
+  String _previousSearchText = '';
+
   void _debounceSearch(String query) {
+
+    if (query == _previousSearchText) return;
+
+    _previousSearchText = query;
+
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       currentPage = 0;
       filteredProducts.clear();
       getProductsApi(
-        categoryIds: widget.categoryId,
-        tagIds: widget.tagId,
-        collectionIds: selectedCollectionsList.join(','),
+        categoryIds: selectedCategoriesList.isNotEmpty? selectedCategoriesList.join(','): widget.categoryId,
+        tagIds: selectedTagsList.isNotEmpty? selectedTagsList.join(','):widget.tagId,
+        collectionIds: selectedCollectionsList.isNotEmpty?selectedCollectionsList.join(','):widget.collectionId,
         searchString: query,
+
       );
     });
   }
@@ -206,9 +214,10 @@ class _ProductPageState extends State<ProductPage> {
                         currentPage = 0;
                         filteredProducts.clear();
                         getProductsApi(
-                          categoryIds: categoryIds,
-                          collectionIds: collectionIds,
-                          tagIds: tagIds,
+                          categoryIds: categoryIds.isNotEmpty? categoryIds:widget.categoryId,
+                          collectionIds: collectionIds.isNotEmpty?collectionIds:widget.collectionId,
+                          tagIds: tagIds.isNotEmpty?tagIds:widget.tagId,
+                          searchString: searchController.text,
                           minPrice: minPrice,
                           maxPrice: maxPrice,
                           sortBy: sortBy,
