@@ -69,10 +69,21 @@ class AddressCard extends StatelessWidget {
           Visibility(
             visible: isFromEdit,
             child: Container(
-              margin: const EdgeInsets.only(left: 36.0),
+              margin: const EdgeInsets.only(left: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  TextButton(
+                    onPressed: onEdit,
+                    child:  Text(
+                      AppStrings.edit,
+                      style: FontUtils.primaryFontStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Visibility(
                     visible:false,
                     child: TextButton(
@@ -83,22 +94,11 @@ class AddressCard extends StatelessWidget {
                       ),
                       onPressed: onDelete,
                       child:  Text(
-                       AppStrings.delete,
+                        AppStrings.delete,
                         style: FontUtils.primaryFontStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  TextButton(
-                    onPressed: onEdit,
-                    child:  Text(
-                      AppStrings.edit,
-                      style: FontUtils.primaryFontStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
