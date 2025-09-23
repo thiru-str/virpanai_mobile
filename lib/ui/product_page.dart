@@ -89,7 +89,6 @@ class _ProductPageState extends State<ProductPage> {
   void _debounceSearch(String query) {
     final newQuery = query.trim();
 
-    // Skip if query hasn't changed
     if (newQuery == _previousSearchText) return;
 
     _previousSearchText = newQuery;
@@ -99,7 +98,7 @@ class _ProductPageState extends State<ProductPage> {
       currentPage = 0;
       filteredProducts.clear();
 
-      // Only fire API if something is typed
+
         getProductsApi(
           categoryIds: selectedCategoriesList.isNotEmpty
               ? selectedCategoriesList.join(',')
