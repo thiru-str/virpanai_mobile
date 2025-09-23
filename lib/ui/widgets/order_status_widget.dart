@@ -29,103 +29,92 @@ class OrderStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    // 38 circle + 70 label + some padding ≈ 120 per step
-    const stepBaseWidth = 120.0;
-    final totalStepsWidth = steps.length * stepBaseWidth;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: steps.asMap().entries.map((entry) {
+        final index = entry.key;
+        final step = entry.value;
 
-    // Available width for lines = screenWidth - step content
-    final availableLineWidth = (screenWidth - totalStepsWidth) / (steps.length - 1);
+        final bool isCancelledStep = isCanceled && index == currentStep;
+        final bool isCompleted = !isCanceled && index <= currentStep;
 
-    // clamp to avoid negative/overflow values
-    final lineWidth = availableLineWidth.clamp(20.0, 60.0);
+        final Color stepColor = isCancelledStep
+            ? Colors.red
+            : isCompleted
+            ? AppColors.primary
+            : Colors.grey;
 
-    return Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min, // shrink to fit
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: steps.asMap().entries.map((entry) {
-          final index = entry.key;
-          final step = entry.value;
-
-          final bool isCancelledStep = isCanceled && index == currentStep;
-          final bool isCompleted = !isCanceled && index <= currentStep;
-
-          final Color stepColor = isCancelledStep
-              ? Colors.red
-              : isCompleted
-              ? AppColors.primary
-              : Colors.grey;
-
-          final circleWithLabel = Column(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(color: stepColor, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                    )
-                  ],
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    step.svgAsset,
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(stepColor, BlendMode.srcIn),
-                  ),
+        final circleWithLabel = Column(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(color: stepColor, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                  )
+                ],
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  step.svgAsset,
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(stepColor, BlendMode.srcIn),
                 ),
               ),
-              const SizedBox(height: 4),
-              SizedBox(
-                width: 70,
-                child: Text(
-                  step.label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isCompleted || isCancelledStep
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                    color: stepColor,
-                  ),
+            ),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: 70,
+              child: Text(
+                step.label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight:
+                  isCompleted || isCancelledStep ? FontWeight.w600 : FontWeight.w400,
+                  color: stepColor,
                 ),
               ),
-            ],
-          );
+            ),
+          ],
+        );
 
-          return Row(
-            mainAxisSize: MainAxisSize.min,
+        return Expanded( // ✅ each step takes equal horizontal space
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               circleWithLabel,
               if (index != steps.length - 1)
-                Align(
-                  alignment: Alignment.center,
-                  child: CustomPaint(
-                    painter: DashedLinePainter(color: stepColor),
-                    child: SizedBox(
-                      height: 2,
-                      width: lineWidth, // dynamic width from earlier
+                Expanded( // ✅ connector fills leftover space
+                  child: SizedBox(
+                    height: 38, // same as circle
+                    child: Center(
+                      child: CustomPaint(
+                        painter: DashedLinePainter(color: stepColor),
+                        child: const SizedBox(height: 2),
+                      ),
                     ),
                   ),
                 ),
             ],
-          );
-
-        }).toList(),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
+
 
 
 

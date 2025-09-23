@@ -194,7 +194,7 @@ class _ProductPageState extends State<ProductPage> {
                         List<String>.from(data['selectedTags'] ?? []);
                         minPrice = data['minPrice'];
                         maxPrice = data['maxPrice'];
-                        sortBy = data['sortBy'] ??AppStrings.low_high;
+                        sortBy = data['sortBy'];
                         selectedSection = data['selectedSection'] ??selectedSection;
                         final categoryIds = selectedCategoriesList.isNotEmpty
                             ? selectedCategoriesList.join(',')

@@ -47,7 +47,7 @@ class _FilterPageState extends State<FilterPage> {
   Set<String> selectedTags = {};
   double? minPrice;
   double? maxPrice;
-  String sortBy = AppStrings.low_high;
+  String? sortBy;
 
   TextEditingController categorySearchController = TextEditingController();
   String categorySearchQuery = '';
@@ -432,7 +432,7 @@ class _FilterPageState extends State<FilterPage> {
       maxPrice = null;
       maxPriceController.text = '';
       minPriceController.text = '';
-      sortBy = sortOptions.first;
+      sortBy = '';
     });
   }
 }
