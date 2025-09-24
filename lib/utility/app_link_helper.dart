@@ -62,7 +62,7 @@ class AppLinkHelper {
       final Uri link = Uri.parse('https://virpanai.waioz.com/details?id=${productId}');
 
       final String message = '''
-Check out this product on GoWelMart! 🛍️
+Check out this product on VirpanAI! 🛍️
 
 I think you'll love this. Here's the link: $link
 ''';
