@@ -230,6 +230,7 @@ class PushNotificationService {
       redirectSearchData: RedirectSearchData(
         collection: searchDataMap['collection'] ?? data['collection'] ?? '',
         category: searchDataMap['category'] ?? data['category'] ?? '',
+        tag: searchDataMap['tag'] ?? data['tag'] ?? '',
         brand: searchDataMap['brand'] ?? data['brand'] ?? '',
         minPrice: searchDataMap['min_price']?.toString() ?? searchDataMap['minPrice']?.toString() ?? data['min_price']?.toString() ?? data['minPrice']?.toString() ?? '',
         maxPrice: searchDataMap['max_price']?.toString() ?? searchDataMap['maxPrice']?.toString() ?? data['max_price']?.toString() ?? data['maxPrice']?.toString() ?? '',

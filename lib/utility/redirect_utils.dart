@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:waioz/ui/order_detail_item_page.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../model/home_page_response.dart';
@@ -56,6 +59,7 @@ class RedirectUtils {
   static final Map<String, Function(BuildContext, RedirectData)> _viewAllRedirectHandlers = {
     AppStrings.reDirectSearch: _navigateToSearch,
     AppStrings.reDirectProduct: (context, redirectData) => _handleProductRedirect(context, redirectData),
+    AppStrings.reDirectOrder: (context, redirectData) => _handleProductOrder(context, redirectData),
     AppStrings.reDirectLink: (_, redirectData) => _launchExternalLink(redirectData),
   };
 
@@ -94,9 +98,11 @@ class RedirectUtils {
 
     final collectionId = redirectData.redirectSearchData?.collection??'';
 
+    final tagId = redirectData.redirectSearchData?.tag??'';
+
     PageRouteUtils.pushWithSlide(
       context,
-      ProductPage(categoryId: categoryId!,collectionId: collectionId,),
+      ProductPage(categoryId: categoryId!,collectionId: collectionId,tagId: tagId,),
     );
   }
 
@@ -123,10 +129,21 @@ class RedirectUtils {
     );
   }
 
+  static void _handleProductOrder(BuildContext context, RedirectData redirectData) {
+    final orderId = redirectData.redirectOrderData?.orderId;
+    if (orderId?.isEmpty ?? true) return;
+
+    PageRouteUtils.pushWithSlide(
+      context,
+      OrderDetailItemPage(orderId: orderId),
+    );
+  }
+
   static Future<void> _launchExternalLink(RedirectData redirectData) async {
     final url = redirectData.redirectUrlData?.url;
     if (url?.isEmpty ?? true) return;
 
     await launchExternalUrl(url!);
   }
+
 }
