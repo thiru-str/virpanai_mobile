@@ -7,6 +7,7 @@ import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -60,6 +61,9 @@ Future<void> main() async {
 
 
   runApp(HomeScreen(skipLogin: false,publicDetailsResponse: publicDetailsResponse,));
+  Future.delayed(Duration.zero, () {
+    AppLinkHelper.init();
+  });
 }
 
 class HomeScreen extends StatelessWidget {
