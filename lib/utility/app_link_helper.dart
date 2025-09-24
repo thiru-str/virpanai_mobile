@@ -59,7 +59,7 @@ class AppLinkHelper {
       ) async {
     try {
 
-      final Uri link = Uri.parse('https://virpanai.waioz.com/details?id=${productId}');
+      final Uri link = Uri.parse('https://lightrix.in/details?id=${productId}');
 
       final String message = '''
 Check out this product on VirpanAI! 🛍️

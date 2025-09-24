@@ -197,6 +197,6 @@ class AppStrings {
 
   static const String deleteAccount = 'Delete Account';
 
-  static const String androidPackage = 'com.rodeodigital.wellmartmas';
-  static const String appId = '1611964854';
+  static const String androidPackage = 'com.waioz.lightrix';
+  static const String appId = '6749885085';
 }

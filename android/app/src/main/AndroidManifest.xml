@@ -31,7 +31,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <data
                     android:scheme="https"
-                    android:host="virpanai.waioz.com"
+                    android:host="lightrix.in"
                     android:pathPrefix="/details" />
             </intent-filter>
         </activity>

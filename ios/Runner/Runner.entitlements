@@ -5,7 +5,7 @@
 	<key>aps-environment</key>
 	<string>development</string>
 	<array>
-    		<string>applinks:virpanai.waioz.com</string>
+    		<string>applinks:lightrix.in</string>
     	</array>
 </dict>
 </plist>
