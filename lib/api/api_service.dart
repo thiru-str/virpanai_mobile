@@ -37,6 +37,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
+import '../model/tags_response.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -330,13 +331,15 @@ class ApiService {
       BuildContext context,
       String categoryId,
       String collectionId,
+      String tagId,
       double? minPrice,
       double? maxPrice,
-      String sortBy,
+      String? sortBy,
       String searchString, {
         int offset = 0,
         int limit = 10,
       }) async {
+    await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, dynamic>{};
 
@@ -352,6 +355,17 @@ class ApiService {
           .toList();
       if (categories.isNotEmpty) {
         queryParams['category_id[]'] = categories;
+      }
+    }
+
+    if (tagId.trim().isNotEmpty) {
+      final tags = tagId
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (tags.isNotEmpty) {
+        queryParams['tag_id[]'] = tags;
       }
     }
 
@@ -373,7 +387,9 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
+    if(sortBy!=null) {
+      queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
+    }
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
@@ -822,6 +838,16 @@ class ApiService {
       null,
       null,
           (json) => FilterCategoryResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<TagsResponse> listTags(BuildContext context) async {
+    return _makeGetRequest<TagsResponse>(
+      'store/product-tags',
+      '?fields=id,value',
+      null,
+          (json) => TagsResponse.fromJson(json),
       context,
     );
   }

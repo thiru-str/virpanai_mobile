@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/product_category_response.dart';
+import 'package:waioz/model/tags_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -12,24 +13,27 @@ enum FilterSection {
   categories,
   price,
   sortBy,
+  tags,
 }
 
 class FilterPage extends StatefulWidget {
   final String parentCategoryId;
   final List<String> preSelectedCollections;
   final List<String> preSelectedCategories;
+  final List<String> preSelectedTags;
   final double? preMinPrice;
   final double? preMaxPrice;
-  final String preSortBy;
+  final String? preSortBy;
   final FilterSection preSelectedSection;
   const FilterPage({
     super.key,
     required this.parentCategoryId,
     this.preSelectedCollections = const [],
     this.preSelectedCategories = const [],
+    this.preSelectedTags = const [],
     this.preMinPrice,
     this.preMaxPrice,
-    this.preSortBy = AppStrings.low_high,
+    this.preSortBy,
     this.preSelectedSection = FilterSection.collections,
   });
 
@@ -40,19 +44,25 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   Set<String> selectedCollections = {};
   Set<String> selectedCategories = {};
+  Set<String> selectedTags = {};
   double? minPrice;
   double? maxPrice;
-  String sortBy = AppStrings.low_high;
+  String? sortBy;
+
+  TextEditingController categorySearchController = TextEditingController();
+  String categorySearchQuery = '';
 
   FilterSection selectedSection = FilterSection.collections;
   bool isLoadingCollections = true;
   bool isLoadingCategories = true;
+  bool isTagsLoading = true;
 
   TextEditingController minPriceController = TextEditingController();
   TextEditingController maxPriceController = TextEditingController();
 
   List<Collection> collectionsList = [];
   List<ProductCategory> categoryList = [];
+  List<ProductTag> tagsList = [];
 
   static const sortOptions = [
     'Lowest - Highest Price',
@@ -62,6 +72,7 @@ class _FilterPageState extends State<FilterPage> {
   final sidebarItems = [
     {'label': AppStrings.collections, 'section': FilterSection.collections},
     {'label': AppStrings.categories, 'section': FilterSection.categories},
+    {'label': AppStrings.tags, 'section': FilterSection.tags},
     {'label': AppStrings.price, 'section': FilterSection.price},
     {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
   ];
@@ -71,13 +82,16 @@ class _FilterPageState extends State<FilterPage> {
     super.initState();
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
+    selectedTags = widget.preSelectedTags.toSet();
     if(widget.preMinPrice!=null) {
       minPriceController.text = '${widget.preMinPrice!.toInt()}';
     }
     if(widget.preMaxPrice!=null) {
       maxPriceController.text = '${widget.preMaxPrice!.toInt()}';
     }
-    sortBy = widget.preSortBy;
+    if(widget.preSortBy!=null) {
+      sortBy = widget.preSortBy!;
+    }
     selectedSection = widget.preSelectedSection;
     _fetchInitialData();
   }
@@ -85,6 +99,7 @@ class _FilterPageState extends State<FilterPage> {
   void _fetchInitialData() {
     _loadCollections();
     _loadCategories();
+    _loadTags();
   }
 
   Future<void> _loadCollections() async {
@@ -112,6 +127,21 @@ class _FilterPageState extends State<FilterPage> {
     } catch (e) {
       print('Error loading categories: $e');
       setState(() => isLoadingCategories = false);
+    }
+  }
+
+  Future<void> _loadTags() async {
+    try {
+      final response = await ApiService().listTags(
+        context,
+      );
+      setState(() {
+        tagsList = response.productTags ?? [];
+        isTagsLoading = false;
+      });
+    } catch (e) {
+      print('Error loading categories: $e');
+      setState(() => isTagsLoading = false);
     }
   }
 
@@ -201,17 +231,82 @@ class _FilterPageState extends State<FilterPage> {
       case FilterSection.categories:
         return isLoadingCategories
             ? const Center(child: CircularProgressIndicator())
+            : Column(
+          children: [
+            // 🔎 Minimal search field with underline + clear
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4.0),
+              child: TextField(
+                controller: categorySearchController,
+                decoration: InputDecoration(
+                  hintText: "Search categories",
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                  border: const UnderlineInputBorder(),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey), // light grey line
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary, width: 2), // highlight on focus
+                  ),
+                  suffixIcon: categorySearchQuery.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                    onPressed: () {
+                      categorySearchController.clear();
+                      setState(() {
+                        categorySearchQuery = '';
+                      });
+                    },
+                  )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: (value) {
+                  setState(() {
+                    categorySearchQuery = value.toLowerCase();
+                  });
+                },
+              ),
+            ),
+
+            // Filtered list
+            Expanded(
+              child: _buildFilterList(
+                categoryList
+                    .where((e) =>
+                e.name != null &&
+                    e.name!.toLowerCase().contains(categorySearchQuery))
+                    .map((e) => e.id ?? '')
+                    .toList(),
+                selectedCategories,
+                labelMap: Map.fromEntries(
+                  categoryList
+                      .where((e) =>
+                  e.id != null &&
+                      e.name != null &&
+                      e.name!.toLowerCase().contains(categorySearchQuery))
+                      .map((e) => MapEntry(e.id!, e.name!)),
+                ),
+              ),
+            ),
+          ],
+        );
+      case FilterSection.tags:
+        return isTagsLoading
+            ? const Center(child: CircularProgressIndicator())
             : _buildFilterList(
-          categoryList.map((e) => e.id ?? '').toList(),
-          selectedCategories,
-          labelMap: Map.fromEntries(categoryList
-              .where((e) => e.id != null && e.name != null)
-              .map((e) => MapEntry(e.id!, e.name!))),
+          tagsList.map((e) => e.id ?? '').toList(),
+          selectedTags,
+          labelMap: Map.fromEntries(tagsList
+              .where((e) => e.id != null && e.value != null)
+              .map((e) => MapEntry(e.id!, e.value!))),
         );
       case FilterSection.price:
         return _buildPriceFilter();
       case FilterSection.sortBy:
         return _buildSortByFilter();
+
     }
   }
 
@@ -295,6 +390,7 @@ class _FilterPageState extends State<FilterPage> {
             Navigator.pop(context, {
               'selectedCollections': selectedCollections.toList(),
               'selectedCategories': selectedCategories.toList(),
+              'selectedTags': selectedTags.toList(),
               'minPrice': minPrice,
               'maxPrice': maxPrice,
               'sortBy': sortBy,
@@ -304,6 +400,7 @@ class _FilterPageState extends State<FilterPage> {
           VerticalDivider(width: 1, color: Colors.grey.shade300),
           _buildBottomButton(AppStrings.close, Colors.black, () {
             // Close action
+            Navigator.pop(context);
           }),
         ],
       ),
@@ -330,9 +427,12 @@ class _FilterPageState extends State<FilterPage> {
     setState(() {
       selectedCategories.clear();
       selectedCollections.clear();
-      minPrice = 1;
-      maxPrice = 99999;
-      sortBy = sortOptions.first;
+      selectedTags.clear();
+      minPrice = null;
+      maxPrice = null;
+      maxPriceController.text = '';
+      minPriceController.text = '';
+      sortBy = '';
     });
   }
 }
