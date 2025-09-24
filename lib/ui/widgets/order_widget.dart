@@ -25,93 +25,96 @@ class OrderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.secondary,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: IntrinsicHeight( // Ensures the Row matches the content height for vertical alignment
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Vertically centered icon
-              Align(
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.receipt,
-                  size: 28,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Right side content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1st row: Order ID
-                    Text(
-                      '${AppStrings.order} #$orderId',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // 2nd row: Item count and price+arrow
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '$itemCount items',
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600]!,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              CurrencyUtil.appendCurrency(itemPrice.toStringAsFixed(2)),
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 18,
-                              color: Colors.grey[600],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-
-                    // 3rd row: Placed at
-                    Text(
-                      'Placed at ${DateFormat('dd MMM yyyy, hh:mm a').format(createdAt)}',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600]!,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.secondary,
+            borderRadius: BorderRadius.circular(12),
           ),
-        ),
-      )
+          child: IntrinsicHeight( // Ensures the Row matches the content height for vertical alignment
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Vertically centered icon
+                Align(
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.receipt,
+                    size: 28,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Right side content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1st row: Order ID
+                      Text(
+                        '${AppStrings.order} #$orderId',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // 2nd row: Item count and price+arrow
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '$itemCount items',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600]!,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Visibility(
+                                visible: itemPrice>0,
+                                child: Text(
+                                  CurrencyUtil.appendCurrency(itemPrice.toStringAsFixed(2)),
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 18,
+                                color: Colors.grey[600],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+
+                      // 3rd row: Placed at
+                      Text(
+                        'Placed at ${DateFormat('dd MMM yyyy, hh:mm a').format(createdAt)}',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600]!,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
 
     );
   }

@@ -101,6 +101,7 @@ class AppStrings {
   static const String cart = "Cart";
   static const String account = "Account";
   static const String categories = "Categories";
+  static const String tags = "Brands";
   static const String collections = "Collections";
   static const String favourite = "Favourite";
   static const String customer = "customer";
@@ -132,6 +133,7 @@ class AppStrings {
 
   static const String clear_all = "Clear All";
   static const String recommended = "Recommended";
+  static const String low_high = "Lowest - Highest Price";
 
   static const String wishlist_found = ' Wishlist entry found';
   static const String billing_details = 'Billing details';
@@ -187,10 +189,14 @@ class AppStrings {
 
   static const String reDirectSearch = 'Search';
   static const String reDirectProduct = 'Product';
+  static const String reDirectOrder = 'Order';
   static const String reDirectLink = 'Link';
 
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
 
   static const String deleteAccount = 'Delete Account';
+
+  static const String androidPackage = 'com.rodeodigital.wellmartmas';
+  static const String appId = '1611964854';
 }

@@ -1,15 +1,16 @@
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/push_notification_service.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../ui/splash_page.dart';
@@ -17,8 +18,16 @@ import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock orientation to portrait only
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Set Stripe publishable key
   Stripe.publishableKey = AppConfig.publishableKeyStripe;
@@ -29,9 +38,6 @@ Future<void> main() async {
   await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
   await Firebase.initializeApp();
-
-  final pushNotificationService = PushNotificationService();
-  await pushNotificationService.initializeFCM();
 
   PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
   await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
@@ -54,18 +60,23 @@ Future<void> main() async {
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
-  runApp(HomeScreen(skipLogin: skipLogin,));
+  runApp(HomeScreen(skipLogin: false,publicDetailsResponse: publicDetailsResponse,));
+  Future.delayed(Duration.zero, () {
+    AppLinkHelper.init();
+  });
 }
 
 class HomeScreen extends StatelessWidget {
-   final bool skipLogin;
-   HomeScreen({super.key,this.skipLogin = false});
+  final bool skipLogin;
+  final PublicDetailsResponse? publicDetailsResponse;
+  HomeScreen({super.key,this.skipLogin = false,this.publicDetailsResponse});
 
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: SplashPage(skipLogin: skipLogin),
+      home: SplashPage(skipLogin: skipLogin,publicDetailsResponse: publicDetailsResponse,),
     );
   }
 

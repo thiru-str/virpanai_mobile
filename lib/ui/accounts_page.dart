@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
@@ -18,6 +20,9 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/utility/version_utils.dart';
+
+import '../model/view_cart_model.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -28,6 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
   List<ContentData> storeContentList = [];
   bool isLoading = false;
+  String? _appVersion;
 
   @override
   void initState() {
@@ -35,6 +41,34 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
+    listenToEvents();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final version = await VersionUtils.getCurrentAppVersion();
+    setState(() {
+      _appVersion = version;
+    });
+  }
+
+  late StreamSubscription<ProfileEvent> _eventSubscription;
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ProfileEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          if(event.customer!=null) {
+            customer = event.customer;
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -176,6 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
+          Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey),)
         ],
       )),
     );
@@ -242,7 +277,7 @@ class _SettingsPageState extends State<SettingsPage> {
             await SharedPreferencesUtil().clear();
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
-                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+                  context, skipLogin ? const BottomNavPage() : const PhoneNumberPage());
             }
           },
         );

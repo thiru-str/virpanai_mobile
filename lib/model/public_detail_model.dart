@@ -36,16 +36,16 @@ class PublicDetailsResponse {
   });
 
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
-    maintainance: json["maintainance"],
-    token: json["token"],
-    theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
-    googleMapUsage: json["googleMapUsage"],
-    showLocationAtStart: json["showLocationAtStart"],
-    restrictLocation: json["restrictLocation"],
-    singleShippingAddress: json["singleShippingAddress"],
-    restrictLocationBy: json["restrictLocationBy"],
-    bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
-    upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
+      maintainance: json["maintainance"],
+      token: json["token"],
+      theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
+      googleMapUsage: json["googleMapUsage"],
+      showLocationAtStart: json["showLocationAtStart"],
+      restrictLocation: json["restrictLocation"],
+      singleShippingAddress: json["singleShippingAddress"],
+      restrictLocationBy: json["restrictLocationBy"],
+      bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
+      upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
       storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"])
   );
 
@@ -82,20 +82,24 @@ class StoreDetails {
 
 class StoreMetadata {
   bool? skipLogin;
+  String? versionCheck;
   int? minimumOrderValue;
 
   StoreMetadata({
     this.skipLogin,
+    this.versionCheck,
     this.minimumOrderValue,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
     skipLogin: json["skip_login"],
+    versionCheck: json["version_check"],
     minimumOrderValue: json["minimum_order_value"],
   );
 
   Map<String, dynamic> toJson() => {
     "skip_login": skipLogin,
+    "version_check": versionCheck,
     "minimum_order_value": minimumOrderValue,
   };
 }

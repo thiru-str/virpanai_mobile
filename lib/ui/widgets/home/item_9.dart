@@ -62,28 +62,42 @@ class _Item9State extends State<Item9> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.content.layoutTitle ?? "",
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Expanded(
+                child: Text(
+                  widget.content.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
               ),
+              const SizedBox(width: 4), // Add some spacing between title and redirect
               Visibility(
-                visible:
-                    widget.content.layoutRedirectTitle?.isNotEmpty ?? false,
+                visible: (widget.content.layoutRedirectTitle ?? '').isNotEmpty,
                 child: GestureDetector(
                   onTap: () {
-                    // handle redirect
+                    // Handle section-level redirection if needed
+                    RedirectUtils.handleContentRedirectViewAll(
+                      context: context,
+                      redirectData: widget.content.redirectData!,
+                    );
                   },
-                  child: Text(
-                    widget.content.layoutRedirectTitle!,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                    children: [
+                      Text(
+                        widget.content.layoutRedirectTitle!,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, size: 18),
+                    ],
                   ),
                 ),
               ),

@@ -18,6 +18,7 @@ import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/add_on_product_card.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
@@ -33,6 +34,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/product_response.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
@@ -267,29 +269,30 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 24),
-        SizedBox(
-          height: 310,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            itemCount: relatedProductsResponse?.products?.length ?? 0,
-            separatorBuilder: (context, index) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final product = relatedProductsResponse?.products![index];
-              return ProductCard(
-                imageUrl: product?.thumbnail ?? '',
-                title: product?.title ?? '',
-                product: product!,
-                onTapCard: () {
-                  PageRouteUtils.pushWithSlide(
-                    context,
-                    ProductDetailPage(productId: product.id ?? ''),
-                  );
-                },
-              );
-            },
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(
+              relatedProductsResponse?.products?.length ?? 0,
+                  (index) {
+                final product = relatedProductsResponse?.products![index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10), // spacing like separator
+                  child: ProductCard(
+                    product: product!,
+                    onTapCard: () {
+                      PageRouteUtils.pushWithSlide(
+                        context,
+                        ProductDetailPage(productId: product.id ?? ''),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+        )
+
       ],
     );
   }
@@ -484,14 +487,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     setState(() {
       selectedVariant = matchedVariant;
       selectedVariantId = matchedVariant?.id;
-      stockNotAvailable = !isVariantAvailable(selectedVariant);
+      stockNotAvailable = !isStockAvailable(selectedVariant);
     });
 
     print("Selected Variant ID: ${selectedVariant?.id}");
-    print("Stock not available: ${!isVariantAvailable(selectedVariant)}");
+    print("Stock not available: ${!isStockAvailable(selectedVariant)}");
   }
 
-  bool isVariantAvailable(ProductResponse.Variant? variant) {
+  bool isStockAvailable(ProductResponse.Variant? variant) {
     if (variant == null) return false;
 
     // If we don't manage inventory
@@ -716,15 +719,32 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
 
               if (!isLoggedIn) {
-                      AppUtils.showToast('Please login to Continue');
-                      PageRouteUtils.push(
-                          context,
-                          PhoneNumberPage(
-                            redirectPage: ProductDetailPage(
-                              productId: widget.productId,
-                              isFromLogin: true,
-                            ),
-                          ));
+                      showDialog(
+                        context: context,
+                        builder: (_) => Dialog(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: LoginPrompt(
+                            showClose: true,
+                            onClosePressed: (){
+                              Navigator.pop(context);
+                            },
+                            onButtonPressed: () {
+                              Navigator.pop(context);
+                              PageRouteUtils.push(
+                                  context,
+                                  PhoneNumberPage(
+                                    redirectPage: ProductDetailPage(
+                                      productId: widget.productId,
+                                      isFromLogin: true,
+                                    ),
+                                  ));
+                            },
+                          ),
+                        ),
+                      );
                       return;
                     }
                     if ((addOnProductsCount ?? 0) > 0) {
@@ -769,48 +789,92 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     try {
       final apiService = ApiService();
       final response =
-          await apiService.productDetail(context, widget.productId);
+      await apiService.productDetail(context, widget.productId);
       setState(() {
         product = response.product;
         apiLoading = false;
       });
-      if (product != null &&
-          product!.variants != null &&
-          product!.variants!.isNotEmpty) {
+      if (product != null && product!.variants != null && product!.variants!.isNotEmpty) {
+        // Case 1: Single "default variant"
         if (product!.variants!.length == 1 &&
-            product!.variants!.first.title!.toLowerCase() ==
-                "default variant") {
+            product!.variants!.first.title!.toLowerCase() == "default variant") {
           setState(() {
-            selectedVariantId = product?.variants?.first.id ?? null;
+            selectedVariantId = product!.variants!.first.id;
+            selectedVariant = product!.variants!.first;
             showVariantSelection = false;
+            stockNotAvailable = !isStockAvailable(product!.variants!.first);
           });
         } else {
-          setState(() {
-            selectedOptions = {};
-            for (var option in product?.options ?? []) {
-              if ((option.values?.isNotEmpty ?? false)) {
-                selectedOptions[option.id!] = option.values?.first;
-              }
-            }
-            showVariantSelection = true;
-          });
+          final cheapestAvailable = getCheapestAvailableVariant(product!);
 
-          Future.delayed(Duration.zero, updateVariant);
+          if (cheapestAvailable != null) {
+            setState(() {
+              selectedVariant = cheapestAvailable;
+              selectedVariantId = cheapestAvailable.id;
+              stockNotAvailable = !isStockAvailable(cheapestAvailable);
+
+              // fill selectedOptions for UI highlighting
+              selectedOptions = {};
+              for (final opt in cheapestAvailable.options ?? []) {
+                final productOption = product!.options
+                    ?.where((po) => po.id == opt.optionId)
+                    .cast<ProductOption?>()
+                    .firstOrNull;
+
+                if (productOption == null) continue;
+
+                final matchedValue = productOption.values
+                    ?.where((v) => v.id == opt.id)
+                    .cast<Value?>()
+                    .firstOrNull;
+
+                if (matchedValue != null) {
+                  selectedOptions[productOption.id!] = matchedValue;
+                }
+              }
+
+              showVariantSelection = true;
+            });
+          }
+
         }
       } else {
         setState(() {
-          selectedVariantId = product!.id;
+          selectedVariantId = product?.id;
           showVariantSelection = false;
         });
       }
+
 
       // Call cart API only after product API succeeds
       await getRelatedProductsApi();
       await getCartApi();
       await getProductsInfoApi();
+
     } catch (e) {
       setState(() => apiLoading = false);
     }
+  }
+
+  ProductResponse.Variant? getCheapestAvailableVariant(ProductResponse.Product product) {
+    if (product.variants == null || product.variants!.isEmpty) return null;
+
+    // sort variants by price ascending
+    final sortedVariants = product.variants!..sort((a, b) {
+      final priceA = double.tryParse(a.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ?? double.infinity;
+      final priceB = double.tryParse(b.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ?? double.infinity;
+      return priceA.compareTo(priceB);
+    });
+
+    // return first variant that has stock
+    for (final variant in sortedVariants) {
+      if (isStockAvailable(variant)) {
+        return variant;
+      }
+    }
+
+    // if nothing available → return the absolute cheapest anyway
+    return sortedVariants.first;
   }
 
   Future<void> getRelatedProductsApi() async {

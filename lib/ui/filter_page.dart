@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/product_category_response.dart';
+import 'package:waioz/model/tags_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -11,17 +13,28 @@ enum FilterSection {
   categories,
   price,
   sortBy,
+  tags,
 }
 
 class FilterPage extends StatefulWidget {
   final String parentCategoryId;
   final List<String> preSelectedCollections;
   final List<String> preSelectedCategories;
+  final List<String> preSelectedTags;
+  final double? preMinPrice;
+  final double? preMaxPrice;
+  final String? preSortBy;
+  final FilterSection preSelectedSection;
   const FilterPage({
     super.key,
     required this.parentCategoryId,
     this.preSelectedCollections = const [],
     this.preSelectedCategories = const [],
+    this.preSelectedTags = const [],
+    this.preMinPrice,
+    this.preMaxPrice,
+    this.preSortBy,
+    this.preSelectedSection = FilterSection.collections,
   });
 
   @override
@@ -31,20 +44,27 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   Set<String> selectedCollections = {};
   Set<String> selectedCategories = {};
-  double minPrice = 500;
-  double maxPrice = 10000;
-  String sortBy = AppStrings.recommended;
+  Set<String> selectedTags = {};
+  double? minPrice;
+  double? maxPrice;
+  String? sortBy;
+
+  TextEditingController categorySearchController = TextEditingController();
+  String categorySearchQuery = '';
 
   FilterSection selectedSection = FilterSection.collections;
   bool isLoadingCollections = true;
   bool isLoadingCategories = true;
+  bool isTagsLoading = true;
+
+  TextEditingController minPriceController = TextEditingController();
+  TextEditingController maxPriceController = TextEditingController();
 
   List<Collection> collectionsList = [];
   List<ProductCategory> categoryList = [];
+  List<ProductTag> tagsList = [];
 
   static const sortOptions = [
-    'Recommended',
-    'Newest',
     'Lowest - Highest Price',
     'Highest - Lowest Price'
   ];
@@ -52,6 +72,7 @@ class _FilterPageState extends State<FilterPage> {
   final sidebarItems = [
     {'label': AppStrings.collections, 'section': FilterSection.collections},
     {'label': AppStrings.categories, 'section': FilterSection.categories},
+    {'label': AppStrings.tags, 'section': FilterSection.tags},
     {'label': AppStrings.price, 'section': FilterSection.price},
     {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
   ];
@@ -61,12 +82,24 @@ class _FilterPageState extends State<FilterPage> {
     super.initState();
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
+    selectedTags = widget.preSelectedTags.toSet();
+    if(widget.preMinPrice!=null) {
+      minPriceController.text = '${widget.preMinPrice!.toInt()}';
+    }
+    if(widget.preMaxPrice!=null) {
+      maxPriceController.text = '${widget.preMaxPrice!.toInt()}';
+    }
+    if(widget.preSortBy!=null) {
+      sortBy = widget.preSortBy!;
+    }
+    selectedSection = widget.preSelectedSection;
     _fetchInitialData();
   }
 
   void _fetchInitialData() {
     _loadCollections();
     _loadCategories();
+    _loadTags();
   }
 
   Future<void> _loadCollections() async {
@@ -86,7 +119,6 @@ class _FilterPageState extends State<FilterPage> {
     try {
       final response = await ApiService().listCategories(
         context,
-        widget.parentCategoryId,
       );
       setState(() {
         categoryList = response.productCategories ?? [];
@@ -95,6 +127,21 @@ class _FilterPageState extends State<FilterPage> {
     } catch (e) {
       print('Error loading categories: $e');
       setState(() => isLoadingCategories = false);
+    }
+  }
+
+  Future<void> _loadTags() async {
+    try {
+      final response = await ApiService().listTags(
+        context,
+      );
+      setState(() {
+        tagsList = response.productTags ?? [];
+        isTagsLoading = false;
+      });
+    } catch (e) {
+      print('Error loading categories: $e');
+      setState(() => isTagsLoading = false);
     }
   }
 
@@ -120,7 +167,7 @@ class _FilterPageState extends State<FilterPage> {
               child: Text(
                 AppStrings.clear_all,
                 style:
-                    FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
+                FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
               ),
             ),
           ],
@@ -175,34 +222,99 @@ class _FilterPageState extends State<FilterPage> {
         return isLoadingCollections
             ? const Center(child: CircularProgressIndicator())
             : _buildFilterList(
-                collectionsList.map((e) => e.id ?? '').toList(),
-                selectedCollections,
-                labelMap: Map.fromEntries(collectionsList
-                    .where((e) => e.id != null && e.title != null)
-                    .map((e) => MapEntry(e.id!, e.title!))),
-              );
+          collectionsList.map((e) => e.id ?? '').toList(),
+          selectedCollections,
+          labelMap: Map.fromEntries(collectionsList
+              .where((e) => e.id != null && e.title != null)
+              .map((e) => MapEntry(e.id!, e.title!))),
+        );
       case FilterSection.categories:
         return isLoadingCategories
             ? const Center(child: CircularProgressIndicator())
-            : _buildFilterList(
-                categoryList.map((e) => e.id ?? '').toList(),
+            : Column(
+          children: [
+            // 🔎 Minimal search field with underline + clear
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4.0),
+              child: TextField(
+                controller: categorySearchController,
+                decoration: InputDecoration(
+                  hintText: "Search categories",
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                  border: const UnderlineInputBorder(),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey), // light grey line
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary, width: 2), // highlight on focus
+                  ),
+                  suffixIcon: categorySearchQuery.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                    onPressed: () {
+                      categorySearchController.clear();
+                      setState(() {
+                        categorySearchQuery = '';
+                      });
+                    },
+                  )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: (value) {
+                  setState(() {
+                    categorySearchQuery = value.toLowerCase();
+                  });
+                },
+              ),
+            ),
+
+            // Filtered list
+            Expanded(
+              child: _buildFilterList(
+                categoryList
+                    .where((e) =>
+                e.name != null &&
+                    e.name!.toLowerCase().contains(categorySearchQuery))
+                    .map((e) => e.id ?? '')
+                    .toList(),
                 selectedCategories,
-                labelMap: Map.fromEntries(categoryList
-                    .where((e) => e.id != null && e.name != null)
-                    .map((e) => MapEntry(e.id!, e.name!))),
-              );
+                labelMap: Map.fromEntries(
+                  categoryList
+                      .where((e) =>
+                  e.id != null &&
+                      e.name != null &&
+                      e.name!.toLowerCase().contains(categorySearchQuery))
+                      .map((e) => MapEntry(e.id!, e.name!)),
+                ),
+              ),
+            ),
+          ],
+        );
+      case FilterSection.tags:
+        return isTagsLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _buildFilterList(
+          tagsList.map((e) => e.id ?? '').toList(),
+          selectedTags,
+          labelMap: Map.fromEntries(tagsList
+              .where((e) => e.id != null && e.value != null)
+              .map((e) => MapEntry(e.id!, e.value!))),
+        );
       case FilterSection.price:
         return _buildPriceFilter();
       case FilterSection.sortBy:
         return _buildSortByFilter();
+
     }
   }
 
   Widget _buildFilterList(
-    List<String> items,
-    Set<String> selectedSet, {
-    Map<String, String>? labelMap,
-  }) {
+      List<String> items,
+      Set<String> selectedSet, {
+        Map<String, String>? labelMap,
+      }) {
     return ListView(
       children: items.map((id) {
         final isSelected = selectedSet.contains(id);
@@ -221,26 +333,30 @@ class _FilterPageState extends State<FilterPage> {
   Widget _buildPriceFilter() {
     return Column(
       children: [
-        _buildPriceInput('Min: ', minPrice, (value) {
-          setState(() => minPrice = double.tryParse(value) ?? minPrice);
+        _buildPriceInput('Min: ',minPriceController, 1,minPrice, (value) {
+          setState(() => minPrice = value.isEmpty ? null : double.tryParse(value));
         }),
-        _buildPriceInput('Max: ', maxPrice, (value) {
-          setState(() => maxPrice = double.tryParse(value) ?? maxPrice);
+        _buildPriceInput('Max: ',maxPriceController, 999999,maxPrice, (value) {
+          setState(() => maxPrice = value.isEmpty ? null : double.tryParse(value));
         }),
       ],
     );
   }
 
   Widget _buildPriceInput(
-      String label, double value, ValueChanged<String> onChanged) {
+      String label, TextEditingController textController,double hint,double? value, ValueChanged<String> onChanged) {
     return Row(
       children: [
         Text(label),
         const SizedBox(width: 8),
         Expanded(
           child: TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(hintText: '₹${value.toInt()}'),
+            controller: textController,
+            decoration: InputDecoration(hintText: '₹${hint.toInt()}'),
             onChanged: onChanged,
           ),
         ),
@@ -255,6 +371,7 @@ class _FilterPageState extends State<FilterPage> {
           title: Text(option, style: FontUtils.primaryFontStyle(fontSize: 16)),
           value: option,
           groupValue: sortBy,
+          activeColor: AppColors.primary,
           onChanged: (value) => setState(() => sortBy = value!),
           contentPadding: const EdgeInsets.symmetric(horizontal: 5),
           visualDensity: VisualDensity.compact,
@@ -269,14 +386,21 @@ class _FilterPageState extends State<FilterPage> {
       child: Row(
         children: [
           _buildBottomButton(AppStrings.apply, AppColors.primary, () {
+            debugPrint('sort by ${sortBy}');
             Navigator.pop(context, {
               'selectedCollections': selectedCollections.toList(),
               'selectedCategories': selectedCategories.toList(),
+              'selectedTags': selectedTags.toList(),
+              'minPrice': minPrice,
+              'maxPrice': maxPrice,
+              'sortBy': sortBy,
+              'selectedSection': selectedSection,
             });
           }),
           VerticalDivider(width: 1, color: Colors.grey.shade300),
           _buildBottomButton(AppStrings.close, Colors.black, () {
             // Close action
+            Navigator.pop(context);
           }),
         ],
       ),
@@ -303,9 +427,12 @@ class _FilterPageState extends State<FilterPage> {
     setState(() {
       selectedCategories.clear();
       selectedCollections.clear();
-      minPrice = 500;
-      maxPrice = 10000;
-      sortBy = sortOptions.first;
+      selectedTags.clear();
+      minPrice = null;
+      maxPrice = null;
+      maxPriceController.text = '';
+      minPriceController.text = '';
+      sortBy = '';
     });
   }
 }
@@ -329,7 +456,7 @@ class SidebarItem extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
           color:
-              selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
+          selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
           border: Border(
             left: BorderSide(
               color: selected ? AppColors.primary : Colors.transparent,
