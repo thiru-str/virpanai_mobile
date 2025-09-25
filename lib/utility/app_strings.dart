@@ -11,7 +11,7 @@ class AppStrings {
   static const String country_code = 'IN';
   static const String register = 'Register';
   static const String no_payment_yet = "No Payment Yet";
-  static const String customer_summery = 'Customer Summery';
+  static const String customer_summery = 'Customer Summary';
 
   static const String my_address = 'My Address';
   static const String add_address = 'Add Address';
