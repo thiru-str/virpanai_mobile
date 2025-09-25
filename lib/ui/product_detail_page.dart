@@ -167,6 +167,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             }
           },
           onFavTap: addFavourite,
+          onShareTap: (){
+            AppLinkHelper.shareProductInvite(widget.productId);
+          },
           isFavorite: isFavorite, // Pass the updated favorite status here
         ),
         backgroundColor: Colors.white,
