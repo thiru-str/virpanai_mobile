@@ -184,6 +184,43 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 _buildSectionTitle('Shipping details'),
                 const SizedBox(height: 20), // List of order items
                 _buildShippingDetailsCard(), // Shipping details card
+                Center(
+                  child: Visibility(
+                    visible: paymentType=='UPI',
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ElevatedButton(
+                            onPressed: (){
+                              PageRouteUtils.pushWithSlide(
+                                  context,
+                                  TransactionDetailsScreen(
+                                    orderID: order?.id ?? "",
+                                  ));
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary, // Background color
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                            child: Text(
+                              'Upload Transaction Receipt',
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Visibility(
                   visible: fulfillmentStatus == 'not_fulfilled' &&
@@ -210,7 +247,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                       _launchURL(order?.metadata?.invoice??'');
                     },
                   ),
-                )
+                ),
+
               ],
             ),
           ),
