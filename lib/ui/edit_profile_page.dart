@@ -9,6 +9,8 @@ import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/view_cart_model.dart';
+
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
 
@@ -25,6 +27,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController companyController = TextEditingController();
   RegisterResponse? registerResponse;
   bool apiCalling = true;
+  bool submitCalling = false;
   Customer? customer;
 
   @override
@@ -92,7 +95,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       },
                     ),
                     const SizedBox(height: 32),
-                    ElevatedButton(
+                    submitCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           // Handle registration logic
@@ -153,23 +156,27 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   void updateUser() async {
     try {
+      setState(() {
+        submitCalling = true;
+      });
       final ApiService apiService = ApiService();
       registerResponse = await apiService.updateProfile(
           context,
-          phoneNoController.text,
+          customer?.phone ?? '',
           companyController.text,
           firstNameController.text,
           lastNameController.text);
+      AppUtils.showToast('Profile updated successfully');
+      FocusScope.of(context).unfocus();
+      eventBus.fire(ProfileEvent(registerResponse?.customer));
       setState(() {
-        apiCalling = false;
+        submitCalling = false;
       });
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
-      AppUtils.showToast('Profile Updated Successfully');
-      //Navigator.pop(context, true);
     } catch (e) {
       setState(() {
-        apiCalling = false;
+        submitCalling = false;
       });
       print(e);
     }
