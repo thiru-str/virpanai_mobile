@@ -164,7 +164,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
-      Navigator.pop(context, true);
+      //Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         apiCalling = false;
