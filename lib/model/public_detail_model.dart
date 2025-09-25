@@ -120,23 +120,27 @@ class StoreMetadata {
   String? android;
   String? versionCheck;
   String? invoiceUrl;
+  String? customerSupport;
 
   StoreMetadata({
     this.android,
     this.versionCheck,
     this.invoiceUrl,
+    this.customerSupport,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
     android: json["android"],
     versionCheck: json["version_check"],
     invoiceUrl: json["invoice_url"],
+    customerSupport: json["customer_support"],
   );
 
   Map<String, dynamic> toJson() => {
     "android": android,
     "version_check": versionCheck,
     "invoice_url": invoiceUrl,
+    "customer_support": customerSupport,
   };
 }
 

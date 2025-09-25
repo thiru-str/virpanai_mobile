@@ -113,39 +113,39 @@ class DeliveryAddressWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          isLoading
-              ? ElevatedButton(
-            onPressed: null, // disable tap while loading
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            ),
-          )
-              : ElevatedButton(
-            onPressed: onChangeAddress,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: Text(
-              "Change",
-              style: FontUtils.secondaryFontStyle(color: Colors.white),
-            ),
-          )
+          // isLoading
+          //     ? ElevatedButton(
+          //   onPressed: null, // disable tap while loading
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: AppColors.primary,
+          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(6),
+          //     ),
+          //   ),
+          //   child: const SizedBox(
+          //     height: 20,
+          //     width: 20,
+          //     child: CircularProgressIndicator(
+          //       strokeWidth: 2,
+          //       color: Colors.white,
+          //     ),
+          //   ),
+          // )
+          //     : ElevatedButton(
+          //   onPressed: onChangeAddress,
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: AppColors.primary,
+          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(6),
+          //     ),
+          //   ),
+          //   child: Text(
+          //     "Change",
+          //     style: FontUtils.secondaryFontStyle(color: Colors.white),
+          //   ),
+          // )
 
         ],
       ),

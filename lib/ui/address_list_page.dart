@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/register_response.dart';
@@ -16,6 +17,7 @@ import 'package:waioz/utility/app_strings.dart';
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
+import '../utility/rich_text_helper.dart';
 import '../utility/shared_preferences_util.dart';
 
 class AddressListPage extends StatefulWidget {
@@ -32,12 +34,19 @@ class _AddressListPageState extends State<AddressListPage> {
   @override
   GetAddressListResponse? addressListResponse;
   bool apiLoading = true;
+  String? customerSupport;
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getCustomerPhone();
     getAddressListApi();
+  }
+
+  Future<void> getCustomerPhone() async {
+    customerSupport = (await SharedPreferencesUtil().getString('customer_support'))??'';
   }
 
   @override
@@ -77,6 +86,7 @@ class _AddressListPageState extends State<AddressListPage> {
                     addressListResponse?.addresses?[index];
                     return GestureDetector(
                       child: AddressCard(
+                        customerSupport: customerSupport,
                         title: address?.addressName ??
                             'Others', // If address name is null, show 'Untitled'
                         address:
