@@ -142,6 +142,7 @@ class _ProductPageState extends State<ProductPage> {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: CommonHeaderAppBar(
           title: AppStrings.product,
           onBackTap: () {

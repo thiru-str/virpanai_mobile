@@ -132,7 +132,7 @@ class _ProductCard4State extends State<ProductCard4> {
                         child: Icon(
                           widget.isFavorite ? Icons.favorite : Icons.favorite_border,
                           size: 16,
-                          color: widget.isFavorite ? Colors.red : Colors.red,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
@@ -148,12 +148,12 @@ class _ProductCard4State extends State<ProductCard4> {
                     onPressed: widget.onAddToCart,
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(Colors.white), // solid white
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.red),   // red text/icon
-                      overlayColor: MaterialStateProperty.all<Color>(Colors.red.withOpacity(0.1)), // ripple
+                      foregroundColor: MaterialStateProperty.all<Color>(AppColors.primary),   // red text/icon
+                      overlayColor: MaterialStateProperty.all<Color>(AppColors.primary.withOpacity(0.1)), // ripple
                       shadowColor: MaterialStateProperty.all<Color>(Colors.transparent), // no shadow
                       surfaceTintColor: MaterialStateProperty.all<Color>(Colors.transparent),
                       side: MaterialStateProperty.all<BorderSide>(
-                        const BorderSide(color: Colors.red, width: 1),
+                         BorderSide(color: AppColors.primary, width: 1),
                       ),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
@@ -167,10 +167,10 @@ class _ProductCard4State extends State<ProductCard4> {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       elevation: MaterialStateProperty.all<double>(0),
                     ),
-                    child: const Text(
+                    child:  Text(
                       "ADD",
                       style: TextStyle(
-                        color: Colors.red,
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -255,20 +255,24 @@ class _ProductCard4State extends State<ProductCard4> {
 
             // ---- Ratings row (instead of mins) ----
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.star, size: 14, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${4.5} (${3})",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black87,
+            SizedBox(height: 4,),
+              Visibility(
+                visible: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.star, size: 14, color: Colors.green),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${4.5} (${3})",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
           ],
