@@ -462,9 +462,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             child: Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: option.values!.map((optionValue) {
-                final isSelected =
-                    selectedOptions[option.id!]?.id == optionValue.id;
+              children: option.values!
+                  .where((optionValue) =>
+                  isOptionValueAvailable(option.id!, optionValue.id!))
+                  .map((optionValue) {
+                final isSelected = selectedOptions[option.id!]?.id == optionValue.id;
 
                 return GestureDetector(
                   onTap: () {
@@ -493,7 +495,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ),
                 );
               }).toList(),
-            ),
+            )
+            ,
           ),
           const SizedBox(height: 15),
         ],
@@ -913,6 +916,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     // if nothing available → return the absolute cheapest anyway
     return sortedVariants.first;
   }
+
+  bool isOptionValueAvailable(String optionId, String valueId) {
+    if (product?.variants == null) return false;
+
+    return product!.variants!.any((variant) {
+      if (!isStockAvailable(variant)) return false;
+
+      // variant.options contains selected value ids
+      return variant.options?.any((opt) =>
+      opt.optionId == optionId && opt.id == valueId) ??
+          false;
+    });
+  }
+
 
 
   Future<void> getRelatedProductsApi() async {
