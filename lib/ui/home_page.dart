@@ -213,7 +213,7 @@ class _HomePageState extends State<HomePage> {
       case "item3":
         return Item3(content: homePageContent);
       case "item4":
-        return Item4(content: homePageContent);
+        return Item4(content: homePageContent!);
       case "item5":
         return Item5(content: homePageContent);
       case "item6":
