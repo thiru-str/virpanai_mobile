@@ -72,7 +72,6 @@ class _FilterPageState extends State<FilterPage> {
   final sidebarItems = [
     {'label': AppStrings.collections, 'section': FilterSection.collections},
     {'label': AppStrings.categories, 'section': FilterSection.categories},
-    {'label': AppStrings.tags, 'section': FilterSection.tags},
     {'label': AppStrings.price, 'section': FilterSection.price},
     {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
   ];
@@ -139,6 +138,15 @@ class _FilterPageState extends State<FilterPage> {
         tagsList = response.productTags ?? [];
         isTagsLoading = false;
       });
+      if(tagsList.isNotEmpty)
+        {
+          setState(() {
+            sidebarItems.insert(2, {
+              'label': AppStrings.tags,
+              'section': FilterSection.tags
+            });
+          });
+        }
     } catch (e) {
       print('Error loading categories: $e');
       setState(() => isTagsLoading = false);
@@ -293,15 +301,15 @@ class _FilterPageState extends State<FilterPage> {
           ],
         );
       case FilterSection.tags:
-        return isTagsLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _buildFilterList(
-          tagsList.map((e) => e.id ?? '').toList(),
-          selectedTags,
-          labelMap: Map.fromEntries(tagsList
-              .where((e) => e.id != null && e.value != null)
-              .map((e) => MapEntry(e.id!, e.value!))),
-        );
+          return isTagsLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildFilterList(
+            tagsList.map((e) => e.id ?? '').toList(),
+            selectedTags,
+            labelMap: Map.fromEntries(tagsList
+                .where((e) => e.id != null && e.value != null)
+                .map((e) => MapEntry(e.id!, e.value!))),
+          );
       case FilterSection.price:
         return _buildPriceFilter();
       case FilterSection.sortBy:
