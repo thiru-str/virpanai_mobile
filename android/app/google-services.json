@@ -1,32 +1,14 @@
+
 {
   "project_info": {
-    "project_number": "177578656637",
-    "project_id": "virpanai-8c709",
-    "storage_bucket": "virpanai-8c709.firebasestorage.app"
+    "project_number": "541265824641",
+    "project_id": "lightrix-56b74",
+    "storage_bucket": "lightrix-56b74.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:a5a9e4d350833f9bee0214",
-        "android_client_info": {
-          "package_name": "com.gowelmart.user"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:1ce87d25319951c7ee0214",
+        "mobilesdk_app_id": "1:541265824641:android:d48676574950bd5dd8b680",
         "android_client_info": {
           "package_name": "com.waioz.lightrix"
         }
@@ -34,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
+          "current_key": "AIzaSyARUZisDJFTjsblsYRcACTwCheYWKC792E"
         }
       ],
       "services": {
