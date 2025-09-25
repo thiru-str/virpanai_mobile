@@ -294,7 +294,7 @@ class _Grid1Card extends StatelessWidget {
                       layoutData.prices?.sellingPrice ?? '',
                     ),
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

@@ -133,7 +133,7 @@ class _Item4Card extends StatelessWidget {
                   ),
                   child: Image(
                     image: CachedNetworkImageProvider(layoutData.image!),
-                    height: 230,
+                    height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
