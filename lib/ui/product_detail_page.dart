@@ -36,6 +36,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 import '../model/product_response.dart';
+import '../utility/app_link_helper.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';

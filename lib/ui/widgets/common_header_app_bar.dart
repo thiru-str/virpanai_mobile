@@ -10,6 +10,7 @@ class CommonHeaderAppBar extends StatelessWidget
   final VoidCallback onBackTap;
   final VoidCallback? onFavTap;
   final VoidCallback? onCartTap;
+  final VoidCallback? onShareTap;
   final bool leading;
   final bool? isFavorite;
   final bool? showCart;
@@ -20,6 +21,7 @@ class CommonHeaderAppBar extends StatelessWidget
     required this.onBackTap,
     this.onFavTap,
     this.onCartTap,
+    this.onShareTap,
     this.leading = true,
     this.isFavorite = false,
     this.showCart = false,
@@ -60,6 +62,11 @@ class CommonHeaderAppBar extends StatelessWidget
         ),
       ),
       actions: [
+        if (onShareTap != null)
+          IconButton(
+            icon: Icon(Icons.share,color: AppColors.primary,),
+            onPressed: onShareTap,
+          ),
         if (onCartTap != null)
           GestureDetector(
             onTap: onCartTap,
