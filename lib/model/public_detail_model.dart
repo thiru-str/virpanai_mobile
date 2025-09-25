@@ -118,41 +118,25 @@ class StoreDetails {
 
 class StoreMetadata {
   String? android;
-  String? dealerRename;
   String? versionCheck;
-  String? printStoreGst;
-  int? printStorePhone;
-  String? printStoreAddress;
-  String? printStoreBottomText;
+  String? invoiceUrl;
 
   StoreMetadata({
     this.android,
-    this.dealerRename,
     this.versionCheck,
-    this.printStoreGst,
-    this.printStorePhone,
-    this.printStoreAddress,
-    this.printStoreBottomText,
+    this.invoiceUrl,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
     android: json["android"],
-    dealerRename: json["dealer_rename"],
     versionCheck: json["version_check"],
-    printStoreGst: json["print_store_gst"],
-    printStorePhone: json["print_store_phone"],
-    printStoreAddress: json["print_store_address"],
-    printStoreBottomText: json["print_store_bottom_text"],
+    invoiceUrl: json["invoice_url"],
   );
 
   Map<String, dynamic> toJson() => {
     "android": android,
-    "dealer_rename": dealerRename,
     "version_check": versionCheck,
-    "print_store_gst": printStoreGst,
-    "print_store_phone": printStorePhone,
-    "print_store_address": printStoreAddress,
-    "print_store_bottom_text": printStoreBottomText,
+    "invoice_url": invoiceUrl,
   };
 }
 

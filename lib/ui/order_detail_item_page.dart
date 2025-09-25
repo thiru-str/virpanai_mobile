@@ -14,6 +14,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 import 'widgets/cart_calculation.dart';
 import 'widgets/common_header_app_bar.dart';
@@ -29,6 +30,8 @@ class OrderDetailItemPage extends StatefulWidget {
 }
 
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
+  String invoiceUrl = "";
+  String token = "";
   String paymentType = "Unknown"; // Default value
   Order? order;
   Map<String, String> paymentTypeMap = {
@@ -47,6 +50,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   Future<void> initializePages() async {
     getOrderHistoryAPI();
+    invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url'))??'';
+    token = (await SharedPreferencesUtil().getString('token'))??'';
   }
 
   void getOrderHistoryAPI() async {
@@ -207,11 +212,11 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                     ),
                   ),
                   Visibility(
-                    visible: (order?.metadata?.invoice??'').isNotEmpty,
+                    visible: (order?.metadata?.fulfillmentStatus??'').toLowerCase() == 'delivered',
                     child: ProfileItemWidget(
                       title: 'Download Invoice',
                       onTap: (){
-                        _launchURL(order?.metadata?.invoice??'');
+                        _launchURL('$invoiceUrl/${order?.id??''}?token=${token}&isdownload=true');
                       },
                     ),
                   )
