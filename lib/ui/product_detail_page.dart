@@ -710,7 +710,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       children: [
         // Quantity Input Field with fixed width
         Container(
-          width: 50,
+          width: 60,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
@@ -721,7 +721,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             inputFormatters: [
-              LengthLimitingTextInputFormatter(2), // ✅ limits to 2 digits
+              LengthLimitingTextInputFormatter(3), // ✅ limits to 2 digits
               FilteringTextInputFormatter.digitsOnly, // ✅ only numbers
             ],
             decoration: const InputDecoration(
