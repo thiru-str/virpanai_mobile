@@ -32,7 +32,10 @@ class _StaticPageState extends State<StaticPage> {
         },
       ),
       body: SafeArea(
-        child: CommonHtmlWidget(htmlContent: widget.htmlData),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
+          child: CommonHtmlWidget(htmlContent: widget.htmlData),
+        ),
       ),
     );
   }
