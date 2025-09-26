@@ -53,11 +53,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   late StreamSubscription<ProfileEvent> _eventSubscription;
+
   void listenToEvents() {
     _eventSubscription = eventBus.on<ProfileEvent>().listen((event) {
       if (mounted) {
         setState(() {
-          if(event.customer!=null) {
+          if (event.customer != null) {
             customer = event.customer;
           }
         });
@@ -102,9 +103,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       const SizedBox(height: 30),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.primary, width: 1),
+                          border: Border.all(
+                              color: AppColors.primary, width: 1),
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: Row(
@@ -116,7 +119,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                 children: [
                                   Text(
                                     customer != null
-                                        ? '${customer?.firstName} ${customer?.lastName}'
+                                        ? '${customer?.firstName} ${customer
+                                        ?.lastName}'
                                         : '',
                                     overflow: TextOverflow.ellipsis,
                                     style: FontUtils.primaryFontStyle(
@@ -139,7 +143,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             // Edit Button
                             TextButton(
                               onPressed: () async {
-                                final result = await PageRouteUtils.pushWithSlide(
+                                final result = await PageRouteUtils
+                                    .pushWithSlide(
                                     context, EditProfilePage());
                                 if (result == true) {
                                   setState(() {
@@ -165,17 +170,20 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 16),
                 // Profile Items Section
                 Expanded(
-                  child: isLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,)):ListView(
+                  child: isLoading ? Center(child: CircularProgressIndicator(
+                    color: AppColors.primary,)) : ListView(
                     children: [
                       _buildProfileItem(AppStrings.address, () {
                         PageRouteUtils.pushWithSlide(context,
                             AddressListPage(onSelectedAddress: (address) {}));
                       }),
                       _buildProfileItem(AppStrings.favourites, () {
-                        PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
+                        PageRouteUtils.pushWithSlide(
+                            context, MyFavoritesPage());
                       }),
                       _buildProfileItem(AppStrings.orders, () {
-                        PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
+                        PageRouteUtils.pushWithSlide(
+                            context, OrdersHistoryPage());
                       }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {
@@ -187,7 +195,12 @@ class _SettingsPageState extends State<SettingsPage> {
                                     htmlData: contentItem.content!.data!),
                               );
                             }
-                          }))
+                          })),
+                      _buildProfileItem(
+                        AppStrings.deleteAccount,
+                            () =>
+                            _showDeleteAccount(context), // use separate method
+                      ),
                     ],
                   ),
                 ),
@@ -208,7 +221,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ),
-                Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:AppColors.primary,fontSize: 12,fontWeight: FontWeight.w500),)
+                Text('App Version: $_appVersion',
+                  style: FontUtils.secondaryFontStyle(color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500),)
               ],
             )),
       ),
@@ -270,6 +286,32 @@ class _SettingsPageState extends State<SettingsPage> {
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
           onTapOk: () async {
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
+            // Handle sign out action
+            await SharedPreferencesUtil().clear();
+            if (mounted) {
+              PageRouteUtils.pushAndRemoveUntil(
+                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: AppStrings.deleteAccount,
+          content: "Are you sure you want to permanently delete your account?",
+          contentOk: AppStrings.yes,
+          contentCancel: AppStrings.no,
+          onTapOk: () async {
+            await ApiService().deleteAccount(context);
+
             bool skipLogin =
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
