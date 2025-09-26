@@ -16,8 +16,7 @@ class AppUtils {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppColors.primary,
-      textColor: Colors.white,
+
     );
   }
 
