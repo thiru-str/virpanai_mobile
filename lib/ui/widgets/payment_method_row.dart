@@ -33,7 +33,7 @@ class PaymentMethodRow extends StatelessWidget {
         GestureDetector(
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 2),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primary.withAlpha(50),
               borderRadius: BorderRadius.circular(6),

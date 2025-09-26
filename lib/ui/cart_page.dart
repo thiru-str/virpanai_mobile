@@ -264,9 +264,12 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                           keyText: '${AppStrings.shipping}:',
                           valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
                         )),
-                    CartCalculation(
-                      keyText: '${AppStrings.tax}:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                    Visibility(
+                      visible: (cartResponse?.cart?.taxTotal??0)>0,
+                      child: CartCalculation(
+                        keyText: '${AppStrings.tax}:',
+                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                      ),
                     ),
                     CartCalculation(
                       keyText: '${AppStrings.total}:',
