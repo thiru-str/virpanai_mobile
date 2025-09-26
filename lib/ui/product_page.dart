@@ -85,6 +85,7 @@ class _ProductPageState extends State<ProductPage> {
 
   String _previousSearchText = '';
   Timer? _debounce;
+  int _searchToken = 0;
 
   void _debounceSearch(String query) {
     final newQuery = query.trim();
@@ -94,23 +95,27 @@ class _ProductPageState extends State<ProductPage> {
     _previousSearchText = newQuery;
 
     if (_debounce?.isActive ?? false) _debounce?.cancel();
+
     _debounce = Timer(const Duration(milliseconds: 500), () {
       currentPage = 0;
       filteredProducts.clear();
 
+      // Increment the token for each new search
+      final currentToken = ++_searchToken;
 
-        getProductsApi(
-          categoryIds: selectedCategoriesList.isNotEmpty
-              ? selectedCategoriesList.join(',')
-              : widget.categoryId,
-          tagIds: selectedTagsList.isNotEmpty
-              ? selectedTagsList.join(',')
-              : widget.tagId,
-          collectionIds: selectedCollectionsList.isNotEmpty
-              ? selectedCollectionsList.join(',')
-              : widget.collectionId,
-          searchString: newQuery,
-        );
+      getProductsApi(
+        categoryIds: selectedCategoriesList.isNotEmpty
+            ? selectedCategoriesList.join(',')
+            : widget.categoryId,
+        tagIds: selectedTagsList.isNotEmpty
+            ? selectedTagsList.join(',')
+            : widget.tagId,
+        collectionIds: selectedCollectionsList.isNotEmpty
+            ? selectedCollectionsList.join(',')
+            : widget.collectionId,
+        searchString: newQuery,
+        searchToken: currentToken, // Pass the token to the API call
+      );
     });
   }
 
@@ -320,7 +325,16 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  void getProductsApi({String? categoryIds, String? collectionIds, String? tagIds,String? searchString,double? minPrice,double? maxPrice,String? sortBy}) async {
+  void getProductsApi({
+    String? categoryIds,
+    String? collectionIds,
+    String? tagIds,
+    String? searchString,
+    double? minPrice,
+    double? maxPrice,
+    String? sortBy,
+    int? searchToken, // Add this parameter
+  }) async {
     if (currentPage == 0) {
       setState(() {
         apiLoading = true;
@@ -337,7 +351,7 @@ class _ProductPageState extends State<ProductPage> {
         context,
         categoryIds ?? '',
         collectionIds ?? '',
-        tagIds??'',
+        tagIds ?? '',
         minPrice,
         maxPrice,
         sortBy,
@@ -345,6 +359,12 @@ class _ProductPageState extends State<ProductPage> {
         offset: currentPage * pageSize,
         limit: pageSize,
       );
+
+      // Check if this is the most recent search request
+      if (searchToken != null && searchToken != _searchToken) {
+        // This is an outdated search result, ignore it
+        return;
+      }
 
       setState(() {
         apiLoading = false;
@@ -359,10 +379,13 @@ class _ProductPageState extends State<ProductPage> {
         hasMore = (response.products?.length ?? 0) == pageSize;
       });
     } catch (e) {
-      setState(() {
-        apiLoading = false;
-        isPaginating = false;
-      });
+      // Only update state if this is the most recent request
+      if (searchToken == null || searchToken == _searchToken) {
+        setState(() {
+          apiLoading = false;
+          isPaginating = false;
+        });
+      }
       print(e);
     }
   }
