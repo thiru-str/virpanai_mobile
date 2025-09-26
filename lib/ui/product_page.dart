@@ -333,7 +333,7 @@ class _ProductPageState extends State<ProductPage> {
     double? minPrice,
     double? maxPrice,
     String? sortBy,
-    int? searchToken, // Add this parameter
+    int? searchToken,
   }) async {
     if (currentPage == 0) {
       setState(() {
@@ -360,9 +360,8 @@ class _ProductPageState extends State<ProductPage> {
         limit: pageSize,
       );
 
-      // Check if this is the most recent search request
+
       if (searchToken != null && searchToken != _searchToken) {
-        // This is an outdated search result, ignore it
         return;
       }
 
@@ -379,7 +378,6 @@ class _ProductPageState extends State<ProductPage> {
         hasMore = (response.products?.length ?? 0) == pageSize;
       });
     } catch (e) {
-      // Only update state if this is the most recent request
       if (searchToken == null || searchToken == _searchToken) {
         setState(() {
           apiLoading = false;
