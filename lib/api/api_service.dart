@@ -910,6 +910,12 @@ class ApiService {
             (data) => DuplicateResponse.fromJson(data),context);
   }
 
+  Future<RegisterResponse> deleteAccount(BuildContext context) async {
+    await addToken();
+    return _makeDeleteRequest("store/customers/delete", null, null,
+            (data) => RegisterResponse.fromJson(data), context);
+  }
+
   Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
     await addToken();
     return _makePostRequest('store/cancel-order/$orderId', null,
