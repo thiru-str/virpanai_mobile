@@ -140,7 +140,6 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: _currentIndex == 0?AppColors.primary:Colors.transparent,
-        statusBarIconBrightness:  _currentIndex == 0?Brightness.light:Brightness.dark,
       ),
     );
     return PopScope(
