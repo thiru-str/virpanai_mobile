@@ -770,7 +770,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               final maxQty = getMaxQuantity(selectedVariant, cartResponse?.cart?.items??[]);
 
               if (maxQty <= 0) {
-                SnackBarUtil.showGlobal('Max items for this stock reached',backgroundColor:AppColors.primary );
+                AppUtils.showToast('Max items for this stock reached');
+                //SnackBarUtil.showGlobal('Max items for this stock reached',backgroundColor:AppColors.primary);
                 return;
               }
 
@@ -778,7 +779,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
 
               if (safeQty < enteredQty) {
-                SnackBarUtil.showGlobal('You can only add up to $maxQty items.',backgroundColor:AppColors.primary );
+                AppUtils.showToast('You can only add up to $maxQty items.');
+                //SnackBarUtil.showGlobal('You can only add up to $maxQty items.',backgroundColor:AppColors.primary);
                 return;
               }
 
