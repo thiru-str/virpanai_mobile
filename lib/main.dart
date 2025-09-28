@@ -5,6 +5,7 @@ import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
+import 'package:waioz/ui/widgets/snack_bar_util.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_link_helper.dart';
@@ -19,6 +20,8 @@ import 'package:flutter/material.dart';
 import 'api/api_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+GlobalKey<ScaffoldMessengerState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,7 +61,7 @@ Future<void> main() async {
   //
   // AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
-
+  SnackBarUtil.init(rootScaffoldMessengerKey);
   runApp(HomeScreen(skipLogin: false,publicDetailsResponse: publicDetailsResponse,));
   Future.delayed(Duration.zero, () {
     AppLinkHelper.init();
@@ -73,6 +76,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       navigatorKey: navigatorKey, // if you're using it for global navigation
       debugShowCheckedModeBanner: false,
       theme: theme,

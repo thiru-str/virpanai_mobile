@@ -22,6 +22,7 @@ import 'package:waioz/ui/widgets/product_card_4.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
+import 'package:waioz/ui/widgets/snack_bar_util.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_link_helper.dart';
@@ -769,9 +770,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               final maxQty = getMaxQuantity(selectedVariant, cartResponse?.cart?.items??[]);
 
               if (maxQty <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Max items for this stock reached',style: TextStyle(color: Colors.white),),backgroundColor: AppColors.primary,),
-                );
+                SnackBarUtil.showGlobal('Max items for this stock reached',backgroundColor:AppColors.primary );
                 return;
               }
 
@@ -779,9 +778,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
 
               if (safeQty < enteredQty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("You can only add up to $maxQty items.",style: TextStyle(color: Colors.white),),backgroundColor: AppColors.primary,),
-                );
+                SnackBarUtil.showGlobal('You can only add up to $maxQty items.',backgroundColor:AppColors.primary );
                 return;
               }
 
