@@ -11,6 +11,7 @@ import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
+import 'package:waioz/ui/widgets/custom_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
@@ -96,33 +97,38 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: appHeader == "header-2" ? CommonHeaderAppBar(
-          title: AppStrings.home,
-          leading: false,
-          onBackTap: () {
-            Navigator.of(context).pop();
+        appBar: CustomSearchAppBar(
+          hintText: 'Search "Mascara"',
+          cartCount: cartItems?? 0,
+            onCartClick:(){
+              eventBus.fire(TabSwitchEvent(2));
+            },
+          onSearchTap: () {
+            PageRouteUtils.pushWithFade(
+                context,
+                const ProductPage(categoryId: '',));
           },
-        ) : null,
+        ),
       backgroundColor: Colors.white,
       body: Container(
-        decoration: BoxDecoration(gradient: AppColors.linearGradient),
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
         child: SafeArea(
           child: Stack(
             children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
                 :SingleChildScrollView(
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                          //PageRouteUtils.pushWithSlide(context, const CartPage());
-                          eventBus.fire(TabSwitchEvent(2));
-                        },onSearchClick: (){
-                          PageRouteUtils.pushWithFade(
-                              context,
-                              const ProductPage(categoryId: '',));
-                        },addressType: addressType,),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      //   child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
+                      //     //PageRouteUtils.pushWithSlide(context, const CartPage());
+                      //     eventBus.fire(TabSwitchEvent(2));
+                      //   },onSearchClick: (){
+                      //     PageRouteUtils.pushWithFade(
+                      //         context,
+                      //         const ProductPage(categoryId: '',));
+                      //   },addressType: addressType,),
+                      // ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 16.0),
                         child: ListView.separated(
