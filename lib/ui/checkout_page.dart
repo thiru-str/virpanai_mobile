@@ -282,38 +282,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
 
-  void makeStripeCall(String clientSecret) async {
-    try {
-      // Initialize the payment sheet with client secret
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: AppConfig.appName,
-
-            googlePay: const PaymentSheetGooglePay(
-              merchantCountryCode: AppStrings.country_code,
-              testEnv: true,
-            ),
-            style: ThemeMode.light,
-            appearance:  PaymentSheetAppearance(
-                primaryButton: PaymentSheetPrimaryButtonAppearance(
-                    colors: PaymentSheetPrimaryButtonTheme(
-                        light: PaymentSheetPrimaryButtonThemeColors(
-                            background: AppColors.primary),
-                        dark: PaymentSheetPrimaryButtonThemeColors(
-                            background: AppColors.primary))))),
-      );
-
-      // Present the payment sheet
-      await Stripe.instance.presentPaymentSheet();
-      setState(() {
-        placeOrderApiLoading = true;
-      });
-      completeCart();
-    } catch (e) {
-      print('Payment failed: $e');
-    }
-  }
 
   void makeNEFTPayCall() {
     CustomPopupWidget.show(
@@ -515,12 +483,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
         String? orderId = extractOrderId(apiResponse);
         if (orderId != null) {
           makeRazorPayCall(orderId);
-        }
-        break;
-      case 'pp_stripe_stripe':
-        String? clientSecret = extractClientSecret(apiResponse);
-        if (clientSecret != null) {
-          makeStripeCall(clientSecret);
         }
         break;
       case 'pp_system_default':
