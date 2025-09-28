@@ -389,22 +389,26 @@ class Rule {
 }
 
 class ServiceZone {
-  String? fulfillmentSetId;
   String? id;
+  String? fulfillmentSetId;
+  FulfillmentSet? fulfillmentSet;
 
   ServiceZone({
-    this.fulfillmentSetId,
     this.id,
+    this.fulfillmentSetId,
+    this.fulfillmentSet,
   });
 
   factory ServiceZone.fromJson(Map<String, dynamic> json) => ServiceZone(
-    fulfillmentSetId: json["fulfillment_set_id"],
     id: json["id"],
+    fulfillmentSetId: json["fulfillment_set_id"],
+    fulfillmentSet: json["fulfillment_set"] == null ? null : FulfillmentSet.fromJson(json["fulfillment_set"]),
   );
 
   Map<String, dynamic> toJson() => {
-    "fulfillment_set_id": fulfillmentSetId,
     "id": id,
+    "fulfillment_set_id": fulfillmentSetId,
+    "fulfillment_set": fulfillmentSet?.toJson(),
   };
 }
 
@@ -433,5 +437,45 @@ class Type {
     "label": label,
     "description": description,
     "code": code,
+  };
+}
+
+class FulfillmentSet {
+  String? id;
+  String? name;
+  String? type;
+  dynamic metadata;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+
+  FulfillmentSet({
+    this.id,
+    this.name,
+    this.type,
+    this.metadata,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  factory FulfillmentSet.fromJson(Map<String, dynamic> json) => FulfillmentSet(
+    id: json["id"],
+    name: json["name"],
+    type: json["type"],
+    metadata: json["metadata"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "type": type,
+    "metadata": metadata,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
   };
 }

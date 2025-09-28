@@ -3,11 +3,14 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
+import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
+import 'package:waioz/ui/widgets/checkout_footer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/ui/widgets/delivery_toggle.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/payment_method_row.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -21,6 +24,7 @@ import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
+import '../model/shipping_response.dart';
 import '../utility/app_config.dart';
 import '../utility/currency_util.dart';
 import '../utility/shared_preferences_util.dart';
@@ -38,6 +42,8 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
+  ShippingResponse? shippingResponse;
+  bool isDelivery = true;
   bool apiLoading = true;
   bool cartLoading = false;
   bool addressLoading = false;
@@ -51,13 +57,16 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   String? pp_id;
   String? orderId;
   Razorpay razorpay = Razorpay();
+  String? deliveryOption;
+  String? pickupOption;
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     initGlobal();
-    getCartApi();
+    getShippingInfo();
 
     // Initialize the animation controller
     _animationController = AnimationController(
@@ -206,24 +215,17 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                 });
                                 //updateCart(0,cartItem.id!,index);
                                 removeCart(cartItem.id!,index);
-                              },onIncrease: () {
+                              },
+                              onUpdateQuantity: (newQty) {
                               setState(() {
                                 cartResponse!.cart!.items![index].isUpdating = true;
                               });
-                              updateCart(cartItem.quantity!+1,cartItem.id!,index);
+                              if (newQty == 0) {
+                                removeCart(cartItem.id!, index);
+                              } else {
+                                updateCart(newQty, cartItem.id!, index);
+                              }
                             },
-                              onDecrease:
-                                  () {
-                                setState(() {
-                                  cartResponse!.cart!.items![index].isUpdating = true;
-                                });
-                                if (cartItem.quantity! - 1 <= 0) {
-                                  removeCart(cartItem.id!,index);
-                                } else {
-                                  updateCart(cartItem.quantity! - 1,
-                                      cartItem.id!,index);
-                                }
-                              }, // Handle quantity decrease
                             );
                           },
                         ),
@@ -240,42 +242,15 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PaymentMethodRow(
-                      selectedMethod: _getProviderName(pp_id, paymentProviders),
-                      onTap: () {
-                        // open bottom sheet / payment method selector
-                        showPaymentMethodsBottomSheet(
-                            context, paymentProviders);
+                    DeliveryToggle(
+                      isDelivery: isDelivery,
+                      onChanged: (value) {
+                        final selectedId = value ? deliveryOption : pickupOption;
+
+                        if (selectedId != null) {
+                          updateShippingMethod(selectedId);
+                        }
                       },
-                    ),
-                    CartCalculation(
-                      keyText: '${AppStrings.subTotal}:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
-                    ),
-                    Visibility(
-                        visible: cartResponse!.cart!.discountSubtotal!>0,
-                        child: CartCalculation(
-                          keyText: '${AppStrings.discount}:',
-                          valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                        )),
-                    Visibility(
-                        visible: cartResponse!.cart!.shippingSubtotal!>0,
-                        child: CartCalculation(
-                          keyText: '${AppStrings.shipping}:',
-                          valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
-                        )),
-                    Visibility(
-                      visible: (cartResponse?.cart?.taxTotal??0)>0,
-                      child: CartCalculation(
-                        keyText: '${AppStrings.tax}:',
-                        valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                      ),
-                    ),
-                    CartCalculation(
-                      keyText: '${AppStrings.total}:',
-                      keyStyle: FontUtils.primaryFontStyle(fontSize: 14,color: AppColors.primary,fontWeight: FontWeight.bold),
-                      valueStyle: FontUtils.primaryFontStyle(fontSize: 14,color: AppColors.primary,fontWeight: FontWeight.bold),
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
                     ),
                     const SizedBox(height: 10,),
                     GestureDetector(
@@ -323,7 +298,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
               ),
             ],
           ),
-          bottomNavigationBar: SlideTransition(
+          /*bottomNavigationBar: SlideTransition(
             position: _animation,
             child: Padding(
               padding: const EdgeInsets.only(left:16.0,right:16.0,bottom: 16.0),
@@ -354,7 +329,36 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                 ),
               ),
             ),
-          ),
+          ),*/
+          bottomNavigationBar: SafeArea(
+            child: SizedBox(
+              height: 80,
+              child: CheckoutFooter(
+                svgPath: AppAssets.ic_payment_cash,
+                paymentMethod: _getProviderName(pp_id, paymentProviders),
+                isLoading: cartLoading,
+                onPaymentTap: () {
+                  showPaymentMethodsBottomSheet(context, paymentProviders);
+                  },
+                onInfoTap: () {
+                  showCalculationBottomSheet(context,cartResponse!);
+                },
+                amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
+                onPlaceOrder: () {
+                  // Add checkout logic here
+                  if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
+                    AppUtils.showToast(
+                        'Please add address to proceed');
+                    return;
+                  }
+                  if(!addressLoading) {
+                    placeOrder(pp_id!);
+                    //PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse));
+                  }
+                },
+              ),
+            ),
+          )
         )
             : Center(
             child: NoOrdersWidget(
@@ -378,11 +382,40 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
         //orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
         apiLoading = false;
+        isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOption?.serviceZone?.fulfillmentSet?.type??'')=='shipping';
       });
     } catch (e) {
       setState(() {
         apiLoading = false;
       });
+      print(e);
+    }
+  }
+
+  void getShippingInfo() async {
+    try {
+      final ApiService apiService = ApiService();
+      var response = await apiService.getShippingInfo(context);
+      if (mounted) {
+        setState(() {
+          shippingResponse = response;
+          final delivery = shippingResponse?.shippingOptions
+              ?.where((opt) => opt.serviceZone?.fulfillmentSet?.type == 'shipping')
+              .toList();
+          deliveryOption = delivery != null && delivery.isNotEmpty
+              ? delivery.first.id
+              : null;
+
+          final pickup = shippingResponse?.shippingOptions
+              ?.where((opt) => opt.serviceZone?.fulfillmentSet?.type == 'pickup')
+              .toList();
+          pickupOption = pickup != null && pickup.isNotEmpty
+              ? pickup.first.id
+              : null;
+        });
+      }
+      getCartApi();
+    } catch (e) {
       print(e);
     }
   }
@@ -653,6 +686,22 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
+  void showCalculationBottomSheet(
+      BuildContext context, CartResponse? cartResponse) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return CalculationBottomSheet(
+          cartResponse: cartResponse,
+        );
+      },
+    );
+  }
+
 
 
   void placeOrder(String paymentProviderId) async {
@@ -740,6 +789,27 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
+
+  void updateShippingMethod(String shippingId) async {
+    try {
+      setState(() {
+        cartLoading = true;
+      });
+      final ApiService apiService = ApiService();
+      cartResponse =
+      await apiService.updateShippingMethod(context, shippingId);
+      setState(() {
+        cartLoading = false;
+        cartResponse;
+        isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOption?.serviceZone?.fulfillmentSet?.type??'')=='shipping';
+      });
+    } catch (e) {
+      setState(() {
+        cartLoading = false;
+      });
+      print(e);
+    }
+  }
 
 
 }

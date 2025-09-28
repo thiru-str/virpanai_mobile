@@ -6,6 +6,8 @@ import 'dart:convert';
 
 import 'package:waioz/model/order_history_reponse.dart';
 
+import '../model/shipping_response.dart';
+
 CartResponse addCartResponseFromJson(String str) => CartResponse.fromJson(json.decode(str));
 
 String cartResponseToJson(CartResponse data) => json.encode(data.toJson());
@@ -59,7 +61,7 @@ class Cart {
   String? shippingAddressId;
   String? customerId;
   List<Item>? items;
-  List<dynamic>? shippingMethods;
+  List<ShippingMethod>? shippingMethods;
   ShippingAddress? shippingAddress;
   dynamic billingAddress;
   Customer? customer;
@@ -142,7 +144,7 @@ class Cart {
     shippingAddressId: json["shipping_address_id"],
     customerId: json["customer_id"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
-    shippingMethods: json["shipping_methods"] == null ? [] : List<dynamic>.from(json["shipping_methods"]!.map((x) => x)),
+    shippingMethods: json["shipping_methods"] == null ? [] : List<ShippingMethod>.from(json["shipping_methods"]!.map((x) => ShippingMethod.fromJson(x))),
     shippingAddress: json["shipping_address"] == null ? null : ShippingAddress.fromJson(json["shipping_address"]),
     billingAddress: json["billing_address"],
     customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
@@ -189,7 +191,7 @@ class Cart {
     "shipping_address_id": shippingAddressId,
     "customer_id": customerId,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
-    "shipping_methods": shippingMethods == null ? [] : List<dynamic>.from(shippingMethods!.map((x) => x)),
+    "shipping_methods": shippingMethods == null ? [] : List<dynamic>.from(shippingMethods!.map((x) => x.toJson())),
     "shipping_address": shippingAddress?.toJson(),
     "billing_address": billingAddress,
     "customer": customer?.toJson(),
@@ -913,3 +915,48 @@ class PaymentSession {
 //     "id": id,
 //   };
 // }
+
+class ShippingMethod {
+  int? amount;
+  bool? isTaxInclusive;
+  String? shippingOptionId;
+  String? id;
+  String? name;
+  List<dynamic>? taxLines;
+  List<dynamic>? adjustments;
+  ShippingOption? shippingOption;
+
+  ShippingMethod({
+    this.amount,
+    this.isTaxInclusive,
+    this.shippingOptionId,
+    this.id,
+    this.name,
+    this.taxLines,
+    this.adjustments,
+    this.shippingOption,
+  });
+
+  factory ShippingMethod.fromJson(Map<String, dynamic> json) => ShippingMethod(
+    amount: json["amount"],
+    isTaxInclusive: json["is_tax_inclusive"],
+    shippingOptionId: json["shipping_option_id"],
+    id: json["id"],
+    name: json["name"],
+    taxLines: json["tax_lines"] == null ? [] : List<dynamic>.from(json["tax_lines"]!.map((x) => x)),
+    adjustments: json["adjustments"] == null ? [] : List<dynamic>.from(json["adjustments"]!.map((x) => x)),
+    shippingOption: json["shipping_option"] == null ? null : ShippingOption.fromJson(json["shipping_option"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "amount": amount,
+    "is_tax_inclusive": isTaxInclusive,
+    "shipping_option_id": shippingOptionId,
+    "id": id,
+    "name": name,
+    "tax_lines": taxLines == null ? [] : List<dynamic>.from(taxLines!.map((x) => x)),
+    "adjustments": adjustments == null ? [] : List<dynamic>.from(adjustments!.map((x) => x)),
+    "shipping_option": shippingOption?.toJson(),
+  };
+}
+

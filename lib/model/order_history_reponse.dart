@@ -60,6 +60,7 @@ class Order {
   num? version;
   List<Item>? items;
   List<PaymentCollection>? paymentCollections;
+  List<ShippingMethod>? shippingMethods;
   Cart? cart;
   String? paymentStatus;
   String? fulfillmentStatus;
@@ -78,6 +79,7 @@ class Order {
     this.taxTotal,
     this.version,
     this.items,
+    this.shippingMethods,
     this.paymentCollections,
     this.cart,
     this.paymentStatus,
@@ -99,6 +101,7 @@ class Order {
     version: json["version"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
     paymentCollections: json["payment_collections"] == null ? [] : List<PaymentCollection>.from(json["payment_collections"]!.map((x) => PaymentCollection.fromJson(x))),
+    shippingMethods: json["shipping_methods"] == null ? [] : List<ShippingMethod>.from(json["shipping_methods"]!.map((x) => ShippingMethod.fromJson(x))),
     cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
     paymentStatus: json["payment_status"],
     fulfillmentStatus: json["fulfillment_status"],
@@ -119,6 +122,7 @@ class Order {
     "version": version,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
     "payment_collections": paymentCollections == null ? [] : List<dynamic>.from(paymentCollections!.map((x) => x.toJson())),
+    "shipping_methods": shippingMethods == null ? [] : List<dynamic>.from(shippingMethods!.map((x) => x.toJson())),
     "cart": cart?.toJson(),
     "payment_status": paymentStatus,
     "fulfillment_status": fulfillmentStatus,

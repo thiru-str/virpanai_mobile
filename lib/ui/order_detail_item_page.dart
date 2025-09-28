@@ -160,9 +160,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                 ));
                           },
                         ),
-                        SizedBox(
-                          height: 10,
-                        ),
+                        CartCalculation(
+                          keyText: 'Delivery Method',
+                          valueText: order?.shippingMethods?.firstOrNull?.name??'',valueStyle: TextStyle(color: AppColors.primary,fontWeight: FontWeight.bold),),
                         Visibility(
                           visible: (order?.subtotal ?? 0) > 0,
                           child: CartCalculation(

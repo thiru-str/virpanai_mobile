@@ -582,7 +582,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest(
-      'store/carts/$cartId',
+      'store/carts/$cartId?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
       null,
       null,
       (json) => CartResponse.fromJson(json),
@@ -764,7 +764,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/shipping-methods',
+      'store/carts/$cartId/shipping-methods?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
       {"option_id": optionId},
           (json) => CartResponse.fromJson(json),
       context,

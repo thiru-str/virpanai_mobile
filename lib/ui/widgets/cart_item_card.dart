@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/font_utils.dart';
 
@@ -13,9 +14,9 @@ class CartItemCard extends StatelessWidget {
   final String color;
   final String price;
   final int quantity;
-  final bool isUpdating; // New field
-  final VoidCallback onIncrease;
-  final VoidCallback onDecrease;
+  final bool isUpdating;
+  final Function(int newQty) onUpdateQuantity;
+
   final VoidCallback onRemoveAll;
 
   const CartItemCard({
@@ -27,8 +28,7 @@ class CartItemCard extends StatelessWidget {
     required this.price,
     required this.quantity,
     this.isUpdating = false,
-    required this.onIncrease,
-    required this.onDecrease,
+    required this.onUpdateQuantity,
     required this.onRemoveAll,
   }) : super(key: key);
 
@@ -95,6 +95,7 @@ class CartItemCard extends StatelessWidget {
                 ),
               ),
               // Price and Quantity Adjustment
+              // Price and Quantity Adjustment
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -108,68 +109,67 @@ class CartItemCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
+
                   Row(
                     children: [
+                      // Quantity Dropdown-style box
                       GestureDetector(
-                        onTap: onDecrease,
+                        onTap: () async {
+                          final result = await _showQuantityDialog(context, quantity);
+                          if (result != null) {
+                            if (result == quantity) {
+                              return;
+                            }
+                            if (result == 0) {
+                              onRemoveAll();
+                            } else {
+                              onUpdateQuantity(result);
+                            }
+                          }
+                        },
                         child: Container(
-                          padding: const EdgeInsets.all(4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.primary),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
-                            Icons.remove,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '$quantity',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: onIncrease,
-                        child: Container(
-                          padding: const EdgeInsets.all(4.0),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 14,
+                          child: Row(
+                            children: [
+                              Text(
+                                '$quantity',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_drop_down,
+                                size: 18,
+                                color: Colors.black54,
+                              ),
+                            ],
                           ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+
+                      // Remove All (Dustbin Icon)
+                      if (quantity > 0)
+                        GestureDetector(
+                          onTap: onRemoveAll,
+                          child: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                            size: 22,
+                          ),
+                        ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  Visibility(
-                    visible: quantity>1,
-                    child: GestureDetector(
-                      onTap: onRemoveAll,
-                      child: const Text(
-                        "Remove All",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.w600,
-                          decorationColor: Colors.red,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
+
             ],
           ),
         ),
@@ -205,6 +205,64 @@ class CartItemCard extends StatelessWidget {
       ),
     );
   }
+
+  Future<int?> _showQuantityDialog(BuildContext context, int currentQty) async {
+    final controller = TextEditingController(text: currentQty.toString());
+
+    return showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text("Enter Quantity"),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(3),
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: InputDecoration(
+              hintText: "Quantity",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: BorderSide(
+                    color: AppColors.primary, width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: BorderSide(
+                    color: AppColors.primary, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: BorderSide(
+                    color: AppColors.primary, width: 1),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // cancel
+              child: Text("Cancel",style: TextStyle(color: AppColors.primary),),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              ),
+              onPressed: () {
+                final value = int.tryParse(controller.text.trim()) ?? currentQty;
+                Navigator.pop(context, value);
+              },
+              child: Text("OK",style: TextStyle(color: Colors.white),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
 
 }
