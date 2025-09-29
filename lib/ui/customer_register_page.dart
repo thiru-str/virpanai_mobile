@@ -109,15 +109,15 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.teal),
+                borderSide: BorderSide(color: AppColors.primary),
                 borderRadius: BorderRadius.circular(10),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.teal),
+                borderSide: BorderSide(color: AppColors.primary),
                 borderRadius: BorderRadius.circular(10),
               ),
               disabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.teal.shade100),
+                borderSide: BorderSide(color: AppColors.primary.withAlpha(50)),
                 borderRadius: BorderRadius.circular(10),
               ),
               contentPadding:
@@ -225,7 +225,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
               inactiveFillColor: Colors.white,
               activeFillColor: Colors.white,
               selectedFillColor: Colors.white,
-              inactiveColor: Colors.teal,
+              inactiveColor: AppColors.primary,
               activeColor: AppColors.primary,
               selectedColor: AppColors.primary,
             ),

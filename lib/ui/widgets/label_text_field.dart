@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../utility/app_colors.dart';
+
 class LabeledTextField extends StatefulWidget {
   final String label;
   final TextEditingController controller;
@@ -70,11 +72,11 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.teal),
+                    borderSide: BorderSide(color: AppColors.primary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.teal),
+                    borderSide: BorderSide(color: AppColors.primary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   contentPadding: const EdgeInsets.symmetric(

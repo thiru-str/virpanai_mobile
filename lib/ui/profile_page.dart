@@ -86,6 +86,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
               ProfileOptionTile(
+                icon: Icons.password,
+                label: "Reset Password",
+                onTap: () {
+                  PageRouteUtils.pushWithSlide(context, const DistributorDetailPage());
+                },
+              ),
+              ProfileOptionTile(
                 icon: Icons.shield_outlined,
                 label: "Privacy Policy",
                 onTap: () {
@@ -164,7 +171,7 @@ class ProfileOptionTile extends StatelessWidget {
           color: const Color(0xFFF2FAEC),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: Colors.teal.shade800, size: 20),
+        child: Icon(icon, color: AppColors.primary.withAlpha(80), size: 20),
       ),
       title: Text(
         label,

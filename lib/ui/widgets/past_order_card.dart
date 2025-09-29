@@ -73,8 +73,8 @@ class PastOrderCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                            productCount>1?'$productCount Orders':'$productCount Order',
-                            style: const TextStyle(
-                              color: Colors.teal,
+                            style:  TextStyle(
+                              color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
@@ -95,8 +95,8 @@ class PastOrderCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           totalPrice,
-                          style: const TextStyle(
-                            color: Colors.teal,
+                          style: TextStyle(
+                            color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
