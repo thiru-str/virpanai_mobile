@@ -7,6 +7,7 @@ import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/check_pin_code_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/complete_order_response.dart';
+import 'package:waioz/model/content_response.dart';
 import 'package:waioz/model/customer_list_response.dart';
 import 'package:waioz/model/dashboard_response.dart';
 import 'package:waioz/model/dealer_response.dart';
@@ -44,6 +45,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../model/duplicate_response_model.dart';
 import '../model/pending_order_detail_response.dart';
 import '../model/refresh_token_response.dart';
+import '../model/reset_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -951,6 +953,30 @@ class ApiService {
   Future<DuplicateResponse> checkDuplicateDealer(BuildContext context,String email,String phone) async {
     return _makePostRequest('dealer/check-duplicate', {"email":email,"phone":phone},
             (data) => DuplicateResponse.fromJson(data),context);
+  }
+
+  Future<ResetResponse> sendEmailOtp(BuildContext context) async {
+    await addToken();
+    return _makePostRequest('dealer/password/send-email-otp', null,
+            (data) => ResetResponse.fromJson(data),context);
+  }
+
+  Future<ResetResponse> verifyEmailOtp(BuildContext context,String otp,String password) async {
+    await addToken();
+    return _makePostRequest('dealer/password/reset', {"otp":otp,"password":password},
+            (data) => ResetResponse.fromJson(data),context);
+  }
+
+  Future<ContentResponse> getContents(
+      BuildContext context, String tagId) async {
+    await addToken();
+    return _makeGetRequest<ContentResponse>(
+      'store/products',
+      null,
+      null,
+          (json) => ContentResponse.fromJson(json),
+      context,
+    );
   }
 
 }

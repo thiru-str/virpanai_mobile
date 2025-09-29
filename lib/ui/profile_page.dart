@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/login_page.dart';
 import 'package:waioz/ui/static_page.dart';
+import 'package:waioz/ui/verify_email_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/distributor_detail_page.dart';
@@ -89,7 +90,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.password,
                 label: "Reset Password",
                 onTap: () {
-                  PageRouteUtils.pushWithSlide(context, const DistributorDetailPage());
+                  PageRouteUtils.pushWithSlide(context, const VerifyEmailPage());
                 },
               ),
               ProfileOptionTile(
