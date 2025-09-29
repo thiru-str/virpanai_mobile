@@ -53,7 +53,7 @@ class CommonHeaderAppBar extends StatelessWidget
       title: Text(
         title,
         style: FontUtils.primaryFontStyle(
-          fontSize: 20,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
         ),

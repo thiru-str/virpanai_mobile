@@ -185,7 +185,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                   autoFocus: true,
                                   animationType: AnimationType.none,
                                   textStyle: FontUtils.primaryFontStyle(
-                                    fontSize: 20,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
                                   ),

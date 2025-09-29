@@ -44,6 +44,7 @@ class PastOrderCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.shade100,
@@ -105,7 +106,7 @@ class PastOrderCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Divider(),
+                const Divider(height: 1, thickness: 0.5),
                 const SizedBox(height: 12),
 
                 // Bottom row: See Details + Images

@@ -127,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Text(
                     AppStrings.register,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),

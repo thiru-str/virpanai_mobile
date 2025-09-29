@@ -209,7 +209,7 @@ class _MapPageState extends State<MapPage> {
                   Text(
                     _mainAddress, // Static location name or fetched dynamically
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
                     ),

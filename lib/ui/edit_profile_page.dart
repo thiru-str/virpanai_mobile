@@ -109,7 +109,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: Text(
                         AppStrings.Upadte,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),

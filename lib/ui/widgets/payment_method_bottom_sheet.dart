@@ -27,7 +27,7 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
           Text(
            AppStrings.payemnt_method,
             style: FontUtils.secondaryFontStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -48,7 +48,7 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
                   },
                   title: Text(
                     provider.name!,
-                    style: FontUtils.primaryFontStyle(fontSize: 16),
+                    style: FontUtils.primaryFontStyle(fontSize: 14),
                   ),
                   trailing: const Icon(Icons.radio_button_unchecked),
                 ),

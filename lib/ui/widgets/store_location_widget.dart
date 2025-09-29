@@ -27,7 +27,7 @@ class StoreLocationCard extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 20,
+                  fontSize: 16,
                 ),
               ),
               if (icon != null) icon!,

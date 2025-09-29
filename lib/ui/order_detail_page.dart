@@ -63,11 +63,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       ),
       title: Text(
         status,
-        style: FontUtils.primaryFontStyle(fontSize: 17),
+        style: FontUtils.primaryFontStyle(fontSize: 16),
       ),
       trailing: Text(
         date,
-        style: FontUtils.primaryFontStyle(fontSize: 17),
+        style: FontUtils.primaryFontStyle(fontSize: 16),
       ),
     );
   }

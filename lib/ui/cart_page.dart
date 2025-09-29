@@ -225,7 +225,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                         },
                         child:  Text(
                           AppStrings.check_out,
-                          style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+                          style: FontUtils.primaryFontStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),

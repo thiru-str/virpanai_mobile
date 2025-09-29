@@ -76,7 +76,7 @@ class WelcomePage extends StatelessWidget {
                       child: Text(
                         AppStrings.get_started,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                         ),

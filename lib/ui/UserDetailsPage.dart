@@ -251,7 +251,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           child: Text(
             "Distributor Registration",
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -363,7 +363,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                                             child: Text(
                                               _currentStep < 1 ? "Next" : "Submit",
                                               style: const TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: 16,
                                                   color: Colors.white),
                                             )),
                                       ),

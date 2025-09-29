@@ -59,7 +59,7 @@ class StoreContactCard extends StatelessWidget {
                       storeName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 4),

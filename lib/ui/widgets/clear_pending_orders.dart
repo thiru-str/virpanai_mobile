@@ -39,7 +39,7 @@ class ClearPendingOrdersDialog extends StatelessWidget {
             const Text(
               'Clear Pending Orders',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1D3916),
               ),

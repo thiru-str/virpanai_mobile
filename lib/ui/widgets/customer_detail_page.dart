@@ -37,7 +37,7 @@ class CustomerDetailPage extends StatelessWidget {
                   'Owner Details',
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -60,7 +60,7 @@ class CustomerDetailPage extends StatelessWidget {
                   'Shop Details',
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -84,6 +84,7 @@ class CustomerDetailPage extends StatelessWidget {
                         ShopDetailRow(
                           title: 'GST image',
                           imageUrl: customer?.metadata?.shopGstImage??'',
+                          lastItem: true,
                         ),
                   ],
                 ),
@@ -94,7 +95,7 @@ class CustomerDetailPage extends StatelessWidget {
                   'Shop Image',
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

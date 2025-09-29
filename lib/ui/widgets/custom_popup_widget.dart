@@ -61,7 +61,7 @@ class CustomPopupWidget extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   title,
-                  style: FontUtils.primaryFontStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                  style: FontUtils.primaryFontStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                 ),
                 const SizedBox(height: 10),
                 Text(

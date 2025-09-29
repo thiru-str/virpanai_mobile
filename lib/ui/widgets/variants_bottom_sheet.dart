@@ -36,7 +36,7 @@ class VariantsBottomSheet extends StatelessWidget {
               Text(
                 title,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),

@@ -31,7 +31,7 @@ class Item3 extends StatelessWidget {
               Text(
                 content.layoutTitle!,
                 style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor
                 ),

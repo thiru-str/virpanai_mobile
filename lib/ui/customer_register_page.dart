@@ -213,7 +213,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
             autoFocus: true,
             animationType: AnimationType.none,
             textStyle: FontUtils.primaryFontStyle(
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
@@ -530,7 +530,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
                                               child: Text(
                                                 _currentStep < 1 ? "Next" : "Submit",
                                                 style: const TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 16,
                                                     color: Colors.white),
                                               )),
                                         ),

@@ -152,7 +152,7 @@ class Item9 extends StatelessWidget {
                         Text(
                           CurrencyUtil.appendCurrency(layoutData.prices?.sellingPrice ?? ''),
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

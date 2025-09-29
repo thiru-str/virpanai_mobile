@@ -254,7 +254,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           Text(
             AppStrings.no_payment_yet,
             style: FontUtils.primaryFontStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),

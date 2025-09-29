@@ -56,12 +56,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       onPressed: (){
                         Navigator.pop(context);
                       },
-                      icon:Icon(Icons.arrow_back_ios)
+                      icon:Icon(Icons.arrow_back_ios,size: 18,)
                     ),
                   ),
                   const Text(
                     "Profile",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

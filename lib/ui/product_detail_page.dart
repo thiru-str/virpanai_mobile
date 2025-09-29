@@ -687,7 +687,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ? 'Select Variant'
                   : 'Add to Cart',
               style: FontUtils.primaryFontStyle(
-                  fontSize: 18, color: Colors.white),
+                  fontSize: 16, color: Colors.white),
             ),
           ),
         ),

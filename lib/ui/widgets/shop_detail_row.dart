@@ -9,12 +9,14 @@ class ShopDetailRow extends StatelessWidget {
   final String title;
   final String? value;
   final String? imageUrl;
+  final bool lastItem;
 
   const ShopDetailRow({
     Key? key,
     required this.title,
     this.value,
     this.imageUrl,
+    this.lastItem = false,
   }) : super(key: key);
 
   @override
@@ -23,9 +25,9 @@ class ShopDetailRow extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Color(0xFFE0E0E0)),
+          bottom: BorderSide(color: !lastItem?const Color(0xFFE0E0E0):Colors.transparent),
         ),
       ),
       child: Row(

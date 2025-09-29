@@ -92,7 +92,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                 'Payment Mode',
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -126,7 +126,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                               'List of Products',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -193,7 +193,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                           child: Text(
                             'Mark as Completed',
                             style: FontUtils.primaryFontStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),

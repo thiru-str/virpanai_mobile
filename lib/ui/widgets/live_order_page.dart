@@ -71,7 +71,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                           child: Text(
                             _dealerResponse?.dealer?.name ?? '',
                             style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -88,7 +88,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Live Orders',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 16),

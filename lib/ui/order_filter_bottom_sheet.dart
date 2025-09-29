@@ -182,7 +182,7 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
               children: [
                 TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel',style: TextStyle(color: AppColors.primary),)),
                 const Spacer(),
-                const Text('Filter', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                const Text('Filter', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const Spacer(),
                 TextButton(onPressed: _apply, child: Text('Apply',style: TextStyle(color: AppColors.primary),)),
               ],
