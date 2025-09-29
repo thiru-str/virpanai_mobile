@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/dashboard.dart';
 import 'package:waioz/ui/welcome_page.dart';
@@ -49,25 +50,22 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     _controller.forward();
 
     // Navigate to next page after animation
-    navToNextPage();
+    //navToNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+      ),
+    );
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF124B5C), // dark blue
-              Color(0xFF63C132), // green
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: Center(
-          child: SvgPicture.asset(AppAssets.app_logo),
+          child: SvgPicture.asset(AppAssets.app_logo,height: 200,),
         ),
       ),
     );
