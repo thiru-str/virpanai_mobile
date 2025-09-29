@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
@@ -65,18 +66,16 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+      ),
+    );
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF124B5C), // dark blue
-              Color(0xFF63C132), // green
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: Center(
           child: SvgPicture.asset(AppAssets.app_logo),
         ),

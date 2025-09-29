@@ -119,8 +119,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                 children: [
                                   Text(
                                     customer != null
-                                        ? '${customer?.firstName} ${customer
-                                        ?.lastName}'
+                                        ? '${customer?.firstName??''} ${customer
+                                        ?.lastName??''}'
                                         : '',
                                     overflow: TextOverflow.ellipsis,
                                     style: FontUtils.primaryFontStyle(

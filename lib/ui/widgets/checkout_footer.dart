@@ -39,7 +39,7 @@ class CheckoutFooter extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Row(
         children: [
           Expanded(
@@ -87,12 +87,16 @@ class CheckoutFooter extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            Text(
-                              paymentMethod,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                            Flexible(
+                              child: Text(
+                                paymentMethod,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                             SizedBox(
