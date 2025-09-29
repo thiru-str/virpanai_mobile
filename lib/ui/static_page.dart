@@ -34,7 +34,7 @@ class _StaticPageState extends State<StaticPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
-          child: CommonHtmlWidget(htmlContent: widget.htmlData),
+          child: SingleChildScrollView(child: CommonHtmlWidget(htmlContent: widget.htmlData)),
         ),
       ),
     );
