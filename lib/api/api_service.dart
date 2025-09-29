@@ -968,12 +968,12 @@ class ApiService {
   }
 
   Future<ContentResponse> getContents(
-      BuildContext context, String tagId) async {
+      BuildContext context, String slug) async {
     await addToken();
     return _makeGetRequest<ContentResponse>(
-      'store/products',
+      'dealer/content/$slug',
       null,
-      null,
+      {"slug": slug},
           (json) => ContentResponse.fromJson(json),
       context,
     );

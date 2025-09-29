@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:waioz/model/content_response.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import '../api/api_service.dart';
+import '../utility/common_html.dart';
 
 class StaticPage extends StatefulWidget {
 
   final String pageTitle;
-  final String htmlData;
+  final String slug;
 
-  const StaticPage({Key? key, required this.pageTitle, required this.htmlData})
+  const StaticPage({Key? key, required this.pageTitle, required this.slug})
       : super(key: key);
 
   @override
@@ -17,64 +22,49 @@ class StaticPage extends StatefulWidget {
 }
 
 class _StaticPageState extends State<StaticPage> {
-  late final WebViewController _controller;
+
+  ContentResponse? contentResponse;
+  bool apiLoading = false;
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
+    fetchInitialData();
+  }
 
-
-    // Get the font family from FontUtils
-    String fontFamily = FontUtils.apiPrimaryFont ?? FontUtils.defaultCircularStd;
-
-    // Check if the font is available in Google Fonts
-    bool isGoogleFont = GoogleFonts.asMap().containsKey(fontFamily);
-
-    // Generate HTML with the selected font
-    String formattedHtml = '''
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
-        <style>
-          ${isGoogleFont ? "@import url('https://fonts.googleapis.com/css2?family=$fontFamily&display=swap');" : ""}
-          body {
-            font-family: '${isGoogleFont ? fontFamily : FontUtils.defaultCircularStd}', sans-serif;
-            padding: 25px;
-            margin: 0;
-            line-height: 1.6;
-          }
-          img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-      }
-        </style>
-      </head>
-      <body>${widget.htmlData}</body>
-      </html>
-    ''';
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..enableZoom(true)
-      ..loadHtmlString(formattedHtml); // ✅ Load HTML with the correct font
+  Future<void> fetchInitialData() async {
+    getContents();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5FEF2),
       appBar:CommonHeaderAppBar(
         title: widget.pageTitle,
         onBackTap: () {
           Navigator.of(context).pop();
         },
       ),
-      body: SafeArea(
-        child: WebViewWidget(
-          controller: _controller,
+      body: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
+          child: SingleChildScrollView(child: CommonHtmlWidget(htmlContent: contentResponse?.data?.content??'')),
         ),
       ),
     );
+  }
+
+  Future<void> getContents() async {
+    try {
+      setState(() => apiLoading = true);
+      final apiService = ApiService();
+      contentResponse = await apiService.getContents(context, widget.slug);
+      setState(() => apiLoading = false);
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() => apiLoading = false);
+    }
   }
 }

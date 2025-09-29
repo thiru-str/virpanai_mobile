@@ -97,21 +97,21 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.shield_outlined,
                 label: "Privacy Policy",
                 onTap: () {
-                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Privacy Policy', htmlData: AppStrings.sampleData));
+                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Privacy Policy', slug: 'privacy-policy'));
                 },
               ),
               ProfileOptionTile(
                 icon: Icons.lock_outline,
-                label: "Terms of Service",
+                label: "Terms and Conditions",
                 onTap: () {
-                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Terms of Servic', htmlData: AppStrings.sampleData));
+                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Terms and Conditions', slug: 'terms-and-conditions'));
                 },
               ),
               ProfileOptionTile(
                 icon: Icons.help_outline,
-                label: "Help Center",
+                label: "Help",
                 onTap: () {
-                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Help Center', htmlData: AppStrings.sampleData));
+                  PageRouteUtils.pushWithSlide(context,const StaticPage(pageTitle: 'Help', slug: 'help'));
                 },
               ),
               ProfileOptionTile(

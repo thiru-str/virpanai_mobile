@@ -140,10 +140,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 }),
                 ...storeContentList.map((contentItem) => _buildProfileItem(contentItem.name ?? "Unknown", () {
                   if (contentItem.content?.data != null) {
-                    PageRouteUtils.pushWithSlide(
-                      context,
-                      StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
-                    );
+                    // PageRouteUtils.pushWithSlide(
+                    //   context,
+                    //   StaticPage(pageTitle: contentItem.name ?? "", htmlData: contentItem.content!.data!),
+                    // );
                   }
                 }))
               ],
