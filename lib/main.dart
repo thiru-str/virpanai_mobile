@@ -59,6 +59,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
+      theme: theme,
       debugShowCheckedModeBanner: false,
       home: SplashPage(skipLogin: skipLogin),
     );

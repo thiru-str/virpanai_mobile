@@ -5,6 +5,7 @@ class FontUtils {
   // Default Custom Fonts
   static const String defaultCircularStd = 'CircularStd';
   static const String defaultGabarito = 'Gabarito';
+  static const String defaultFont = 'MyCustomFont';
 
   static String? apiPrimaryFont;
   static String? apiSecondaryFont;
@@ -23,18 +24,18 @@ class FontUtils {
     double letterSpacing = 0.0,
     TextDecoration decoration = TextDecoration.none,
   }) {
-    if (apiPrimaryFont != null && GoogleFonts.asMap().containsKey(apiPrimaryFont)) {
-      return GoogleFonts.getFont(
-        apiPrimaryFont!,
-        fontWeight: fontWeight,
-        fontSize: fontSize,
-        color: color,
-        letterSpacing: letterSpacing,
-        decoration: decoration,
-      );
-    }
+    // if (apiPrimaryFont != null && GoogleFonts.asMap().containsKey(apiPrimaryFont)) {
+    //   return GoogleFonts.getFont(
+    //     apiPrimaryFont!,
+    //     fontWeight: fontWeight,
+    //     fontSize: fontSize,
+    //     color: color,
+    //     letterSpacing: letterSpacing,
+    //     decoration: decoration,
+    //   );
+    // }
     return TextStyle(
-      fontFamily: defaultCircularStd,
+      fontFamily: defaultFont,
       fontWeight: fontWeight,
       fontSize: fontSize,
       color: color,
@@ -51,18 +52,18 @@ class FontUtils {
     double letterSpacing = 0.0,
     TextDecoration decoration = TextDecoration.none,
   }) {
-    if (apiSecondaryFont != null && GoogleFonts.asMap().containsKey(apiSecondaryFont)) {
-      return GoogleFonts.getFont(
-        apiSecondaryFont!,
-        fontWeight: fontWeight,
-        fontSize: fontSize,
-        color: color,
-        letterSpacing: letterSpacing,
-        decoration: decoration,
-      );
-    }
+    // if (apiSecondaryFont != null && GoogleFonts.asMap().containsKey(apiSecondaryFont)) {
+    //   return GoogleFonts.getFont(
+    //     apiSecondaryFont!,
+    //     fontWeight: fontWeight,
+    //     fontSize: fontSize,
+    //     color: color,
+    //     letterSpacing: letterSpacing,
+    //     decoration: decoration,
+    //   );
+    // }
     return TextStyle(
-      fontFamily: defaultGabarito,
+      fontFamily: defaultFont,
       fontWeight: fontWeight,
       fontSize: fontSize,
       color: color,
