@@ -50,7 +50,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     _controller.forward();
 
     // Navigate to next page after animation
-    //navToNextPage();
+    navToNextPage();
   }
 
   @override
