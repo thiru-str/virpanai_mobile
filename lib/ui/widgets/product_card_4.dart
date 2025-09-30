@@ -29,40 +29,26 @@ class ProductCard4 extends StatefulWidget {
 }
 
 class _ProductCard4State extends State<ProductCard4> {
+
   int _currentIndex = 0;
 
-  double? _lowestCalculated(Product p) {
+  Variant? _cheapestVariant(Product p) {
     if (p.variants?.isEmpty ?? true) return null;
-    final vals = p.variants!
-        .map((v) => double.tryParse(
-      v.calculatedPrice?.rawCalculatedAmount?.value ?? '',
-    ))
-        .whereType<double>()
-        .toList();
-    if (vals.isEmpty) return null;
-    return vals.reduce((a, b) => a < b ? a : b);
-  }
 
-  double? _highestOriginal(Product p) {
-    if (p.variants?.isEmpty ?? true) return null;
-    final vals = p.variants!
-        .map((v) => double.tryParse(
-      v.calculatedPrice?.rawOriginalAmount?.value ?? '',
-    ))
-        .whereType<double>()
-        .toList();
-    if (vals.isEmpty) return null;
-    return vals.reduce((a, b) => a > b ? a : b);
-  }
-
-  bool _hasDiscount(double? original, double? calc) {
-    if (original == null || calc == null) return false;
-    return original > calc;
-  }
-
-  int _discountPercent(double original, double calc) {
-    final pct = ((original - calc) / original) * 100.0;
-    return pct.round();
+    Variant? cheapest;
+    for (final v in p.variants!) {
+      final calc = double.tryParse(v.calculatedPrice?.rawCalculatedAmount?.value ?? '');
+      if (calc == null) continue;
+      if (cheapest == null) {
+        cheapest = v;
+      } else {
+        final cheapestCalc = double.tryParse(cheapest.calculatedPrice?.rawCalculatedAmount?.value ?? '') ?? double.infinity;
+        if (calc < cheapestCalc) {
+          cheapest = v;
+        }
+      }
+    }
+    return cheapest;
   }
 
   String _fmt(double v) => CurrencyUtil.appendCurrency(v.toStringAsFixed(0));
@@ -71,11 +57,18 @@ class _ProductCard4State extends State<ProductCard4> {
   Widget build(BuildContext context) {
     final product = widget.product;
     final images = product.images ?? [];
-    final calc = _lowestCalculated(product);
-    final orig = _highestOriginal(product);
-    final hasDiscount = _hasDiscount(orig, calc);
-    final percentOff =
-    (hasDiscount && orig != null && calc != null) ? _discountPercent(orig!, calc!) : null;
+    final cheapest = _cheapestVariant(product);
+
+    final calc = cheapest != null
+        ? double.tryParse(cheapest.calculatedPrice?.rawCalculatedAmount?.value ?? '')
+        : null;
+
+    final orig = cheapest != null
+        ? double.tryParse(cheapest.calculatedPrice?.rawOriginalAmount?.value ?? '')
+        : null;
+
+    final hasDiscount = (orig != null && calc != null && orig > calc);
+    final percentOff = hasDiscount ? ((orig - calc) / orig * 100).round() : null;
 
     return GestureDetector(
       onTap: widget.onTapCard,
