@@ -77,7 +77,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       body: Container(
         color: Colors.white,
         child: Center(
-          child: SvgPicture.asset(AppAssets.app_logo,height: 200,),
+          child: SvgPicture.asset(AppAssets.app_logo,height: 250,),
         ),
       ),
     );
