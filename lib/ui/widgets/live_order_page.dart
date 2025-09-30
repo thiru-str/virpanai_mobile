@@ -182,23 +182,29 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
     }
   }
 
-  void showPendingOrdersDialog(BuildContext context,) {
+  void showPendingOrdersDialog(BuildContext context) {
     showDialog(
       barrierDismissible: false,
       context: context,
-        builder: (BuildContext context) {
+      builder: (BuildContext context) {
 
-          eventBus.on<ClosePendingOrdersDialogEvent>().listen((event) {
-            Navigator.of(context, rootNavigator: true).pop();
-            Navigator.pop(context);
-          });
+        eventBus.on<ClosePendingOrdersDialogEvent>().listen((event) {
+          Navigator.of(context, rootNavigator: true).pop();
+          Navigator.pop(context);
+        });
 
-          return ClearPendingOrdersDialog(
+        return WillPopScope(
+          onWillPop: () async {
+            // Return false to prevent back button from closing dialog
+            return false;
+          },
+          child: ClearPendingOrdersDialog(
             onJoin: () async {
               PageRouteUtils.push(context, const PendingOrderDetailsPage());
             },
-          );
-        },
+          ),
+        );
+      },
     );
   }
 }
