@@ -91,8 +91,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         child: Container(
                           child: Center(
                             child: Text(
-                                (customer?.firstName ?? "C")
-                                    .substring(0, 1), // The letter to display
+                              (customer?.firstName?.isNotEmpty == true
+                                  ? customer!.firstName!.substring(0, 1)
+                                  : "C"),
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 30,
                                   fontWeight: FontWeight.bold,
