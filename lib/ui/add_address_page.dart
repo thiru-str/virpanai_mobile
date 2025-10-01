@@ -57,6 +57,7 @@ class _AddAddressPage extends State<AddAddressPage> {
   double latitude = 0;
   double longitude = 0;
   Customer? customer;
+  bool enablePinCode = false;
 
   @override
   void initState() {
@@ -108,6 +109,11 @@ class _AddAddressPage extends State<AddAddressPage> {
       customer;
     });
     if (mounted) {
+      if ((customer?.metadata?.postalCode ?? '').isEmpty) {
+       setState(() {
+         enablePinCode = true;
+       });
+      }
       zipCodeController.text =
           customer?.metadata?.postalCode??'';
     }
@@ -237,7 +243,7 @@ class _AddAddressPage extends State<AddAddressPage> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: CustomTextField(
-                                  enabled: false,
+                                  enabled: enablePinCode,
                                   hintText: AppStrings.zip_code,
                                   controller: zipCodeController,
                                   keyboardType: TextInputType.number,
