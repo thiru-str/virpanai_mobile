@@ -7,11 +7,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 
+import '../model/pin_code_response.dart';
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -58,6 +60,9 @@ class _AddAddressPage extends State<AddAddressPage> {
   double longitude = 0;
   Customer? customer;
   bool enablePinCode = false;
+
+  DateTime? _lastPressed;
+  static const int debounceTime = 500;
 
   @override
   void initState() {
@@ -205,8 +210,10 @@ class _AddAddressPage extends State<AddAddressPage> {
                             ],
                             keyboardType: TextInputType.phone,
                             validator: (value) {
-                              if (value == null || value.isEmpty || value.length < 10) {
+                              if (value == null || value.isEmpty) {
                                 return AppStrings.phone_number_required;
+                              } else if (value.length < 10) {
+                                return AppStrings.valid_phone_number;
                               }
                               return null;
                             },
@@ -305,13 +312,25 @@ class _AddAddressPage extends State<AddAddressPage> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: isUpdating? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          print("Form is valid. Proceed to Create Address.");
-                          createOrUpdateAddress();
+                      onPressed: () async {
+                        final now = DateTime.now();
+                        if (_lastPressed != null &&
+                            now.difference(_lastPressed!).inMilliseconds < debounceTime) {
+                          return;
                         }
-                      },
-                      style: ElevatedButton.styleFrom(
+                        _lastPressed = now;
+                              if (_formKey.currentState!.validate()) {
+                                if (enablePinCode) {
+                                  final response = await ApiService()
+                                      .pinCodeCheck(
+                                          context, zipCodeController.text);
+                                  _showConfirmationAlert(context, response);
+                                } else {
+                                  createOrUpdateAddress();
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
@@ -336,6 +355,28 @@ class _AddAddressPage extends State<AddAddressPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showConfirmationAlert(BuildContext context, PinCodeResponse response) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: 'PinCode Verification',
+          content: 'You entered: ${zipCodeController.text}\n\n'
+              'Area name: ${response.data?.pincode?.firstOrNull?.area ?? 'N/A'}\n\n'
+              '${response.data?.dealer?.firstOrNull?.name != null ? 'Assigned Distributor: ${response.data!.dealer!.first.name}\n\n' : ''}'
+              'Note: Distributor assignment depends on this PinCode.\n\n'
+              'Please confirm this before proceeding.',
+          contentOk: 'Confirm',
+          contentCancel: 'Edit',
+          onTapOk: () {
+            Navigator.of(context).pop();
+            createOrUpdateAddress();
+          },
+        );
+      },
     );
   }
 

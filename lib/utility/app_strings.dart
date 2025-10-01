@@ -79,6 +79,7 @@ class AppStrings {
   static const String city = "City";
   static const String zip_code = "Postal Code";
   static const String phone_number = "Phone number";
+  static const String valid_phone_number = "Enter valid phone number";
 
   static const String phone_number_required = "phone numer is required";
   static const String lastname_required = "Lastname is required";

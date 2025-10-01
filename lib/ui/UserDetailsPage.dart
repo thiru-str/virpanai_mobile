@@ -370,7 +370,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               'Area name: ${response.data?.pincode?.firstOrNull?.area ?? 'N/A'}\n\n'
               '${response.data?.dealer?.firstOrNull?.name != null ? 'Assigned Distributor: ${response.data!.dealer!.first.name}\n\n' : ''}'
               'Note: Distributor assignment depends on this PinCode.\n\n'
-              'Please confirm this is correct before proceeding.',
+              'Please confirm this before proceeding.',
           contentOk: 'Confirm',
           contentCancel: 'Edit',
           onTapOk: () {
