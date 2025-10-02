@@ -1,7 +1,7 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+// import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
@@ -30,7 +30,7 @@ Future<void> main() async {
   ]);
 
   // Set Stripe publishable key
-  Stripe.publishableKey = AppConfig.publishableKeyStripe;
+  // Stripe.publishableKey = AppConfig.publishableKeyStripe;
 
   String? currencySymbol = await SharedPreferencesUtil().getString('currency_symbol') ?? '₹';
 
