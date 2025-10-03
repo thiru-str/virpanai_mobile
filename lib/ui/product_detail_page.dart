@@ -579,7 +579,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildReviews() {
-    if (reviewResponse == null || reviewResponse!.productReviews!.isEmpty)
+    if (reviewResponse == null || (reviewResponse?.data?.productReviews??[]).isEmpty)
       return const SizedBox();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,34 +593,34 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 12),
-        Text('${reviewResponse?.overallRating?.toString()} Ratings' ?? '',
-            style: FontUtils.secondaryFontStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 24,
-                color: AppColors.textColor)),
+        // Text((product?.metadata?['review_summ'] ?? "").isNotEmpty?,
+        //     style: FontUtils.secondaryFontStyle(
+        //         fontWeight: FontWeight.w700,
+        //         fontSize: 24,
+        //         color: AppColors.textColor)),
         const SizedBox(
           height: 12,
         ),
-        Text('${reviewResponse?.count?.toString()} Reviews' ?? '',
-            style: FontUtils.primaryFontStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 12,
-                color: AppColors.textColor)),
+        // Text('${reviewResponse?.count?.toString()} Reviews' ?? '',
+        //     style: FontUtils.primaryFontStyle(
+        //         fontWeight: FontWeight.w400,
+        //         fontSize: 12,
+        //         color: AppColors.textColor)),
         const SizedBox(
           height: 12,
         ),
         ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: reviewResponse?.productReviews?.length ?? 0,
+          itemCount: reviewResponse?.data?.productReviews?.length ?? 0,
           itemBuilder: (context, index) {
-            final review = reviewResponse?.productReviews?[index];
+            final review = reviewResponse?.data?.productReviews?[index];
             return ReviewCard(
               profileImageUrl: AppStrings.profileImageUrl,
               name: review?.customer?.firstName ?? '',
               reviewText: review?.description ?? "",
               rating: double.parse(review?.rating ?? ""),
-              timestamp: AppUtils.timeAgo(review?.updatedAt ?? ""),
+              timestamp: '',
             );
           },
         ),
@@ -898,7 +898,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           await apiService.getProductReviews(context, widget.productId);
       setState(() => reviewResponse = response);
     } catch (e) {
-      print(e);
+      debugPrint('exception $e');
     }
   }
 

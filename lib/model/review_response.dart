@@ -9,15 +9,41 @@ ReviewResponse reviewResponseFromJson(String str) => ReviewResponse.fromJson(jso
 String reviewResponseToJson(ReviewResponse data) => json.encode(data.toJson());
 
 class ReviewResponse {
-  double? overallRating;
-  List<Review>? customerReview;
-  List<Review>? productReviews;
+  bool? status;
+  bool? isOrdered;
+  Data? data;
+  String? message;
+
+  ReviewResponse({
+    this.status,
+    this.isOrdered,
+    this.data,
+    this.message,
+  });
+
+  factory ReviewResponse.fromJson(Map<String, dynamic> json) => ReviewResponse(
+    status: json["status"],
+    isOrdered: json["is_ordered"],
+    data: json["data"] == null ? null : Data.fromJson(json["data"]),
+    message: json["message"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "status": status,
+    "is_ordered": isOrdered,
+    "data": data?.toJson(),
+    "message": message,
+  };
+}
+
+class Data {
+  CustomerReview? customerReview;
+  List<ProductReview>? productReviews;
   int? count;
   int? limit;
   int? offset;
 
-  ReviewResponse({
-    this.overallRating,
+  Data({
     this.customerReview,
     this.productReviews,
     this.count,
@@ -25,18 +51,16 @@ class ReviewResponse {
     this.offset,
   });
 
-  factory ReviewResponse.fromJson(Map<String, dynamic> json) => ReviewResponse(
-    overallRating: json["overall_rating"]?.toDouble(),
-    customerReview: json["customer_review"] == null ? [] : List<Review>.from(json["customer_review"]!.map((x) => Review.fromJson(x))),
-    productReviews: json["product_reviews"] == null ? [] : List<Review>.from(json["product_reviews"]!.map((x) => Review.fromJson(x))),
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+    customerReview: json["customer_review"] == null ? null : CustomerReview.fromJson(json["customer_review"]),
+    productReviews: json["product_reviews"] == null ? [] : List<ProductReview>.from(json["product_reviews"]!.map((x) => ProductReview.fromJson(x))),
     count: json["count"],
     limit: json["limit"],
     offset: json["offset"],
   );
 
   Map<String, dynamic> toJson() => {
-    "overall_rating": overallRating,
-    "customer_review": customerReview == null ? [] : List<dynamic>.from(customerReview!.map((x) => x.toJson())),
+    "customer_review": customerReview?.toJson(),
     "product_reviews": productReviews == null ? [] : List<dynamic>.from(productReviews!.map((x) => x.toJson())),
     "count": count,
     "limit": limit,
@@ -44,50 +68,40 @@ class ReviewResponse {
   };
 }
 
-class Review {
+class CustomerReview {
+  CustomerReview();
+
+  factory CustomerReview.fromJson(Map<String, dynamic> json) => CustomerReview(
+  );
+
+  Map<String, dynamic> toJson() => {
+  };
+}
+
+class ProductReview {
   String? id;
-  String? customerId;
-  String? productId;
   String? rating;
   String? description;
-  String? createdAt;
-  String? updatedAt;
-  dynamic deletedAt;
   Customer? customer;
 
-  Review({
+  ProductReview({
     this.id,
-    this.customerId,
-    this.productId,
     this.rating,
     this.description,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
     this.customer,
   });
 
-  factory Review.fromJson(Map<String, dynamic> json) => Review(
+  factory ProductReview.fromJson(Map<String, dynamic> json) => ProductReview(
     id: json["id"],
-    customerId: json["customer_id"],
-    productId: json["product_id"],
     rating: json["rating"],
     description: json["description"],
-    createdAt: json["created_at"],
-    updatedAt: json["updated_at"],
-    deletedAt: json["deleted_at"],
     customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "customer_id": customerId,
-    "product_id": productId,
     "rating": rating,
     "description": description,
-    "created_at": createdAt,
-    "updated_at": updatedAt,
-    "deleted_at": deletedAt,
     "customer": customer?.toJson(),
   };
 }
