@@ -93,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: Text(
                               (customer?.firstName?.isNotEmpty == true
                                   ? customer!.firstName!.substring(0, 1)
-                                  : "C"),
+                                  : "G"),
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 30,
                                   fontWeight: FontWeight.bold,
