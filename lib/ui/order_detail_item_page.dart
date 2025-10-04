@@ -195,8 +195,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                   _buildShippingDetailsCard(), // Shipping details card
                   const SizedBox(height: 20),
                   Visibility(
-                    visible: fulfillmentStatus == 'not_fulfilled' &&
-                        !isCanceled,
+                    visible: false,
                     child: GestureDetector(
                       onTap: (){
                         _showCancellation(context,order?.id??'');
