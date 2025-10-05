@@ -12,7 +12,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Item3 extends StatelessWidget {
-  final Content? content;
+  final Content content;
 
   const Item3({
     Key? key,
@@ -73,59 +73,28 @@ class Item3 extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 120,
-            child: ListView.separated(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              itemCount: content?.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                LayoutDatum? layoutData = content?.layoutData?[index];
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content?.layoutOption ?? "",
-                      layoutData: layoutData!,
-                    );
-                  },
-                  child: SizedBox(
-                    width: 70,
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: ClipOval(
-                            child: (layoutData?.image == null ||
-                                    (layoutData?.image?.isEmpty ?? false))
-                                ? ImageFallbackWidget(h: 75, w: 75)
-                                : CachedNetworkImage(
-                                    imageUrl: layoutData!.image!,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        ImageFallbackWidget(h: 75, w: 75),
-                                  ),
-                          ),
-                        ),
-                        // ),
-                        const SizedBox(height: 8),
-                        Text(
-                          textAlign: TextAlign.center,
-                          layoutData?.title ?? "",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(fontSize: 12),
-                        ),
-                      ],
+              child: Row(
+                children: [
+                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                    _Item3Card(
+                      layoutData: content.layoutData![i],
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption ?? "",
+                          layoutData: content.layoutData![i],
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
+                    if (i != content.layoutData!.length - 1)
+                      const SizedBox(width: 16),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
@@ -133,3 +102,61 @@ class Item3 extends StatelessWidget {
     );
   }
 }
+
+class _Item3Card extends StatelessWidget {
+  final LayoutDatum layoutData;
+  final VoidCallback onTap;
+
+  const _Item3Card({
+    Key? key,
+    required this.layoutData,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 70,
+        child: Column(
+          children: [
+            // Circle image
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: (imageUrl.isEmpty)
+                    ? const ImageFallbackWidget(h: 70, w: 70)
+                    : CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) =>
+                  const ImageFallbackWidget(h: 70, w: 70),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Title text
+            Text(
+              layoutData.title ?? '',
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: FontUtils.primaryFontStyle(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
