@@ -839,7 +839,7 @@ class PaymentSession {
   String? id;
   String? currencyCode;
   String? providerId;
-  //Data? data;
+  Data? data;
   Metadata? context;
   String? status;
   dynamic authorizedAt;
