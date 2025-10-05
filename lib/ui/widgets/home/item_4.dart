@@ -36,7 +36,7 @@ class Item4 extends StatelessWidget {
                   child: Text(
                     content?.layoutTitle ?? '',
                     style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
                     ),
@@ -61,7 +61,7 @@ class Item4 extends StatelessWidget {
                         Text(
                           content?.layoutRedirectTitle??'',
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textColor,
                           ),
@@ -168,7 +168,7 @@ class Item4 extends StatelessWidget {
                           child: Text(
                             layoutData.title ?? "",
                             style: FontUtils.primaryFontStyle(
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.textColor),
                             maxLines: 1,
@@ -186,7 +186,7 @@ class Item4 extends StatelessWidget {
                                 CurrencyUtil.appendCurrency(
                                     layoutData.prices?.sellingPrice ?? ""),
                                 style: FontUtils.primaryFontStyle(
-                                  fontSize: 21,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textColor,
                                 ),
@@ -204,7 +204,7 @@ class Item4 extends StatelessWidget {
                                     CurrencyUtil.appendCurrency(
                                         layoutData.prices?.originalPrice ?? ""),
                                     style: FontUtils.primaryFontStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w400,
                                       color:
                                           AppColors.textColor.withOpacity(0.6),
