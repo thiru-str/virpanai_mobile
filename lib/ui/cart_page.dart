@@ -370,6 +370,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);
       setState(() {
+        pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
         apiLoading = false;
       });
     } catch (e) {

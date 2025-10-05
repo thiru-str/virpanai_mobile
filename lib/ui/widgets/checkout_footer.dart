@@ -56,6 +56,7 @@ class CheckoutFooter extends StatelessWidget {
                     ),
                     child: SvgPicture.asset(
                       svgPath,
+                      colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                       height: 24,
                       width: 24,
                     ),

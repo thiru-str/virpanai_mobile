@@ -96,16 +96,16 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
   Widget _getProviderIcon(String? providerId) {
     switch (providerId) {
       case "pp_system_default":
-        return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24);
+        return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
 
       case "pp_razorpay_razorpay":
-        return SvgPicture.asset(AppAssets.ic_online, width: 24, height: 24);
+        return SvgPicture.asset(AppAssets.ic_online, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
 
       case "pp_neft_neft":
-        return SvgPicture.asset(AppAssets.ic_bank_transfer, width: 24, height: 24);
+        return SvgPicture.asset(AppAssets.ic_bank_transfer, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
 
       default:
-        return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24);
+        return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
     }
   }
 
