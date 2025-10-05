@@ -678,16 +678,6 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     }
   }
 
-  String? extractOrderId(dynamic response) {
-    try {
-      return response["payment_collection"]["payment_sessions"]?[0]["data"]
-      ["id"];
-    } catch (e) {
-      print("Error extracting order ID: $e");
-      return null;
-    }
-  }
-
   void completeCart() async {
     try {
       setState(() {
