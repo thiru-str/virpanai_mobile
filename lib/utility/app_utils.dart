@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -91,6 +93,10 @@ class AppUtils {
 
     final token = await SharedPreferencesUtil().getString('token');
     return token != null && token.isNotEmpty;
+  }
+
+  static String appOs() {
+    return Platform.isAndroid?'Play':'App';
   }
 
 }

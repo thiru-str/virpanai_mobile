@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/mobile_frame_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_utils.dart';
 
 import '../utility/app_strings.dart';
 
@@ -77,8 +79,8 @@ class ForceUpdateScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   /// Description (pure white background)
-                  const Text(
-                    "A brand new version of the VirpanAI app is available in the App Store. "
+                  Text(
+                    "A brand new version of the ${AppConfig.appName} app is available in the ${AppUtils.appOs} Store. "
                         "Please update your app to use all of our amazing features.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
