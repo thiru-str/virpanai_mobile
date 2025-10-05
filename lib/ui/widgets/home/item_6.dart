@@ -12,7 +12,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Item6 extends StatelessWidget {
-  final Content? content;
+  final Content content;
 
   const Item6({
     Key? key,
@@ -33,7 +33,7 @@ class Item6 extends StatelessWidget {
                 child: Text(
                   content?.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor,
                   ),
@@ -58,8 +58,7 @@ class Item6 extends StatelessWidget {
                       Text(
                         content?.layoutRedirectTitle??'',
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                           color: AppColors.textColor,
                         ),
                       ),
@@ -72,77 +71,120 @@ class Item6 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 100,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: content?.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final layoutData = content?.layoutData?[index];
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content?.layoutOption ?? "",
-                      layoutData: layoutData,
-                    );
-                  },
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: layoutData!.image!,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) =>
-                                const  ImageFallbackWidget(
-                                h: 120,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8), // Horizontal spacing
-                        Flexible(
-                          // Constrain the Text widget
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text(
-                              layoutData.title ?? "",
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis, // Adds ellipsis
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                  _Item6Card(
+                    layoutData: content.layoutData![i],
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption!,
+                        layoutData: content.layoutData![i],
+                      );
+                    },
                   ),
-                );
-              },
+                  if (i != content.layoutData!.length - 1)
+                    const SizedBox(width: 16),
+                ],
+              ],
             ),
           ),
-        )
+        ),
       ],
     );
   }
 }
+
+class _Item6Card extends StatelessWidget {
+  final LayoutDatum layoutData;
+  final VoidCallback onTap;
+
+  const _Item6Card({
+    Key? key,
+    required this.layoutData,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 220, // similar to item5 width
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.secondary.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Circular image
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: (imageUrl.isNotEmpty)
+                    ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => const ImageFallbackWidget(
+                    h: 60,
+                    w: 60,
+                  ),
+                )
+                    : const ImageFallbackWidget(h: 60, w: 60),
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // Title + optional price or subtitle if needed
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    layoutData.title ?? '',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 14,
+                      color: AppColors.textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if ((layoutData.subTitle ?? '').isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        layoutData.subTitle!,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 12,
+                          color: AppColors.textColor.withOpacity(0.7),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

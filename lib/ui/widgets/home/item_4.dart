@@ -57,7 +57,6 @@ class Item4 extends StatelessWidget {
                         content.layoutRedirectTitle!,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.bold,
                           color: AppColors.textColor,
                         ),
                       ),

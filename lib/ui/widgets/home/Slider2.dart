@@ -30,7 +30,7 @@ class Slider2 extends StatelessWidget {
                 child: Text(
                   content?.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor,
                   ),
@@ -50,8 +50,7 @@ class Slider2 extends StatelessWidget {
                       Text(
                         content?.layoutRedirectTitle ?? "",
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                           color: AppColors.textColor,
                         ),
                       ),
