@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -9,6 +10,7 @@ import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/checkout_footer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
@@ -54,6 +56,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   List<PaymentProvider> paymentProviders = [];
   String? pp_id;
   String? orderId;
+  String? clientSecret;
   Razorpay razorpay = Razorpay();
 
   @override
@@ -372,6 +375,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       setState(() {
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
         orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
+        clientSecret = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret??'';
         apiLoading = false;
       });
     } catch (e) {
@@ -615,7 +619,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
           context, paymentProviderId, cartResponse!);
       setState(() {
         pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
-        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
+        orderId = extractOrderId(response);
+        clientSecret = extractClientSecret(response);
       });
     } catch (e) {
       print(e);
@@ -665,12 +670,16 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
-
-
   void placeOrder(String paymentProviderId) async {
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         makeRazorPayCall(orderId!);
+        break;
+      case 'pp_stripe_stripe':
+        makeStripeCall(clientSecret!);
+        break;
+      case 'pp_neft_neft':
+        makeNEFTPayCall();
         break;
       case 'pp_system_default':
         completeCart();
@@ -742,6 +751,68 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
+
+  void makeStripeCall(String clientSecret) async {
+    try {
+      // Initialize the payment sheet with client secret
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: AppConfig.appName,
+            googlePay: const PaymentSheetGooglePay(
+              merchantCountryCode: AppStrings.country_code,
+              testEnv: true,
+            ),
+            style: ThemeMode.light,
+            appearance: PaymentSheetAppearance(
+                primaryButton: PaymentSheetPrimaryButtonAppearance(
+                    colors: PaymentSheetPrimaryButtonTheme(
+                        light: PaymentSheetPrimaryButtonThemeColors(
+                            background: AppColors.primary),
+                        dark: PaymentSheetPrimaryButtonThemeColors(
+                            background: AppColors.primary))))),
+      );
+
+      // Present the payment sheet
+      await Stripe.instance.presentPaymentSheet();
+      completeCart();
+    } catch (e) {
+      print('Payment failed: $e');
+    }
+  }
+
+  void makeNEFTPayCall() {
+    CustomPopupWidget.show(
+      context,
+      title: AppStrings.neft_payment_instruct,
+      description: AppStrings.neft_payment_desc,
+      buttonText: AppStrings.place_your_order,
+      icon: Icons.info,
+      onConfirm: () {
+        completeCart();
+      },
+    );
+  }
+
+  String? extractOrderId(dynamic response) {
+    try {
+      return response["payment_collection"]["payment_sessions"]?[0]["data"]
+      ["id"];
+    } catch (e) {
+      print("Error extracting order ID: $e");
+      return null;
+    }
+  }
+
+  String? extractClientSecret(dynamic response) {
+    try {
+      return response["payment_collection"]["payment_sessions"]?[0]["data"]
+      ["client_secret"];
+    } catch (e) {
+      print("Error extracting order ID: $e");
+      return null;
+    }
+  }
 
 
 

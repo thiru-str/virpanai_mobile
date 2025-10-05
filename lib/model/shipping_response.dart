@@ -210,17 +210,20 @@ class RawAmount {
 
 class Data {
   String? id;
+  String? clientSecret;
 
   Data({
     this.id,
+    this.clientSecret,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
     id: json["id"],
+    clientSecret: json["client_secret"],
   );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
+    "client_secret": clientSecret,
   };
 }
 
