@@ -186,7 +186,12 @@ class _SettingsPageState extends State<SettingsPage> {
                               htmlData: contentItem.content!.data!),
                         );
                       }
-                    }))
+                    })),
+                _buildProfileItem(
+                  AppStrings.deleteAccount,
+                      () =>
+                      _showDeleteAccount(context), // use separate method
+                ),
               ],
             ),
           ),
@@ -281,4 +286,31 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
+
+  void _showDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: AppStrings.deleteAccount,
+          content: "Are you sure you want to permanently delete your account?",
+          contentOk: AppStrings.yes,
+          contentCancel: AppStrings.no,
+          onTapOk: () async {
+            await ApiService().deleteAccount(context);
+
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
+            // Handle sign out action
+            await SharedPreferencesUtil().clear();
+            if (mounted) {
+              PageRouteUtils.pushAndRemoveUntil(
+                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+            }
+          },
+        );
+      },
+    );
+  }
+
 }

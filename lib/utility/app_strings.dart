@@ -192,6 +192,7 @@ class AppStrings {
   static const String reDirectOrder = 'Order';
   static const String reDirectLink = 'Link';
 
+  static const String deleteAccount = 'Delete Account';
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
 
