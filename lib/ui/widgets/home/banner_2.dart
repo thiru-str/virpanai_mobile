@@ -1,126 +1,184 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/widgets/item_video_tile.dart';
-import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
-import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
-import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
-import '../../product_detail_page.dart';
-import '../../product_page.dart';
 
-class Banner2 extends StatelessWidget {
+class Banner2 extends StatefulWidget {
   final Content content;
 
-  const Banner2({
-    Key? key,
-    required this.content,
-  }) : super(key: key);
+  const Banner2({Key? key, required this.content}) : super(key: key);
+
+  @override
+  State<Banner2> createState() => _Banner2State();
+}
+
+class _Banner2State extends State<Banner2> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  Timer? _autoScrollTimer;
+
+  double get slideInterval =>
+      double.tryParse(widget.content.layoutSlideTimeInterval ?? '5') ?? 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.45);
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = Timer.periodic(
+      Duration(seconds: slideInterval.toInt()),
+          (_) {
+        if (!mounted) return;
+        final count = widget.content.layoutData?.length ?? 0;
+        if (count == 0) return;
+
+        setState(() {
+          _currentPage = (_currentPage + 1) % count;
+        });
+
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _autoScrollTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final content = widget.content;
+    final items = content.layoutData ?? [];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// Title Row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
+                Text(
+                  content.layoutTitle ?? '',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
                 Visibility(
-                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                  visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
                   child: GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content.redirectData!,
                       );
                     },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
+                    child: Text(
+                      content.layoutRedirectTitle ?? '',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
+
           const SizedBox(height: 16),
+
+          /// Carousel Section
           SizedBox(
-            height: 180,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
+            height: 190,
+            child: PageView.builder(
+              controller: _pageController,
+              padEnds: false,
+              itemCount: items.length,
+              onPageChanged: (i) {
+                setState(() => _currentPage = i);
+                _startAutoScroll();
+              },
               itemBuilder: (context, index) {
-                final layoutData = content.layoutData?[index];
-                final mediaUrl = layoutData?.image ?? '';
+                final item = items[index];
+                final mediaUrl = item.image ?? '';
                 final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
 
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content.layoutOption??'',
-                      layoutData: layoutData!,
-                    );
-                  },
-                  child: isVideo
-                      ? ItemVideoTile(
-                    videoUrl: mediaUrl,
-                    title: layoutData?.subTitle ?? '',
-                  )
-                      : SizedBox(
-                    width: 160,
-                    child: mediaUrl.isEmpty
-                        ?  const ImageFallbackWidget(h: 160, w:180) // empty → fallback
-                        : CachedNetworkImage(
-                      imageUrl: mediaUrl,
-                      fit: BoxFit.cover,
-                      width: 160,
-                      height: 180,
-                      errorWidget: (context, url, error) =>
-                          const ImageFallbackWidget(h: 160, w:180),
-                    ),
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption!,
+                        layoutData: item,
+                      );
+                    },
+                    child: isVideo
+                        ? ItemVideoTile(
+                      key: ValueKey(mediaUrl),
+                      videoUrl: mediaUrl,
+                      title: item.title ?? '',
+                      isActive: index == _currentPage,
+                    )
+                        : _buildImageTile(mediaUrl, item.title ?? ''),
                   ),
                 );
               },
             ),
-          )
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildImageTile(String url, String title) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: CachedNetworkImage(
+            imageUrl: url,
+            width: 160,
+            height: 150,
+            fit: BoxFit.cover,
+            errorWidget: (_, __, ___) => const ImageFallbackWidget(h:160, w:180),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
 }
+
