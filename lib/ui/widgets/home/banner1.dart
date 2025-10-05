@@ -70,56 +70,28 @@ class Banner1 extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 180,
-            child: ListView.separated(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              itemCount: content.layoutData?.length ?? 0,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final layoutData = content.layoutData?[index];
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content.layoutOption ?? "",
-                      layoutData: layoutData,
-                    );
-                  },
-                  child: SizedBox(
-                    width: 150,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(
-                            width: 150,
-                            height: 150,
-                            child: CachedNetworkImage(
-                              imageUrl: layoutData!.image!,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) =>
-                                  ImageFallbackWidget(
-                                h: 120,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          layoutData.subTitle ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+              child: Row(
+                children: [
+                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                    _Banner1Card(
+                      layoutData: content.layoutData![i],
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption ?? "",
+                          layoutData: content.layoutData![i],
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
+                    if (i != content.layoutData!.length - 1)
+                      const SizedBox(width: 16), // spacing between items
+                  ],
+                ],
+              ),
             ),
           ),
         ],
@@ -127,3 +99,62 @@ class Banner1 extends StatelessWidget {
     );
   }
 }
+
+class _Banner1Card extends StatelessWidget {
+  final LayoutDatum layoutData;
+  final VoidCallback onTap;
+
+  const _Banner1Card({
+    Key? key,
+    required this.layoutData,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 150,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image section
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 150,
+                height: 150,
+                child: (imageUrl.isNotEmpty)
+                    ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) =>
+                  const ImageFallbackWidget(h: 120),
+                )
+                    : const ImageFallbackWidget(h: 120),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            // Subtitle text
+            Text(
+              layoutData.subTitle ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: FontUtils.primaryFontStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

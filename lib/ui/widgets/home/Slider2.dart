@@ -12,7 +12,7 @@ import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Slider2 extends StatelessWidget {
-  final Content? content;
+  final Content content;
 
   const Slider2({Key? key, required this.content}) : super(key: key);
 
@@ -62,95 +62,131 @@ class Slider2 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 140,
-          child: ListView.separated(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: content?.layoutData?.length ?? 0,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final layoutData = content?.layoutData?[index];
-              return GestureDetector(
-                onTap: () {
-                  RedirectUtils.handleContentRedirect(
-                    context: context,
-                    layoutOption: content?.layoutOption ?? "",
-                    layoutData: layoutData,
-                  );
-                },
-                child: SizedBox(
-                  width: 90,
-                  height: 120, // extra height to accommodate badge + image
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      // Rounded card with image & title
-                      Positioned(
-                        top: 10, // Push image down to leave space for badge
-                        left: 0,
-                        right: 0,
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 90,
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: AppColors.secondary,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: CachedNetworkImage(
-                                  imageUrl: layoutData!.image!,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) =>
-                                  const    ImageFallbackWidget(
-                                    h: 80,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              layoutData.title ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: FontUtils.primaryFontStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Discount badge floating on top
-                      if (layoutData.prices != null &&
-                          layoutData.prices?.discountedPrice != null &&
-                          layoutData.prices?.discountedPrice != "0")
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.blueGrey.shade800,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            layoutData.prices?.discountPercentage ?? '',
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 10,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                    ],
+            child: Row(
+              children: [
+                for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                  _Slider2Card(
+                    layoutData: content.layoutData![i],
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption ?? "",
+                        layoutData: content.layoutData![i],
+                      );
+                    },
                   ),
-                ),
-              );
-            },
+                  if (i != content.layoutData!.length - 1)
+                    const SizedBox(width: 12), // spacing between items
+                ],
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 }
+
+class _Slider2Card extends StatelessWidget {
+  final LayoutDatum layoutData;
+  final VoidCallback onTap;
+
+  const _Slider2Card({
+    Key? key,
+    required this.layoutData,
+    required this.onTap,
+  }) : super(key: key);
+
+  bool get _hasDiscount =>
+      layoutData.prices?.discountedPrice != null &&
+          layoutData.prices?.discountedPrice != "0";
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 90,
+        height: 120,
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            // Card with image + title
+            Positioned(
+              top: 10,
+              left: 0,
+              right: 0,
+              child: Column(
+                children: [
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: (imageUrl.isNotEmpty)
+                          ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) =>
+                        const ImageFallbackWidget(h: 80),
+                      )
+                          : const ImageFallbackWidget(h: 80),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+                      layoutData.title ?? '',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: FontUtils.primaryFontStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Discount badge
+            if (_hasDiscount)
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey.shade800,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  '${layoutData.prices?.discountPercentage ?? ''} OFF',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
