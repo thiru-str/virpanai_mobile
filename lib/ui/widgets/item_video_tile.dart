@@ -5,11 +5,13 @@ import 'package:visibility_detector/visibility_detector.dart';
 class ItemVideoTile extends StatefulWidget {
   final String videoUrl;
   final String title;
+  final bool isActive;
 
   const ItemVideoTile({
     super.key,
     required this.videoUrl,
     required this.title,
+    required this.isActive,
   });
 
   @override
@@ -17,23 +19,32 @@ class ItemVideoTile extends StatefulWidget {
 }
 
 class _ItemVideoTileState extends State<ItemVideoTile> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
-        setState(() {});
-        _controller.setLooping(true);
-        _controller.setVolume(0);
-        _controller.play(); // 🔁 Always autoplay
+        if (mounted) setState(() {});
       });
   }
 
   @override
+  void didUpdateWidget(covariant ItemVideoTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive) {
+      _controller?.setLooping(true);
+      _controller?.setVolume(0);
+      _controller?.play();
+    } else {
+      _controller?.pause();
+    }
+  }
+
+  @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -44,10 +55,17 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
-            width: 150,
-            height: 150,
-            child: _controller.value.isInitialized
-                ? VideoPlayer(_controller)
+            width: 160,
+            height: 150, // 👈 fixed compact size (same as image)
+            child: _controller?.value.isInitialized ?? false
+                ? FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: _controller!.value.size.width,
+                height: _controller!.value.size.height,
+                child: VideoPlayer(_controller!),
+              ),
+            )
                 : Container(color: Colors.black12),
           ),
         ),

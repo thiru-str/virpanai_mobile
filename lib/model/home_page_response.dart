@@ -37,6 +37,7 @@ class Content {
   String? layoutTitle;
   String? layoutSubTitle;
   String? layoutBannerImage;
+  String? layoutSlideTimeInterval;
   String? layoutBgColor;
   String? layoutRedirectTitle;
   String? layoutRedirect;
@@ -50,6 +51,7 @@ class Content {
     this.layoutTitle,
     this.layoutSubTitle,
     this.layoutBannerImage,
+    this.layoutSlideTimeInterval,
     this.layoutBgColor,
     this.layoutRedirectTitle,
     this.layoutRedirect,
@@ -64,6 +66,7 @@ class Content {
     layoutTitle: json["layout_title"],
     layoutSubTitle: json["layout_sub_title"],
     layoutBannerImage: json["layout_banner_image"],
+    layoutSlideTimeInterval: json["layout_slide_time_interval"],
     layoutBgColor: json["layout_bg_color"],
     layoutRedirectTitle: json["layout_redirect_title"],
     layoutRedirect: json["layout_redirect"],
@@ -79,6 +82,7 @@ class Content {
     "layout_title": layoutTitle,
     "layout_sub_title": layoutSubTitle,
     "layout_banner_image": layoutBannerImage,
+    "layout_slide_time_interval": layoutSlideTimeInterval,
     "layout_bg_color": layoutBgColor,
     "layout_redirect_title": layoutRedirectTitle,
     "layout_redirect": layoutRedirect,
