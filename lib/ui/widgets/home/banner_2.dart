@@ -5,16 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/widgets/item_video_tile.dart';
-import 'package:waioz/utility/app_strings.dart';
 
 import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
-import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
-import '../../product_detail_page.dart';
-import '../../product_page.dart';
 
 class Banner2 extends StatefulWidget {
   final Content content;
@@ -36,7 +31,6 @@ class _Banner2State extends State<Banner2> {
   @override
   void initState() {
     super.initState();
-    // 👇 smaller viewport so next item is partially visible
     _pageController = PageController(viewportFraction: 0.45);
     _startAutoScroll();
   }
@@ -124,7 +118,7 @@ class _Banner2State extends State<Banner2> {
             height: 190,
             child: PageView.builder(
               controller: _pageController,
-              padEnds: false, // 👈 makes left/right edges tighter
+              padEnds: false,
               itemCount: items.length,
               onPageChanged: (i) {
                 setState(() => _currentPage = i);
@@ -136,7 +130,7 @@ class _Banner2State extends State<Banner2> {
                 final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
 
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8.0), // 👈 smaller gap
+                  padding: const EdgeInsets.only(right: 8.0),
                   child: GestureDetector(
                     onTap: () {
                       RedirectUtils.handleContentRedirect(
