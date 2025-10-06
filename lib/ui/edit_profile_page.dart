@@ -5,6 +5,7 @@ import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
@@ -164,6 +165,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
       SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
+      AppUtils.showToast('Profile updated successfully');
       Navigator.pop(context, true);
     } catch (e) {
       setState(() {

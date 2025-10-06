@@ -192,6 +192,8 @@ class _ProductPageState extends State<ProductPage> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () async {
+                      debugPrint('min price filter ${minPrice}');
+                      debugPrint('max Price filter ${maxPrice}');
                       final result = await PageRouteUtils.push(
                         context,
                         FilterPage(
@@ -216,6 +218,8 @@ class _ProductPageState extends State<ProductPage> {
                         minPrice = data['minPrice'];
                         maxPrice = data['maxPrice'];
                         sortBy = data['sortBy'];
+                        debugPrint('min price product ${minPrice}');
+                        debugPrint('max Price product ${maxPrice}');
                         selectedSection = data['selectedSection'] ??selectedSection;
                         final categoryIds = selectedCategoriesList.isNotEmpty
                             ? selectedCategoriesList.join(',')

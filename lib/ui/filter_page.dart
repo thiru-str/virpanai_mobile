@@ -387,6 +387,12 @@ class _FilterPageState extends State<FilterPage> {
         children: [
           _buildBottomButton(AppStrings.apply, AppColors.primary, () {
             debugPrint('sort by ${sortBy}');
+            if (minPrice == null && minPriceController.text.isNotEmpty) {
+              minPrice = double.tryParse(minPriceController.text);
+            }
+            if (maxPrice == null && maxPriceController.text.isNotEmpty) {
+              maxPrice = double.tryParse(maxPriceController.text);
+            }
             Navigator.pop(context, {
               'selectedCollections': selectedCollections.toList(),
               'selectedCategories': selectedCategories.toList(),

@@ -279,7 +279,7 @@ class _SettingsPageState extends State<SettingsPage> {
             await SharedPreferencesUtil().clear();
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
-                  context, skipLogin ? const BottomNavPage() : const PhoneNumberPage());
+                  context, skipLogin ? const BottomNavPage() : WelcomePage());
             }
           },
         );

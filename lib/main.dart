@@ -60,7 +60,7 @@ Future<void> main() async {
   AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
 
-  runApp(HomeScreen(skipLogin: false,publicDetailsResponse: publicDetailsResponse,));
+  runApp(HomeScreen(skipLogin: skipLogin,publicDetailsResponse: publicDetailsResponse,));
   Future.delayed(Duration.zero, () {
     AppLinkHelper.init();
   });

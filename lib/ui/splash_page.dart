@@ -186,7 +186,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   void _navigateToHome() async {
     String? token = await SharedPreferencesUtil().getString('token');
     Widget nextPage = token == null
-        ? widget.skipLogin ? const BottomNavPage() : const PhoneNumberPage()
+        ? widget.skipLogin ? const BottomNavPage() : WelcomePage()
         : const BottomNavPage();
 
     if (mounted) {
