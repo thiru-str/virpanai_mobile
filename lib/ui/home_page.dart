@@ -106,9 +106,8 @@ class _HomePageState extends State<HomePage> {
           headerType: appHeader,
           title: headerTitle,
           cartCount: cartItems ?? 0,
-          onBackTap: () => Navigator.pop(context),
           onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-          onSearchTap: () => PageRouteUtils.pushWithFade(
+          onSearchClick: () => PageRouteUtils.pushWithFade(
             context,
             const ProductPage(),
           ),
