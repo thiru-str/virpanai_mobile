@@ -167,7 +167,7 @@ class ProductCard extends StatelessWidget {
                   Text(
                     _fmt(calc ?? orig ?? 0), // show calc, else original
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
                     ),
@@ -178,7 +178,7 @@ class ProductCard extends StatelessWidget {
                       _fmt(orig),
                       style: FontUtils.secondaryFontStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
                       ),
