@@ -14,121 +14,133 @@ class OrderPlacedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Image/Illustration
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.4, // Adjust image height
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(AppAssets.place_order), // Replace with your image asset
-                    fit: BoxFit.contain,
+    return PopScope(
+      canPop: false, // Disable default back button
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        if (Navigator.of(context).canPop()) {
+          Navigator.pop(context); // Normal back navigation
+        } else {
+          // Redirect to home when no backstack exists
+          PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.primary,
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Image/Illustration
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.4, // Adjust image height
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(AppAssets.place_order), // Replace with your image asset
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // White Container with Rounded Corners
-            Container(
-              width: double.infinity,
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height * 0.5, // Ensure this container fills the space
-              ),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+              // White Container with Rounded Corners
+              Container(
+                width: double.infinity,
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height * 0.5, // Ensure this container fills the space
+                ),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Order Placed Title
+                    const SizedBox(height: 40),
+                    Text(
+                      AppStrings.order_placed_success,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 28, // Adjusted font size for responsiveness
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Subtext
+                    Text(
+                      AppStrings.email_confirmation,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 14, // Adjusted font size
+                        color: AppColors.textColor50,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Handle button tap
+                          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary, // Button color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(double.infinity, 60),
+                        ),
+                        child: Text(
+                          AppStrings.see_more_product,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Handle button tap
+                          PageRouteUtils.pushAndRemoveUntil(context, OrderDetailItemPage(orderId: orderId,));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary, // Button color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(double.infinity, 60),
+                        ),
+                        child: Text(
+                          'View details',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Order Placed Title
-                  const SizedBox(height: 40),
-                  Text(
-                    AppStrings.order_placed_success,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 28, // Adjusted font size for responsiveness
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 25),
-
-                  // Subtext
-                  Text(
-                    AppStrings.email_confirmation,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 14, // Adjusted font size
-                      color: AppColors.textColor50,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Handle button tap
-                        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary, // Button color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        minimumSize: const Size(double.infinity, 60),
-                      ),
-                      child: Text(
-                        AppStrings.see_more_product,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Handle button tap
-                        PageRouteUtils.pushAndRemoveUntil(context, OrderDetailItemPage(orderId: orderId,));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary, // Button color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        minimumSize: const Size(double.infinity, 60),
-                      ),
-                      child: Text(
-                        'View details',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
