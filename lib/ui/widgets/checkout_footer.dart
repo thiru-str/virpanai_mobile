@@ -153,7 +153,7 @@ class CheckoutFooter extends StatelessWidget {
                   key: const ValueKey("text"),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                     height: 1.3,

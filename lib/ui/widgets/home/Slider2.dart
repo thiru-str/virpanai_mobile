@@ -111,22 +111,23 @@ class _Slider2Card extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: 90,
-        height: 120,
+      child: Container(
+        width: 90, // fixed width for horizontal list
+        margin: const EdgeInsets.only(bottom: 4),
         child: Stack(
           alignment: Alignment.topCenter,
+          clipBehavior: Clip.none,
           children: [
-            // Card with image + title
-            Positioned(
-              top: 10,
-              left: 0,
-              right: 0,
+            // 🔹 Card content (image + title)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  // ✅ Fixed image section
                   Container(
                     width: 90,
-                    height: 90,
+                    height: 90, // fixed height so all stay in same line
                     decoration: BoxDecoration(
                       color: AppColors.secondary.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(16),
@@ -143,43 +144,51 @@ class _Slider2Card extends StatelessWidget {
                           : const ImageFallbackWidget(h: 80),
                     ),
                   ),
+
+                  // ✅ Title text (variable height but won’t affect image alignment)
                   const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-                      layoutData.title ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: FontUtils.primaryFontStyle(fontSize: 12),
+                  SizedBox(
+                    height: 32, // 👈 fixes 2-line text zone (consistent height)
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        layoutData.title ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: FontUtils.primaryFontStyle(fontSize: 12),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Discount badge
+            // 🔹 Discount badge floating above
             if (_hasDiscount)
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey.shade800,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 3,
-                      offset: const Offset(0, 2),
+              Positioned(
+                top: 0,
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey.shade800,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '${layoutData.prices?.discountPercentage ?? ''} OFF',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
-                child: Text(
-                  '${layoutData.prices?.discountPercentage ?? ''} OFF',
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 10,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -187,6 +196,8 @@ class _Slider2Card extends StatelessWidget {
         ),
       ),
     );
+
+
   }
 }
 

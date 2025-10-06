@@ -21,6 +21,7 @@ class Grid2 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 🔹 Title & redirect section
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
@@ -35,22 +36,19 @@ class Grid2 extends StatelessWidget {
                     color: AppColors.textColor,
                   ),
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 2, // Allow up to 2 lines for the title
+                  maxLines: 2,
                 ),
               ),
-              const SizedBox(width: 4), // Add some spacing between title and redirect
-              Visibility(
-                visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                child: GestureDetector(
+              if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                GestureDetector(
                   onTap: () {
-                    // Handle section-level redirection if needed
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
                       redirectData: content.redirectData!,
                     );
                   },
                   child: Row(
-                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         content.layoutRedirectTitle!,
@@ -64,64 +62,91 @@ class Grid2 extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
             ],
           ),
         ),
+
         const SizedBox(height: 16),
+
+        // 🔹 Responsive Masonry Grid
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: MasonryGridView.count(
-            crossAxisCount: 5,
-            mainAxisSpacing: 16,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final layoutData = items[index];
-              return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content.layoutOption!,
-                      layoutData: layoutData,
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: CachedNetworkImage(
-                          imageUrl: layoutData.image??'',
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) => _fallbackWidget(),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final isSmallScreen = screenWidth < 360;
+
+              // Dynamically adjust grid spacing & columns
+              final crossAxisCount = isSmallScreen ? 4 : 5;
+              final mainAxisSpacing = isSmallScreen ? 12.0 : 16.0;
+              final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
+
+              return MasonryGridView.count(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: mainAxisSpacing,
+                crossAxisSpacing: crossAxisSpacing,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final layoutData = items[index];
+
+                  return GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption!,
+                        layoutData: layoutData,
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ✅ Fixed image area (keeps row alignment consistent)
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: layoutData.image ?? '',
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) =>
+                                  _fallbackWidget(),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 60,
-                        height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
-                        child: Align(
-                          alignment: Alignment.topCenter,
+
+                        // ✅ Dynamic title area (adapts to screen & wraps safely)
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: Text(
                             layoutData.title ?? '',
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: FontUtils.primaryFontStyle(fontSize: 11),
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: isSmallScreen ? 10.5 : 11,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
+                      ],
+                    ),
+                  );
+                },
               );
             },
           ),
         ),
       ],
     );
+
   }
 
 
