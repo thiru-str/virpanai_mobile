@@ -619,8 +619,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
           context, paymentProviderId, cartResponse!);
       setState(() {
         pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
-        orderId = extractOrderId(response);
-        clientSecret = extractClientSecret(response);
+        orderId = response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
+        clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret??'';
       });
     } catch (e) {
       print(e);
@@ -671,6 +671,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void placeOrder(String paymentProviderId) async {
+    debugPrint('payment provider ${paymentProviderId}');
+    debugPrint('payment secret ${clientSecret}');
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         makeRazorPayCall(orderId!);
