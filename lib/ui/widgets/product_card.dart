@@ -167,7 +167,7 @@ class ProductCard extends StatelessWidget {
                   Text(
                     _fmt(calc ?? orig ?? 0), // show calc, else original
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
                     ),
