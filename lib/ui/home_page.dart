@@ -10,6 +10,7 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
+import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
@@ -101,15 +102,17 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: appHeader == "header-2"
-            ? CommonHeaderAppBar(
-                title: AppStrings.home,
-                leading: false,
-                onBackTap: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            : null,
+        appBar: CombinedHeaderAppBar(
+          headerType: appHeader,
+          title: headerTitle,
+          cartCount: cartItems ?? 0,
+          onBackTap: () => Navigator.pop(context),
+          onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+          onSearchTap: () => PageRouteUtils.pushWithFade(
+            context,
+            const ProductPage(),
+          ),
+        ),
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Stack(
@@ -130,26 +133,26 @@ class _HomePageState extends State<HomePage> {
                         physics: AlwaysScrollableScrollPhysics(),
                         child: Column(
                           children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: CommonHeader(
-                                headerType: appHeader,
-                                title: headerTitle,
-                                cartCount: cartItems ?? 0,
-                                onCartClick: () {
-                                  eventBus.fire(TabSwitchEvent(2));
-                                },
-                                onSearchClick: () {
-                                  PageRouteUtils.pushWithFade(
-                                      context,
-                                      ProductPage(
-                                        categoryId: '',
-                                      ));
-                                },
-                                addressType: addressType,
-                              ),
-                            ),
+                            // Padding(
+                            //   padding:
+                            //       const EdgeInsets.symmetric(horizontal: 16.0),
+                            //   child: CommonHeader(
+                            //     headerType: appHeader,
+                            //     title: headerTitle,
+                            //     cartCount: cartItems ?? 0,
+                            //     onCartClick: () {
+                            //       eventBus.fire(TabSwitchEvent(2));
+                            //     },
+                            //     onSearchClick: () {
+                            //       PageRouteUtils.pushWithFade(
+                            //           context,
+                            //           ProductPage(
+                            //             categoryId: '',
+                            //           ));
+                            //     },
+                            //     addressType: addressType,
+                            //   ),
+                            // ),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 0.0, vertical: 16.0),

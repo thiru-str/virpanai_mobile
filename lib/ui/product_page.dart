@@ -26,7 +26,7 @@ class ProductPage extends StatefulWidget {
   final bool isFromBrand;
 
   const ProductPage(
-      {super.key, required this.categoryId, this.isFromBrand = false,this.collectionId = '',this.tagId = ''});
+      {super.key, this.categoryId = '', this.isFromBrand = false,this.collectionId = '',this.tagId = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
