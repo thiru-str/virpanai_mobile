@@ -702,7 +702,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
     } catch (e) {
       setState(() {
-        cartLoading = true;
+        cartLoading = false;
       });
       print(e);
     }
