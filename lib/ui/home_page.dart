@@ -132,26 +132,6 @@ class _HomePageState extends State<HomePage> {
                         physics: AlwaysScrollableScrollPhysics(),
                         child: Column(
                           children: [
-                            // Padding(
-                            //   padding:
-                            //       const EdgeInsets.symmetric(horizontal: 16.0),
-                            //   child: CommonHeader(
-                            //     headerType: appHeader,
-                            //     title: headerTitle,
-                            //     cartCount: cartItems ?? 0,
-                            //     onCartClick: () {
-                            //       eventBus.fire(TabSwitchEvent(2));
-                            //     },
-                            //     onSearchClick: () {
-                            //       PageRouteUtils.pushWithFade(
-                            //           context,
-                            //           ProductPage(
-                            //             categoryId: '',
-                            //           ));
-                            //     },
-                            //     addressType: addressType,
-                            //   ),
-                            // ),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 0.0, vertical: 16.0),
