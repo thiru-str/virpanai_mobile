@@ -26,6 +26,7 @@ class Item3 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔹 Title + redirect
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
@@ -40,25 +41,23 @@ class Item3 extends StatelessWidget {
                       color: AppColors.textColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
+                    maxLines: 2,
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
-                Visibility(
-                  visible: (content?.layoutRedirectTitle ?? '').isNotEmpty,
-                  child: GestureDetector(
+                const SizedBox(width: 4),
+                if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
+                  GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content!.redirectData!,
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          content?.layoutRedirectTitle??'',
+                          content?.layoutRedirectTitle ?? '',
                           style: FontUtils.primaryFontStyle(
                             fontSize: 14,
                             color: AppColors.textColor,
@@ -68,32 +67,90 @@ class Item3 extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
+
+          // 🔹 Horizontal Scroll
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
               child: Row(
-                children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item3Card(
-                      layoutData: content.layoutData![i],
-                      onTap: () {
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption ?? "",
-                          layoutData: content.layoutData![i],
-                        );
-                      },
-                    ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
-                ],
+                children: List.generate(
+                  content?.layoutData?.length ?? 0,
+                      (i) {
+                    final layoutData = content!.layoutData![i];
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        right: i == content.layoutData!.length - 1 ? 0 : 16,
+                      ),
+                      child: _AlignedItemCard(layoutData: layoutData),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+  }
+}
+
+class _AlignedItemCard extends StatelessWidget {
+  final LayoutDatum layoutData;
+  const _AlignedItemCard({super.key, required this.layoutData});
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+    final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 360;
+
+    return Container(
+      width: isSmallScreen ? 64 : 72,
+      margin: const EdgeInsets.only(bottom: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ✅ FIXED image zone ensures all aligned perfectly
+          SizedBox(
+            width: isSmallScreen ? 64 : 72,
+            height: isSmallScreen ? 64 : 72,
+            child: ClipOval(
+              child: Container(
+                color: AppColors.secondary.withOpacity(0.15),
+                child: (imageUrl.isNotEmpty)
+                    ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) =>
+                      ImageFallbackWidget(h: 70, w: 70),
+                )
+                    : ImageFallbackWidget(h: 70, w: 70),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // ✅ Flexible text zone (auto height but doesn’t affect image alignment)
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: isSmallScreen ? 32 : 36, // reserve space for 2 lines
+              maxHeight: isSmallScreen ? 40 : 44, // allows wrapping without clipping
+            ),
+            child: Text(
+              layoutData.title ?? '',
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: FontUtils.primaryFontStyle(
+                fontSize: isSmallScreen ? 11 : 12,
               ),
             ),
           ),
@@ -103,60 +160,5 @@ class Item3 extends StatelessWidget {
   }
 }
 
-class _Item3Card extends StatelessWidget {
-  final LayoutDatum layoutData;
-  final VoidCallback onTap;
 
-  const _Item3Card({
-    Key? key,
-    required this.layoutData,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final imageUrl = layoutData.image ?? '';
-
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: 70,
-        child: Column(
-          children: [
-            // Circle image
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                shape: BoxShape.circle,
-              ),
-              child: ClipOval(
-                child: (imageUrl.isEmpty)
-                    ? const ImageFallbackWidget(h: 70, w: 70)
-                    : CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) =>
-                  const ImageFallbackWidget(h: 70, w: 70),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Title text
-            Text(
-              layoutData.title ?? '',
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 

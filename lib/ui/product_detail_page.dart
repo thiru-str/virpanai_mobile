@@ -564,9 +564,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         const SizedBox(height: 10),
         Visibility(
           visible:
-              (product?.metadata?['additional_description'] ?? "").isNotEmpty,
+              product?.metadata?.additionalDescription?.isNotEmpty == true,
           child: CommonHtmlWidget(
-              htmlContent: product?.metadata?['additional_description'] ?? ""),
+              htmlContent: product?.metadata?.additionalDescription??''),
         ),
         Visibility(
           visible: product?.metadata == null,

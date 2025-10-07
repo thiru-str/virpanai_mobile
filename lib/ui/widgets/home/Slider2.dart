@@ -21,6 +21,7 @@ class Slider2 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 🔹 Title + Redirect
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
@@ -28,7 +29,7 @@ class Slider2 extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  content?.layoutTitle ?? '',
+                  content.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -36,19 +37,18 @@ class Slider2 extends StatelessWidget {
                   ),
                 ),
               ),
-              if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
+              if ((content.layoutRedirectTitle ?? '').isNotEmpty)
                 GestureDetector(
                   onTap: () {
-                    // Handle redirection
                     RedirectUtils.handleContentRedirectViewAll(
                       context: context,
-                      redirectData: content!.redirectData!,
+                      redirectData: content.redirectData!,
                     );
                   },
                   child: Row(
                     children: [
                       Text(
-                        content?.layoutRedirectTitle ?? "",
+                        content.layoutRedirectTitle ?? "",
                         style: FontUtils.primaryFontStyle(
                           fontSize: 14,
                           color: AppColors.textColor,
@@ -62,11 +62,15 @@ class Slider2 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
+
+        // 🔹 Horizontal scrollable product slider
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start, // ✅ ensures image alignment
               children: [
                 for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
                   _Slider2Card(
@@ -80,7 +84,7 @@ class Slider2 extends StatelessWidget {
                     },
                   ),
                   if (i != content.layoutData!.length - 1)
-                    const SizedBox(width: 12), // spacing between items
+                    const SizedBox(width: 12),
                 ],
               ],
             ),
@@ -108,26 +112,27 @@ class _Slider2Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = layoutData.image ?? '';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 90, // fixed width for horizontal list
+        width: isSmallScreen ? 80 : 90,
         margin: const EdgeInsets.only(bottom: 4),
         child: Stack(
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
           children: [
-            // 🔹 Card content (image + title)
             Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ✅ Fixed image section
+                  // ✅ Fixed image section (all aligned)
                   Container(
-                    width: 90,
-                    height: 90, // fixed height so all stay in same line
+                    width: isSmallScreen ? 80 : 90,
+                    height: isSmallScreen ? 80 : 90,
                     decoration: BoxDecoration(
                       color: AppColors.secondary.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(16),
@@ -145,18 +150,24 @@ class _Slider2Card extends StatelessWidget {
                     ),
                   ),
 
-                  // ✅ Title text (variable height but won’t affect image alignment)
                   const SizedBox(height: 6),
-                  SizedBox(
-                    height: 32, // 👈 fixes 2-line text zone (consistent height)
+
+                  // ✅ Text section (auto height but doesn’t affect image line)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: isSmallScreen ? 32 : 34,
+                      maxHeight: isSmallScreen ? 40 : 44,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: Text(
                         layoutData.title ?? '',
+                        textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: FontUtils.primaryFontStyle(fontSize: 12),
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: isSmallScreen ? 11 : 12,
+                        ),
                       ),
                     ),
                   ),
@@ -164,7 +175,7 @@ class _Slider2Card extends StatelessWidget {
               ),
             ),
 
-            // 🔹 Discount badge floating above
+            // ✅ Floating discount badge (stays above)
             if (_hasDiscount)
               Positioned(
                 top: 0,
@@ -196,8 +207,7 @@ class _Slider2Card extends StatelessWidget {
         ),
       ),
     );
-
-
   }
 }
+
 

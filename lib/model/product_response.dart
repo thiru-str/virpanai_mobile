@@ -57,7 +57,7 @@ class Product {
   dynamic material;
   DateTime? createdAt;
   DateTime? updatedAt;
-  dynamic? metadata;
+  Metadata? metadata;
   dynamic type;
   Tion? collection;
   List<ProductOption>? options;
@@ -122,7 +122,7 @@ class Product {
     material: json["material"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    metadata: json["metadata"],
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
     type: json["type"],
     collection: json["collection"] == null ? null : Tion.fromJson(json["collection"]),
     options: json["options"] == null
@@ -158,7 +158,7 @@ class Product {
     "material": material,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
-    "metadata": metadata,
+    "metadata": metadata?.toJson(),
     "type": type,
     "collection": collection?.toJson(),
     "options": options == null
@@ -169,6 +169,46 @@ class Product {
     "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
     "product_review": productReview == null ? [] : List<dynamic>.from(productReview!.map((x) => x.toJson())),
     "product_wishlist": productWishlist?.toJson(),
+  };
+}
+
+class Metadata {
+  ReviewSummary? reviewSummary;
+  String? additionalDescription;
+
+  Metadata({
+    this.reviewSummary,
+    this.additionalDescription,
+  });
+
+  factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    reviewSummary: json["review_summary"] == null ? null : ReviewSummary.fromJson(json["review_summary"]),
+    additionalDescription: json["additional_description"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "review_summary": reviewSummary?.toJson(),
+    "additional_description": additionalDescription,
+  };
+}
+
+class ReviewSummary {
+  String? totalReviews;
+  String? averageRating;
+
+  ReviewSummary({
+    this.totalReviews,
+    this.averageRating,
+  });
+
+  factory ReviewSummary.fromJson(Map<String, dynamic> json) => ReviewSummary(
+    totalReviews: json["total_reviews"],
+    averageRating: json["average_rating"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "total_reviews": totalReviews,
+    "average_rating": averageRating,
   };
 }
 

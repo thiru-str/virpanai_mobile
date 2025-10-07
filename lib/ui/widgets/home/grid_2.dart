@@ -21,7 +21,7 @@ class Grid2 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔹 Title & redirect section
+        // 🔹 Title & Redirect Section
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
@@ -65,7 +65,6 @@ class Grid2 extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: 16),
 
         // 🔹 Responsive Masonry Grid
@@ -78,7 +77,7 @@ class Grid2 extends StatelessWidget {
 
               // Dynamically adjust grid spacing & columns
               final crossAxisCount = isSmallScreen ? 4 : 5;
-              final mainAxisSpacing = isSmallScreen ? 12.0 : 16.0;
+              final mainAxisSpacing = isSmallScreen ? 10.0 : 14.0;
               final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
 
               return MasonryGridView.count(
@@ -90,8 +89,9 @@ class Grid2 extends StatelessWidget {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final layoutData = items[index];
-
-                  return GestureDetector(
+                  return _Grid2Card(
+                    layoutData: layoutData,
+                    isSmallScreen: isSmallScreen,
                     onTap: () {
                       RedirectUtils.handleContentRedirect(
                         context: context,
@@ -99,45 +99,6 @@ class Grid2 extends StatelessWidget {
                         layoutData: layoutData,
                       );
                     },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // ✅ Fixed image area (keeps row alignment consistent)
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: layoutData.image ?? '',
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) =>
-                                  _fallbackWidget(),
-                            ),
-                          ),
-                        ),
-
-                        // ✅ Dynamic title area (adapts to screen & wraps safely)
-                        const SizedBox(height: 6),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: Text(
-                            layoutData.title ?? '',
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: isSmallScreen ? 10.5 : 11,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   );
                 },
               );
@@ -146,10 +107,77 @@ class Grid2 extends StatelessWidget {
         ),
       ],
     );
-
   }
+}
 
+class _Grid2Card extends StatelessWidget {
+  final LayoutDatum layoutData;
+  final bool isSmallScreen;
+  final VoidCallback onTap;
 
+  const _Grid2Card({
+    Key? key,
+    required this.layoutData,
+    required this.isSmallScreen,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ✅ Fixed image height (ensures all rows align properly)
+          Container(
+            width: isSmallScreen ? 56 : 60,
+            height: isSmallScreen ? 56 : 60,
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: (imageUrl.isNotEmpty)
+                  ? CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                errorWidget: (context, url, error) =>
+                    _fallbackWidget(),
+              )
+                  : _fallbackWidget(),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // ✅ Responsive title (auto height, no clip, keeps grid aligned)
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: isSmallScreen ? 30 : 34,
+              maxHeight: isSmallScreen ? 40 : 44, // 2 lines max
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                layoutData.title ?? '',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: isSmallScreen ? 10.5 : 11,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _fallbackWidget() {
     return Container(
@@ -157,9 +185,10 @@ class Grid2 extends StatelessWidget {
       alignment: Alignment.center,
       child: SvgPicture.asset(
         AppAssets.ic_no_image,
-        width: 48,
-        height: 48,
+        width: 32,
+        height: 32,
       ),
     );
   }
 }
+
