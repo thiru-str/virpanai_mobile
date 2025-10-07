@@ -203,7 +203,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                       _buildShippingDetailsCard(), // Shipping details card
                       const SizedBox(height: 20),
                       Visibility(
-                        visible: false,
+                        visible: (order?.paymentStatus ?? '') == 'pending',
                         child: GestureDetector(
                           onTap: () {
                             _showCancellation(context, order?.id ?? '');
@@ -219,7 +219,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         ),
                       ),
                       Visibility(
-                        visible: (order?.paymentStatus ?? '') == 'Delivered',
+                        visible: (order?.paymentStatus ?? '') == 'delivered',
                         child: ProfileItemWidget(
                           title: 'Download Invoice',
                           onTap: () {

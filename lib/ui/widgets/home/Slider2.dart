@@ -183,8 +183,8 @@ class _Slider2Card extends StatelessWidget {
                   padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.blueGrey.shade800,
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -194,7 +194,7 @@ class _Slider2Card extends StatelessWidget {
                     ],
                   ),
                   child: Text(
-                    '${layoutData.prices?.discountPercentage ?? ''} OFF',
+                    layoutData.prices?.discountPercentage ?? '',
                     style: FontUtils.primaryFontStyle(
                       fontSize: 10,
                       color: Colors.white,

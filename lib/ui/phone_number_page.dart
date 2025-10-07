@@ -61,12 +61,12 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
               Text(
                 AppStrings.enter_mob_no,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               // Form for phone input
               Form(
                 key: _formKey,
@@ -77,7 +77,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     Text(
                       AppStrings.mobile_number,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[700]!,
                       ),
