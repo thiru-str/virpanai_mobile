@@ -348,7 +348,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               ),
               child: OrderDetailItemCard(
                 showReturnButton: itemDetail.isReturnable ?? false,
-                showRating: true,
+                showRating: itemDetail.status == 'delivered',
                 imageUrl: itemDetail.thumbnail ?? '',
                 variant: itemDetail.variantTitle ?? '',
                 productName:

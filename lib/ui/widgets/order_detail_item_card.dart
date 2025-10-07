@@ -114,13 +114,13 @@ class OrderDetailItemCard extends StatelessWidget {
               ),
 
               // Divider
-              if (showRating) ...[
+              if (showRating || showReturnButton) ...[
                 const SizedBox(height: 8),
                 Divider(color: Colors.grey.shade300, thickness: 1),
               ],
 
               // 🔹 Rating & Return Button Section
-              if (showRating) ...[
+              if (showRating || showReturnButton) ...[
                 const SizedBox(height: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +128,7 @@ class OrderDetailItemCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
+                         showRating? Column(
                           children: [
                             RatingBar.builder(
                               initialRating: initialRating,
@@ -161,7 +161,7 @@ class OrderDetailItemCard extends StatelessWidget {
                               ),
                             ),
                           ],
-                        ),
+                        ):const SizedBox(),
                         if (showReturnButton)
                           ElevatedButton(
                             onPressed: onReturnTap,

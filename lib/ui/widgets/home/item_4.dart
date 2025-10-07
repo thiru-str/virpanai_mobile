@@ -181,7 +181,7 @@ class _Item4Card extends StatelessWidget {
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textColor,
                 ),
@@ -200,22 +200,26 @@ class _Item4Card extends StatelessWidget {
                     CurrencyUtil.appendCurrency(
                         layoutData.prices?.sellingPrice ?? '0'),
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textColor,
                     ),
                   ),
                   if (_hasDiscount)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        CurrencyUtil.appendCurrency(
-                            layoutData.prices?.originalPrice ?? '0'),
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textColor.withOpacity(0.6),
-                          decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          CurrencyUtil.appendCurrency(
+                              layoutData.prices?.originalPrice ?? '0'),
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textColor.withOpacity(0.6),
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
                       ),
                     ),
