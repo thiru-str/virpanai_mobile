@@ -133,15 +133,13 @@ class _HomePageState extends State<HomePage> {
                       child: homePageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
                         eventBus.fire(TabSwitchEvent(1));
                       })):SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         child: Column(
                           children: [
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 0.0, vertical: 16.0),
-                              child: ListView.separated(
-                                separatorBuilder: (context, index) =>
-                                    const SizedBox(height: 16),
+                              child: ListView.builder(
                                 scrollDirection: Axis.vertical,
                                 itemCount:
                                     homePageResponse?.content?.length ?? 0,
@@ -191,41 +189,86 @@ class _HomePageState extends State<HomePage> {
     print('item ${homePageContent?.layoutName}');
     switch (homePageContent?.layoutName) {
       case "item1":
-        return Item1(content: homePageContent);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item1(content: homePageContent),
+        );
       case "Slider2":
-        return Slider2(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Slider2(content: homePageContent!);
       case "item2":
-        return Item2(content: homePageContent);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item2(content: homePageContent),
+        );
       case "item3":
-        return Item3(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item3(content: homePageContent!),
+        );
       case "item4":
-        return Item4(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item4(content: homePageContent!),
+        );
       case "item5":
-        return Item5(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item5(content: homePageContent!),
+        );
       case "item6":
-        return Item6(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item6(content: homePageContent!),
+        );
       case "item7":
-        return Item7(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item7(content: homePageContent!),
+        );
       case "item8":
-        return Item8(content: homePageContent);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item8(content: homePageContent),
+        );
       case "Slider3":
-        return Slider3(content: homePageContent);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Slider3(content: homePageContent),
+        );
       case "Grid1":
-        return Grid1(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Grid1(content: homePageContent!),
+        );
       case "Grid2":
-        return Grid2(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Grid2(content: homePageContent!),
+        );
       case "Banner2": // video
-        return Banner2(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Banner2(content: homePageContent!),
+        );
       case "Slider1":
-        return Slider1(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Slider1(content: homePageContent!),
+        );
       case "Banner1":
-        return Banner1(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Banner1(content: homePageContent!),
+        );
       case "item9":
-        return Item9(
-          content: homePageContent!,
-          onCartQtyChanged: (deltaQty, variantId) async {
-            await addCart(deltaQty, variantId); // delta quantity (+1/-1)
-          },
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item9(
+            content: homePageContent!,
+            onCartQtyChanged: (deltaQty, variantId) async {
+              await addCart(deltaQty, variantId);
+            },
+          ),
         );
 
       default:
