@@ -289,7 +289,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     );
   }
 
-  // Method to build the list of orders
   Widget _buildOrdersList() {
     final List<Item> allItems = order?.items ?? [];
 
@@ -305,10 +304,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     final bool hasReturned = returnedItems.isNotEmpty;
     final bool hasDelivered = deliveredItems.isNotEmpty;
 
-    // ✅ Logic:
-    // Tab 0 → show only Delivered
-    // Tab 1 → show only Returned
-    // If only one type exists → show that list
+
     final List<Item> visibleItems = !hasReturned
         ? deliveredItems
         : !hasDelivered
@@ -330,7 +326,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔹 Tab Switcher shown only if both lists exist
         if (hasDelivered && hasReturned) ...[
           OrderTabSwitcher(
             initialIndex: _currentTab,
@@ -341,7 +336,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           const SizedBox(height: 16),
         ],
 
-        // 🔹 Order List
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
