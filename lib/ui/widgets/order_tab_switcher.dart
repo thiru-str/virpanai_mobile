@@ -48,7 +48,7 @@ class _OrderTabSwitcherState extends State<OrderTabSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = ["Delivered Orders", "Return Orders"];
+    final tabs = ["Current Orders", "Return Orders"];
 
     return Stack(
       children: [
