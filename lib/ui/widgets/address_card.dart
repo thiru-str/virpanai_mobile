@@ -28,8 +28,9 @@ class AddressCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
       padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: AppColors.primary)
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

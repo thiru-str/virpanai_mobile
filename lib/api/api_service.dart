@@ -42,6 +42,7 @@ import '../model/cancel_order_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../model/tags_response.dart';
+import '../ui/bottom_nav_page.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -235,8 +236,11 @@ class ApiService {
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
 
-    // Navigate to the login screen and clear all navigation history
-    PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+    bool skipLogin =
+        await SharedPreferencesUtil().getBool('skip_login') ?? false;
+
+      PageRouteUtils.pushAndRemoveUntil(
+          context, skipLogin ? const BottomNavPage() : WelcomePage());
   }
 
   Future<SendOtpResponse> sendOtp(BuildContext context, String countryCode,String phone) async {

@@ -17,11 +17,11 @@ class ProfileItemWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 56,
+        height: 50,
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.primary,width: 1.5),
+          border: Border.all(color: AppColors.primary,width: 1),
           borderRadius: BorderRadius.circular(12.0),
         ),
         child: Row(

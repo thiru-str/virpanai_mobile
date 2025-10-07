@@ -223,17 +223,21 @@ class _Item5Card extends StatelessWidget {
                     ),
                   ),
                   if (_hasDiscount)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        CurrencyUtil.appendCurrency(
-                          layoutData.prices?.originalPrice ?? '0',
-                        ),
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textColor.withOpacity(0.6),
-                          decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          CurrencyUtil.appendCurrency(
+                            layoutData.prices?.originalPrice ?? '0',
+                          ),
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textColor.withOpacity(0.6),
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
                       ),
                     ),

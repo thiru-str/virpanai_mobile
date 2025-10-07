@@ -30,8 +30,9 @@ class OrderWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.secondary,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.secondary)
           ),
           child: IntrinsicHeight( // Ensures the Row matches the content height for vertical alignment
             child: Row(
@@ -57,7 +58,7 @@ class OrderWidget extends StatelessWidget {
                       Text(
                         '${AppStrings.order} #$orderId',
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                         ),
@@ -71,7 +72,7 @@ class OrderWidget extends StatelessWidget {
                           Text(
                             '$itemCount items',
                             style: FontUtils.primaryFontStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               color: Colors.grey[600]!,
                             ),
                           ),
@@ -82,7 +83,7 @@ class OrderWidget extends StatelessWidget {
                                 child: Text(
                                   CurrencyUtil.appendCurrency(itemPrice.toStringAsFixed(2)),
                                   style: FontUtils.primaryFontStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
@@ -104,7 +105,7 @@ class OrderWidget extends StatelessWidget {
                       Text(
                         'Placed at ${DateFormat('dd MMM yyyy, hh:mm a').format(createdAt)}',
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: Colors.grey[600]!,
                         ),
                       ),

@@ -103,7 +103,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.primary, width: 1.5),
+                    border: Border.all(color: AppColors.primary, width: 1),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Row(
@@ -139,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       TextButton(
                         onPressed: () async {
                           final result = await PageRouteUtils.pushWithSlide(
-                              context, EditProfilePage());
+                              context, const EditProfilePage());
                           if (result == true) {
                             setState(() {
                               getCustomerInfo();
@@ -273,10 +273,10 @@ class _SettingsPageState extends State<SettingsPage> {
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
           onTapOk: () async {
-            bool skipLogin =
-                await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
                   context, skipLogin ? const BottomNavPage() : WelcomePage());

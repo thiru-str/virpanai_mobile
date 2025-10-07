@@ -77,12 +77,11 @@ class Grid2 extends StatelessWidget {
 
               // Dynamically adjust grid spacing & columns
               final crossAxisCount = isSmallScreen ? 4 : 5;
-              final mainAxisSpacing = isSmallScreen ? 10.0 : 14.0;
               final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
 
               return MasonryGridView.count(
                 crossAxisCount: crossAxisCount,
-                mainAxisSpacing: mainAxisSpacing,
+                mainAxisSpacing: 10,
                 crossAxisSpacing: crossAxisSpacing,
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
