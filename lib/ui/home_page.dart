@@ -20,6 +20,7 @@ import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
+import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/product_quick_view_sheet.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
@@ -38,6 +39,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
+import '../utility/app_assets.dart';
 import '../utility/app_utils.dart';
 import 'widgets/common_header_app_bar.dart';
 
@@ -128,7 +130,9 @@ class _HomePageState extends State<HomePage> {
                         setState(() => apiLoading = true);
                         await getHomePageApi();
                       },
-                      child: SingleChildScrollView(
+                      child: homePageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
+                        eventBus.fire(TabSwitchEvent(1));
+                      })):SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         child: Column(
                           children: [
