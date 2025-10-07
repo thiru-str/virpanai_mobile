@@ -112,6 +112,5 @@ enum ProductCardType {
   productView2,
   productView3,
   productView4,
-  // future variations can go here
 }
 
