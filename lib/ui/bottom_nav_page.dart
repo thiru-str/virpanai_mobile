@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
+import 'package:waioz/model/return_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
@@ -96,7 +98,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       await Future.wait([
         getCustomerApi(), // Wait for customer API
-        //getHomePageApi() // Wait for home page API
+        getReturnsApi()
       ]);
       setState(() {
         _isLoading = false;
@@ -280,6 +282,19 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       await SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
       await SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
       await SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+    } catch (e) {
+      print("Error fetching home page: $e");
+    }
+  }
+
+  Future<void> getReturnsApi() async {
+    try {
+      final ApiService apiService = ApiService();
+      final response = await apiService.getReturnReasons(context);
+      if(response!=null)
+        {
+          await SharedPreferencesUtil().saveJson('return_reasons', response.returnReasons ?? []);
+        }
     } catch (e) {
       print("Error fetching home page: $e");
     }

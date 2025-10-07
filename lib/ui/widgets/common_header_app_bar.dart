@@ -31,6 +31,7 @@ class CommonHeaderAppBar extends StatelessWidget
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
+      scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
       leading: leading ? GestureDetector(
         onTap: onBackTap,

@@ -35,6 +35,33 @@ class SharedPreferencesUtil {
     await prefs.setString(key, jsonString);
   }
 
+  Future<void> saveJson(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    String jsonString = jsonEncode(value);
+    await prefs.setString(key, jsonString);
+  }
+
+  Future<dynamic> getJson(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(key);
+    if (jsonString == null) return null;
+
+    try {
+      final decoded = jsonDecode(jsonString);
+
+      if (decoded is List) {
+        return decoded;
+      } else if (decoded is Map<String, dynamic>) {
+        return decoded;
+      } else {
+        return decoded;
+      }
+    } catch (e) {
+      print('Error decoding JSON for key $key: $e');
+      return null;
+    }
+  }
+
   // Retrieve data from SharedPreferences
   Future<String?> getString(String key) async {
     final prefs = await SharedPreferences.getInstance();

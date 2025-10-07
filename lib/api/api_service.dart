@@ -8,8 +8,11 @@ import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
+import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/payment_method_response.dart';
 import 'package:waioz/model/related_products_response.dart';
+import 'package:waioz/model/return_response.dart';
+import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
@@ -908,6 +911,32 @@ class ApiService {
     await addToken();
     return _makePostRequest('store/cancel-order/$orderId', null,
             (data) => CancelOrderResponse.fromJson(data),context);
+  }
+
+  Future<OrderDetailResponse> getOrderDetails(BuildContext context,String orderId) async {
+    await addToken();
+    return _makeGetRequest<OrderDetailResponse>(
+      'store/order/details/$orderId',
+      null,
+      null,
+          (json) => OrderDetailResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ReturnResponse> getReturnReasons(BuildContext context) async {
+    return _makeGetRequest<ReturnResponse>(
+      'store/return-reasons',
+      null,
+      null,
+          (json) => ReturnResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ReturnSuccessResponse> processReturn(BuildContext context, String orderId,String cartId,String id,int quantity,String reasonId,String note,String fullFillId) async {
+    return _makePostRequest("store/order/return/$orderId", {"return_item": {"id":id,"quantity":quantity,"reason_id":reasonId,"note":note},"fulfillment_id": fullFillId,"cart_id":cartId},
+            (data) => ReturnSuccessResponse.fromJson(data), context);
   }
 
   Future<void> addToken() async {
