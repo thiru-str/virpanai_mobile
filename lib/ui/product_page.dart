@@ -147,6 +147,7 @@ class _ProductPageState extends State<ProductPage> {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: CommonHeaderAppBar(
           title: AppStrings.product,
           onBackTap: () {
@@ -309,7 +310,7 @@ class _ProductPageState extends State<ProductPage> {
                           );
                         }
                         final product = filteredProducts[index];
-                        return ProductCard4(
+                        return ProductCard(
                           product: product,
                           onTapCard: () {
                             PageRouteUtils.pushWithSlide(

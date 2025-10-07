@@ -44,6 +44,7 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
   await SharedPreferencesUtil().saveBool('google_map_usage', false);
   await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
+  await SharedPreferencesUtil().saveString('product_view', publicDetailsResponse.theme!.productView!);
   bool skipLogin = publicDetailsResponse.storeDetails?.storeMetadata?.skipLogin?? false;
   await SharedPreferencesUtil().saveBool('skip_login', skipLogin);
 

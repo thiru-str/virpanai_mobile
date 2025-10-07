@@ -212,7 +212,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
-          Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey),)
+          Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey,fontSize: 12),)
         ],
       )),
     );

@@ -20,6 +20,7 @@ import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
+import 'package:waioz/ui/widgets/product_view.dart';
 import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
@@ -37,6 +38,7 @@ import '../api/api_service.dart';
 import '../model/product_response.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
+import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -290,7 +292,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 final product = relatedProductsResponse?.products![index];
                 return Padding(
                   padding: const EdgeInsets.only(right: 10), // spacing like separator
-                  child: ProductCard(
+                  child: ProductView(
                     product: product!,
                     onTapCard: () {
                       PageRouteUtils.pushWithSlide(
