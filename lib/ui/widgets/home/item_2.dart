@@ -27,7 +27,7 @@ class _Item2State extends State<Item2> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: SizedBox(
         height: widget.height,
         child: Stack(
