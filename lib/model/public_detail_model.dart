@@ -83,23 +83,27 @@ class StoreDetails {
 class StoreMetadata {
   bool? skipLogin;
   String? versionCheck;
+  String? invoiceUrl;
   int? minimumOrderValue;
 
   StoreMetadata({
     this.skipLogin,
     this.versionCheck,
+    this.invoiceUrl,
     this.minimumOrderValue,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
     skipLogin: json["skip_login"],
     versionCheck: json["version_check"],
+    invoiceUrl: json["invoice_url"],
     minimumOrderValue: json["minimum_order_value"],
   );
 
   Map<String, dynamic> toJson() => {
     "skip_login": skipLogin,
     "version_check": versionCheck,
+    "invoice_url": invoiceUrl,
     "minimum_order_value": minimumOrderValue,
   };
 }

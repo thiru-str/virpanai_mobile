@@ -43,6 +43,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   bool apiLoading = true;
   int _currentTab = 0;
   List<ReturnReason>? returnReasons;
+  String invoiceUrl = "";
+  String token = "";
+
 
 
 
@@ -55,6 +58,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   Future<void> initializePages() async {
     getOrderHistoryAPI();
+    invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url'))??'';
+    token = (await SharedPreferencesUtil().getString('token'))??'';
   }
 
   Future<void> initReturn() async {
@@ -223,7 +228,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         child: ProfileItemWidget(
                           title: 'Download Invoice',
                           onTap: () {
-                            _launchURL('');
+                            _launchURL('$invoiceUrl/${order?.id??''}?token=${token}&isdownload=true');
                           },
                         ),
                       )
