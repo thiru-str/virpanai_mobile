@@ -57,6 +57,8 @@ class Order {
   DateTime? updatedAt;
   num? subtotal;
   num? taxTotal;
+  num? discountSubtotal;
+  num? shippingSubtotal;
   num? version;
   List<Item>? items;
   List<PaymentCollection>? paymentCollections;
@@ -77,6 +79,8 @@ class Order {
     this.updatedAt,
     this.subtotal,
     this.taxTotal,
+    this.discountSubtotal,
+    this.shippingSubtotal,
     this.version,
     this.items,
     this.shippingMethods,
@@ -98,6 +102,8 @@ class Order {
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     subtotal: json["subtotal"],
     taxTotal: json["tax_total"],
+    discountSubtotal: json["discount_subtotal"],
+    shippingSubtotal: json["shipping_subtotal"],
     version: json["version"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
     paymentCollections: json["payment_collections"] == null ? [] : List<PaymentCollection>.from(json["payment_collections"]!.map((x) => PaymentCollection.fromJson(x))),
@@ -119,6 +125,8 @@ class Order {
     "updated_at": updatedAt?.toIso8601String(),
     "subtotal": subtotal,
     "tax_total": taxTotal,
+    "discount_subtotal": discountSubtotal,
+    "shipping_subtotal": shippingSubtotal,
     "version": version,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
     "payment_collections": paymentCollections == null ? [] : List<dynamic>.from(paymentCollections!.map((x) => x.toJson())),

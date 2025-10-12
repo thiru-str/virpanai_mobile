@@ -172,6 +172,18 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                           ),
                         ),
                         Visibility(
+                            visible: (order?.discountSubtotal??0)>0,
+                            child: CartCalculation(
+                              keyText: '${AppStrings.discount}:',
+                              valueText: '- ${CurrencyUtil.appendCurrency((order?.discountSubtotal??0).toStringAsFixed(2))}',
+                            )),
+                        Visibility(
+                            visible: (order?.shippingSubtotal??0)>0,
+                            child: CartCalculation(
+                              keyText: '${AppStrings.shipping}:',
+                              valueText: CurrencyUtil.appendCurrency((order?.shippingSubtotal??0).toStringAsFixed(2)),
+                            )),
+                        Visibility(
                           visible: (order?.taxTotal ?? 0) > 0,
                           child: CartCalculation(
                             keyText: '${AppStrings.tax}:',
