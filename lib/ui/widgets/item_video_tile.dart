@@ -70,9 +70,13 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          widget.title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        Flexible(
+          child: Text(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            widget.title,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ),
       ],
     );
