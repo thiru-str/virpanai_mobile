@@ -150,16 +150,25 @@ class _Banner2State extends State<Banner2> {
                     final mediaUrl = item.image ?? '';
                     final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
 
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: isVideo
-                          ? ItemVideoTile(
-                        key: ValueKey(mediaUrl),
-                        videoUrl: mediaUrl,
-                        title: item.title ?? '',
-                        isActive: _isVisible && index == _currentPage,
-                      )
-                          : _buildImageTile(mediaUrl, item.title ?? ''),
+                    return GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption!,
+                          layoutData: item,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: isVideo
+                            ? ItemVideoTile(
+                          key: ValueKey(mediaUrl),
+                          videoUrl: mediaUrl,
+                          title: item.title ?? '',
+                          isActive: _isVisible && index == _currentPage,
+                        )
+                            : _buildImageTile(mediaUrl, item.title ?? ''),
+                      ),
                     );
                   },
                 ),
