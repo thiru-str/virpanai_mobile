@@ -80,7 +80,7 @@ class ForceUpdateScreen extends StatelessWidget {
 
                   /// Description (pure white background)
                   Text(
-                    "A brand new version of the ${AppConfig.appName} app is available in the ${AppUtils.appOs} Store. "
+                    "A brand new version of the ${AppConfig.appName} app is available in the ${AppUtils.appOs()} Store. "
                         "Please update your app to use all of our amazing features.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
