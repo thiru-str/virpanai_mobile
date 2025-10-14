@@ -772,7 +772,7 @@ class PaymentCollection {
   DateTime? updatedAt;
   dynamic deletedAt;
   List<PaymentSession>? paymentSessions;
-  int? amount;
+  num? amount;
   dynamic authorizedAmount;
   dynamic capturedAmount;
   dynamic refundedAmount;
@@ -848,7 +848,7 @@ class PaymentSession {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic deletedAt;
-  int? amount;
+  num? amount;
 
   PaymentSession({
     this.id,
@@ -917,7 +917,7 @@ class PaymentSession {
 // }
 
 class ShippingMethod {
-  int? amount;
+  num? amount;
   bool? isTaxInclusive;
   String? shippingOptionId;
   String? id;

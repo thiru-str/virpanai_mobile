@@ -54,7 +54,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   Global? global;
   List<PaymentProvider> paymentProviders = [];
-  String? pp_id;
+  String pp_id = 'pp_system_default';
   String? orderId;
   Razorpay razorpay = Razorpay();
   String? deliveryOption;
@@ -352,7 +352,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                     return;
                   }
                   if(!addressLoading) {
-                    placeOrder(pp_id!);
+                    placeOrder(pp_id);
                     //PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse));
                   }
                 },
