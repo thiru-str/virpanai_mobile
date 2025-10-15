@@ -34,7 +34,7 @@ class BottomNavPage extends StatefulWidget {
 
 class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
-  CustomPageResponse? homePageResponse;
+  HomePageResponse? homePageResponse;
   bool _isLoading = true;
 
   late AnimationController _animationController;
