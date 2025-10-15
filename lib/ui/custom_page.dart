@@ -1,17 +1,9 @@
 import 'dart:async';
 
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
-import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
-import 'package:waioz/ui/map_page.dart';
-import 'package:waioz/ui/product_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
-import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
-import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
@@ -21,8 +13,6 @@ import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_quick_view_sheet.dart';
-import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
 import 'package:waioz/ui/widgets/home/item_3.dart';
@@ -33,30 +23,24 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/page_route_utils.dart';
-import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
+import '../model/custom_page_response.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_utils.dart';
-import 'widgets/common_header_app_bar.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class CustomPage extends StatefulWidget {
+  final slug;
+  const CustomPage({super.key,required this.slug});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<CustomPage> createState() => _CustomPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  CustomPageResponse? homePageResponse;
+class _CustomPageState extends State<CustomPage> {
+  CustomPageResponse? customPageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
-  String headerTitle = "";
-  String addressType = "";
-  String appHeader = "header-1";
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -73,7 +57,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         isLoggedIn = value;
       });
-      initializePages();
+      initialize();
       listenToEvents();
     });
   }
@@ -96,24 +80,14 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> initializePages() async {
-    getHomePageApi();
-    appHeader = (await SharedPreferencesUtil().getString('app_header') ?? "");
+  Future<void> initialize() async {
+    getCustomPageApi();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CombinedHeaderAppBar(
-          headerType: appHeader,
-          title: headerTitle,
-          cartCount: cartItems ?? 0,
-          onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-          onSearchClick: () => PageRouteUtils.pushWithFade(
-            context,
-            const ProductPage(),
-          ),
-        ),
+        appBar: null,
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Stack(
@@ -128,9 +102,9 @@ class _HomePageState extends State<HomePage> {
                       onRefresh: () async {
                         // Call your refresh function here
                         setState(() => apiLoading = true);
-                        await getHomePageApi();
+                        await getCustomPageApi();
                       },
-                      child: homePageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
+                      child: customPageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
                         eventBus.fire(TabSwitchEvent(1));
                       })):SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -142,12 +116,12 @@ class _HomePageState extends State<HomePage> {
                               child: ListView.builder(
                                 scrollDirection: Axis.vertical,
                                 itemCount:
-                                    homePageResponse?.content?.length ?? 0,
+                                    customPageResponse?.content?.length ?? 0,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   final homePageContent =
-                                      homePageResponse?.content?[index];
+                                      customPageResponse?.content?[index];
                                   return getLayoutWidget(homePageContent);
                                 },
                               ),
@@ -276,21 +250,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> getHomePageApi() async {
+  Future<void> getCustomPageApi() async {
     try {
       final ApiService apiService = ApiService();
-      homePageResponse = await apiService.getHomePage(context);
-      SharedPreferencesUtil()
-          .saveString('region_id', homePageResponse?.global?.regionId ?? "");
-      SharedPreferencesUtil()
-          .saveString('cart_id', homePageResponse?.global?.cartId ?? "");
-      SharedPreferencesUtil().saveString(
-          'currency_symbol', homePageResponse?.global?.currencySymbol ?? "");
-      SharedPreferencesUtil()
-          .saveMap('global', homePageResponse?.global?.toJson() ?? {});
+      customPageResponse = await apiService.getCustomPage(context,widget.slug);
       setState(() {
         apiLoading = false;
-        homePageResponse;
+        customPageResponse;
       });
       getCartApi();
     } catch (e) {

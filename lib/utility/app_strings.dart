@@ -190,6 +190,7 @@ class AppStrings {
   static const String reDirectSearch = 'Search';
   static const String reDirectProduct = 'Product';
   static const String reDirectOrder = 'Order';
+  static const String reDirectPage = 'Page';
   static const String reDirectLink = 'Link';
 
   static const String deleteAccount = 'Delete Account';
