@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:waioz/ui/custom_page.dart';
 import 'package:waioz/ui/order_detail_item_page.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -146,7 +147,7 @@ class RedirectUtils {
 
     PageRouteUtils.pushWithSlide(
       context,
-      OrderDetailItemPage(orderId: slug),
+      CustomPage(slug: slug),
     );
   }
 

@@ -216,6 +216,7 @@ class PushNotificationService {
     final searchDataMap = _safeMap(data['redirect_search_data']);
     final productDataMap = _safeMap(data['redirect_product_data']);
     final orderDataMap = _safeMap(data['redirect_order_data']);
+    final pageDataMap = _safeMap(data['redirect_page_data']);
     final urlDataMap    = _safeMap(data['redirect_url_data']);
 
     final redirectData = RedirectData(
@@ -225,7 +226,10 @@ class PushNotificationService {
         variantId: productDataMap['variant_id'] ?? productDataMap['variantId'] ?? data['variant_id'] ?? data['variantId'] ?? '',
       ),
       redirectOrderData: RedirectOrderData(
-        orderId: orderDataMap['order_id'] ?? productDataMap['orderId'] ?? data['order_id'] ?? data['orderId'] ?? '',
+        orderId: orderDataMap['order_id'] ?? orderDataMap['orderId'] ?? data['order_id'] ?? data['orderId'] ?? '',
+      ),
+      redirectPageData: RedirectPageData(
+        slug: pageDataMap['slug'] ?? productDataMap['slug'] ?? data['slug'] ?? data['slug'] ?? '',
       ),
       redirectSearchData: RedirectSearchData(
         collection: searchDataMap['collection'] ?? data['collection'] ?? '',
