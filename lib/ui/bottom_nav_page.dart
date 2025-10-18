@@ -121,16 +121,17 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       case 2:
         return const CartPage(isFromBottomNav: true);
       case 3:
-        return const ReelsPage(
-          hlsUrls: [
-            'https://d3h1zwrvedrefb.cloudfront.net/hls/4434150-hd_1080_1920_30fps/master.m3u8',
-            'https://d3h1zwrvedrefb.cloudfront.net/hls/inter/master.m3u8',
-            'https://d3h1zwrvedrefb.cloudfront.net/hls/Video-774/master.m3u8',
-            'https://d3h1zwrvedrefb.cloudfront.net/hls/101019-video-720/master.m3u8',
-            'https://d3h1zwrvedrefb.cloudfront.net/hls/101599-video-1080/master.m3u8'
-          ],
-
-        );
+        return const MyFavoritesPage(isFromBottomNav: true);
+        // return const ReelsPage(
+        //   hlsUrls: [
+        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/4434150-hd_1080_1920_30fps/master.m3u8',
+        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/inter/master.m3u8',
+        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/Video-774/master.m3u8',
+        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/101019-video-720/master.m3u8',
+        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/101599-video-1080/master.m3u8'
+        //   ],
+        //
+        // );
       case 4:
         return isLoggedIn ? SettingsPage() : const HomePage();
       default:
@@ -235,8 +236,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
                 ),
                 if(isLoggedIn)
                   const BottomNavigationBarItem(
-                    icon: Icon(Icons.video_camera_back_outlined),
-                    label: AppStrings.reels,
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                    label: AppStrings.favourite,
                   ),
                 if(isLoggedIn)
                   const BottomNavigationBarItem(
