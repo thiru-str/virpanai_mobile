@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -8,6 +9,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/view_cart_model.dart';
 import '../../../utility/app_colors.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/page_route_utils.dart';
@@ -53,83 +55,86 @@ class _Item9State extends State<Item9> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        /// Title and See All
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.content.layoutTitle ?? '',
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(widget.content),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Title and See All
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.content.layoutTitle ?? '',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2, // Allow up to 2 lines for the title
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
-              ),
-              const SizedBox(width: 4), // Add some spacing between title and redirect
-              Visibility(
-                visible: (widget.content.layoutRedirectTitle ?? '').isNotEmpty,
-                child: GestureDetector(
-                  onTap: () {
-                    // Handle section-level redirection if needed
-                    RedirectUtils.handleContentRedirectViewAll(
-                      context: context,
-                      redirectData: widget.content.redirectData!,
-                    );
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
-                    children: [
-                      Text(
-                        widget.content.layoutRedirectTitle!,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                const SizedBox(width: 4), // Add some spacing between title and redirect
+                Visibility(
+                  visible: (widget.content.layoutRedirectTitle ?? '').isNotEmpty,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Handle section-level redirection if needed
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: widget.content.redirectData!,
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      children: [
+                        Text(
+                          widget.content.layoutRedirectTitle!,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor,
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.chevron_right, size: 18),
-                    ],
+                        const Icon(Icons.chevron_right, size: 18),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 300,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.content.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final layoutData = widget.content.layoutData?[index];
-                final variantId = layoutData?.variantDetails?.variantId;
-                final prices = layoutData?.prices;
-
-                // updated qty from event (fallback to original)
-                final cartQty = variantQtyMap[variantId] ??
-                    layoutData?.cartDetails?.quantity ??
-                    0;
-
-                return buildProductCard(layoutData, prices, cartQty);
-              },
+              ],
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 300,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.content.layoutData?.length ?? 0,
+                separatorBuilder: (context, index) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final layoutData = widget.content.layoutData?[index];
+                  final variantId = layoutData?.variantDetails?.variantId;
+                  final prices = layoutData?.prices;
+
+                  // updated qty from event (fallback to original)
+                  final cartQty = variantQtyMap[variantId] ??
+                      layoutData?.cartDetails?.quantity ??
+                      0;
+
+                  return buildProductCard(layoutData, prices, cartQty);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -151,12 +156,12 @@ class _Item9State extends State<Item9> {
               ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  layoutData.image ?? '',
+                child: CachedNetworkImage(
+                  imageUrl:layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, url, error) => ImageFallbackWidget(
+                  errorWidget: (context, url, error) => ImageFallbackWidget(
                     h: 150,
                     w: double.infinity,
                   ),

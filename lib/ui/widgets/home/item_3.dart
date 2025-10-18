@@ -6,6 +6,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
@@ -21,89 +22,92 @@ class Item3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 Title + redirect
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    content?.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
-                  GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content!.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          content?.layoutRedirectTitle ?? '',
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 🔹 Horizontal Scroll
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Title + redirect
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
-                children: List.generate(
-                  content?.layoutData?.length ?? 0,
-                      (i) {
-                    final layoutData = content!.layoutData![i];
-                    return GestureDetector(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      content?.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
+                    GestureDetector(
                       onTap: () {
-                        RedirectUtils.handleContentRedirect(
+                        RedirectUtils.handleContentRedirectViewAll(
                           context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
+                          redirectData: content!.redirectData!,
                         );
                       },
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          right: i == content.layoutData!.length - 1 ? 0 : 16,
-                        ),
-                        child: _AlignedItemCard(layoutData: layoutData),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            content?.layoutRedirectTitle ?? '',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 🔹 Horizontal Scroll
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: List.generate(
+                    content?.layoutData?.length ?? 0,
+                        (i) {
+                      final layoutData = content!.layoutData![i];
+                      return GestureDetector(
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: content.layoutData![i],
+                          );
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: i == content.layoutData!.length - 1 ? 0 : 16,
+                          ),
+                          child: _AlignedItemCard(layoutData: layoutData),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../model/product_categories_response.dart';
@@ -114,7 +115,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
                             clipBehavior: Clip.antiAlias,
                             child: parent.image != null &&
                                 parent.image!.isNotEmpty
-                                ? Image.network(parent.image!,
+                                ? CachedNetworkImage(imageUrl:parent.image!,
                                 fit: BoxFit.cover)
                                 : const Icon(Icons.image_not_supported),
                           ),
@@ -214,7 +215,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
                                       Expanded(
                                         child: sub.image != null &&
                                             sub.image!.isNotEmpty
-                                            ? Image.network(sub.image!,
+                                            ? CachedNetworkImage(imageUrl:sub.image!,
                                             fit: BoxFit.contain)
                                             : const Icon(Icons.image_not_supported),
                                       ),

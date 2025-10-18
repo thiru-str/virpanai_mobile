@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../../model/home_page_response.dart';
 import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
@@ -18,93 +19,96 @@ class Grid2 extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<LayoutDatum> items = content.layoutData!.take(15).toList(); // Max 5x3 = 15 items
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 🔹 Title & Redirect Section
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  content.layoutTitle ?? '',
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
-              ),
-              if ((content.layoutRedirectTitle ?? '').isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirectViewAll(
-                      context: context,
-                      redirectData: content.redirectData!,
-                    );
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        content.layoutRedirectTitle!,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right, size: 18),
-                    ],
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 🔹 Title & Redirect Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    content.layoutTitle ?? '',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // 🔹 Responsive Masonry Grid
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final screenWidth = constraints.maxWidth;
-              final isSmallScreen = screenWidth < 360;
-
-              // Dynamically adjust grid spacing & columns
-              final crossAxisCount = isSmallScreen ? 4 : 5;
-              final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
-
-              return MasonryGridView.count(
-                crossAxisCount: crossAxisCount,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: crossAxisSpacing,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final layoutData = items[index];
-                  return _Grid2Card(
-                    layoutData: layoutData,
-                    isSmallScreen: isSmallScreen,
+                if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                  GestureDetector(
                     onTap: () {
-                      RedirectUtils.handleContentRedirect(
+                      RedirectUtils.handleContentRedirectViewAll(
                         context: context,
-                        layoutOption: content.layoutOption!,
-                        layoutData: layoutData,
+                        redirectData: content.redirectData!,
                       );
                     },
-                  );
-                },
-              );
-            },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          content.layoutRedirectTitle!,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 18),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+
+          // 🔹 Responsive Masonry Grid
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final screenWidth = constraints.maxWidth;
+                final isSmallScreen = screenWidth < 360;
+
+                // Dynamically adjust grid spacing & columns
+                final crossAxisCount = isSmallScreen ? 4 : 5;
+                final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
+
+                return MasonryGridView.count(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: crossAxisSpacing,
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final layoutData = items[index];
+                    return _Grid2Card(
+                      layoutData: layoutData,
+                      isSmallScreen: isSmallScreen,
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption!,
+                          layoutData: layoutData,
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
