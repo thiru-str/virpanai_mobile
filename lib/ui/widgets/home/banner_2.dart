@@ -9,6 +9,7 @@ import 'package:waioz/ui/widgets/item_video_tile.dart';
 
 import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
@@ -84,96 +85,99 @@ class _Banner2State extends State<Banner2> {
     final content = widget.content;
     final items = content.layoutData ?? [];
 
-    return VisibilityDetector(
-      key: Key('Banner2-${content.layoutTitle ?? ""}'),
-      onVisibilityChanged: _onVisibilityChanged,
-      child: AnimatedOpacity(
-        opacity: _isVisible ? 1 : 0.5,
-        duration: const Duration(milliseconds: 300),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// Title Row
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      content.layoutTitle ?? '',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: VisibilityDetector(
+        key: Key('Banner2-${content.layoutTitle ?? ""}'),
+        onVisibilityChanged: _onVisibilityChanged,
+        child: AnimatedOpacity(
+          opacity: _isVisible ? 1 : 0.5,
+          duration: const Duration(milliseconds: 300),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// Title Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        content.layoutTitle ?? '',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
                       ),
-                    ),
-                    Visibility(
-                      visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
-                      child: GestureDetector(
-                        onTap: () {
-                          RedirectUtils.handleContentRedirectViewAll(
-                            context: context,
-                            redirectData: content.redirectData!,
-                          );
-                        },
-                        child: Text(
-                          content.layoutRedirectTitle ?? '',
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                      Visibility(
+                        visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
+                        child: GestureDetector(
+                          onTap: () {
+                            RedirectUtils.handleContentRedirectViewAll(
+                              context: context,
+                              redirectData: content.redirectData!,
+                            );
+                          },
+                          child: Text(
+                            content.layoutRedirectTitle ?? '',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              /// Carousel
-              SizedBox(
-                height: 190,
-                child: PageView.builder(
-                  controller: _pageController,
-                  padEnds: false,
-                  itemCount: items.length,
-                  onPageChanged: (i) {
-                    setState(() => _currentPage = i);
-                    if (_isVisible) _startAutoScroll();
-                  },
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final mediaUrl = item.image ?? '';
-                    final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
+                /// Carousel
+                SizedBox(
+                  height: 190,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    padEnds: false,
+                    itemCount: items.length,
+                    onPageChanged: (i) {
+                      setState(() => _currentPage = i);
+                      if (_isVisible) _startAutoScroll();
+                    },
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final mediaUrl = item.image ?? '';
+                      final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
 
-                    return GestureDetector(
-                      onTap: () {
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: item,
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: isVideo
-                            ? ItemVideoTile(
-                          key: ValueKey(mediaUrl),
-                          videoUrl: mediaUrl,
-                          title: item.title ?? '',
-                          isActive: _isVisible && index == _currentPage,
-                        )
-                            : _buildImageTile(mediaUrl, item.title ?? ''),
-                      ),
-                    );
-                  },
+                      return GestureDetector(
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: item,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: isVideo
+                              ? ItemVideoTile(
+                            key: ValueKey(mediaUrl),
+                            videoUrl: mediaUrl,
+                            title: item.title ?? '',
+                            isActive: _isVisible && index == _currentPage,
+                          )
+                              : _buildImageTile(mediaUrl, item.title ?? ''),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

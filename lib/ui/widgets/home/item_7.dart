@@ -5,6 +5,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_colors.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/page_route_utils.dart';
@@ -22,81 +23,84 @@ class Item7 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  content?.layoutTitle ?? '',
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    content?.layoutTitle ?? '',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2, // Allow up to 2 lines for the title
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2, // Allow up to 2 lines for the title
                 ),
-              ),
-              const SizedBox(width: 4), // Add some spacing between title and redirect
-              Visibility(
-                visible: (content?.layoutRedirectTitle ?? '').isNotEmpty,
-                child: GestureDetector(
-                  onTap: () {
-                    // Handle section-level redirection if needed
-                    RedirectUtils.handleContentRedirectViewAll(
-                      context: context,
-                      redirectData: content!.redirectData!,
-                    );
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
-                    children: [
-                      Text(
-                        content?.layoutRedirectTitle??'',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          color: AppColors.textColor,
+                const SizedBox(width: 4), // Add some spacing between title and redirect
+                Visibility(
+                  visible: (content?.layoutRedirectTitle ?? '').isNotEmpty,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Handle section-level redirection if needed
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content!.redirectData!,
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      children: [
+                        Text(
+                          content?.layoutRedirectTitle??'',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            color: AppColors.textColor,
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.chevron_right, size: 18),
-                    ],
+                        const Icon(Icons.chevron_right, size: 18),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: SizedBox(
-            height: 180,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: content?.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final layoutData = content!.layoutData![index];
-                return _Item7Card(
-                  layoutData: layoutData,
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content.layoutOption ?? "",
-                      layoutData: layoutData,
-                    );
-                  },
-                );
-              },
+              ],
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: SizedBox(
+              height: 180,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: content?.layoutData?.length ?? 0,
+                separatorBuilder: (context, index) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final layoutData = content!.layoutData![index];
+                  return _Item7Card(
+                    layoutData: layoutData,
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption ?? "",
+                        layoutData: layoutData,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
