@@ -104,6 +104,7 @@ class AppStrings {
   static const String tags = "Brands";
   static const String collections = "Collections";
   static const String favourite = "Favourite";
+  static const String reels = "Reels";
   static const String customer = "customer";
 
   static const String enter_promo_code = "Enter Promo Code";

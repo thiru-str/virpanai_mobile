@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
@@ -28,6 +29,8 @@ import '../../api/api_service.dart';
 import '../model/custom_page_response.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_utils.dart';
+import '../utility/page_route_utils.dart';
+import 'bottom_nav_page.dart';
 
 class CustomPage extends StatefulWidget {
   final slug;
@@ -86,77 +89,96 @@ class _CustomPageState extends State<CustomPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: null,
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              apiLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                        // Call your refresh function here
-                        setState(() => apiLoading = true);
-                        await getCustomPageApi();
-                      },
-                      child: customPageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
-                        eventBus.fire(TabSwitchEvent(1));
-                      })):SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 0.0, vertical: 16.0),
-                              child: ListView.builder(
-                                scrollDirection: Axis.vertical,
-                                itemCount:
-                                    customPageResponse?.content?.length ?? 0,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  final homePageContent =
-                                      customPageResponse?.content?[index];
-                                  return getLayoutWidget(homePageContent);
-                                },
+    return PopScope(
+        canPop: false, // Disable default back button
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          if (Navigator.of(context).canPop()) {
+            Navigator.pop(context); // Normal back navigation
+          } else {
+            // Redirect to home when no backstack exists
+            PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+          }
+        },
+        child: GestureDetector(
+          onTap: ()=> FocusScope.of(context).unfocus(),
+          child: Scaffold(
+          appBar: CommonHeaderAppBar(
+            title: '', // Pass the updated favorite status here
+            onBackTap: (){
+              Navigator.pop(context);
+            },
+          ),
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                apiLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          // Call your refresh function here
+                          setState(() => apiLoading = true);
+                          await getCustomPageApi();
+                        },
+                        child: customPageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
+                          eventBus.fire(TabSwitchEvent(1));
+                        })):SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 0.0, vertical: 16.0),
+                                child: ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  itemCount:
+                                      customPageResponse?.content?.length ?? 0,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    final homePageContent =
+                                        customPageResponse?.content?[index];
+                                    return getLayoutWidget(homePageContent);
+                                  },
+                                ),
                               ),
-                            ),
-                            Visibility(
-                                visible: cartItems != null && cartItems != 0,
-                                child: const SizedBox(
-                                  height: 80,
-                                ))
-                          ],
+                              Visibility(
+                                  visible: cartItems != null && cartItems != 0,
+                                  child: const SizedBox(
+                                    height: 80,
+                                  ))
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-              Visibility(
-                visible: cartItems != null && cartItems != 0,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: cartItems != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              eventBus.fire(TabSwitchEvent(2));
-                            },
-                            child: ViewCartWidget(
-                                totalItems: cartItems!,
-                                itemImages: cartItemImages!),
-                          ),
-                        )
-                      : const SizedBox(),
+                Visibility(
+                  visible: cartItems != null && cartItems != 0,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: cartItems != null
+                        ? Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                eventBus.fire(TabSwitchEvent(2));
+                              },
+                              child: ViewCartWidget(
+                                  totalItems: cartItems!,
+                                  itemImages: cartItemImages!),
+                            ),
+                          )
+                        : const SizedBox(),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ));
+              ],
+            ),
+          )),)
+    );
   }
 
   Widget getLayoutWidget(Content? homePageContent) {

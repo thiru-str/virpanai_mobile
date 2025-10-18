@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -126,11 +127,11 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                 children: [
                   Container(
                     height: 500,
-                    child: Image.network(
-                      currentData.image ?? '',
+                    child: CachedNetworkImage(
+                      imageUrl:currentData.image ?? '',
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, url, error) =>
+                      errorWidget: (context, url, error) =>
                          const ImageFallbackWidget(h: 220, fit: BoxFit.contain),
                     ),
                   ),

@@ -11,7 +11,7 @@ CustomPageResponse customPageResponseFromJson(String str) => CustomPageResponse.
 String customPageResponseToJson(CustomPageResponse data) => json.encode(data.toJson());
 
 class CustomPageResponse {
-  String? status;
+  bool? status;
   List<Content>? content;
 
   CustomPageResponse({

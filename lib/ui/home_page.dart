@@ -1,17 +1,11 @@
 import 'dart:async';
 
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
-import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
-import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/product_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
-import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
@@ -21,8 +15,6 @@ import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_quick_view_sheet.dart';
-import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
 import 'package:waioz/ui/widgets/home/item_3.dart';
@@ -33,15 +25,12 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_utils.dart';
-import 'widgets/common_header_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -51,7 +40,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  CustomPageResponse? homePageResponse;
+  HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
   String headerTitle = "";
