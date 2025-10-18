@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -151,12 +152,12 @@ class _Item9State extends State<Item9> {
               ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  layoutData.image ?? '',
+                child: CachedNetworkImage(
+                  imageUrl:layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, url, error) => ImageFallbackWidget(
+                  errorWidget: (context, url, error) => ImageFallbackWidget(
                     h: 150,
                     w: double.infinity,
                   ),

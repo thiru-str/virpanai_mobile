@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/ui/product_page.dart';
@@ -79,7 +80,7 @@ class _CategoryPage1State extends State<CategoryPage1> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (mainCategory.image != null && mainCategory.image!.isNotEmpty)
-                          Image.network(mainCategory.image!,
+                          CachedNetworkImage(imageUrl:mainCategory.image!,
                               height: 40, width: 40, fit: BoxFit.contain),
                         const SizedBox(height: 6),
                         Text(
@@ -208,7 +209,7 @@ class SubCategoryTile extends StatelessWidget {
               height: 70,
               width: 70,
               child: imagePath.isNotEmpty
-                  ? Image.network(imagePath, fit: BoxFit.contain)
+                  ? CachedNetworkImage(imageUrl:imagePath, fit: BoxFit.contain)
                   : const Icon(Icons.image_not_supported, size: 40),
             ),
           ),
