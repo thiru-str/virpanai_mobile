@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -46,10 +47,10 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 5),
     )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _nextSlide();
-        }
-      });
+      if (status == AnimationStatus.completed) {
+        _nextSlide();
+      }
+    });
 
     _controller.forward();
   }
@@ -126,12 +127,12 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                 children: [
                   Container(
                     height: 500,
-                    child: Image.network(
-                      currentData.image ?? '',
+                    child: CachedNetworkImage(
+                      imageUrl:currentData.image ?? '',
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, url, error) =>
-                         const ImageFallbackWidget(h: 220, fit: BoxFit.contain),
+                      errorWidget: (context, url, error) =>
+                      const ImageFallbackWidget(h: 220, fit: BoxFit.contain),
                     ),
                   ),
 
@@ -197,7 +198,7 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                             return Expanded(
                               child: Container(
                                 margin:
-                                    const EdgeInsets.symmetric(horizontal: 3),
+                                const EdgeInsets.symmetric(horizontal: 3),
                                 height: 4,
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),

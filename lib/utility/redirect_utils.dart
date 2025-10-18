@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:waioz/ui/custom_page.dart';
 import 'package:waioz/ui/order_detail_item_page.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -60,6 +61,7 @@ class RedirectUtils {
     AppStrings.reDirectSearch: _navigateToSearch,
     AppStrings.reDirectProduct: (context, redirectData) => _handleProductRedirect(context, redirectData),
     AppStrings.reDirectOrder: (context, redirectData) => _handleProductOrder(context, redirectData),
+    AppStrings.reDirectPage: (context, redirectData) => _handleRedirectPage(context, redirectData),
     AppStrings.reDirectLink: (_, redirectData) => _launchExternalLink(redirectData),
   };
 
@@ -136,6 +138,16 @@ class RedirectUtils {
     PageRouteUtils.pushWithSlide(
       context,
       OrderDetailItemPage(orderId: orderId),
+    );
+  }
+
+  static void _handleRedirectPage(BuildContext context, RedirectData redirectData) {
+    final slug = redirectData.redirectPageData?.slug;
+    if (slug?.isEmpty ?? true) return;
+
+    PageRouteUtils.pushWithSlide(
+      context,
+      CustomPage(slug: slug),
     );
   }
 

@@ -83,11 +83,20 @@ class Item3 extends StatelessWidget {
                   content?.layoutData?.length ?? 0,
                       (i) {
                     final layoutData = content!.layoutData![i];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        right: i == content.layoutData!.length - 1 ? 0 : 16,
+                    return GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption!,
+                          layoutData: content.layoutData![i],
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: i == content.layoutData!.length - 1 ? 0 : 16,
+                        ),
+                        child: _AlignedItemCard(layoutData: layoutData),
                       ),
-                      child: _AlignedItemCard(layoutData: layoutData),
                     );
                   },
                 ),
