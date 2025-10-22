@@ -5,6 +5,7 @@ import 'package:waioz/model/home_page_response.dart';
 
 import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
+import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
 
@@ -59,136 +60,162 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
     if (layoutData.isEmpty) return const SizedBox.shrink();
     final currentData = layoutData[_currentIndex];
 
-    return GestureDetector(
-      onTap: (){
-        RedirectUtils.handleContentRedirect(
-          context: context,
-          layoutOption: widget.content.layoutOption!,
-          layoutData: currentData,
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: GestureDetector(
-            behavior: HitTestBehavior.deferToChild, // let child taps (redirection) work
-            // Pause only when a horizontal drag actually starts
-            onHorizontalDragStart: (_) {
-              if (_controller.isAnimating) _controller.stop();
-            },
-            onHorizontalDragEnd: (details) {
-              final v = details.primaryVelocity ?? 0.0;
-              if (v.abs() > _swipeVelocityThreshold) {
-                if (v > 0) {
-                  _prevSlide(); // swipe right → previous
-                } else {
-                  _nextSlide(); // swipe left → next
-                }
-              } else {
-                // small flicks: do nothing, just resume
-                if (!_controller.isAnimating) _controller.forward();
-              }
-            },
-
-            // (Optional) allow long-press to pause/resume without interfering with taps
-            onLongPressStart: (_) {
-              if (_controller.isAnimating) _controller.stop();
-            },
-            onLongPressEnd: (_) {
-              if (!_controller.isAnimating) _controller.forward();
-            },
-
-            child: Stack(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+         Visibility(
+           visible: widget.content.layoutTitle?.isNotEmpty==true,
+           child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CachedNetworkImage(imageUrl:
-                  currentData.image ?? '',
-                  width: MediaQuery.of(context).size.width,
-                  height: 500,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, _, __) => _fallbackWidget(),
-                ),
+                Text(widget.content.layoutTitle??'',style: FontUtils.primaryFontStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textColor,
+                ),),
+                Text(widget.content.layoutSubTitle??'',style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  color: AppColors.textColor,
+                ),),
+              ],
+            ),
+                   ),
+         ),
 
-                // Bottom gradient overlay
-                Positioned(
-                  bottom: 0, left: 0, right: 0,
-                  child: Container(
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
+        GestureDetector(
+          onTap: (){
+            RedirectUtils.handleContentRedirect(
+              context: context,
+              layoutOption: widget.content.layoutOption!,
+              layoutData: currentData,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: GestureDetector(
+                behavior: HitTestBehavior.deferToChild, // let child taps (redirection) work
+                // Pause only when a horizontal drag actually starts
+                onHorizontalDragStart: (_) {
+                  if (_controller.isAnimating) _controller.stop();
+                },
+                onHorizontalDragEnd: (details) {
+                  final v = details.primaryVelocity ?? 0.0;
+                  if (v.abs() > _swipeVelocityThreshold) {
+                    if (v > 0) {
+                      _prevSlide(); // swipe right → previous
+                    } else {
+                      _nextSlide(); // swipe left → next
+                    }
+                  } else {
+                    // small flicks: do nothing, just resume
+                    if (!_controller.isAnimating) _controller.forward();
+                  }
+                },
+
+                // (Optional) allow long-press to pause/resume without interfering with taps
+                onLongPressStart: (_) {
+                  if (_controller.isAnimating) _controller.stop();
+                },
+                onLongPressEnd: (_) {
+                  if (!_controller.isAnimating) _controller.forward();
+                },
+
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(imageUrl:
+                      currentData.image ?? '',
+                      width: MediaQuery.of(context).size.width,
+                      height: 500,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, _, __) => _fallbackWidget(),
                     ),
-                  ),
-                ),
 
-                // Title section (your tap/redirection can be on this or another child)
-                Positioned(
-                  bottom: 100, left: 0, right: 0,
-                  child: Column(
-                    children: [
-                      Text(
-                        currentData.title ?? '',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.yellow,
+                    // Bottom gradient overlay
+                    Positioned(
+                      bottom: 0, left: 0, right: 0,
+                      child: Container(
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                // Progress bar
-                Positioned(
-                  bottom: 6, left: 16, right: 16,
-                  child: AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Row(
-                        children: List.generate(layoutData.length, (index) {
-                          double value;
-                          if (index < _currentIndex) {
-                            value = 1.0;
-                          } else if (index == _currentIndex) {
-                            value = _controller.value;
-                          } else {
-                            value = 0.0;
-                          }
+                    // Title section (your tap/redirection can be on this or another child)
+                    Positioned(
+                      bottom: 100, left: 0, right: 0,
+                      child: Column(
+                        children: [
+                          Text(
+                            currentData.title ?? '',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.yellow,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                          return Expanded(
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 3),
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: FractionallySizedBox(
-                                alignment: Alignment.centerLeft,
-                                widthFactor: value,
+                    // Progress bar
+                    Positioned(
+                      bottom: 6, left: 16, right: 16,
+                      child: AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Row(
+                            children: List.generate(layoutData.length, (index) {
+                              double value;
+                              if (index < _currentIndex) {
+                                value = 1.0;
+                              } else if (index == _currentIndex) {
+                                value = _controller.value;
+                              } else {
+                                value = 0.0;
+                              }
+
+                              return Expanded(
                                 child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                                  height: 4,
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: Colors.white.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
+                                  child: FractionallySizedBox(
+                                    alignment: Alignment.centerLeft,
+                                    widthFactor: value,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            }),
                           );
-                        }),
-                      );
-                    },
-                  ),
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
