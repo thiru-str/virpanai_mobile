@@ -30,7 +30,7 @@ class CommonHtmlWidget extends StatelessWidget {
         ),
         "body": Style(
           color: Colors.black, // Default text color to white
-          fontSize: FontSize(14),
+          fontSize: FontSize(15),
           fontFamily: FontUtils.defaultFont
         ),
         "div": Style(

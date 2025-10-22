@@ -194,7 +194,7 @@ class _ProductCard4State extends State<ProductCard4> {
                   Text(
                     _fmt(calc ?? orig ?? 0),
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -204,7 +204,7 @@ class _ProductCard4State extends State<ProductCard4> {
                     Text(
                       _fmt(orig),
                       style: FontUtils.secondaryFontStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
                       ),
@@ -232,7 +232,7 @@ class _ProductCard4State extends State<ProductCard4> {
               child: Text(
                 product.title ?? '',
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),

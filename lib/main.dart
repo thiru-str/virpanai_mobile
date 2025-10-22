@@ -50,10 +50,10 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveBool('skip_login', false);
 
 
-  FontUtils.updateFonts(
-    primaryFont: publicDetailsResponse.theme!.titleFont!,
-    secondaryFont: publicDetailsResponse.theme!.contentFont!,
-  );
+  // FontUtils.updateFonts(
+  //   primaryFont: publicDetailsResponse.theme!.titleFont!,
+  //   secondaryFont: publicDetailsResponse.theme!.contentFont!,
+  // );
 
   // Color? apiPrimaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.primaryColor!) ?? AppColors.primary;
   // Color? apiSecondaryColor = AppUtils.parseHexColor(publicDetailsResponse.theme!.secondaryColor) ?? AppColors.secondary;
@@ -79,30 +79,11 @@ class HomeScreen extends StatelessWidget {
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       navigatorKey: navigatorKey, // if you're using it for global navigation
       debugShowCheckedModeBanner: false,
-      theme: theme,
+      theme: ThemeData(fontFamily: 'MyCustomFont',textTheme: const TextTheme()),
       home: SplashPage(skipLogin: skipLogin,publicDetailsResponse: publicDetailsResponse,),
     );
   }
 
-   ThemeData theme = ThemeData(
-     textTheme: const TextTheme(
-       displayLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 57),
-       displayMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 45),
-       displaySmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 36),
-       headlineLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 32),
-       headlineMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 28),
-       headlineSmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 24),
-       titleLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 22),
-       titleMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 16),
-       titleSmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 14),
-       bodyLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 16),
-       bodyMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 14),
-       bodySmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 12),
-       labelLarge: TextStyle(fontFamily: 'MyCustomFont', fontSize: 14),
-       labelMedium: TextStyle(fontFamily: 'MyCustomFont', fontSize: 12),
-       labelSmall: TextStyle(fontFamily: 'MyCustomFont', fontSize: 11),
-     ),
-   );
 
 
 }

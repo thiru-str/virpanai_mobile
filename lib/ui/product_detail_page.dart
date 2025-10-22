@@ -328,7 +328,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           product?.title ?? '',
           style: FontUtils.secondaryFontStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 16,
             color: AppColors.textColor,
           ),
         ),
@@ -339,7 +339,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               getDisplayedPrice(),
               style: FontUtils.secondaryFontStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 16,
                 color: AppColors.primary,
               ),
             ),
@@ -355,7 +355,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '0'),
                 style: FontUtils.secondaryFontStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 16,
                   color: Colors.grey,
                   decoration: TextDecoration.lineThrough,
                 ),
@@ -430,7 +430,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         Text(
           AppStrings.select_qty,
           style: FontUtils.secondaryFontStyle(
-              fontSize: 14, fontWeight: FontWeight.bold),
+              fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         buildQuantitySelector(),
@@ -578,7 +578,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           AppStrings.description,
           style: FontUtils.secondaryFontStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 16,
             color: AppColors.textColor,
           ),
         ),
@@ -593,7 +593,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             product?.description ?? '',
             style: FontUtils.primaryFontStyle(
               fontWeight: FontWeight.w400,
-              fontSize: 12,
+              fontSize: 15,
               color: AppColors.textColor,
             ),
           ),
@@ -813,6 +813,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   : stockNotAvailable?'Out of Stock':'Add to Cart',
               style: FontUtils.primaryFontStyle(
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),

@@ -222,7 +222,7 @@ class _Item9Card extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 2),
 
             // --- Price row ---
             Padding(
@@ -234,7 +234,7 @@ class _Item9Card extends StatelessWidget {
                       layoutData.prices?.sellingPrice ?? '0',
                     ),
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -246,7 +246,7 @@ class _Item9Card extends StatelessWidget {
                         layoutData.prices?.originalPrice ?? '0',
                       ),
                       style: FontUtils.secondaryFontStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
                       ),

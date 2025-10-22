@@ -49,10 +49,10 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                     children: [
                       Text('${AppStrings.all_category} > ',
                           style: FontUtils.primaryFontStyle(
-                              fontSize: 16, color: AppColors.textColor)),
+                              fontSize: 16, fontWeight:FontWeight.bold,color: AppColors.textColor)),
                       Text('${widget.categoryTitle}',
                           style: FontUtils.primaryFontStyle(
-                              fontSize: 16, color: AppColors.primary)),
+                              fontSize: 16, fontWeight:FontWeight.bold,color: AppColors.primary)),
                     ],
                   ),
                 ),

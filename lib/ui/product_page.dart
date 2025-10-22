@@ -260,6 +260,7 @@ class _ProductPageState extends State<ProductPage> {
                     AppStrings.all_product,
                     style: FontUtils.primaryFontStyle(
                       fontSize: 16,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
                     ),
                   ),

@@ -35,7 +35,7 @@ class CustomSearchAppBar extends StatelessWidget
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildIcon(null, svgPath: AppAssets.app_icon_svg, size: 50),
-                Text('GoWelMart',style: FontUtils.primaryFontStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
+                Text('GoWelMart',style: FontUtils.primaryFontStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),),
                 _buildIcon(Icons.shopping_cart,
                     color: Colors.white,
                     onPressed: onCartClick,

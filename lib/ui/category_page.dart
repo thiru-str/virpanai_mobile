@@ -53,7 +53,7 @@ class _CategoryPageState extends State<CategoryPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(AppStrings.all_category,style: FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor)),
+                child: Text(AppStrings.all_category,style: FontUtils.primaryFontStyle(fontSize: 16,fontWeight:FontWeight.bold,color: AppColors.textColor)),
               ),
               const SizedBox(height: 10,),
               Expanded(

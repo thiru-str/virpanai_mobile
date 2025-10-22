@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:flutter/material.dart';
+
 class FontUtils {
-  // Default Custom Fonts
-  static const String defaultCircularStd = 'CircularStd';
-  static const String defaultGabarito = 'Gabarito';
+  /// The only font family used across the app
   static const String defaultFont = 'MyCustomFont';
 
-  static String? apiPrimaryFont;
-  static String? apiSecondaryFont;
-
-  /// Update fonts from API
-  static void updateFonts({String? primaryFont, String? secondaryFont}) {
-    apiPrimaryFont = primaryFont;
-    apiSecondaryFont = secondaryFont;
-  }
-
-  /// Get TextStyle for Primary Font (Google Font if available, else default)
-  static TextStyle primaryFontStyle({
-    FontWeight fontWeight = FontWeight.normal,
+  /// Common TextStyle builder
+  static TextStyle baseStyle({
+    FontWeight fontWeight = FontWeight.w400,
     double fontSize = 14.0,
     Color color = Colors.black,
     double letterSpacing = 0.0,
     TextDecoration decoration = TextDecoration.none,
   }) {
-    // if (apiPrimaryFont != null && GoogleFonts.asMap().containsKey(apiPrimaryFont)) {
-    //   return GoogleFonts.getFont(
-    //     apiPrimaryFont!,
-    //     fontWeight: fontWeight,
-    //     fontSize: fontSize,
-    //     color: color,
-    //     letterSpacing: letterSpacing,
-    //     decoration: decoration,
-    //   );
-    // }
     return TextStyle(
       fontFamily: defaultFont,
+      fontWeight: fontWeight,
+      fontSize: fontSize,
+      color: color,
+      letterSpacing: letterSpacing,
+      decoration: decoration,
+      fontVariations: [FontVariation('wght', fontWeight.index * 100 + 100)],
+      // optional if you want to ensure boldness even if font metadata is wrong
+      // fontVariations: [FontVariation('wght', fontWeight.index * 100.0)],
+    );
+  }
+
+  /// Primary font style (same as base)
+  static TextStyle primaryFontStyle({
+    FontWeight fontWeight = FontWeight.w400,
+    double fontSize = 14.0,
+    Color color = Colors.black,
+    double letterSpacing = 0.0,
+    TextDecoration decoration = TextDecoration.none,
+  }) {
+    return baseStyle(
       fontWeight: fontWeight,
       fontSize: fontSize,
       color: color,
@@ -44,26 +45,15 @@ class FontUtils {
     );
   }
 
-  /// Get TextStyle for Secondary Font (Google Font if available, else default)
+  /// Secondary font style (same as base)
   static TextStyle secondaryFontStyle({
-    FontWeight fontWeight = FontWeight.normal,
+    FontWeight fontWeight = FontWeight.w400,
     double fontSize = 14.0,
     Color color = Colors.black,
     double letterSpacing = 0.0,
     TextDecoration decoration = TextDecoration.none,
   }) {
-    // if (apiSecondaryFont != null && GoogleFonts.asMap().containsKey(apiSecondaryFont)) {
-    //   return GoogleFonts.getFont(
-    //     apiSecondaryFont!,
-    //     fontWeight: fontWeight,
-    //     fontSize: fontSize,
-    //     color: color,
-    //     letterSpacing: letterSpacing,
-    //     decoration: decoration,
-    //   );
-    // }
-    return TextStyle(
-      fontFamily: defaultFont,
+    return baseStyle(
       fontWeight: fontWeight,
       fontSize: fontSize,
       color: color,
@@ -72,3 +62,4 @@ class FontUtils {
     );
   }
 }
+

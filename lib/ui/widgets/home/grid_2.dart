@@ -31,7 +31,7 @@ class Grid2 extends StatelessWidget {
                   content.layoutTitle ?? '',
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textColor,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -55,7 +55,7 @@ class Grid2 extends StatelessWidget {
                       Text(
                         content.layoutRedirectTitle!,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textColor,
                         ),
@@ -114,7 +114,7 @@ class Grid2 extends StatelessWidget {
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: FontUtils.primaryFontStyle(fontSize: 11),
+                                style: FontUtils.primaryFontStyle(fontSize: 11,fontWeight: FontWeight.w700,),
                               ),
                             ),
                           ),
