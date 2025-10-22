@@ -198,7 +198,7 @@ class _Banner2State extends State<Banner2> {
           ),
         ),
         const SizedBox(height: 6),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Flexible(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600),maxLines: 2,overflow: TextOverflow.ellipsis,)),
       ],
     );
   }

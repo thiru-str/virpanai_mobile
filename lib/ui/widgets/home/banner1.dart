@@ -21,7 +21,7 @@ class Banner1 extends StatelessWidget {
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
