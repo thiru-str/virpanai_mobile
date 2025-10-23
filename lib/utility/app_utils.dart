@@ -112,7 +112,7 @@ class AppUtils {
           image: image!.startsWith('assets/')
               ? AssetImage(image) as ImageProvider
               : NetworkImage(image),
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
         ),
       );
     } else if (type == 'color' && color?.isNotEmpty == true) {

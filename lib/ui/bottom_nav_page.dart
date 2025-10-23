@@ -121,17 +121,17 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       case 2:
         return const CartPage(isFromBottomNav: true);
       case 3:
-        return const MyFavoritesPage(isFromBottomNav: true);
-        // return const ReelsPage(
-        //   hlsUrls: [
-        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/4434150-hd_1080_1920_30fps/master.m3u8',
-        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/inter/master.m3u8',
-        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/Video-774/master.m3u8',
-        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/101019-video-720/master.m3u8',
-        //     'https://d3h1zwrvedrefb.cloudfront.net/hls/101599-video-1080/master.m3u8'
-        //   ],
-        //
-        // );
+        //return const MyFavoritesPage(isFromBottomNav: true);
+        return const ReelsPage(
+          hlsUrls: [
+            'https://d3h1zwrvedrefb.cloudfront.net/hls/4434150-hd_1080_1920_30fps/master.m3u8',
+            'https://d3h1zwrvedrefb.cloudfront.net/hls/inter/master.m3u8',
+            'https://d3h1zwrvedrefb.cloudfront.net/hls/Video-774/master.m3u8',
+            'https://d3h1zwrvedrefb.cloudfront.net/hls/101019-video-720/master.m3u8',
+            'https://d3h1zwrvedrefb.cloudfront.net/hls/101599-video-1080/master.m3u8'
+          ],
+
+        );
       case 4:
         return isLoggedIn ? SettingsPage() : const HomePage();
       default:
@@ -178,7 +178,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
           }
         },
         child:  Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: _currentIndex ==  3? Colors.transparent:Colors.white,
           body: _isLoading
               ?  Center(
             child: CircularProgressIndicator(color: AppColors.primary),
@@ -236,8 +236,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
                 ),
                 if(isLoggedIn)
                   const BottomNavigationBarItem(
-                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-                    label: AppStrings.favourite,
+                    icon: Icon(Icons.video_call_rounded),
+                    label: AppStrings.reels,
                   ),
                 if(isLoggedIn)
                   const BottomNavigationBarItem(
@@ -245,10 +245,10 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
                     label: AppStrings.account,
                   ),
               ],
-              selectedItemColor: AppColors.primary,
+              selectedItemColor: _currentIndex ==  3?Colors.white:AppColors.primary,
               unselectedItemColor: AppColors.tabInActivecolor,
               showUnselectedLabels: true,
-              backgroundColor: Colors.white,
+              backgroundColor:_currentIndex ==  3? Colors.transparent:Colors.white,
               type: BottomNavigationBarType.fixed,
               selectedLabelStyle: FontUtils.primaryFontStyle(),
               unselectedLabelStyle: FontUtils.primaryFontStyle(),

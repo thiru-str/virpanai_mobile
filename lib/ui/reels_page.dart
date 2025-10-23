@@ -561,24 +561,30 @@ class _RightRailControls extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        item(
-          onTap: onLike,
-          label: _shortNum(likeCount),
-          icon: AnimatedScale(
-            duration: const Duration(milliseconds: 150),
-            scale: liked ? 1.15 : 1.0,
-            child: Icon(
-              liked ? Icons.favorite : Icons.favorite_border,
-              color: liked ? Colors.redAccent : Colors.white,
-              size: iconSize,
+        Visibility(
+          visible: false,
+          child: item(
+            onTap: onLike,
+            label: _shortNum(likeCount),
+            icon: AnimatedScale(
+              duration: const Duration(milliseconds: 150),
+              scale: liked ? 1.15 : 1.0,
+              child: Icon(
+                liked ? Icons.favorite : Icons.favorite_border,
+                color: liked ? Colors.redAccent : Colors.white,
+                size: iconSize,
+              ),
             ),
           ),
         ),
         const SizedBox(height: gap),
-        item(
-          onTap: onComment,
-          label: _shortNum(commentCount),
-          icon: const Icon(Icons.mode_comment_outlined, color: Colors.white, size: iconSize),
+        Visibility(
+          visible: false,
+          child: item(
+            onTap: onComment,
+            label: _shortNum(commentCount),
+            icon: const Icon(Icons.mode_comment_outlined, color: Colors.white, size: iconSize),
+          ),
         ),
         const SizedBox(height: gap),
         item(
