@@ -51,7 +51,7 @@ class CategoryCard extends StatelessWidget {
                 imageUrl: imagePath,
                 height: 140, // Adjusted image height
                 width: double.infinity, // Take full width
-                fit: BoxFit.cover, // Fill the card space
+                fit: BoxFit.contain, // Fill the card space
                 errorWidget: (context, error, stackTrace) => _imageFallback(),
               )
                   :_imageFallback(),
