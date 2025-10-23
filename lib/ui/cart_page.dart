@@ -379,7 +379,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);
       setState(() {
-        pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
+        pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'pp_system_default';
         //orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
         apiLoading = false;
         isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOption?.serviceZone?.fulfillmentSet?.type??'')=='shipping';
@@ -652,7 +652,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       final response = await apiService.updatePaymentMethod(
               context, paymentProviderId, cartResponse!);
       setState(() {
-        pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
+        pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'pp_system_default';
       });
     } catch (e) {
       print(e);
