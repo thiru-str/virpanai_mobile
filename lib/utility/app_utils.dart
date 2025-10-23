@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -90,6 +92,54 @@ class AppUtils {
     return Colors.black;
   }
 
+  static Gradient? parseGradient(String gradientString) {
+    try {
+      final regex = RegExp(
+        r'linear-gradient\(([^,]+),\s*(.+)\)',
+        caseSensitive: false,
+      );
+
+      final match = regex.firstMatch(gradientString);
+      if (match != null) {
+        final angleStr = match.group(1)!.trim();
+        final colorStopsStr = match.group(2)!;
+
+        // Parse angle
+        double angle = 0;
+        if (angleStr.contains('deg')) {
+          angle = double.tryParse(angleStr.replaceAll('deg', '').trim()) ?? 0;
+        }
+
+        // Extract all rgb/rgba() colors
+        final colorMatches =
+        RegExp(r'rgba?\([^)]+\)', caseSensitive: false).allMatches(colorStopsStr);
+
+        final colors = <Color>[];
+        for (final match in colorMatches) {
+          colors.add(rgbStringToColor(match.group(0)!));
+        }
+
+        // Fallback if colors not parsed
+        if (colors.isEmpty) return null;
+
+        return LinearGradient(
+          begin: _alignmentFromAngle(angle + 180),
+          end: _alignmentFromAngle(angle),
+          colors: colors,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error parsing gradient: $e');
+    }
+
+    return null;
+  }
+
+  static Alignment _alignmentFromAngle(double angle) {
+    final rad = angle * pi / 180;
+    return Alignment(cos(rad), sin(rad));
+  }
+
 
   static Future<bool> isLoggedIn() async {
     // final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
@@ -112,17 +162,26 @@ class AppUtils {
           image: image!.startsWith('assets/')
               ? AssetImage(image) as ImageProvider
               : NetworkImage(image),
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
         ),
       );
-    } else if (type == 'color' && color?.isNotEmpty == true) {
-      return BoxDecoration(
-        color: AppUtils.rgbStringToColor(color!),
-      );
+    }
+
+    // 🎨 Handle both color and gradient inside type=color
+    if (type == 'color' && color?.isNotEmpty == true) {
+      if (color!.toLowerCase().startsWith('linear-gradient')) {
+        final gradient = AppUtils.parseGradient(color);
+        if (gradient != null) {
+          return BoxDecoration(gradient: gradient);
+        }
+      } else {
+        return BoxDecoration(color: AppUtils.rgbStringToColor(color));
+      }
     }
 
     return null; // No background
   }
+
 
 
 }
