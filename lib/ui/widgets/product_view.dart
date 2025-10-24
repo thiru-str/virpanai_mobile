@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
+import 'package:waioz/ui/widgets/product_card_1.dart';
 import 'package:waioz/ui/widgets/product_card_2.dart';
 import 'package:waioz/ui/widgets/product_card_3.dart';
 import 'package:waioz/ui/widgets/product_card_4.dart';
@@ -66,12 +67,17 @@ class _ProductViewState extends State<ProductView> {
   @override
   Widget build(BuildContext context) {
     if (_resolvedType == null) {
-      return const SizedBox.shrink(); // or shimmer/loader
+      return ProductCard(
+        product: widget.product,
+        onTapCard: widget.onTapCard,
+        onTapFavorite: widget.onTapFavorite,
+        isFavorite: widget.isFavorite,
+      );
     }
 
     switch (_resolvedType!) {
       case ProductCardType.productView1:
-        return ProductCard(
+        return ProductCard1(
           product: widget.product,
           onTapCard: widget.onTapCard,
           onTapFavorite: widget.onTapFavorite,
