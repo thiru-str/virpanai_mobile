@@ -16,7 +16,7 @@ class _SearchBarWithRollingHintState extends State<SearchBarWithRollingHint> wit
     'Search Products',
     'Search Categories',
     'Search Collections',
-    'Search Brands',
+    'Search Pottery',
   ];
 
   int _currentIndex = 0;
