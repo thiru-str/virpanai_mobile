@@ -207,49 +207,55 @@ class _Grid1Card extends StatelessWidget {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade600,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            layoutData.featureText ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
+                  child: Visibility(
+                    visible: layoutData.featureText?.isNotEmpty == true,
+                    child: Container(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade600,
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(4),bottomRight: Radius.circular(4)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              layoutData.featureText ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.star,
-                                  size: 10, color: Colors.green),
-                              const SizedBox(width: 2),
-                              Text(
-                                _generateRandomRating(),
-                                style: const TextStyle(fontSize: 10),
+                          Visibility(
+                            visible: false,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
                               ),
-                            ],
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.star,
+                                      size: 10, color: Colors.green),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    _generateRandomRating(),
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

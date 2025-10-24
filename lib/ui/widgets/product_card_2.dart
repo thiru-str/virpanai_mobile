@@ -227,7 +227,7 @@ class _ProductCard2State extends State<ProductCard2> {
                     index < rating.floor()
                         ? Icons.star
                         : (index < rating ? Icons.star_half : Icons.star_border),
-                    color: Colors.black87,
+                    color: AppColors.primary,
                     size: 16,
                   );
                 }),
