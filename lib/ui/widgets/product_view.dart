@@ -10,7 +10,7 @@ import '../../model/product_response.dart';
 
 class ProductView extends StatefulWidget {
   final Product product;
-  final String? type; // made optional
+  final String? type;
   final VoidCallback onTapCard;
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
@@ -32,6 +32,7 @@ class ProductView extends StatefulWidget {
 
 class _ProductViewState extends State<ProductView> {
   ProductCardType? _resolvedType;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _ProductViewState extends State<ProductView> {
       _resolvedType = _mapStringToType(widget.type) ??
           _mapStringToType(savedTypeString) ??
           ProductCardType.productView1;
+      _isLoading = false;
     });
   }
 
@@ -66,6 +68,11 @@ class _ProductViewState extends State<ProductView> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (_isLoading) {
+      return const SizedBox();
+    }
+
     if (_resolvedType == null) {
       return ProductCard(
         product: widget.product,
