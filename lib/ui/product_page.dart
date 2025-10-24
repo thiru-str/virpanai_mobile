@@ -12,6 +12,7 @@ import 'package:waioz/ui/widgets/product_card_1.dart';
 import 'package:waioz/ui/widgets/product_card_2.dart';
 import 'package:waioz/ui/widgets/product_card_3.dart';
 import 'package:waioz/ui/widgets/product_card_4.dart';
+import 'package:waioz/ui/widgets/product_view.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -313,7 +314,7 @@ class _ProductPageState extends State<ProductPage> {
                           );
                         }
                         final product = filteredProducts[index];
-                        return ProductCard2(
+                        return ProductView(
                           product: product,
                           onTapCard: () {
                             PageRouteUtils.pushWithSlide(
