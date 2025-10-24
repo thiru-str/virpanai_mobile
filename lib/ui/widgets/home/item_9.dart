@@ -55,45 +55,45 @@ class _Item9State extends State<Item9> {
 
   @override
   Widget build(BuildContext context) {
+    final content = widget.content;
+
     return Container(
-      decoration: AppUtils.buildLayoutBackground(widget.content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// Title and See All
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Title + See All
+            Row(
               children: [
                 Expanded(
                   child: Text(
-                    widget.content.layoutTitle ?? '',
+                    content.layoutTitle ?? '',
                     style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
+                    maxLines: 2,
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
+                const SizedBox(width: 4),
                 Visibility(
-                  visible: (widget.content.layoutRedirectTitle ?? '').isNotEmpty,
+                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
                   child: GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
-                        redirectData: widget.content.redirectData!,
+                        redirectData: content.redirectData!,
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          widget.content.layoutRedirectTitle!,
+                          content.layoutRedirectTitle!,
                           style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -107,38 +107,53 @@ class _Item9State extends State<Item9> {
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 300,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                scrollDirection: Axis.horizontal,
-                itemCount: widget.content.layoutData?.length ?? 0,
-                separatorBuilder: (context, index) => const SizedBox(width: 16),
-                itemBuilder: (context, index) {
-                  final layoutData = widget.content.layoutData?[index];
-                  final variantId = layoutData?.variantDetails?.variantId;
-                  final prices = layoutData?.prices;
 
-                  // updated qty from event (fallback to original)
-                  final cartQty = variantQtyMap[variantId] ??
-                      layoutData?.cartDetails?.quantity ??
-                      0;
+            const SizedBox(height: 16),
 
-                  return buildProductCard(layoutData, prices, cartQty);
-                },
+            // 🔹 Scrollable horizontal list (adaptive height)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                    _Item9Card(
+                      layoutData: content.layoutData![i],
+                      cartQty: variantQtyMap[
+                      content.layoutData![i].variantDetails?.variantId] ??
+                          content.layoutData![i].cartDetails?.quantity ??
+                          0,
+                      onCartQtyChanged: widget.onCartQtyChanged,
+                    ),
+                    if (i != content.layoutData!.length - 1)
+                      const SizedBox(width: 16),
+                  ],
+                ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget buildProductCard(dynamic layoutData, dynamic prices, int cartQty) {
+class _Item9Card extends StatelessWidget {
+  final dynamic layoutData;
+  final int cartQty;
+  final void Function(int delta, String variantId)? onCartQtyChanged;
+
+  const _Item9Card({
+    Key? key,
+    required this.layoutData,
+    required this.cartQty,
+    required this.onCartQtyChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final prices = layoutData.prices ?? {};
+    final variantId = layoutData.variantDetails?.variantId ?? '';
+
     return Container(
       width: 180,
       decoration: BoxDecoration(
@@ -150,14 +165,14 @@ class _Item9State extends State<Item9> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          /// Image & Discount
+          // 🔹 Image & Discount
           Stack(
             children: [
               ClipRRect(
                 borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                const BorderRadius.vertical(top: Radius.circular(16)),
                 child: CachedNetworkImage(
-                  imageUrl:layoutData.image ?? '',
+                  imageUrl: layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -174,7 +189,7 @@ class _Item9State extends State<Item9> {
                   left: 6,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade800,
                       borderRadius: BorderRadius.circular(12),
@@ -192,15 +207,15 @@ class _Item9State extends State<Item9> {
               Positioned(
                 top: 6,
                 right: 6,
-                child:
-                    Icon(Icons.favorite_border, size: 20, color: Colors.grey),
+                child: Icon(Icons.favorite_border,
+                    size: 20, color: Colors.grey),
               ),
             ],
           ),
 
           const SizedBox(height: 8),
 
-          /// Title
+          // 🔹 Title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
@@ -215,7 +230,7 @@ class _Item9State extends State<Item9> {
             ),
           ),
 
-          /// Price
+          // 🔹 Price
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
@@ -228,13 +243,15 @@ class _Item9State extends State<Item9> {
             ),
           ),
 
-          /// Rating
+          // 🔹 Rating
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             child: Row(
               children: List.generate(5, (i) {
                 return Icon(
-                  i < (layoutData.rating ?? 0) ? Icons.star : Icons.star_border,
+                  i < (layoutData.rating ?? 0)
+                      ? Icons.star
+                      : Icons.star_border,
                   color: Colors.amber,
                   size: 16,
                 );
@@ -242,48 +259,45 @@ class _Item9State extends State<Item9> {
             ),
           ),
 
-          /// Add to Cart OR Quantity Selector
+          // 🔹 Add to Cart / Quantity
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: cartQty > 0
                 ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _qtyButton(Icons.remove, () {
-                        if (cartQty > 0) {
-                          widget.onCartQtyChanged
-                              ?.call(-1, layoutData.variantDetails.variantId);
-                        }
-                      }),
-                      Text(
-                        '$cartQty',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      _qtyButton(Icons.add, () {
-                        widget.onCartQtyChanged
-                            ?.call(1, layoutData.variantDetails.variantId);
-                      }),
-                    ],
-                  )
-                : SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        widget.onCartQtyChanged?.call(
-                            1, layoutData.variantDetails.variantId); // add 1
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey.shade400),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text("Add To Cart"),
-                    ),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _qtyButton(Icons.remove, () {
+                  if (cartQty > 0) {
+                    onCartQtyChanged?.call(-1, variantId);
+                  }
+                }),
+                Text(
+                  '$cartQty',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                _qtyButton(Icons.add, () {
+                  onCartQtyChanged?.call(1, variantId);
+                }),
+              ],
+            )
+                : SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  onCartQtyChanged?.call(1, variantId);
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.grey.shade400),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text("Add To Cart"),
+              ),
+            ),
           ),
         ],
       ),
@@ -298,10 +312,7 @@ class _Item9State extends State<Item9> {
       ),
       child: IconButton(
         color: Colors.white,
-        icon: Icon(
-          icon,
-          size: 16,
-        ),
+        icon: Icon(icon, size: 16),
         onPressed: onPressed,
         padding: const EdgeInsets.all(4),
         constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
