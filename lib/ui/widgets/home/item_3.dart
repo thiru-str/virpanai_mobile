@@ -25,7 +25,7 @@ class Item3 extends StatelessWidget {
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -36,18 +36,15 @@ class Item3 extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        content?.layoutTitle ?? '',
-                        style: FontUtils.secondaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                    child: Text(
+                      content?.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -76,36 +73,33 @@ class Item3 extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
 
             // 🔹 Horizontal Scroll
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: List.generate(
-                    content?.layoutData?.length ?? 0,
-                        (i) {
-                      final layoutData = content!.layoutData![i];
-                      return GestureDetector(
-                        onTap: () {
-                          RedirectUtils.handleContentRedirect(
-                            context: context,
-                            layoutOption: content.layoutOption!,
-                            layoutData: content.layoutData![i],
-                          );
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            right: i == content.layoutData!.length - 1 ? 0 : 16,
-                          ),
-                          child: _AlignedItemCard(layoutData: layoutData),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: List.generate(
+                  content?.layoutData?.length ?? 0,
+                      (i) {
+                    final layoutData = content!.layoutData![i];
+                    return GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption!,
+                          layoutData: content.layoutData![i],
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: i == content.layoutData!.length - 1 ? 0 : 16,
                         ),
-                      );
-                    },
-                  ),
+                        child: _AlignedItemCard(layoutData: layoutData),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -129,7 +123,6 @@ class _AlignedItemCard extends StatelessWidget {
 
     return Container(
       width: isSmallScreen ? 64 : 72,
-      margin: const EdgeInsets.only(bottom: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

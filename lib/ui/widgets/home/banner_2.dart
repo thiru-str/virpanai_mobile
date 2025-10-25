@@ -135,7 +135,7 @@ class _Banner2State extends State<Banner2> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 /// Carousel
                 SizedBox(

@@ -487,8 +487,8 @@ class ApiService {
   Future<CustomPageResponse> getCustomPage(BuildContext context,String slug) async {
     await addToken();
     return _makePostRequest<CustomPageResponse>(
-      'store/get_custom_page/v1',
-      {"slug":slug},
+      'store/get_custom_page/v1/$slug',
+      null,
           (json) => CustomPageResponse.fromJson(json),
       context,
     );
