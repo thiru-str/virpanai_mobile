@@ -26,7 +26,7 @@ class Slider2 extends StatelessWidget {
         children: [
           // 🔹 Title + Redirect
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -64,7 +64,6 @@ class Slider2 extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
 
           // 🔹 Horizontal scrollable product slider
           Padding(
@@ -128,55 +127,52 @@ class _Slider2Card extends StatelessWidget {
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // ✅ Fixed image section (all aligned)
-                  Container(
-                    width: isSmallScreen ? 80 : 90,
-                    height: isSmallScreen ? 80 : 90,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: (imageUrl.isNotEmpty)
-                          ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) =>
-                        const ImageFallbackWidget(h: 80),
-                      )
-                          : const ImageFallbackWidget(h: 80),
-                    ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ✅ Fixed image section (all aligned)
+                Container(
+                  width: isSmallScreen ? 80 : 90,
+                  height: isSmallScreen ? 80 : 90,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: (imageUrl.isNotEmpty)
+                        ? CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) =>
+                      const ImageFallbackWidget(h: 80),
+                    )
+                        : const ImageFallbackWidget(h: 80),
+                  ),
+                ),
 
-                  const SizedBox(height: 6),
+                const SizedBox(height: 6),
 
-                  // ✅ Text section (auto height but doesn’t affect image line)
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: isSmallScreen ? 32 : 34,
-                      maxHeight: isSmallScreen ? 40 : 44,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Text(
-                        layoutData.title ?? '',
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: isSmallScreen ? 11 : 12,
-                        ),
+                // ✅ Text section (auto height but doesn’t affect image line)
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: isSmallScreen ? 32 : 34,
+                    maxHeight: isSmallScreen ? 40 : 44,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+                      layoutData.title ?? '',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: isSmallScreen ? 11 : 12,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
 
             // ✅ Floating discount badge (stays above)

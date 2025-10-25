@@ -72,7 +72,7 @@ class Banner1 extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: SingleChildScrollView(
@@ -155,6 +155,7 @@ class _Banner1Card extends StatelessWidget {
                 color: AppColors.textColor,
               ),
             ),
+            const SizedBox(height: 4),
           ],
         ),
       ),
