@@ -178,7 +178,7 @@ class _ProductCard2State extends State<ProductCard2> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? "Write A Title Here",
-                style: const TextStyle(
+                style: FontUtils.primaryFontStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
@@ -194,7 +194,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
               child: Text(
                 product.description ?? "Add a short section",
-                style: const TextStyle(
+                style: FontUtils.secondaryFontStyle(
                   fontSize: 12,
                   color: Colors.black54,
                 ),
@@ -209,7 +209,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
               child: Text(
                 _fmt(calc ?? orig ?? 0),
-                style: const TextStyle(
+                style:  FontUtils.secondaryFontStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
@@ -248,9 +248,9 @@ class _ProductCard2State extends State<ProductCard2> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Add To Cart",
-                    style: TextStyle(
+                    style: FontUtils.secondaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
