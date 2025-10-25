@@ -11,6 +11,7 @@ import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
 import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_12.dart';
+import 'package:waioz/ui/widgets/home/item_13.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
@@ -282,6 +283,13 @@ class _CustomPageState extends State<CustomPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item12(content: homePageContent!),
               );
+      case "item13":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Item13(content: homePageContent!),
+        );
 
       default:
         return const SizedBox();
