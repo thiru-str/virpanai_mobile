@@ -124,6 +124,16 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     return match.name ?? "Cash on Delivery";
   }
 
+  String _getProviderKey(String? providerId, List<PaymentProvider> providers) {
+    if (providerId == null) return AppConfig.razorPayKey;
+
+    final match = providers.firstWhere(
+          (p) => p.id == providerId,
+      orElse: () => PaymentProvider(id: providerId, apiKey: AppConfig.razorPayKey),
+    );
+    return match.apiKey ?? AppConfig.razorPayKey;
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -710,7 +720,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
 
   void makeRazorPayCall(String orderId) {
     var options = {
-      'key': AppConfig.razorPayKey,
+      'key': _getProviderKey(pp_id, paymentProviders),
       'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
       'name': AppConfig.appName,
       'description': 'Payment to ${AppConfig.appName}',
