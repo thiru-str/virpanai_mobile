@@ -9,6 +9,8 @@ import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
+import 'package:waioz/ui/widgets/home/item_11.dart';
+import 'package:waioz/ui/widgets/home/item_12.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
@@ -266,6 +268,20 @@ class _CustomPageState extends State<CustomPage> {
             },
           ),
         );
+      case "item11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item11(content: homePageContent!),
+              );
+      case "item12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item12(content: homePageContent!),
+              );
 
       default:
         return const SizedBox();

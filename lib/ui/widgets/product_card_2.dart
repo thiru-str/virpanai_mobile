@@ -118,9 +118,9 @@ class _ProductCard2State extends State<ProductCard2> {
                     left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      decoration: ShapeDecoration(
+                      decoration: const ShapeDecoration(
                         color: Colors.indigo,
-                        shape: const StarBorder.polygon(
+                        shape: StarBorder.polygon(
                           sides: 10, // makes a scalloped/seal-like shape
                           pointRounding: 0.1, // controls curve softness
                         ),
