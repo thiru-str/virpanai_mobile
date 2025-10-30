@@ -505,6 +505,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     try {
       final ApiService apiService = ApiService();
       await apiService.removeCart(context,cartItemId);
+      await updatePaymentMethod(pp_id);
       getCartApi();
     } catch (e) {
       setState(() {
@@ -643,7 +644,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
-  void updatePaymentMethod(String paymentProviderId) async {
+  Future<void> updatePaymentMethod(String paymentProviderId) async {
     try {
       setState(() {
         cartLoading =true;
