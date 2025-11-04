@@ -13,6 +13,7 @@ class CartItemCard extends StatelessWidget {
   final String size;
   final String color;
   final String price;
+  final String error;
   final int quantity;
   final bool isUpdating; // New field
   final VoidCallback onIncrease;
@@ -26,6 +27,7 @@ class CartItemCard extends StatelessWidget {
     required this.size,
     required this.color,
     required this.price,
+    this.error = '',
     required this.quantity,
     this.isUpdating = false,
     required this.onIncrease,
@@ -46,126 +48,137 @@ class CartItemCard extends StatelessWidget {
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(12.0),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: imageUrl.isNotEmpty?CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  width: 60,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, _, __) => const ImageFallbackWidget(w: 60,h: 80),
-                ):const ImageFallbackWidget(w: 60,h:80),
-              ),
-              const SizedBox(width: 12.0),
-              // Product Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      productName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      size,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Price and Quantity Adjustment
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    price,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                  // Product Image
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: imageUrl.isNotEmpty?CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      width: 60,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, _, __) => const ImageFallbackWidget(w: 60,h: 80),
+                    ):const ImageFallbackWidget(w: 60,h:80),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: onDecrease,
-                        child: Container(
-                          padding: const EdgeInsets.all(4.0),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.remove,
-                            color: Colors.white,
-                            size: 16,
+                  const SizedBox(width: 12.0),
+                  // Product Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          productName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
+                        const SizedBox(height: 4),
+                        Text(
+                          size,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Price and Quantity Adjustment
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
                       Text(
-                        '$quantity',
+                        price,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: onIncrease,
-                        child: Container(
-                          padding: const EdgeInsets.all(4.0),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: onDecrease,
+                            child: Container(
+                              padding: const EdgeInsets.all(4.0),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.remove,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 16,
+                          const SizedBox(width: 8),
+                          Text(
+                            '$quantity',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: onIncrease,
+                            child: Container(
+                              padding: const EdgeInsets.all(4.0),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Visibility(
+                        visible: quantity>1,
+                        child: GestureDetector(
+                          onTap: onRemoveAll,
+                          child: const Text(
+                            "Remove All",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                              decorationColor: Colors.red,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Visibility(
-                    visible: quantity>1,
-                    child: GestureDetector(
-                      onTap: onRemoveAll,
-                      child: const Text(
-                        "Remove All",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.w600,
-                          decorationColor: Colors.red,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
+               Visibility(
+                 visible: error.isNotEmpty,
+                 child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0,right: 8.0,top: 8.0),
+                  child: Text(error,style: FontUtils.secondaryFontStyle(color: Colors.red),maxLines: 2,),),
+               )
             ],
           ),
         ),

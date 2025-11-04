@@ -216,6 +216,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                           return CartItemCard(
                             imageUrl: cartItem.thumbnail??'',
                             productName: cartItem.productTitle!,
+                            error: cartItem.error??'',
                             size: cartItem.variantTitle! == "Default variant" ? "":cartItem.variantTitle!,
                             color: 'color',
                             // Replace with actual color
@@ -346,6 +347,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
               },
               amount: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
               onPlaceOrder: () {
+                if (cartResponse?.cart?.error== true) {
+                  AppUtils.showToast(
+                      'Please remove unavailable stock items to continue');
+                  return;
+                }
                 // Add checkout logic here
                 if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
                   AppUtils.showToast(

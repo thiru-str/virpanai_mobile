@@ -576,7 +576,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/line-items',
+      'store/custom-carts/$cartId/line-items',
       {"variant_id": variantId, "quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
@@ -587,7 +587,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest(
-      'store/carts/$cartId',
+      'store/custom-carts/$cartId',
       null,
       null,
       (json) => CartResponse.fromJson(json),
@@ -654,7 +654,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/line-items/$cartItemId',
+      'store/custom-carts/$cartId/line-items/$cartItemId',
       {"quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,

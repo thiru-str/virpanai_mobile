@@ -68,6 +68,7 @@ class Cart {
   Region? region;
   List<Promotion>? promotions;
   PaymentCollection? paymentCollection;
+  bool? error;
 
   Cart({
     this.id,
@@ -109,6 +110,7 @@ class Cart {
     this.region,
     this.promotions,
     this.paymentCollection,
+    this.error,
   });
 
   factory Cart.fromJson(Map<String, dynamic> json) => Cart(
@@ -155,6 +157,7 @@ class Cart {
         json["promotions"]!.where((x) => x != null).map((x) => Promotion.fromJson(x))
     ),
     paymentCollection: json["payment_collection"] == null ? null : PaymentCollection.fromJson(json["payment_collection"]),
+    error: json["error"],
 
   );
 
@@ -198,6 +201,7 @@ class Cart {
     "region": region?.toJson(),
     "promotions": promotions == null ? [] : List<dynamic>.from(promotions!.map((x) => x)),
     "payment_collection": paymentCollection?.toJson(),
+    "error": error,
   };
 }
 
@@ -295,6 +299,7 @@ class Item {
   Raw? rawReturnDismissedTotal;
   Raw? rawWriteOffTotal;
   bool? isUpdating;
+  String? error;
 
   Item({
     this.id,
@@ -365,6 +370,7 @@ class Item {
     this.rawReturnDismissedTotal,
     this.rawWriteOffTotal,
     this.isUpdating = false,
+    this.error,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
@@ -435,6 +441,7 @@ class Item {
     rawReturnReceivedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
     rawReturnDismissedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
     rawWriteOffTotal: json["raw_write_off_total"] == null ? null : Raw.fromJson(json["raw_write_off_total"]),
+    error: json["error"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -505,6 +512,7 @@ class Item {
     "raw_return_received_total": rawReturnReceivedTotal,
     "raw_return_dismissed_total": rawReturnDismissedTotal,
     "raw_write_off_total": rawWriteOffTotal,
+    "error": error,
   };
 }
 
