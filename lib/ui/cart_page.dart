@@ -389,7 +389,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       cartResponse = await apiService.getCart(context);
       emitEvent(cartResponse!);
       setState(() {
-        pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
+        pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'pp_system_default';
         orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
         clientSecret = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret??'';
         apiLoading = false;
@@ -487,6 +487,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     try {
       final ApiService apiService = ApiService();
       await apiService.removeCart(context,cartItemId);
+      await updatePaymentMethod(pp_id!);
       getCartApi();
     } catch (e) {
       setState(() {
@@ -625,7 +626,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     );
   }
 
-  void updatePaymentMethod(String paymentProviderId) async {
+  Future<void> updatePaymentMethod(String paymentProviderId) async {
     try {
       setState(() {
         cartLoading =true;
@@ -634,9 +635,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       final response = await apiService.updatePaymentMethod(
           context, paymentProviderId, cartResponse!);
       setState(() {
-        pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'';
-        orderId = response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
-        clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret??'';
+        pp_id = response.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'pp_system_default';
       });
     } catch (e) {
       print(e);
