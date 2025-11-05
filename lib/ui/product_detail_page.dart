@@ -715,9 +715,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               final maxQty = getMaxQuantity(selectedVariant, cartResponse?.cart?.items??[]);
 
               if (maxQty <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Max items for this stock reached',style: TextStyle(color: Colors.white),),backgroundColor: AppColors.primary,),
-                );
+                AppUtils.showToast('Max items for this stock reached');
                 return;
               }
 
@@ -725,9 +723,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
 
               if (safeQty < enteredQty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("You can only add up to $maxQty items.",style: TextStyle(color: Colors.white),),backgroundColor: AppColors.primary,),
-                );
+                AppUtils.showToast('You can only add up to $maxQty items.');
                 return;
               }
 

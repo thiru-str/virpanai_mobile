@@ -600,7 +600,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/promotions',
+      'store/custom-carts/$cartId/promotions',
       {"promo_codes": [promoCode]},
           (json) => CartResponse.fromJson(json),
       context,
@@ -612,7 +612,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
-      'store/carts/$cartId/promotions', null,{"promo_codes": promoCodes},
+      'store/custom-carts/$cartId/promotions', null,{"promo_codes": promoCodes},
           (json) => CartResponse.fromJson(json),
       context,
     );
@@ -666,7 +666,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
-      'store/carts/$cartId/line-items/$cartItemId',
+      'store/custom-carts/$cartId/line-items/$cartItemId',
       null,
       null,
           (json) => DeleteResponse.fromJson(json),

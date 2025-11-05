@@ -243,8 +243,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                               if (cartItem.quantity! - 1 <= 0) {
                                 removeCart(cartItem.id!,index);
                               } else {
-                                updateCart(cartItem.quantity! - 1,
-                                    cartItem.id!,index);
+                                  updateCart(cartItem.inStock??false? cartItem.quantity! - 1: cartItem.inventoryQuantity??0, cartItem.id!, index);
                               }
                             }, // Handle quantity decrease
                           );
@@ -686,8 +685,6 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
   void placeOrder(String paymentProviderId) async {
-    debugPrint('payment provider ${paymentProviderId}');
-    debugPrint('payment secret ${clientSecret}');
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         makeRazorPayCall(orderId!);
