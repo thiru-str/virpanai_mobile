@@ -222,48 +222,53 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildProductImages() {
-    final images = product?.images ?? [];
+    final variantImages = selectedVariant?.metadata?.images??[];
+    List<String> variantImageUrls = [];
 
-    final itemCount = images.isNotEmpty ? images.length : 1;
+    variantImageUrls = variantImages
+        .map((e) => (e.url) ?? '')
+        .where((url) => url.isNotEmpty)
+        .toList();
+
+    final images = variantImageUrls.isNotEmpty
+        ? variantImageUrls
+        : (product?.images ?? []).map((img) => img.url ?? '').toList();
 
     return SizedBox(
       height: 250,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: itemCount,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        itemCount: images.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
-          final url = images.isNotEmpty ? images[index].url : null;
-
+          final url = images[index];
           return GestureDetector(
             onTap: () {
-              if (images.isNotEmpty) {
-                PageRouteUtils.pushWithFade(
-                  context,
-                  FullscreenImageCarousel(
-                    imageUrls: images,
-                    initialIndex: index,
-                  ),
-                );
-              }
+              PageRouteUtils.pushWithFade(
+                context,
+                FullscreenImageCarousel(
+                  imageUrls: images,
+                  initialIndex: index,
+                ),
+              );
             },
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: (url != null && url.isNotEmpty)
-                  ? CachedNetworkImage(
+              child: CachedNetworkImage(
                 imageUrl: url,
                 height: 250,
                 fit: BoxFit.cover,
-                errorWidget: (context, _, __) => const ImageFallbackWidget(h: 250,),
-              )
-                  : const ImageFallbackWidget(h: 250,),
+                errorWidget: (_, __, ___) =>
+                const ImageFallbackWidget(h: 250),
+              ),
             ),
           );
         },
       ),
     );
   }
+
 
   Widget buildRelatedProducts() {
     if ((relatedProductsResponse?.products?.length ?? 0) == 0) {
@@ -552,6 +557,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildProductDescription() {
+    final variantDesc = selectedVariant?.metadata?.description ?? '';
+    final productDesc = product?.metadata?.additionalDescription ?? product?.description ?? '';
+
+    final descriptionToShow = (variantDesc?.isNotEmpty == true)
+        ? variantDesc
+        : productDesc;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -564,26 +576,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
         ),
         const SizedBox(height: 10),
-        Visibility(
-          visible:
-              product?.metadata?.additionalDescription?.isNotEmpty == true,
-          child: CommonHtmlWidget(
-              htmlContent: product?.metadata?.additionalDescription??''),
-        ),
-        Visibility(
-          visible: product?.metadata == null,
-          child: Text(
-            product?.description ?? '',
-            style: FontUtils.primaryFontStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 12,
-              color: AppColors.textColor,
-            ),
-          ),
-        ),
+        CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
       ],
     );
   }
+
 
   Widget buildRatingSection() {
     return RatingWidget(

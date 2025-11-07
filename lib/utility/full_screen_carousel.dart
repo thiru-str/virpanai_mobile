@@ -81,7 +81,7 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
             },
             itemBuilder: (context, index) {
               return CachedNetworkImage(
-                imageUrl: widget.imageUrls[index].url!,
+                imageUrl: widget.imageUrls[index],
                 fit: BoxFit.contain,
                 errorWidget: (context, url, error) => ImageFallbackWidget(),
               );
