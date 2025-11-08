@@ -696,12 +696,12 @@ class ApiService {
   //     context,
   //   );
   // }
-  Future<OrderHistoryResponse> getOrderHistory(BuildContext context) async {
+  Future<OrderHistoryResponse> getOrderHistory(BuildContext context,int limit,int offset) async {
     await addToken();
     return _makeGetRequest<OrderHistoryResponse>(
       'store/orders?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,',
       null,
-      null,
+      {'limit':limit,'offset':offset},
       (json) => OrderHistoryResponse.fromJson(json),
       context,
     );
