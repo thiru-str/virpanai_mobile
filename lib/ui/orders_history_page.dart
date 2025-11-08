@@ -28,7 +28,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
   OrderHistoryResponse? orderHistoryResponse;
   bool apiLoading = true;
 
-  final int _limit = 10;
+  final int _limit = 20;
   int _offset = 0;
   bool _isLoadingMore = false;
   bool _hasMore = true;
