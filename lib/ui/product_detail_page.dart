@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
@@ -35,7 +38,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
-import '../model/product_response.dart';
+import '../model/product_response.dart' hide Image;
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import '../utility/shared_preferences_util.dart';
@@ -88,6 +91,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
   bool isLoggedIn = false;
+
+  Map<String, File?>? videoThumbnails;
 
   @override
   void initState() {
@@ -222,40 +227,72 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildProductImages() {
-    final variantImages = selectedVariant?.metadata?.images??[];
-    List<String> variantImageUrls = [];
+    final variantImages = selectedVariant?.metadata?.images ?? [];
+    final variantVideos = productInfoResponse?.productVideo ?? [];
 
-    variantImageUrls = variantImages
+    final variantImageUrls = variantImages
         .map((e) => (e.url) ?? '')
         .where((url) => url.isNotEmpty)
         .toList();
 
-    final images = variantImageUrls.isNotEmpty
-        ? variantImageUrls
+    final videoUrls = variantVideos
+        .map((v) => v.url ?? '')
+        .where((url) => url.toLowerCase().endsWith('.mp4'))
+        .toList();
+
+    final allMedia = [...variantImageUrls, ...videoUrls];
+    final displayUrls = allMedia.isNotEmpty
+        ? allMedia
         : (product?.images ?? []).map((img) => img.url ?? '').toList();
 
     return SizedBox(
       height: 250,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: images.length,
+        itemCount: displayUrls.length,
         separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
-          final url = images[index];
+          final url = displayUrls[index];
+          final isVideo = url.toLowerCase().endsWith('.mp4');
+
           return GestureDetector(
             onTap: () {
               PageRouteUtils.pushWithFade(
                 context,
                 FullscreenImageCarousel(
-                  imageUrls: images,
+                  imageUrls: displayUrls,
                   initialIndex: index,
+                  videoThumbnails: videoThumbnails,
                 ),
               );
             },
             child: Container(
               width: 180,
               decoration: BoxDecoration(color: AppColors.secondary),
-              child: CachedNetworkImage(
+              child: isVideo
+                  ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (videoThumbnails?[url] != null)
+                    Image.file(
+                      videoThumbnails![url]!,
+                      width: 180,
+                      height: 250,
+                      fit: BoxFit.cover,
+                    )
+                  else
+                    Container(
+                      width: 180,
+                      height: 250,
+                      color: Colors.black12,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    ),
+                  const Icon(Icons.play_circle_fill,
+                      size: 50, color: Colors.white),
+                ],
+              )
+                  : CachedNetworkImage(
                 imageUrl: url,
                 height: 250,
                 fit: BoxFit.cover,
@@ -268,6 +305,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       ),
     );
   }
+
+
 
 
   Widget buildRelatedProducts() {
@@ -915,25 +954,35 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         final apiService = ApiService();
         final response = await apiService.getProductInfo(
             context, widget.productId, selectedVariantId);
+
         setState(() {
           productInfoResponse = response;
-          setState(() {
-            isFavorite = productInfoResponse?.productOnWishlist ?? false;
-            wishlistId = productInfoResponse?.productWishlistId ?? '';
-            addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
-          });
+          isFavorite = productInfoResponse?.productOnWishlist ?? false;
+          wishlistId = productInfoResponse?.productWishlistId ?? '';
+          addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
           apiLoading = false;
         });
+
+        if ((productInfoResponse?.productVideo?.isNotEmpty ?? false)) {
+          final videoUrls = productInfoResponse!.productVideo!
+              .map((v) => v.url ?? '')
+              .where((url) => url.toLowerCase().endsWith('.mp4'))
+              .toList();
+          videoThumbnails = await generateVideoThumbnails(videoUrls);
+        }
+
         if ((addOnProductsCount ?? 0) > 0) {
           addOnProductsResponse =
-              await apiService.addOnProducts(context, widget.productId);
+          await apiService.addOnProducts(context, widget.productId);
         }
+
         getCartApi();
       }
     } catch (e) {
       setState(() => apiLoading = false);
     }
   }
+
 
   Future<void> addCart(int qty, String variantId) async {
     try {
@@ -1161,4 +1210,40 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
     }
   }
+
+  Future<Map<String, File?>> generateVideoThumbnails(List<String> videoUrls) async {
+    final cacheDir = await getTemporaryDirectory();
+    final Map<String, File?> thumbnailMap = {};
+
+    for (final url in videoUrls) {
+      final fileName = Uri.parse(url).pathSegments.last.replaceAll('.mp4', '.jpg');
+      final cachedFile = File('${cacheDir.path}/$fileName');
+
+      if (await cachedFile.exists()) {
+        thumbnailMap[url] = cachedFile;
+        continue;
+      }
+
+      try {
+        final uint8list = await VideoThumbnail.thumbnailData(
+          video: url,
+          imageFormat: ImageFormat.JPEG,
+          maxWidth: 320,
+          quality: 75,
+        );
+
+        if (uint8list != null) {
+          await cachedFile.writeAsBytes(uint8list);
+          thumbnailMap[url] = cachedFile;
+        }
+      } catch (e) {
+        print('Thumbnail generation failed for $url: $e');
+        thumbnailMap[url] = null;
+      }
+    }
+
+    return thumbnailMap;
+  }
+
+
 }
