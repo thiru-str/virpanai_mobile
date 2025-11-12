@@ -1,6 +1,6 @@
 class AppConfig {
-  static const String appName = 'VirpanAi';
-  static const String baseUrl = 'https://virpanai.dev.api.waioz.com/';
+  static const String appName = 'SportingNation';
+  static const String baseUrl = 'https://api.myvirpanai.com/8ky7kr/';
   // static const String baseUrl = 'https://virpanai.api.waioz.com/';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
