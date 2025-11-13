@@ -23,7 +23,7 @@ class Item4 extends StatelessWidget {
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: AppUtils.buildLayoutBackground(content)==null?const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8.0):const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -70,7 +70,7 @@ class Item4 extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // Horizontal scroller: adaptive height (no fixed SizedBox wrapper)
             SingleChildScrollView(

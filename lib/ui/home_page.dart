@@ -205,15 +205,9 @@ class _HomePageState extends State<HomePage> {
           child: Item2(content: homePageContent),
         );
       case "item3":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item3(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Item3(content: homePageContent!);
       case "item4":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item4(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Item4(content: homePageContent!);
       case "item5":
         return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -225,10 +219,7 @@ class _HomePageState extends State<HomePage> {
           child: Item6(content: homePageContent!),
         );
       case "item7":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item7(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Item7(content: homePageContent!);
       case "item8":
         return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -245,25 +236,13 @@ class _HomePageState extends State<HomePage> {
           child: Grid1(content: homePageContent!),
         );
       case "Grid2":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Grid2(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Grid2(content: homePageContent!);
       case "Banner2": // video
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Banner2(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Banner2(content: homePageContent!);
       case "Slider1":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Slider1(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Slider1(content: homePageContent!);
       case "Banner1":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Banner1(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Banner1(content: homePageContent!);
       case "item9":
         return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),

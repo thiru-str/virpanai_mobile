@@ -10,8 +10,6 @@ import '../../../utility/redirect_utils.dart';
 
 
 
-
-
 class Slider1 extends StatefulWidget {
   final Content content;
 

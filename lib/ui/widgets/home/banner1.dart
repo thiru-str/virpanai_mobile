@@ -20,85 +20,81 @@ class Banner1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      content.layoutTitle ?? '',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2, // Allow up to 2 lines for the title
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    content.layoutTitle ?? '',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2, // Allow up to 2 lines for the title
+                  ),
+                ),
+                const SizedBox(width: 4), // Add some spacing between title and redirect
+                Visibility(
+                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Handle section-level redirection if needed
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content.redirectData!,
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      children: [
+                        Text(
+                          content.layoutRedirectTitle!,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 18),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 4), // Add some spacing between title and redirect
-                  Visibility(
-                    visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                    child: GestureDetector(
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0,),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                    _Banner1Card(
+                      layoutData: content.layoutData![i],
                       onTap: () {
-                        // Handle section-level redirection if needed
-                        RedirectUtils.handleContentRedirectViewAll(
+                        RedirectUtils.handleContentRedirect(
                           context: context,
-                          redirectData: content.redirectData!,
+                          layoutOption: content.layoutOption ?? "",
+                          layoutData: content.layoutData![i],
                         );
                       },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
-                        children: [
-                          Text(
-                            content.layoutRedirectTitle!,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
-                            ),
-                          ),
-                          const Icon(Icons.chevron_right, size: 18),
-                        ],
-                      ),
                     ),
-                  ),
+                    if (i != content.layoutData!.length - 1)
+                      const SizedBox(width: 16), // spacing between items
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                      _Banner1Card(
-                        layoutData: content.layoutData![i],
-                        onTap: () {
-                          RedirectUtils.handleContentRedirect(
-                            context: context,
-                            layoutOption: content.layoutOption ?? "",
-                            layoutData: content.layoutData![i],
-                          );
-                        },
-                      ),
-                      if (i != content.layoutData!.length - 1)
-                        const SizedBox(width: 16), // spacing between items
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -155,7 +151,7 @@ class _Banner1Card extends StatelessWidget {
                 color: AppColors.textColor,
               ),
             ),
-            const SizedBox(height: 4),
+
           ],
         ),
       ),

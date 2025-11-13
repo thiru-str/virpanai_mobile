@@ -477,7 +477,7 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v7',
+      'store/get_home_page/v8',
         null,
       (json) => HomePageResponse.fromJson(json),
       context,
@@ -487,7 +487,7 @@ class ApiService {
   Future<CustomPageResponse> getCustomPage(BuildContext context,String slug) async {
     await addToken();
     return _makePostRequest<CustomPageResponse>(
-      'store/get_custom_page/v1/$slug',
+      'store/get_custom_page/v2/$slug',
       null,
           (json) => CustomPageResponse.fromJson(json),
       context,

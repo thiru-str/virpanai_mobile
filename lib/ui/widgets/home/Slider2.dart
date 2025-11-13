@@ -25,43 +25,46 @@ class Slider2 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 🔹 Title + Redirect
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
+          Visibility(
+            visible: content.layoutTitle?.isNotEmpty== true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
                     ),
                   ),
-                ),
-                if ((content.layoutRedirectTitle ?? '').isNotEmpty)
-                  GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle ?? "",
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            color: AppColors.textColor,
+                  if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirectViewAll(
+                          context: context,
+                          redirectData: content.redirectData!,
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle ?? "",
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              color: AppColors.textColor,
+                            ),
                           ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18)
-                      ],
+                          const Icon(Icons.chevron_right, size: 18)
+                        ],
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -122,7 +125,7 @@ class _Slider2Card extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: isSmallScreen ? 80 : 90,
-        margin: const EdgeInsets.only(bottom: 4),
+        margin: const EdgeInsets.only(top:8,bottom: 4),
         child: Stack(
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
@@ -154,20 +157,23 @@ class _Slider2Card extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 // ✅ Text section (auto height but doesn’t affect image line)
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: isSmallScreen ? 32 : 34,
-                    maxHeight: isSmallScreen ? 40 : 44,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-                      layoutData.title ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: isSmallScreen ? 11 : 12,
+                Visibility(
+                  visible: layoutData.title?.isNotEmpty == true,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: isSmallScreen ? 32 : 34,
+                      maxHeight: isSmallScreen ? 40 : 44,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        layoutData.title ?? '',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: isSmallScreen ? 11 : 12,
+                        ),
                       ),
                     ),
                   ),

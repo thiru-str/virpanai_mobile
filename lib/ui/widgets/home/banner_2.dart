@@ -87,14 +87,14 @@ class _Banner2State extends State<Banner2> {
 
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
-      child: VisibilityDetector(
-        key: Key('Banner2-${content.layoutTitle ?? ""}'),
-        onVisibilityChanged: _onVisibilityChanged,
-        child: AnimatedOpacity(
-          opacity: _isVisible ? 1 : 0.5,
-          duration: const Duration(milliseconds: 300),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: VisibilityDetector(
+          key: Key('Banner2-${content.layoutTitle ?? ""}'),
+          onVisibilityChanged: _onVisibilityChanged,
+          child: AnimatedOpacity(
+            opacity: _isVisible ? 1 : 0.5,
+            duration: const Duration(milliseconds: 300),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -135,11 +135,13 @@ class _Banner2State extends State<Banner2> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
+
+
 
                 /// Carousel
                 SizedBox(
-                  height: 190,
+                  height: 160,
                   child: PageView.builder(
                     controller: _pageController,
                     padEnds: false,
@@ -162,7 +164,7 @@ class _Banner2State extends State<Banner2> {
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0,),
                           child: isVideo
                               ? ItemVideoTile(
                             key: ValueKey(mediaUrl),
