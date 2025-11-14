@@ -246,9 +246,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               isLoading: _isGstImageUploading,
               onUploadTap: () async {
                 setState(() => _isGstImageUploading = true);
-                await pickImage(
-                      (img) => setState(() => _gstImage = img),
-                      (path) => setState(() {
+                await _showImageSourcePicker(
+                  onImagePicked:(img) => setState(() => _gstImage = img),
+                  onUploadComplete:(path) => setState(() {
                     _gstImagePath = path;
                     _isGstImageUploading = false;
                   }),
@@ -272,9 +272,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               isLoading: _isShopFrontUploading,
               onUploadTap: () async {
                 setState(() => _isShopFrontUploading = true);
-                await pickImage(
-                      (img) => setState(() => _shopFrontImage = img),
-                      (path) => setState(() {
+                await _showImageSourcePicker(
+                  onImagePicked:(img) => setState(() => _shopFrontImage = img),
+                  onUploadComplete:(path) => setState(() {
                         _shopFrontImagePath = path;
                     _isShopFrontUploading = false;
                   }),
@@ -287,9 +287,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               isLoading: _isShopInteriorUploading,
               onUploadTap: () async {
                 setState(() => _isShopInteriorUploading = true);
-                await pickImage(
-                      (img) => setState(() => _shopInteriorImage = img),
-                      (path) => setState(() {
+                await _showImageSourcePicker(
+                  onImagePicked: (img) => setState(() => _shopInteriorImage = img),
+                    onUploadComplete:(path) => setState(() {
                     _shopInteriorImagePath = path;
                     _isShopInteriorUploading = false;
                   }),
@@ -302,9 +302,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               isLoading: _isShopCounterUploading,
               onUploadTap: () async {
                 setState(() => _isShopCounterUploading = true);
-                await pickImage(
-                      (img) => setState(() => _shopCounterImage = img),
-                      (path) => setState(() {
+                await _showImageSourcePicker(
+                    onImagePicked:(img) => setState(() => _shopCounterImage = img),
+                    onUploadComplete:(path) => setState(() {
                     _shopCounterImagePath = path;
                     _isShopCounterUploading = false;
                   }),
@@ -656,18 +656,63 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     );
   }
 
+  Future<void> _showImageSourcePicker({
+    required Function(File) onImagePicked,
+    required Function(String?) onUploadComplete,
+  }) async {
+    await showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt, color: AppColors.primary),
+                title: Text("Take Photo"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera, onImagePicked, onUploadComplete);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library, color: AppColors.primary),
+                title: Text("Choose from Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery, onImagePicked, onUploadComplete);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    ).whenComplete(() {
+      // Bottom sheet closed → user tapped outside or swiped down
+      _resetAllUploadFlags();
+    });
 
-  Future<void> pickImage(
-      Function(File) onImagePicked, Function(String?) onUploadComplete) async {
+  }
+
+
+  Future<void> _pickImage(
+      ImageSource source,
+      Function(File) onImagePicked,
+      Function(String?) onUploadComplete,
+      ) async {
     try {
-      final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final picked = await ImagePicker().pickImage(source: source);
       if (picked != null) {
         final imageFile = File(picked.path);
         onImagePicked(imageFile);
         await _uploadAndStoreImage(imageFile, onUploadComplete);
       }
     } finally {
-      // Reset all loading states if image picking is cancelled or fails
       if (mounted) {
         setState(() {
           _isGstImageUploading = false;
@@ -678,6 +723,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       }
     }
   }
+
 
   void register() async {
     try {
@@ -765,6 +811,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       onSuccess(null);
       print('Error uploading image: $e');
     }
+  }
+
+  void _resetAllUploadFlags() {
+    setState(() {
+      _isGstImageUploading = false;
+      _isShopCounterUploading = false;
+      _isShopInteriorUploading = false;
+      _isShopFrontUploading = false;
+    });
   }
 
 
