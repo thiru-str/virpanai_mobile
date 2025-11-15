@@ -576,7 +576,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/custom-carts/$cartId/line-items',
+      'store/carts/$cartId/line-items',
       {"variant_id": variantId, "quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
@@ -587,7 +587,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest(
-      'store/custom-carts/$cartId',
+      'store/carts/$cartId',
       null,
       null,
       (json) => CartResponse.fromJson(json),
@@ -600,7 +600,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/custom-carts/$cartId/promotions',
+      'store/carts/$cartId/promotions',
       {"promo_codes": [promoCode]},
           (json) => CartResponse.fromJson(json),
       context,
@@ -612,7 +612,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
-      'store/custom-carts/$cartId/promotions', null,{"promo_codes": promoCodes},
+      'store/carts/$cartId/promotions', null,{"promo_codes": promoCodes},
           (json) => CartResponse.fromJson(json),
       context,
     );
@@ -654,7 +654,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
+      'store/carts/$cartId/line-items/$cartItemId',
       {"quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
@@ -666,7 +666,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
+      'store/carts/$cartId/line-items/$cartItemId',
       null,
       null,
           (json) => DeleteResponse.fromJson(json),
