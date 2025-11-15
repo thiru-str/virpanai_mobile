@@ -19,6 +19,7 @@ class AppAssets {
   static const String ic_discount = 'images/ic_discount.png';
   static const String ic_no_transaction = 'images/ic_no_transaction.png';
   static const String app_icon = 'images/app_icon.png';
+  static const String app_icon_white = 'images/app_icon_white.png';
   static const String ic_no_image = 'images/ic_no_image.svg';
   static const String order_shipped = 'images/order_shipped.svg';
   static const String order_processing = 'images/order_processing.svg';

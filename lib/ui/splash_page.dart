@@ -61,7 +61,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     _controller.forward();
 
     // Navigate to next page after animation
-    navToNextPage();
+   navToNextPage();
   }
 
   @override
@@ -71,8 +71,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       body: Center(
         child: ScaleTransition(
           scale: _animation,
-          child: SvgPicture.asset(
-            AppAssets.app_logo,
+          child: Image.asset(
+            AppAssets.app_icon,
             height: 120,
             width: 158,
           ),
