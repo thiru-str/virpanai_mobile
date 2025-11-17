@@ -69,6 +69,12 @@ class _HomePageState extends State<HomePage> {
 
   bool isLoggedIn = false;
 
+  final int _limit = 10;
+  int _offset = 0;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -80,6 +86,29 @@ class _HomePageState extends State<HomePage> {
       initializePages();
       listenToEvents();
     });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoadingMore &&
+          _hasMore) {
+        _loadMoreApi();
+      }
+    });
+  }
+
+  Future<void> _loadMoreApi() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    setState(() => _isLoadingMore = true);
+
+    _offset += _limit;
+
+    await getHomePageApi(
+      offset: _offset,
+      limit: _limit,
+      isLoadMore: true,
+    );
   }
 
   void listenToEvents() {
@@ -95,13 +124,14 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
   Future<void> initializePages() async {
-    getHomePageApi();
+    getHomePageApi(limit: _limit, offset: _offset);
     appHeader = (await SharedPreferencesUtil().getString('app_header') ?? "");
   }
 
@@ -120,139 +150,191 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: Stack(
-            children: [
-              apiLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                        // Call your refresh function here
-                        setState(() => apiLoading = true);
-                        await getHomePageApi();
-                      },
-                      child: homePageResponse?.content?.isEmpty == true?Center(child: NoOrdersWidget(message: 'Your Components is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){
-                        eventBus.fire(TabSwitchEvent(1));
-                      })):SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          children: [
+          child: apiLoading
+              ? Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    _offset = 0;
+                    _hasMore = true;
+                    setState(() => apiLoading = true);
+                    await getHomePageApi(offset: 0, limit: _limit);
+                  },
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (scrollInfo) {
+                      if (!_isLoadingMore &&
+                          _hasMore &&
+                          scrollInfo.metrics.pixels >=
+                              scrollInfo.metrics.maxScrollExtent - 200) {
+                        _loadMoreApi();
+                      }
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          // Main UI Components
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 0.0, vertical: 16.0),
+                            child: buildComponentList(),
+                          ),
+
+                          // Load More Indicator
+                          if (_isLoadingMore)
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 0.0, vertical: 16.0),
-                              child: ListView.builder(
-                                scrollDirection: Axis.vertical,
-                                itemCount:
-                                    homePageResponse?.content?.length ?? 0,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  final homePageContent =
-                                      homePageResponse?.content?[index];
-                                  return getLayoutWidget(homePageContent);
-                                },
+                              padding: const EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
                               ),
                             ),
-                            Visibility(
-                                visible: cartItems != null && cartItems != 0,
-                                child: const SizedBox(
-                                  height: 80,
-                                ))
-                          ],
-                        ),
+
+                          if (!_hasMore)
+                            const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                "End of page",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+
+                          SizedBox(
+                            height:
+                                cartItems != null && cartItems != 0 ? 100 : 20,
+                          )
+                        ],
                       ),
                     ),
-              Visibility(
-                visible: cartItems != null && cartItems != 0,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: cartItems != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              eventBus.fire(TabSwitchEvent(2));
-                            },
-                            child: ViewCartWidget(
-                                totalItems: cartItems!,
-                                itemImages: cartItemImages!),
-                          ),
-                        )
-                      : const SizedBox(),
+                  ),
                 ),
-              ),
-            ],
-          ),
         ));
+  }
+
+  ListView buildComponentList() {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: homePageResponse?.content?.length ?? 0,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final content = homePageResponse?.content ?? [];
+        if (index < content.length) {
+          final homePageContent = content[index];
+          return getLayoutWidget(homePageContent);
+        }
+
+        return _isLoadingMore
+            ? Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                    child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                )),
+              )
+            : const SizedBox.shrink();
+      },
+    );
   }
 
   Widget getLayoutWidget(Content? homePageContent) {
     print('item ${homePageContent?.layoutName}');
     switch (homePageContent?.layoutName) {
       case "item1":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item1(content: homePageContent),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item1(content: homePageContent),
+              );
       case "Slider2":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Slider2(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider2(content: homePageContent!);
       case "item2":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item2(content: homePageContent),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item2(content: homePageContent),
+              );
       case "item3":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Item3(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Item3(content: homePageContent!);
       case "item4":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Item4(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Item4(content: homePageContent!);
       case "item5":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item5(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item5(content: homePageContent!),
+              );
       case "item6":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item6(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item6(content: homePageContent!),
+              );
       case "item7":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Item7(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Item7(content: homePageContent!);
       case "item8":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item8(content: homePageContent),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item8(content: homePageContent),
+              );
       case "Slider3":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Slider3(content: homePageContent),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Slider3(content: homePageContent),
+              );
       case "Grid1":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Grid1(content: homePageContent!),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Grid1(content: homePageContent!),
+              );
       case "Grid2":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Grid2(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid2(content: homePageContent!);
       case "Banner2": // video
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Banner2(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner2(content: homePageContent!);
       case "Slider1":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Slider1(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider1(content: homePageContent!);
       case "Banner1":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Banner1(content: homePageContent!);
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner1(content: homePageContent!);
       case "item9":
-        return homePageContent?.layoutData?.isEmpty == true?const SizedBox():Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Item9(
-            content: homePageContent!,
-            onCartQtyChanged: (deltaQty, variantId) async {
-              await addCart(deltaQty, variantId);
-            },
-          ),
-        );
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item9(
+                  content: homePageContent!,
+                  onCartQtyChanged: (deltaQty, variantId) async {
+                    await addCart(deltaQty, variantId);
+                  },
+                ),
+              );
       case "item11":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -286,27 +368,60 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> getHomePageApi() async {
+  Future<void> getHomePageApi({
+    int offset = 0,
+    int limit = 10,
+    bool isLoadMore = false,
+  }) async {
     try {
-      final ApiService apiService = ApiService();
-      homePageResponse = await apiService.getHomePage(context);
+      if (!isLoadMore) {
+        setState(() => apiLoading = true);
+      }
+
+      final apiService = ApiService();
+      final newResponse = await apiService.getHomePage(
+        context,
+        limit: limit,
+        offset: offset,
+      );
+
+      /// FIRST PAGE
+      if (!isLoadMore) {
+        homePageResponse = newResponse; // normal full load
+      } else {
+        /// LOAD MORE PAGE – append data
+        final oldList = homePageResponse?.content ?? [];
+        final newList = newResponse.content ?? [];
+
+        if (newList.isNotEmpty) {
+          oldList.addAll(newList);
+          homePageResponse?.content = oldList;
+        } else {
+          _hasMore = false; // no more pages
+        }
+      }
+
+      // Save global meta values
       SharedPreferencesUtil()
-          .saveString('region_id', homePageResponse?.global?.regionId ?? "");
+          .saveString('region_id', newResponse.global?.regionId ?? "");
       SharedPreferencesUtil()
-          .saveString('cart_id', homePageResponse?.global?.cartId ?? "");
+          .saveString('cart_id', newResponse.global?.cartId ?? "");
       SharedPreferencesUtil().saveString(
-          'currency_symbol', homePageResponse?.global?.currencySymbol ?? "");
+          'currency_symbol', newResponse.global?.currencySymbol ?? "");
       SharedPreferencesUtil()
-          .saveMap('global', homePageResponse?.global?.toJson() ?? {});
+          .saveMap('global', newResponse.global?.toJson() ?? {});
+
       setState(() {
         apiLoading = false;
-        homePageResponse;
+        _isLoadingMore = false;
       });
+
       getCartApi();
     } catch (e) {
       if (!mounted) return;
       setState(() {
         apiLoading = false;
+        _isLoadingMore = false;
       });
       print(e);
     }

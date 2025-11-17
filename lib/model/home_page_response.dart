@@ -12,23 +12,35 @@ class HomePageResponse {
   String? status;
   List<Content>? content;
   Global? global;
+  int? count;
+  int? offset;
+  int? limit;
 
   HomePageResponse({
     this.status,
     this.content,
     this.global,
+    this.count,
+    this.offset,
+    this.limit,
   });
 
   factory HomePageResponse.fromJson(Map<String, dynamic> json) => HomePageResponse(
     status: json["status"],
     content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
     global: json["global"] == null ? null : Global.fromJson(json["global"]),
+    count: json["count"],
+    offset: json["offset"],
+    limit: json["limit"],
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
     "content": content == null ? [] : List<dynamic>.from(content!.map((x) => x.toJson())),
     "global": global?.toJson(),
+    "count": count,
+    "offset": offset,
+    "limit": limit,
   };
 }
 

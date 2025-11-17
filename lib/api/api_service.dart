@@ -474,11 +474,11 @@ class ApiService {
     );
   }
 
-  Future<HomePageResponse> getHomePage(BuildContext context) async {
+  Future<HomePageResponse> getHomePage(BuildContext context,{int offset = 0, int limit = 0}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-        null,
+      {'limit':limit,'offset':offset},
       (json) => HomePageResponse.fromJson(json),
       context,
     );
