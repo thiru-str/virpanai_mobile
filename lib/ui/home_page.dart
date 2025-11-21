@@ -363,10 +363,6 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item14(content: homePageContent!),
               );
-        case "spacer-1":
-        return SizedBox(
-          height: double.tryParse(homePageContent?.layoutHeight ?? '0') ?? 0.0,
-        );
       default:
         return const SizedBox();
     }

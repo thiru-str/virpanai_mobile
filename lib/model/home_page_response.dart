@@ -57,7 +57,7 @@ class Content {
   String? layoutRedirect;
   String? layoutOption;
   String? layoutSearchFilter;
-  String? layoutHeight;
+  //int? layoutHeight;
   List<LayoutDatum>? layoutData;
   RedirectData? redirectData;
 
@@ -76,7 +76,7 @@ class Content {
     this.layoutSearchFilter,
     this.layoutData,
     this.redirectData,
-    this.layoutHeight,
+    //this.layoutHeight,
   });
 
   factory Content.fromJson(Map<String, dynamic> json) => Content(
@@ -94,7 +94,7 @@ class Content {
     layoutSearchFilter: json["layout_search_filter"],
     layoutData: json["layout_data"] == null ? [] : List<LayoutDatum>.from(json["layout_data"]!.map((x) => LayoutDatum.fromJson(x))),
     redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
-    layoutHeight: json["layout_height"],
+    //layoutHeight: json["layout_height"],
 
   );
 
@@ -113,7 +113,7 @@ class Content {
     "layout_search_filter": layoutSearchFilter,
     "layout_data": layoutData == null ? [] : List<dynamic>.from(layoutData!.map((x) => x.toJson())),
     "redirect_data": redirectData?.toJson(),
-    "layout_height": layoutHeight,
+    //"layout_height": layoutHeight,
   };
 }
 
