@@ -163,10 +163,15 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
               }
 
 
-              return CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.contain,
-                errorWidget: (_, __, ___) => const ImageFallbackWidget(),
+              return InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.contain,
+                  errorWidget: (_, __, ___) => const ImageFallbackWidget(),
+                ),
               );
             },
           ),
