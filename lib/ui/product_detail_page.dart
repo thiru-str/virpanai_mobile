@@ -38,7 +38,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
-import '../model/product_response.dart';
+import '../model/product_response.dart' hide Image;
 import '../utility/app_assets.dart';
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
