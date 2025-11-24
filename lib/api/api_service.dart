@@ -482,7 +482,7 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v7',
+      'store/get_home_page/v8',
         null,
       (json) => HomePageResponse.fromJson(json),
       context,
@@ -571,7 +571,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/line-items',
+      'store/custom-carts/$cartId/line-items',
       {"variant_id": variantId, "quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
@@ -582,7 +582,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest(
-      'store/carts/$cartId?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
+      'store/custom-carts/$cartId?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
       null,
       null,
       (json) => CartResponse.fromJson(json),
@@ -607,7 +607,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
-      'store/carts/$cartId/promotions', null,{"promo_codes": promoCodes},
+      'store/custom-carts/$cartId/promotions', null,{"promo_codes": promoCodes},
           (json) => CartResponse.fromJson(json),
       context,
     );
@@ -650,7 +650,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/line-items/$cartItemId',
+      'store/custom-carts/$cartId/line-items/$cartItemId',
       {"quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
