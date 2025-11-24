@@ -37,6 +37,7 @@ import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import '../model/custom_page_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/pin_code_response.dart';
 import '../model/refresh_token_response.dart';
@@ -485,6 +486,16 @@ class ApiService {
       'store/get_home_page/v8',
         null,
       (json) => HomePageResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CustomPageResponse> getCustomPage(BuildContext context,String slug) async {
+    await addToken();
+    return _makePostRequest<CustomPageResponse>(
+      'store/get_custom_page/v1',
+      {"slug":slug},
+          (json) => CustomPageResponse.fromJson(json),
       context,
     );
   }

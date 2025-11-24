@@ -8,6 +8,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../model/home_page_response.dart';
 import '../ui/product_detail_page.dart';
 import '../ui/product_page.dart';
+import '../ui/widgets/custom_page.dart';
 import 'app_strings.dart';
 
 class RedirectUtils {
@@ -60,6 +61,7 @@ class RedirectUtils {
     AppStrings.reDirectSearch: _navigateToSearch,
     AppStrings.reDirectProduct: (context, redirectData) => _handleProductRedirect(context, redirectData),
     AppStrings.reDirectOrder: (context, redirectData) => _handleProductOrder(context, redirectData),
+    AppStrings.reDirectPage: (context, redirectData) => _handleRedirectPage(context, redirectData),
     AppStrings.reDirectLink: (_, redirectData) => _launchExternalLink(redirectData),
   };
 
@@ -136,6 +138,16 @@ class RedirectUtils {
     PageRouteUtils.pushWithSlide(
       context,
       OrderDetailItemPage(orderId: orderId),
+    );
+  }
+
+  static void _handleRedirectPage(BuildContext context, RedirectData redirectData) {
+    final slug = redirectData.redirectPageData?.slug;
+    if (slug?.isEmpty ?? true) return;
+
+    PageRouteUtils.pushWithSlide(
+      context,
+      CustomPage(slug: slug),
     );
   }
 
