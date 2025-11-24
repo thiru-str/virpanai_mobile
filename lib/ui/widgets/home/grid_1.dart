@@ -28,7 +28,7 @@ class Grid1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppUtils.rgbStringToColor(content.layoutBgColor ?? ''),
+      decoration: AppUtils.buildLayoutBackground(content),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -18,7 +19,8 @@ class AppUtils {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-
+      backgroundColor: AppColors.primary,
+      textColor: Colors.white,
     );
   }
 
@@ -65,34 +67,63 @@ class AppUtils {
     return "#$alpha$red$green$blue".toUpperCase();
   }
 
-  // Converts RGB string (format: "rgb(R, G, B)") to Flutter Color
-  static Color rgbStringToColor(String rgbaString) {
-    final regex = RegExp(r'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)');
-    final match = regex.firstMatch(rgbaString);
-    if (match != null) {
-      return Color.fromRGBO(
-        int.parse(match.group(1)!),
-        int.parse(match.group(2)!),
-        int.parse(match.group(3)!),
-        double.parse(match.group(4)!),
+  static Color rgbStringToColor(String rgbString) {
+    try {
+      // Match both rgb(...) and rgba(...) formats
+      final regex = RegExp(
+        r'rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)',
+        caseSensitive: false,
       );
+
+      final match = regex.firstMatch(rgbString);
+      if (match != null) {
+        final r = int.parse(match.group(1)!);
+        final g = int.parse(match.group(2)!);
+        final b = int.parse(match.group(3)!);
+        final a = match.group(4) != null ? double.parse(match.group(4)!) : 1.0;
+
+        return Color.fromRGBO(r, g, b, a);
+      }
+    } catch (e) {
+      debugPrint('Error parsing color string: $e');
     }
-    return Colors.white;
+
+    // Default fallback color
+    return Colors.black;
   }
 
-  static Color getAutoTextColor(Color backgroundColor) {
-    final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
-    return brightness == Brightness.dark ? Colors.white : Colors.black;
-  }
 
   static Future<bool> isLoggedIn() async {
-    final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
-    if (skipLogin == true) {
-      return false;
-    }
+    // final skipLogin = await SharedPreferencesUtil().getBool('skip_login');
+    // if (skipLogin == false) {
+    //   return true;
+    // }
 
     final token = await SharedPreferencesUtil().getString('token');
     return token != null && token.isNotEmpty;
+  }
+
+  static BoxDecoration? buildLayoutBackground(Content content) {
+    final type = content.layoutBgType;
+    final color = content.layoutBgColor;
+    final image = content.layoutBgImage;
+
+    if (type == 'image' && image?.isNotEmpty == true) {
+      return BoxDecoration(
+        image: DecorationImage(
+          image: image!.startsWith('assets/')
+              ? AssetImage(image) as ImageProvider
+              : NetworkImage(image),
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (type == 'color' && color?.isNotEmpty == true) {
+      return BoxDecoration(
+        color: AppUtils.rgbStringToColor(color!),
+      );
+    }
+
+    return null; // No background
   }
 
   static String appOs() {
