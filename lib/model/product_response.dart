@@ -174,20 +174,24 @@ class Product {
 
 class Metadata {
   ReviewSummary? reviewSummary;
+  WarrantyDetails? warrantyDetails;
   String? additionalDescription;
 
   Metadata({
     this.reviewSummary,
+    this.warrantyDetails,
     this.additionalDescription,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     reviewSummary: json["review_summary"] == null ? null : ReviewSummary.fromJson(json["review_summary"]),
+    warrantyDetails: json["warranty_details"] == null ? null : WarrantyDetails.fromJson(json["warranty_details"]),
     additionalDescription: json["additional_description"],
   );
 
   Map<String, dynamic> toJson() => {
     "review_summary": reviewSummary?.toJson(),
+    "warranty_details": warrantyDetails?.toJson(),
     "additional_description": additionalDescription,
   };
 }
@@ -209,6 +213,22 @@ class ReviewSummary {
   Map<String, dynamic> toJson() => {
     "total_reviews": totalReviews,
     "average_rating": averageRating,
+  };
+}
+
+class WarrantyDetails {
+  String? warranty;
+
+  WarrantyDetails({
+    this.warranty,
+  });
+
+  factory WarrantyDetails.fromJson(Map<String, dynamic> json) => WarrantyDetails(
+    warranty: json["warranty"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "warranty": warranty,
   };
 }
 

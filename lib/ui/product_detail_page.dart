@@ -27,6 +27,7 @@ import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/ui/widgets/snack_bar_util.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
+import 'package:waioz/ui/widgets/warranty_badge.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -349,51 +350,64 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildProductDetails() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          product?.title ?? '',
-          style: FontUtils.secondaryFontStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Text(
-              getDisplayedPrice(),
-              style: FontUtils.secondaryFontStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppColors.primary,
-              ),
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Visibility(
-              visible: selectedVariant != null &&
-                  selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value !=
-                      selectedVariant!.calculatedPrice?.rawOriginalAmount?.value,
-              child: Text(
-                CurrencyUtil.appendCurrency(
-                    selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '0'),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                product?.title ?? '',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: FontUtils.secondaryFontStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.grey,
-                  decoration: TextDecoration.lineThrough,
+                  color: AppColors.textColor,
                 ),
               ),
-            )
-          ],
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    getDisplayedPrice(),
+                    style: FontUtils.secondaryFontStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Visibility(
+                    visible: selectedVariant != null &&
+                        selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value !=
+                            selectedVariant!.calculatedPrice?.rawOriginalAmount?.value,
+                    child: Text(
+                      CurrencyUtil.appendCurrency(
+                        selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '0',
+                      ),
+                      style: FontUtils.secondaryFontStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
+
+        Visibility(
+          visible: product?.metadata?.warrantyDetails?.warranty?.isNotEmpty == true,
+            child: WarrantyBadge(warrantyText: product?.metadata?.warrantyDetails?.warranty??'')),
       ],
     );
   }
+
 
   String getDisplayedPrice() {
     if (selectedVariant != null) {
