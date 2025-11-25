@@ -25,48 +25,49 @@ class Item9 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasViewAll = (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
+    final decoration = AppUtils.buildLayoutBackground(content);
+    final hasDecoration = decoration != null;
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: decoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Title + View All
+
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: hasDecoration ? 12 : 0,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     content.layoutTitle ?? '',
                     style: FontUtils.secondaryFontStyle(
-                      fontSize: 16,
+                      fontSize: hasDecoration ? 18 : 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
                     ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
-                Visibility(
-                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                  child: GestureDetector(
+                if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                  GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content.redirectData!,
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           content.layoutRedirectTitle!,
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
+                            fontSize: hasDecoration ? 15 : 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textColor,
                           ),
@@ -74,17 +75,18 @@ class Item9 extends StatelessWidget {
                         const Icon(Icons.chevron_right, size: 18),
                       ],
                     ),
-                  ),
-                ),
+                  )
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
 
-          // Horizontal scroller without fixed height
+          // Product list horizontal
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: hasDecoration ? 20 : 16,
+              vertical: hasDecoration?5:0
+            ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -101,7 +103,7 @@ class Item9 extends StatelessWidget {
                       },
                     ),
                     if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
+                      SizedBox(width: hasDecoration ? 20 : 16),
                   ],
                 ],
               ),
@@ -111,6 +113,7 @@ class Item9 extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class _Item9Card extends StatelessWidget {
