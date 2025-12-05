@@ -649,7 +649,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId',
+      'store/custom-carts/$cartId',
       {"shipping_address": address,"billing_address": address},
       (json) => CartResponse.fromJson(json),
       context,

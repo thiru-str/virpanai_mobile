@@ -174,8 +174,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
             orderHistoryResponse = response;
           }
 
-          orderHistoryResponse?.orders?.sort(
-                  (a, b) => (b.displayId ?? 0).compareTo(a.displayId ?? 0));
+          //orderHistoryResponse?.orders?.sort((a, b) => (b.displayId ?? 0).compareTo(a.displayId ?? 0));
 
           final totalCount = response.count ?? fetchedOrders.length;
           _hasMore = (orderHistoryResponse?.orders?.length ?? 0) < totalCount;
