@@ -67,9 +67,9 @@ class ApiService {
     try {
       await setPublishableKey();
 
-      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$endpoint');
-      AppLogger.print('API Params:', '${data ?? {}}');
+      AppLogger.logFullJson(data ?? {});
 
       final response = await _dio.post(endpoint, data: data ?? {},options: Options(
         validateStatus: (status) {
@@ -78,7 +78,7 @@ class ApiService {
         },
       ));
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         await _handleLogout(context, response.data['error']);
@@ -108,9 +108,9 @@ class ApiService {
           ? '$endpoint/$dynamicPath'
           : endpoint;
 
-      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
-      AppLogger.print('API Params:', '${queryParams ?? {}}');
+      AppLogger.logFullJson(queryParams ?? {});
 
       // Include query parameters in the GET request
       final response = await _dio
@@ -123,7 +123,7 @@ class ApiService {
 
       AppLogger.print('response  statuscode:', '${response.statusCode}');
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
@@ -154,9 +154,9 @@ class ApiService {
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath' // Append dynamic path if provided
           : endpoint;
-      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
-      AppLogger.print('API Params:', '${queryParams ?? {}}');
+      AppLogger.logFullJson(queryParams ?? {});
 
       // Make the DELETE request
       final response =
@@ -168,7 +168,7 @@ class ApiService {
           ));
 
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');
@@ -210,7 +210,7 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
         AppUtils.showToast(response.data['message'] ?? 'An error occurred');

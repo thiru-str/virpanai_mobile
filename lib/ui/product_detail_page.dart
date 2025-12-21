@@ -375,7 +375,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     style: FontUtils.secondaryFontStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: AppColors.primary,
+                      color: selectedVariant == null? Colors.red:AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -424,7 +424,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
       if (prices.isNotEmpty) {
         final lowest = prices.reduce((a, b) => a < b ? a : b);
-        return "From ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
+        return "Available variants starts from ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
       }
     }
 
@@ -844,7 +844,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ? const CircularProgressIndicator(color: Colors.white)
                 : Text(
               selectedVariantId == null
-                  ? 'Select Variant'
+                  ? 'Variant not available'
                   : stockNotAvailable?'Out of Stock':'Add to Cart',
               style: FontUtils.primaryFontStyle(
                 fontSize: 18,

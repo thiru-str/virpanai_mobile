@@ -85,23 +85,58 @@ class _SettingsPageState extends State<SettingsPage> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: AppColors.primary,
-                        child: Container(
-                          child: Center(
-                            child: Text(
-                              (customer?.firstName?.isNotEmpty == true
-                                  ? customer!.firstName!.substring(0, 1)
-                                  : "G"),
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                )),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Center avatar
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundColor: AppColors.primary,
+                                child: Text(
+                                  (customer?.firstName?.isNotEmpty == true
+                                      ? customer!.firstName!.substring(0, 1)
+                                      : "G"),
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
+
+                          // Right side three dots
+                          Positioned(
+                            right: 0,
+                            child: PopupMenuButton<String>(
+                              color: Colors.white,
+                              icon: const Icon(
+                                Icons.more_vert,
+                                size: 26,
+                              ),
+                              onSelected: (value) {
+                                if (value == 'delete') {
+                                  _showDeleteAccount(context); // use separate method
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                 PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text(
+                                    AppStrings.deleteAccount,
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+,
                       const SizedBox(height: 30),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -197,11 +232,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               );
                             }
                           })),
-                      _buildProfileItem(
-                        AppStrings.deleteAccount,
-                            () =>
-                            _showDeleteAccount(context), // use separate method
-                      ),
+                      // _buildProfileItem(
+                      //   AppStrings.deleteAccount,
+                      //       () =>
+                      //       _showDeleteAccount(context), // use separate method
+                      // ),
                     ],
                   ),
                 ),
