@@ -176,26 +176,31 @@ class _FullscreenImageCarouselState extends State<FullscreenImageCarousel> {
             },
           ),
           Positioned(
-            bottom: 20,
             left: 0,
             right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: _previousPage,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                      onPressed: _previousPage,
+                    ),
+                    Text(
+                      '${_currentIndex + 1} / ${widget.imageUrls.length}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                      onPressed: _nextPage,
+                    ),
+                  ],
                 ),
-                Text(
-                  '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                IconButton(
-                  icon:
-                  const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                  onPressed: _nextPage,
-                ),
-              ],
+              ),
             ),
           ),
         ],

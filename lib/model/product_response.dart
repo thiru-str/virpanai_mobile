@@ -218,17 +218,25 @@ class ReviewSummary {
 
 class WarrantyDetails {
   String? warranty;
+  bool? isGwmWarranty;
+  bool? isWarrantyAvailable;
 
   WarrantyDetails({
     this.warranty,
+    this.isGwmWarranty,
+    this.isWarrantyAvailable,
   });
 
   factory WarrantyDetails.fromJson(Map<String, dynamic> json) => WarrantyDetails(
     warranty: json["warranty"],
+    isGwmWarranty: json["is_gowelmart_warranty"],
+    isWarrantyAvailable: json["is_warranty_available"],
   );
 
   Map<String, dynamic> toJson() => {
     "warranty": warranty,
+    "is_gowelmart_warranty": isGwmWarranty,
+    "is_warranty_available": isWarrantyAvailable,
   };
 }
 

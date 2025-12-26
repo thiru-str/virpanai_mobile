@@ -92,7 +92,7 @@ class Grid1 extends StatelessWidget {
                 imageUrl: content.layoutBannerImage ?? '',
                 height: 150,
                 width: double.infinity,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorWidget: (context, url, error) => _fallbackWidget(),
               ),
             ),

@@ -38,5 +38,7 @@ class AppAssets {
   static const String ic_bank_transfer = 'images/ic_bank_transfer.svg';
   static const String ic_online = 'images/ic_online.svg';
   static const String warranty = 'images/warranty.svg';
+  static const String ic_warranty = 'images/ic_warranty.svg';
+  static const String ic_gwm_warranty = 'images/ic_gwm_warranty.svg';
 // Add more assets as needed
 }

@@ -32,59 +32,63 @@ class WelcomePage extends StatelessWidget {
             // Content
             Align(
               alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.25), // Semi-transparent overlay
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      AppStrings.welcome_to_store,
-                      textAlign: TextAlign.center,
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      AppStrings.get_your_product,
-                      textAlign: TextAlign.center,
-                      style: FontUtils.primaryFontStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: () {
-                        PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        minimumSize: const Size(double.infinity, 60),
-                      ),
-                      child: Text(
-                        AppStrings.get_started,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 18,
+              child: SafeArea(
+                top: false, // important
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.25),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppStrings.welcome_to_store,
+                        textAlign: TextAlign.center,
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Text(
+                        AppStrings.get_your_product,
+                        textAlign: TextAlign.center,
+                        style: FontUtils.primaryFontStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: () {
+                          PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(double.infinity, 60),
+                        ),
+                        child: Text(
+                          AppStrings.get_started,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
+
 
           ],
         ),
