@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/pin_code_response.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
@@ -18,6 +21,7 @@ import '../model/register_response.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_strings.dart';
 import '../utility/font_utils.dart';
+import '../utility/image_uploader.dart';
 import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
@@ -29,11 +33,10 @@ class UserDetailsPage extends StatefulWidget {
 
   const UserDetailsPage(
       {super.key,
-        required this.countryCode,
-        required this.phoneNo,
-        required this.token,
-        this.redirectPage});
-
+      required this.countryCode,
+      required this.phoneNo,
+      required this.token,
+      this.redirectPage});
 
   @override
   State<UserDetailsPage> createState() => _UserDetailsPageState();
@@ -89,20 +92,25 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(label,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
           const SizedBox(height: 6),
           TextFormField(
             controller: controller,
             keyboardType: inputType,
             validator: validator,
-            textCapitalization: inputType == TextInputType.emailAddress? TextCapitalization.none:TextCapitalization.sentences,
+            textCapitalization: inputType == TextInputType.emailAddress
+                ? TextCapitalization.none
+                : TextCapitalization.sentences,
             decoration: InputDecoration(
               fillColor: Colors.white,
               filled: true,
               enabled: enabled,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               enabledBorder: OutlineInputBorder(
-                borderSide:BorderSide(color: AppColors.primary.withAlpha(50)),
+                borderSide: BorderSide(color: AppColors.primary.withAlpha(50)),
                 borderRadius: BorderRadius.circular(10),
               ),
               focusedBorder: OutlineInputBorder(
@@ -113,7 +121,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
                 borderRadius: BorderRadius.circular(10),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
         ],
@@ -127,12 +136,14 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Owner Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text("Owner Details",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           buildLabeledTextField(
             label: "Owner Name",
             controller: _nameController,
-            validator: (val) => val == null || val.isEmpty ? 'Please enter your name' : null,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Please enter your name' : null,
           ),
           buildLabeledTextField(
             label: "Email Address",
@@ -143,7 +154,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 return 'enter email';
               }
 
-              final emailRegex = RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+              final emailRegex =
+                  RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
               if (!emailRegex.hasMatch(value)) {
                 return AppStrings.enter_valid_email;
@@ -157,21 +169,25 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             enabled: false,
             controller: _phoneController,
             inputType: TextInputType.phone,
-            validator: (val) => val == null || val.length < 10 ? 'Enter valid phone number' : null,
+            validator: (val) => val == null || val.length < 10
+                ? 'Enter valid phone number'
+                : null,
           ),
         ],
       );
-    } else if (_currentStep == 1){
+    } else if (_currentStep == 1) {
       // Step 2: Shop Details
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Shop Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text("Shop Details",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           buildLabeledTextField(
             label: "Shop Name",
             controller: _shopNameController,
-            validator: (val) => val == null || val.isEmpty ? 'Please enter shop name' : null,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Please enter shop name' : null,
           ),
           // buildLabeledTextField(
           //   label: "Address",
@@ -183,13 +199,16 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           //   controller: _stateController,
           //   validator: (val) => val == null || val.isEmpty ? 'Please enter country' : null,
           // ),
-          Text('Postal Code', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text('Postal Code',
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
           PinCodeTextField(
             autoDisposeControllers: false,
             appContext: context,
             length: 6,
-            controller: _postalCodeController,  // Reusing your postal code controller
+            controller: _postalCodeController,
+            // Reusing your postal code controller
             focusNode: _focusNode,
             keyboardType: TextInputType.number,
             autoFocus: true,
@@ -208,23 +227,26 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               inactiveFillColor: Colors.white,
               activeFillColor: Colors.white,
               selectedFillColor: Colors.white,
-              inactiveColor:Colors.teal,
+              inactiveColor: Colors.teal,
               activeColor: AppColors.primary,
               selectedColor: AppColors.primary,
             ),
             enableActiveFill: true,
-            validator: (value) => value == null || value.isEmpty || value.length != 6
-                ? 'Please enter a valid 6-digit postal code'
-                : null,
+            validator: (value) =>
+                value == null || value.isEmpty || value.length != 6
+                    ? 'Please enter a valid 6-digit postal code'
+                    : null,
             onCompleted: (value) => print("Postal Code Entered: $value"),
             onChanged: (value) => print(value),
           ),
           const SizedBox(height: 10),
-          Text('Note: Based on the entered pincode is how we assign the correct Agent/ Distributer. Please ensure you give the correct pincode.'),
+          Text(
+              'Note: Based on the entered pincode is how we assign the correct Agent/ Distributer. Please ensure you give the correct pincode.'),
           const SizedBox(height: 10),
           Row(
             children: [
-              const Text("Is your shop GST-registered?", style: TextStyle(fontSize: 16)),
+              const Text("Is your shop GST-registered?",
+                  style: TextStyle(fontSize: 16)),
               const Spacer(),
               Switch(
                 activeColor: AppColors.primary,
@@ -237,128 +259,238 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             buildLabeledTextField(
               label: "GST Number",
               controller: _gstNumberController,
-              validator: (val) => val == null || val.isEmpty ? 'Enter GST Number' : null,
+              validator: (val) =>
+                  val == null || val.isEmpty ? 'Enter GST Number' : null,
             ),
             const SizedBox(height: 6),
-            buildImageUploader(
+            ImageUploader(
               label: "GST Image",
               imageFile: _gstImage,
-              isLoading: _isGstImageUploading,
-              onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
-                await _showImageSourcePicker(
-                  onImagePicked:(img) => setState(() => _gstImage = img),
-                  onUploadComplete:(path) => setState(() {
-                    _gstImagePath = path;
-                    _isGstImageUploading = false;
-                  }),
-                );
-              },
+              isUploading: _isGstImageUploading,
+              onTap: () => _pickAndUploadImage(
+                onPick: (file) => setState(() => _gstImage = file),
+                onUploaded: (path) => setState(() => _gstImagePath = path),
+                onUploadFailed: () => setState(() {
+                  _gstImage = null;
+                  _gstImagePath = null;
+                  AppUtils.showToast('GST image upload failed. Please try again');
+                }),
+                setLoading: (val) => setState(() => _isGstImageUploading = val),
+              ),
             ),
             const SizedBox(height: 20),
           ],
         ],
       );
-    }
-    else{
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Shop Images", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            buildImageUploader(
-              label: "Shop Front With Name Board",
-              imageFile: _shopFrontImage,
-              isLoading: _isShopFrontUploading,
-              onUploadTap: () async {
-                setState(() => _isShopFrontUploading = true);
-                await _showImageSourcePicker(
-                  onImagePicked:(img) => setState(() => _shopFrontImage = img),
-                  onUploadComplete:(path) => setState(() {
-                        _shopFrontImagePath = path;
-                    _isShopFrontUploading = false;
-                  }),
-                );
-              },
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Shop Images",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          ImageUploader(
+            label: "Shop Front With Name Board",
+            imageFile: _shopFrontImage,
+            isUploading: _isShopFrontUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _shopFrontImage = file),
+              onUploaded: (path) => setState(() => _shopFrontImagePath = path),
+              onUploadFailed: () => setState(() {
+                _shopFrontImage = null;
+                _shopFrontImagePath = null;
+                AppUtils.showToast('Shop Front Image upload failed. Please try again');
+              }),
+              setLoading: (val) => setState(() => _isShopFrontUploading = val),
             ),
-            buildImageUploader(
-              label: "Shop Interior",
-              imageFile: _shopInteriorImage,
-              isLoading: _isShopInteriorUploading,
-              onUploadTap: () async {
-                setState(() => _isShopInteriorUploading = true);
-                await _showImageSourcePicker(
-                  onImagePicked: (img) => setState(() => _shopInteriorImage = img),
-                    onUploadComplete:(path) => setState(() {
-                    _shopInteriorImagePath = path;
-                    _isShopInteriorUploading = false;
-                  }),
-                );
-              },
+          ),
+          ImageUploader(
+            label: "Shop Interior",
+            imageFile: _shopInteriorImage,
+            isUploading: _isShopInteriorUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _shopInteriorImage = file),
+              onUploaded: (path) =>
+                  setState(() => _shopInteriorImagePath = path),
+              onUploadFailed: () => setState(() {
+                _shopInteriorImage = null;
+                _shopInteriorImagePath = null;
+                AppUtils.showToast('Shop Interior Image upload failed. Please try again');
+              }),
+              setLoading: (val) =>
+                  setState(() => _isShopInteriorUploading = val),
             ),
-            buildImageUploader(
-              label: "Shop Counter",
-              imageFile: _shopCounterImage,
-              isLoading: _isShopCounterUploading,
-              onUploadTap: () async {
-                setState(() => _isShopCounterUploading = true);
-                await _showImageSourcePicker(
-                    onImagePicked:(img) => setState(() => _shopCounterImage = img),
-                    onUploadComplete:(path) => setState(() {
-                    _shopCounterImagePath = path;
-                    _isShopCounterUploading = false;
-                  }),
-                );
-              },
+          ),
+          ImageUploader(
+            label: "Shop Counter",
+            imageFile: _shopCounterImage,
+            isUploading: _isShopCounterUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _shopCounterImage = file),
+              onUploaded: (path) =>
+                  setState(() => _shopCounterImagePath = path),
+              onUploadFailed: () => setState(() {
+                _shopCounterImage = null;
+                _shopCounterImagePath = null;
+                AppUtils.showToast('Shop Counter Image upload failed. Please try again');
+              }),
+              setLoading: (val) =>
+                  setState(() => _isShopCounterUploading = val),
             ),
-          ],
-        );
-
+          ),
+        ],
+      );
     }
   }
 
   Future<void> _handleNext() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      if (_currentStep == 0) {
-        final response = await ApiService().checkDuplicate(context,_emailController.text,_phoneController.text);
-        if (response.status??false) {
-          setState(() => _currentStep = 1);
-        }
-        else{
-          AppUtils.showToast(response.error?.message??'');
-        }
-      }
-      else if (_currentStep == 1) {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-        if (_isGstRegistered) {
-          if (_gstImagePath == null) {
-            AppUtils.showToast('Please upload GST image');
-            return;
-          }
-        }
+    if (_currentStep == 0) {
+      final response = await ApiService().checkDuplicate(
+          context, _emailController.text, _phoneController.text);
 
-        final response = await ApiService().pinCodeCheck(context, _postalCodeController.text);
-
-        _showConfirmationAlert(context,response);
+      if (response.status ?? false) {
+        setState(() => _currentStep = 1);
       } else {
-        // Submit
-        debugPrint('image Submitted: ${_shopFrontImagePath}, ${_shopInteriorImagePath},${_shopCounterImagePath}');
+        AppUtils.showToast(response.error?.message ?? '');
+      }
+      return;
+    }
 
-        if (_shopFrontImagePath==null) {
-          AppUtils.showToast('Please upload Shop front image');
-          return;
-        }if (_shopInteriorImagePath==null) {
-          AppUtils.showToast('Please upload Shop interior image');
-          return;
-        }if (_shopCounterImagePath==null) {
-          AppUtils.showToast('Please upload Shop counter image');
+    if (_currentStep == 1) {
+
+      if (_isGstRegistered) {
+        if (_isGstImageUploading) {
+          AppUtils.showToast('Please wait, GST image is uploading');
           return;
         }
-
-        register();
+        if (_gstImagePath == null) {
+          AppUtils.showToast('Please upload GST image');
+          return;
+        }
       }
+
+      final response =
+          await ApiService().pinCodeCheck(context, _postalCodeController.text);
+
+      _showConfirmationAlert(context, response);
+      return;
+    }
+
+    if (_currentStep == 2) {
+
+      if (_isShopFrontUploading ||
+          _isShopInteriorUploading ||
+          _isShopCounterUploading) {
+        AppUtils.showToast('Please wait, images are still uploading');
+        return;
+      }
+
+      if (_shopFrontImagePath == null) {
+        AppUtils.showToast('Please upload Shop front image');
+        return;
+      }
+
+      if (_shopInteriorImagePath == null) {
+        AppUtils.showToast('Please upload Shop interior image');
+        return;
+      }
+
+      if (_shopCounterImagePath == null) {
+        AppUtils.showToast('Please upload Shop counter image');
+        return;
+      }
+
+      register();
     }
   }
+
+  Future<void> _pickAndUploadImage({
+    required Function(File) onPick,
+    required Function(String?) onUploaded,
+    required VoidCallback onUploadFailed,
+    required Function(bool) setLoading,
+  }) async {
+    try {
+      setLoading(true);
+
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Take Photo"),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Choose from Gallery"),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      final picked = await ImagePicker().pickImage(source: source);
+      if (picked == null) return;
+
+      final originalFile = File(picked.path);
+
+      final compressedFile = await _compressImage(originalFile);
+
+
+      onPick(compressedFile);
+
+      final response = await ApiService()
+          .uploadDocImages(context, widget.token, compressedFile);
+
+      final path = response?['file']?['path'];
+      if (path == null) throw Exception('Upload failed');
+
+      onUploaded(path);
+    } catch (e) {
+      onUploadFailed();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  Future<File> _compressImage(File file) async {
+    final dir = await getTemporaryDirectory();
+    final targetPath = p.join(
+      dir.path,
+      'cmp_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+
+    final XFile? compressed = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 75,
+      minWidth: 1080,
+      minHeight: 1080,
+      format: CompressFormat.jpeg,
+    );
+
+    if (compressed == null) {
+      return file;
+    }
+
+    return File(compressed.path);
+  }
+
+
+
 
   void _showConfirmationAlert(BuildContext context, PinCodeResponse response) {
     showDialog(
@@ -392,6 +524,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   @override
   void initState() {
     super.initState();
+    _phoneController.text = '${widget.countryCode} ${widget.phoneNo}';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_focusNode);
     });
@@ -399,9 +532,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      _phoneController.text = '${widget.countryCode} ${widget.phoneNo}';
-    });
     return WillPopScope(
       onWillPop: () async {
         if (_currentStep > 0) {
@@ -413,7 +543,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         return true; // allow exit if already at step 0
       },
       child: GestureDetector(
-        onTap: ()=> FocusScope.of(context).unfocus(),
+        onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           backgroundColor: Color(0xFFF5FEF2),
           resizeToAvoidBottomInset: false,
@@ -421,7 +551,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             builder: (context, constraints) {
               return Stack(
                 children: [
-
                   Positioned(
                     top: 0,
                     right: 0,
@@ -432,73 +561,93 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     left: 0,
                     child: SvgPicture.asset(AppAssets.bg_bottom),
                   ),
-
-
                   Positioned.fill(
                     child: IgnorePointer(
                       child: Container(color: Colors.white.withOpacity(0.7)),
                     ),
                   ),
-
-
                   SafeArea(
                     child: Form(
                       key: _formKey,
                       child: Column(
-                          children: [
-                            Padding(padding:EdgeInsets.only(right: 20),child: _buildStepper()),
-                      const SizedBox(height: 20),
+                        children: [
+                          Padding(
+                              padding: EdgeInsets.only(right: 20),
+                              child: _buildStepper()),
+                          const SizedBox(height: 20),
 
-                      // Modified Scrollable Area
-                      Expanded(
-                        child: SingleChildScrollView(
-                          physics: const ClampingScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight - 200,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: buildStepContent(),
+                          // Modified Scrollable Area
+                          Expanded(
+                            child: SingleChildScrollView(
+                              physics: const ClampingScrollPhysics(),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight - 200,
                                 ),
-                                // Add minimal padding only if needed
-                                SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      AnimatedPadding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                              ? MediaQuery.of(context).viewInsets.bottom + 10
-                              : 10,
-                        ),
-                        duration: const Duration(milliseconds: 100),
-                        child: apiCalling? Center(child: CircularProgressIndicator(color: AppColors.primary,),): SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: ElevatedButton(
-                              onPressed: _handleNext,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: buildStepContent(),
+                                    ),
+                                    // Add minimal padding only if needed
+                                    SizedBox(
+                                        height: MediaQuery.of(context)
+                                                    .viewInsets
+                                                    .bottom >
+                                                0
+                                            ? 20
+                                            : 0),
+                                  ],
                                 ),
                               ),
-                                child: Text(
-                                  _currentStep < 1 ? "Next" : "Submit",
-                                  style: const TextStyle(fontSize: 18, color: Colors.white),
-                                )
                             ),
-                          ),)
-                        ),
+                          ),
+
+                          AnimatedPadding(
+                              padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).viewInsets.bottom > 0
+                                        ? MediaQuery.of(context)
+                                                .viewInsets
+                                                .bottom +
+                                            10
+                                        : 10,
+                              ),
+                              duration: const Duration(milliseconds: 100),
+                              child: apiCalling
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ElevatedButton(
+                                            onPressed: _handleNext,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  AppColors.primary,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              _currentStep < 2
+                                                  ? "Next"
+                                                  : "Submit",
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.white),
+                                            )),
+                                      ),
+                                    )),
                         ],
                       ),
                     ),
@@ -510,11 +659,10 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         ),
       ),
     );
-
   }
 
   Widget _buildStepper() {
-    List<String> titles = ["Step 1", "Step 2","Step 3"];
+    List<String> titles = ["Step 1", "Step 2", "Step 3"];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,7 +730,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                       child: Text(
                         "${stepIndex + 1}",
                         style: TextStyle(
-                          color: isActive || isCompleted ? Colors.white : Colors.black,
+                          color: isActive || isCompleted
+                              ? Colors.white
+                              : Colors.black,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -591,7 +741,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     Text(
                       titles[stepIndex],
                       style: TextStyle(
-                        color: isActive || isCompleted ? AppColors.primary : Colors.grey,
+                        color: isActive || isCompleted
+                            ? AppColors.primary
+                            : Colors.grey,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -601,129 +753,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             }),
           ),
         ),
-      ] ,
-    );
-  }
-
-
-  Widget buildImageUploader({
-    required String label,
-    required File? imageFile,
-    required bool isLoading,
-    required VoidCallback onUploadTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-        const SizedBox(height: 6),
-        GestureDetector(
-          onTap: isLoading ? null : onUploadTap,
-          child: DottedBorder(
-            color: AppColors.primary,
-            strokeWidth: 1.5,
-            dashPattern: const [6, 3],
-            borderType: BorderType.RRect,
-            radius: const Radius.circular(10),
-            child: Container(
-              width: double.infinity,
-              height: 150,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.all(10),
-              child: isLoading
-                  ? CircularProgressIndicator(color: AppColors.primary)
-                  : (imageFile != null)
-                  ? Image.file(imageFile, fit: BoxFit.cover)
-                  : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.cloud_upload_outlined,
-                      size: 40, color: AppColors.primary),
-                  const SizedBox(height: 10),
-                  Text("Click to Upload",
-                      style: TextStyle(color: AppColors.primary)),
-                  Text("(Max. File size: 5 MB)",
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey)),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
       ],
     );
   }
-
-  Future<void> _showImageSourcePicker({
-    required Function(File) onImagePicked,
-    required Function(String?) onUploadComplete,
-  }) async {
-    await showModalBottomSheet(
-      context: context,
-      isDismissible: true,
-      enableDrag: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColors.primary),
-                title: Text("Take Photo"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera, onImagePicked, onUploadComplete);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_library, color: AppColors.primary),
-                title: Text("Choose from Gallery"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery, onImagePicked, onUploadComplete);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    ).whenComplete(() {
-      // Bottom sheet closed → user tapped outside or swiped down
-      _resetAllUploadFlags();
-    });
-
-  }
-
-
-  Future<void> _pickImage(
-      ImageSource source,
-      Function(File) onImagePicked,
-      Function(String?) onUploadComplete,
-      ) async {
-    try {
-      final picked = await ImagePicker().pickImage(source: source);
-      if (picked != null) {
-        final imageFile = File(picked.path);
-        onImagePicked(imageFile);
-        await _uploadAndStoreImage(imageFile, onUploadComplete);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isGstImageUploading = false;
-          _isShopCounterUploading = false;
-          _isShopInteriorUploading = false;
-          _isShopFrontUploading = false;
-        });
-      }
-    }
-  }
-
 
   void register() async {
     try {
@@ -773,7 +805,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           });
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const ApprovalPage(errorCode: '00000'));
+          PageRouteUtils.pushAndRemoveUntil(
+              context, const ApprovalPage(errorCode: '00000'));
         }
       }
     } catch (e) {
@@ -787,40 +820,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   void getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
-      final response= await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+      final response = await apiService.getHomePage(context);
+      await SharedPreferencesUtil()
+          .saveString('region_id', response.global!.regionId!);
+      await SharedPreferencesUtil()
+          .saveString('cart_id', response.global!.cartId!);
+      await SharedPreferencesUtil()
+          .saveString('currency_symbol', response.global!.currencySymbol!);
+      await SharedPreferencesUtil()
+          .saveMap('global', response.global!.toJson());
     } catch (e) {
       print(e);
     }
   }
-
-  Future<void> _uploadAndStoreImage(File image, Function(String?) onSuccess) async {
-    try {
-      var response = await ApiService().uploadDocImages(context, widget.token, image);
-      if (response != null && response['file'] != null) {
-        onSuccess(response['file']['path']);
-        print('Uploaded File Path: ${response['file']['path']}');
-      } else {
-        onSuccess(null);
-        print('File upload failed or invalid response');
-      }
-    } catch (e) {
-      onSuccess(null);
-      print('Error uploading image: $e');
-    }
-  }
-
-  void _resetAllUploadFlags() {
-    setState(() {
-      _isGstImageUploading = false;
-      _isShopCounterUploading = false;
-      _isShopInteriorUploading = false;
-      _isShopFrontUploading = false;
-    });
-  }
-
-
 }

@@ -74,6 +74,8 @@ dependencies:
   package_info_plus: ^4.0.0
   video_thumbnail: ^0.5.3
   logger: ^2.6.2
+  flutter_image_compress: ^2.3.0
+  path: ^1.9.0
 
 
 
