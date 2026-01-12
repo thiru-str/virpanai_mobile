@@ -3,6 +3,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/checkout_page.dart';
+import 'package:waioz/ui/widgets/bottom_sheet_utils.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
@@ -675,10 +676,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        final bottomInset = MediaQuery.of(context).viewPadding.bottom;
-
-        return Padding(
-          padding: EdgeInsets.only(bottom: bottomInset),
+        return withSystemBottomPadding(
+          context:context,
           child: PaymentMethodsBottomSheet(
             paymentProviders: paymentProviders,
             providerId: pp_id,
@@ -702,8 +701,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CalculationBottomSheet(
-          cartResponse: cartResponse,
+        return withSystemBottomPadding(
+          context: context,
+          child: CalculationBottomSheet(
+            cartResponse: cartResponse,
+          ),
         );
       },
     );
