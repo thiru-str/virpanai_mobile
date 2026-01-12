@@ -763,7 +763,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   void makeRazorPayCall(String orderId,String apiKey) {
     var options = {
       'key': apiKey,
-      'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
+      'amount': ((cartResponse?.cart?.total??1) * 100).round(),
       'name': AppConfig.appName,
       'description': 'Payment to ${AppConfig.appName}',
       'order_id': orderId,
