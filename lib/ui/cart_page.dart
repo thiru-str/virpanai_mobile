@@ -530,70 +530,73 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       ),
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            top: 16.0,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bottom Sheet Handle
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.circular(12),
+        return withSystemBottomPadding(
+          context: context,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bottom Sheet Handle
+                Center(
+                  child: Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Promo Code Input
-              Text(
-                AppStrings.enter_promo_code,
-                style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: promoCodeController,
-                decoration: InputDecoration(
-                  hintText:AppStrings.promo_code,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.secondary),
+                // Promo Code Input
+                Text(
+                  AppStrings.enter_promo_code,
+                  style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: promoCodeController,
+                  decoration: InputDecoration(
+                    hintText:AppStrings.promo_code,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppColors.secondary),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Apply Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                // Apply Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  minimumSize: const Size(double.infinity, 50),
+                  onPressed: () {
+                    String promoCode = promoCodeController.text.trim();
+                    if (promoCode.isNotEmpty) {
+                      Navigator.pop(context); // Close the bottom sheet
+                      addPromoCode(promoCode); // Call API to apply promo code
+                    }
+                  },
+                  child: Text(
+                    (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
+                    style: FontUtils.primaryFontStyle(fontSize: 16,fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
                 ),
-                onPressed: () {
-                  String promoCode = promoCodeController.text.trim();
-                  if (promoCode.isNotEmpty) {
-                    Navigator.pop(context); // Close the bottom sheet
-                    addPromoCode(promoCode); // Call API to apply promo code
-                  }
-                },
-                child: Text(
-                  (cartResponse?.cart?.promotions??[]).isEmpty? AppStrings.apply: 'Remove',
-                  style: FontUtils.primaryFontStyle(fontSize: 16,fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
