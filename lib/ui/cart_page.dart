@@ -675,14 +675,19 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return PaymentMethodsBottomSheet(
-          paymentProviders: paymentProviders,
-          providerId: pp_id,
-          onPaymentSelected: (PaymentProvider paymentProvider) {
-            if (pp_id != paymentProvider.id) {
-              updatePaymentMethod(paymentProvider.id!);
-            }
-          },
+        final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+
+        return Padding(
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: PaymentMethodsBottomSheet(
+            paymentProviders: paymentProviders,
+            providerId: pp_id,
+            onPaymentSelected: (PaymentProvider paymentProvider) {
+              if (pp_id != paymentProvider.id) {
+                updatePaymentMethod(paymentProvider.id!);
+              }
+            },
+          ),
         );
       },
     );
