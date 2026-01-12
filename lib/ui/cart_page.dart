@@ -380,7 +380,8 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       emitEvent(cartResponse!);
       setState(() {
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'pp_system_default';
-        //orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
+        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
+        debugPrint('orderid$orderId');
         apiLoading = false;
         isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOption?.serviceZone?.fulfillmentSet?.type??'')=='shipping';
       });
@@ -425,7 +426,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         .map((item) => item.quantity ?? 0) // pick quantity, default to 0
         .fold<int>(0, (sum, qty) => sum + qty);
     print('total qty ${totalQty}');
-    eventBus.fire(ViewCartModel(totalQty,cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+    eventBus.fire(ViewCartModel(totalQty, (cartResponse.cart?.items ?? []).map((item) => item.thumbnail).whereType<String>().toList(),));
   }
 
   void addPromoCode(String promoCode) async {
@@ -708,7 +709,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   void placeOrder(String paymentProviderId) async {
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
-        makeRazorPayCall(orderId!);
+        final key = getPaymentApiKey('pp_razorpay_razorpay');
+        if (key != null) {
+          makeRazorPayCall(orderId!, key);
+        }
+        //makeRazorPayCall(orderId!);
         break;
       case 'pp_system_default':
         completeCart();
@@ -725,6 +730,16 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       return null;
     }
   }
+
+  String? getPaymentApiKey(String providerId) {
+    final provider = paymentProviders
+        .where((p) => p.id == providerId && p.isEnabled == true)
+        .cast<PaymentProvider?>()
+        .firstOrNull;
+
+    return provider?.apiKey;
+  }
+
 
   void completeCart() async {
     try {
@@ -745,9 +760,9 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
     }
   }
 
-  void makeRazorPayCall(String orderId) {
+  void makeRazorPayCall(String orderId,String apiKey) {
     var options = {
-      'key': AppConfig.razorPayKey,
+      'key': apiKey,
       'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
       'name': AppConfig.appName,
       'description': 'Payment to ${AppConfig.appName}',

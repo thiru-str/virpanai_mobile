@@ -457,22 +457,27 @@ class PaymentProvider {
   String? id;
   bool? isEnabled;
   String? name;
+  String? apiKey;
+
 
   PaymentProvider({
     this.id,
     this.isEnabled,
     this.name,
+    this.apiKey,
   });
 
   factory PaymentProvider.fromJson(Map<String, dynamic> json) => PaymentProvider(
     id: json["id"],
     isEnabled: json["is_enabled"],
     name: json["name"],
+    apiKey: json["api_key"],
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "is_enabled": isEnabled,
     "name": name,
+    "api_key": apiKey,
   };
 }
