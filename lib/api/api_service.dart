@@ -413,7 +413,7 @@ class ApiService {
     queryParams['limit'] = limit.toString();
 
     return _makeGetRequest<ProductsResponse>(
-      'store/list-products',
+      'store/list-products/v1',
       null,
       queryParams,
           (json) => ProductsResponse.fromJson(json),
