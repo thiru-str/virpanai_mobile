@@ -373,12 +373,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Text(
-                        getDisplayedPrice(),
-                        style: FontUtils.secondaryFontStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: selectedVariant == null? Colors.red:AppColors.primary,
+                      Visibility(
+                        visible: !stockNotAvailable && getDisplayedPrice().isNotEmpty,
+                        child: Text(
+                          getDisplayedPrice(),
+                          style: FontUtils.secondaryFontStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: selectedVariant == null? Colors.red:AppColors.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -434,7 +437,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
       if (prices.isNotEmpty) {
         final lowest = prices.reduce((a, b) => a < b ? a : b);
-        return "Available variants starts from ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
+        return "";
       }
     }
 
