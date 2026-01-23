@@ -147,6 +147,9 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                     storeAddress: item?.shopAddress??'',
                     productCount: item?.noOfProducts??'',
                     totalPrice: item?.totalPrice??'',
+                    phoneNumber: item?.phone??'',
+                    orderDate: item?.date??'',
+                    orderId: '#${(item?.displayId??0).toString()}',
                   ),
                 );
               },

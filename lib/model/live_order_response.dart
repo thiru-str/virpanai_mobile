@@ -60,6 +60,8 @@ class LiveOrder {
   String? shopAddress;
   String? noOfProducts;
   String? totalPrice;
+  String? phone;
+  String? date;
 
   LiveOrder({
     this.id,
@@ -69,6 +71,8 @@ class LiveOrder {
     this.shopAddress,
     this.noOfProducts,
     this.totalPrice,
+    this.phone,
+    this.date,
   });
 
   factory LiveOrder.fromJson(Map<String, dynamic> json) => LiveOrder(
@@ -79,6 +83,8 @@ class LiveOrder {
     shopAddress: json["shop_address"],
     noOfProducts: json["no_of_products"],
     totalPrice: json["total_price"],
+    phone: json["phone"],
+    date: json["date"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -89,5 +95,7 @@ class LiveOrder {
     "shop_address": shopAddress,
     "no_of_products": noOfProducts,
     "total_price": totalPrice,
+    "phone": phone,
+    "date": date,
   };
 }

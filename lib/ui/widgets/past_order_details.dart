@@ -211,10 +211,13 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                       imageUrl: item?.shopImage ?? '',
                       storeName: item?.shopName ?? '',
                       storeAddress: item?.shopAddress ?? '',
+                      phoneNumber: item?.phone ?? '',
                       productCount: item?.noOfProducts ?? '',
                       totalPrice: item?.totalPrice ?? '',
                       statusText: item?.orderStatus ?? '',
                       paymentMode: item?.paymentMethod,
+                        orderDate: item?.date??'',
+                        orderId: '#${(item?.displayId??0).toString()}'
                     ),
                   );
                 },

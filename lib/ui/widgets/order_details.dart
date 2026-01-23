@@ -70,6 +70,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       storeName: _liveOrderDetailResponse?.data?.shopName ?? '',
                       address:
                           _liveOrderDetailResponse?.data?.shopAddress ?? '',
+                      phone:
+                          _liveOrderDetailResponse?.data?.phone ?? '',
+                      orderDate: _liveOrderDetailResponse?.data?.date ?? '',
+                      orderId: '#${( _liveOrderDetailResponse?.data?.displayId??0).toString()}',
                       totalPrice:
                           _liveOrderDetailResponse?.data?.totalPrice ?? '',
                     ),

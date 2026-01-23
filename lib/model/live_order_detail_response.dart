@@ -50,6 +50,8 @@ class Data {
   String? shopAddress;
   String? paymentMethod;
   String? totalPrice;
+  String? phone;
+  String? date;
   List<Product>? products;
 
   Data({
@@ -62,6 +64,8 @@ class Data {
     this.shopAddress,
     this.paymentMethod,
     this.totalPrice,
+    this.phone,
+    this.date,
     this.products,
   });
 
@@ -75,6 +79,8 @@ class Data {
     shopAddress: json["shop_address"],
     totalPrice: json["total_price"],
     paymentMethod: json["payment_method"],
+    phone: json["phone"],
+    date: json["date"],
     products: json["products"] == null ? [] : List<Product>.from(json["products"]!.map((x) => Product.fromJson(x))),
   );
 
@@ -88,6 +94,8 @@ class Data {
     "shop_address": shopAddress,
     "total_price": totalPrice,
     "payment_method": paymentMethod,
+    "phone": phone,
+    "date": date,
     "products": products == null ? [] : List<dynamic>.from(products!.map((x) => x.toJson())),
   };
 }
