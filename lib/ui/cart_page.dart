@@ -382,7 +382,6 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       setState(() {
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.providerId??'pp_system_default';
         orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
-        debugPrint('orderid$orderId');
         apiLoading = false;
         isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOption?.serviceZone?.fulfillmentSet?.type??'')=='shipping';
       });
@@ -446,8 +445,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         AppUtils.showToast(
             'Promo code not applied.Please double check your cart items');
       }
+      final cartItem =
+      cartResponse!.cart!.items![0];
+      await updateCart(cartItem.quantity!, cartItem.id!, 0);
       setState(() {
-        cartResponse =  response;
+        //cartResponse =  response;
         cartLoading = false;
       });
     } catch (e) {
@@ -470,8 +472,11 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         AppUtils.showToast(
             'Promo code removed successfully');
       }
+      final cartItem =
+      cartResponse!.cart!.items![0];
+      await updateCart(cartItem.quantity!, cartItem.id!, 0);
       setState(() {
-        cartResponse =  response;
+        //cartResponse =  response;
         cartLoading = false;
       });
     } catch (e) {
@@ -483,13 +488,13 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
   }
 
 
-  void updateCart(int qty,String cartItemId,int index) async {
+  Future<void> updateCart(int qty,String cartItemId,int index) async {
     try {
-      debugPrint('calling update');
       final ApiService apiService = ApiService();
       cartResponse = await apiService.updateCart(context,qty,cartItemId);
       setState(() {
         cartResponse;
+        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data?.id??'';
         setState(() {
           cartResponse!.cart!.items![index].isUpdating = false;
         });
