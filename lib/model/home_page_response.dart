@@ -12,23 +12,27 @@ class HomePageResponse {
   String? status;
   List<Content>? content;
   Global? global;
+  Error? error;
 
   HomePageResponse({
     this.status,
     this.content,
     this.global,
+    this.error,
   });
 
   factory HomePageResponse.fromJson(Map<String, dynamic> json) => HomePageResponse(
     status: json["status"],
     content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
     global: json["global"] == null ? null : Global.fromJson(json["global"]),
+    error: json["error"] == null ? null : Error.fromJson(json["error"]), // <-- Deserialize
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
     "content": content == null ? [] : List<dynamic>.from(content!.map((x) => x.toJson())),
     "global": global?.toJson(),
+    "error": error?.toJson(),
   };
 }
 
@@ -479,5 +483,25 @@ class PaymentProvider {
     "is_enabled": isEnabled,
     "name": name,
     "api_key": apiKey,
+  };
+}
+
+class Error {
+  String? code;
+  String? message;
+
+  Error({
+    this.code,
+    this.message,
+  });
+
+  factory Error.fromJson(Map<String, dynamic> json) => Error(
+      code: json["code"],
+      message: json["message"]
+  );
+
+  Map<String, dynamic> toJson() => {
+    "code": code,
+    "message": message,
   };
 }

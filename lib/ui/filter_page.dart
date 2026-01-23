@@ -73,7 +73,7 @@ class _FilterPageState extends State<FilterPage> {
     {'label': AppStrings.collections, 'section': FilterSection.collections},
     {'label': AppStrings.categories, 'section': FilterSection.categories},
     {'label': AppStrings.tags, 'section': FilterSection.tags},
-    {'label': AppStrings.price, 'section': FilterSection.price},
+    // {'label': AppStrings.price, 'section': FilterSection.price},
     {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
   ];
 

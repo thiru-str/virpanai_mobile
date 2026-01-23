@@ -40,5 +40,6 @@ class AppAssets {
   static const String warranty = 'images/warranty.svg';
   static const String ic_warranty = 'images/ic_warranty.svg';
   static const String ic_gwm_warranty = 'images/ic_gwm_warranty.svg';
+  static const String ic_lock = 'images/ic_lock.svg';
 // Add more assets as needed
 }

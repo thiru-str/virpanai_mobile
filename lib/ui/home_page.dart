@@ -7,8 +7,10 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/hold_account.dart';
 import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/product_page.dart';
+import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/custom_app_bar.dart';
@@ -39,6 +41,7 @@ import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
 import '../utility/app_utils.dart';
+import 'bottom_nav_page.dart';
 import 'widgets/common_header_app_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -215,6 +218,10 @@ class _HomePageState extends State<HomePage> {
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
+      if (homePageResponse?.error?.code == '00007') {
+        showPendingOrdersDialog(context);
+        return;
+      }
       SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
       SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
       SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
@@ -254,6 +261,38 @@ class _HomePageState extends State<HomePage> {
       print(e);
     }
   }
+
+  void showPendingOrdersDialog(BuildContext context) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+
+        // eventBus.on<ClosePendingOrdersDialogEvent>().listen((event) {
+        //   Navigator.of(context, rootNavigator: true).pop();
+        //   Navigator.pop(context);
+        // });
+
+        return WillPopScope(
+          onWillPop: () async {
+            // Return false to prevent back button from closing dialog
+            return false;
+          },
+          child: HoldAccountDialog(
+            onJoin: () async {
+              // Handle sign out action
+              await SharedPreferencesUtil().clear();
+              if (mounted) {
+                PageRouteUtils.pushAndRemoveUntil(
+                    context, WelcomePage());
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+
 
 
 }
