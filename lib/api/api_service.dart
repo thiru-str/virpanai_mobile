@@ -902,6 +902,7 @@ class ApiService {
 
   Future<RelatedProductsResponse> relatedProducts(
       BuildContext context, String productId) async {
+    await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<RelatedProductsResponse>(
       'store/related-product/${productId}',
