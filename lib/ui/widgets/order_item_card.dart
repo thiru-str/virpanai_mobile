@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 import '../../utility/app_assets.dart';
+import '../../utility/app_utils.dart';
 
 class OrderItemCard extends StatelessWidget {
   final String imageUrl;
@@ -135,11 +136,18 @@ class OrderItemCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    phoneNumber,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
+                  GestureDetector(
+                    onTap: (){
+                      AppUtils.makePhoneCall(phoneNumber);
+                    },
+                    child: Text(
+                      '+91 ${phoneNumber}',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.primary,
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
                 ],

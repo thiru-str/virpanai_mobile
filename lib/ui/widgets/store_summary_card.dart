@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../utility/app_colors.dart';
+import '../../utility/app_utils.dart';
+
 class StoreSummaryCard extends StatelessWidget {
   final String storeName;
   final String address;
@@ -86,13 +89,21 @@ class StoreSummaryCard extends StatelessWidget {
                         color: Colors.grey.shade600,
                       ),
                     ),const SizedBox(height: 4),
-                    Text(
-                      phone!,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
+                    GestureDetector(
+                      onTap: (){
+                        AppUtils.makePhoneCall(phone!);
+                      },
+                      child: Text(
+                        '+91 ${phone!}',
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary,
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ),
+
                   ],
                 ),
               ),

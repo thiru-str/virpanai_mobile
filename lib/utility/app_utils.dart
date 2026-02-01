@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -79,6 +80,13 @@ class AppUtils {
   static Future<String> getCurrentAppVersion() async {
     final info = await PackageInfo.fromPlatform();
     return info.version; // e.g. "1.2.0"
+  }
+
+  static Future<void> makePhoneCall(String phone) async {
+    if (phone.isEmpty) return;
+
+    final uri = Uri.parse('tel:$phone');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
 }
