@@ -260,20 +260,20 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
                   val == null || val.isEmpty ? 'Enter GST Number' : null,
             ),
             const SizedBox(height: 6),
-            buildImageUploader(
+            ImageUploader(
               label: "GST Image",
               imageFile: _gstImage,
-              isLoading: _isGstImageUploading,
-              onUploadTap: () async {
-                setState(() => _isGstImageUploading = true);
-                await pickImage(
-                  (img) => setState(() => _gstImage = img),
-                  (path) => setState(() {
-                    _gstImagePath = path;
-                    _isGstImageUploading = false;
-                  }),
-                );
-              },
+              isUploading: _isGstImageUploading,
+              onTap: () => _pickAndUploadImage(
+                onPick: (file) => setState(() => _gstImage = file),
+                onUploaded: (path) => setState(() => _gstImagePath = path),
+                onUploadFailed: () => setState(() {
+                  _gstImage = null;
+                  _gstImagePath = null;
+                  AppUtils.showToast('GST image upload failed. Please try again');
+                }),
+                setLoading: (val) => setState(() => _isGstImageUploading = val),
+              ),
             ),
             const SizedBox(height: 20),
           ],
@@ -286,50 +286,54 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           const Text("Shop Images",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          buildImageUploader(
+          ImageUploader(
             label: "Shop Front With Name Board",
             imageFile: _shopFrontImage,
-            isLoading: _isShopFrontUploading,
-            onUploadTap: () async {
-              setState(() => _isShopFrontUploading = true);
-              await pickImage(
-                (img) => setState(() => _shopFrontImage = img),
-                (path) => setState(() {
-                  _shopFrontImagePath = path;
-                  _isShopFrontUploading = false;
-                }),
-              );
-            },
+            isUploading: _isShopFrontUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _shopFrontImage = file),
+              onUploaded: (path) => setState(() => _shopFrontImagePath = path),
+              onUploadFailed: () => setState(() {
+                _shopFrontImage = null;
+                _shopFrontImagePath = null;
+                AppUtils.showToast('Shop Front Image upload failed. Please try again');
+              }),
+              setLoading: (val) => setState(() => _isShopFrontUploading = val),
+            ),
           ),
-          buildImageUploader(
+          ImageUploader(
             label: "Shop Interior",
             imageFile: _shopInteriorImage,
-            isLoading: _isShopInteriorUploading,
-            onUploadTap: () async {
-              setState(() => _isShopInteriorUploading = true);
-              await pickImage(
-                (img) => setState(() => _shopInteriorImage = img),
-                (path) => setState(() {
-                  _shopInteriorImagePath = path;
-                  _isShopInteriorUploading = false;
-                }),
-              );
-            },
+            isUploading: _isShopInteriorUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _shopInteriorImage = file),
+              onUploaded: (path) =>
+                  setState(() => _shopInteriorImagePath = path),
+              onUploadFailed: () => setState(() {
+                _shopInteriorImage = null;
+                _shopInteriorImagePath = null;
+                AppUtils.showToast('Shop Interior Image upload failed. Please try again');
+              }),
+              setLoading: (val) =>
+                  setState(() => _isShopInteriorUploading = val),
+            ),
           ),
-          buildImageUploader(
+          ImageUploader(
             label: "Shop Counter",
             imageFile: _shopCounterImage,
-            isLoading: _isShopCounterUploading,
-            onUploadTap: () async {
-              setState(() => _isShopCounterUploading = true);
-              await pickImage(
-                (img) => setState(() => _shopCounterImage = img),
-                (path) => setState(() {
-                  _shopCounterImagePath = path;
-                  _isShopCounterUploading = false;
-                }),
-              );
-            },
+            isUploading: _isShopCounterUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _shopCounterImage = file),
+              onUploaded: (path) =>
+                  setState(() => _shopCounterImagePath = path),
+              onUploadFailed: () => setState(() {
+                _shopCounterImage = null;
+                _shopCounterImagePath = null;
+                AppUtils.showToast('Shop Counter Image upload failed. Please try again');
+              }),
+              setLoading: (val) =>
+                  setState(() => _isShopCounterUploading = val),
+            ),
           ),
         ],
       );
@@ -337,59 +341,162 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
   }
 
   Future<void> _handleNext() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      if (_currentStep == 0) {
-        final response = await ApiService().checkDuplicate(
-            context, _emailController.text, widget.phoneNo);
-        if (response.status ?? false) {
-          setState(() => _currentStep = 1);
-        } else {
-          AppUtils.showToast(response.error?.message ?? '');
-        }
-      } else if (_currentStep == 1) {
-        if (_isGstRegistered) {
-          if (_gstImagePath == null) {
-            AppUtils.showToast('Please upload GST image');
-            return;
-          }
-        }
-        final response = await ApiService().checkPinCode(context, _postalCodeController.text);
-        if (!(response.status ?? false)) {
-          AppUtils.showToast(response.error?.message??'');
-          return;
-        }
-        setState(() => _currentStep = 2);
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    if (_currentStep == 0) {
+      final response = await ApiService().checkDuplicate(
+          context, _emailController.text, _phoneController.text);
+
+      if (response.status ?? false) {
+        setState(() => _currentStep = 1);
       } else {
-        // Submit
-        debugPrint(
-            "Form Submitted: ${_emailController.text}...");
-        // Navigate or trigger next logic
+        AppUtils.showToast(response.error?.message ?? '');
+      }
+      return;
+    }
 
-        if (_shopFrontImagePath==null) {
-          AppUtils.showToast('Please upload Shop front image');
-          return;
-        }if (_shopInteriorImagePath==null) {
-          AppUtils.showToast('Please upload Shop interior image');
-          return;
-        }if (_shopCounterImagePath==null) {
-          AppUtils.showToast('Please upload Shop counter image');
+    if (_currentStep == 1) {
+
+      if (_isGstRegistered) {
+        if (_isGstImageUploading) {
+          AppUtils.showToast('Please wait, GST image is uploading');
           return;
         }
-
-        register();
+        if (_gstImagePath == null) {
+          AppUtils.showToast('Please upload GST image');
+          return;
+        }
       }
+
+      final response =
+      await ApiService().checkPinCode(context, _postalCodeController.text);
+
+      _showConfirmationAlert(context, response);
+      return;
+    }
+
+    if (_currentStep == 2) {
+
+      if (_isShopFrontUploading ||
+          _isShopInteriorUploading ||
+          _isShopCounterUploading) {
+        AppUtils.showToast('Please wait, images are still uploading');
+        return;
+      }
+
+      if (_shopFrontImagePath == null) {
+        AppUtils.showToast('Please upload Shop front image');
+        return;
+      }
+
+      if (_shopInteriorImagePath == null) {
+        AppUtils.showToast('Please upload Shop interior image');
+        return;
+      }
+
+      if (_shopCounterImagePath == null) {
+        AppUtils.showToast('Please upload Shop counter image');
+        return;
+      }
+
+      register();
     }
   }
 
-  void _showConfirmationAlert(BuildContext context) {
+  Future<void> _pickAndUploadImage({
+    required Function(File) onPick,
+    required Function(String?) onUploaded,
+    required VoidCallback onUploadFailed,
+    required Function(bool) setLoading,
+  }) async {
+    try {
+      setLoading(true);
+
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Take Photo"),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Choose from Gallery"),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      final picked = await ImagePicker().pickImage(source: source);
+      if (picked == null) return;
+
+      final originalFile = File(picked.path);
+
+      final compressedFile = await _compressImage(originalFile);
+
+
+      onPick(compressedFile);
+
+      final response = await ApiService()
+          .uploadDocImages(context, widget.token, compressedFile);
+
+      final path = response?['file']?['path'];
+      if (path == null) throw Exception('Upload failed');
+
+      onUploaded(path);
+    } catch (e) {
+      onUploadFailed();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  Future<File> _compressImage(File file) async {
+    final dir = await getTemporaryDirectory();
+    final targetPath = p.join(
+      dir.path,
+      'cmp_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+
+    final XFile? compressed = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 75,
+      minWidth: 1080,
+      minHeight: 1080,
+      format: CompressFormat.jpeg,
+    );
+
+    if (compressed == null) {
+      return file;
+    }
+
+    return File(compressed.path);
+  }
+
+  void _showConfirmationAlert(BuildContext context, PinCodeResponse response) {
     showDialog(
       context: context,
       builder: (context) {
         return CommonAlertDialog(
           title: 'PinCode Verification',
           content: 'You entered: ${_postalCodeController.text}\n\n'
-              'Note: Agent/Distributor assignment depends on this PinCode.\n\n'
-              'Please confirm this is correct before proceeding.',
+              'Area name: ${response.data?.pincode?.firstOrNull?.area ?? 'N/A'}\n\n'
+              '${response.data?.dealer?.firstOrNull?.name != null ? 'Assigned Distributor: ${response.data!.dealer!.first.name}\n\n' : ''}'
+              'Note: Distributor assignment depends on this PinCode.\n\n'
+              'Please confirm this before proceeding.',
           contentOk: 'Confirm',
           contentCancel: 'Edit',
           onTapOk: () {
