@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
+import '../../utility/app_utils.dart';
 
 class StoreContactCard extends StatelessWidget {
   final String imageUrl;
@@ -93,9 +94,15 @@ class StoreContactCard extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      phoneNumber,
-                      style: const TextStyle(fontSize: 14),
+                    GestureDetector(
+                      onTap: (){
+                        AppUtils.makePhoneCall(phoneNumber);
+                      },
+                      child: Text(
+                        phoneNumber,
+                        style: const TextStyle(fontSize: 14,decoration: TextDecoration.underline,
+                          ),
+                      ),
                     ),
                   ],
                 ),
