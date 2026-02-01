@@ -804,28 +804,6 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
     );
   }
 
-  Future<void> pickImage(
-      Function(File) onImagePicked, Function(String?) onUploadComplete) async {
-    try {
-      final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (picked != null) {
-        final imageFile = File(picked.path);
-        onImagePicked(imageFile);
-        await _uploadAndStoreImage(imageFile, onUploadComplete);
-      }
-    } finally {
-      // Reset all loading states if image picking is cancelled or fails
-      if (mounted) {
-        setState(() {
-          _isGstImageUploading = false;
-          _isShopCounterUploading = false;
-          _isShopInteriorUploading = false;
-          _isShopFrontUploading = false;
-        });
-      }
-    }
-  }
-
   void register() async {
     try {
       setState(() {
