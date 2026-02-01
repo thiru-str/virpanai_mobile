@@ -42,7 +42,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
   int _currentStep = 0;
 
   // Step 1 Controllers
-  final _nameController = TextEditingController();
+  //final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
 
@@ -139,12 +139,12 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
           const Text("Owner Details",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          buildLabeledTextField(
-            label: "Owner Name",
-            controller: _nameController,
-            validator: (val) =>
-                val == null || val.isEmpty ? 'Please enter your name' : null,
-          ),
+          // buildLabeledTextField(
+          //   label: "Owner Name",
+          //   controller: _nameController,
+          //   validator: (val) =>
+          //       val == null || val.isEmpty ? 'Please enter your name' : null,
+          // ),
           buildLabeledTextField(
             label: "Email Address",
             controller: _emailController,
@@ -362,7 +362,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
       } else {
         // Submit
         debugPrint(
-            "Form Submitted: ${_nameController.text}, ${_emailController.text}...");
+            "Form Submitted: ${_emailController.text}...");
         // Navigate or trigger next logic
 
         if (_shopFrontImagePath==null) {
@@ -403,7 +403,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    //_nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _shopNameController.dispose();
@@ -723,7 +723,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
       var response = await apiService.createCustomer(
           context,
           _emailController.text,
-          _nameController.text,
+          _shopNameController.text,
           widget.countryCode,
           widget.phoneNo,
           _shopNameController.text,

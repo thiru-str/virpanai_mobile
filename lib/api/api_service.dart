@@ -918,7 +918,7 @@ class ApiService {
         {
           "email": email,
           "company_name": shopName,
-          "first_name": firstName,
+          "first_name": shopName,
           "phone": phone,
           "metadata": {
             "country_code":countryCode,
