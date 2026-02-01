@@ -933,7 +933,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         });
       }
 
-
+      setState(() => apiLoading = false);
       // Call cart API only after product API succeeds
       await getRelatedProductsApi();
       await getCartApi();

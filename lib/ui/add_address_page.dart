@@ -121,6 +121,9 @@ class _AddAddressPage extends State<AddAddressPage> {
       }
       zipCodeController.text =
           customer?.metadata?.postalCode??'';
+      firstNameController.text = customer?.firstName??'';
+      lastNameController.text = customer?.lastName??'';
+      phoneNumberController.text = customer?.phone??'';
     }
   }
 
