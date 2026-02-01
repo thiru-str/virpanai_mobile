@@ -44,6 +44,7 @@ import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/duplicate_response_model.dart';
 import '../model/pending_order_detail_response.dart';
+import '../model/pin_code_response.dart';
 import '../model/refresh_token_response.dart';
 import '../model/reset_response.dart';
 import '../utility/app_utils.dart';
@@ -939,10 +940,9 @@ class ApiService {
         context);
   }
 
-  Future<CheckPinCodeResponse> checkPinCode(BuildContext context, String pinCode) async {
-    await addToken();
-    return _makePostRequest('dealer/customer/check-pincode', {"pincode":pinCode},
-            (data) => CheckPinCodeResponse.fromJson(data), context);
+  Future<PinCodeResponse> pinCodeCheck(BuildContext context, String pinCode) async {
+    return _makePostRequest('public/pincode-list', {"pincode":pinCode},
+            (data) => PinCodeResponse.fromJson(data), context);
   }
 
   Future<DuplicateResponse> checkDuplicate(BuildContext context,String email,String phone) async {

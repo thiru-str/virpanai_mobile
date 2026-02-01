@@ -2,17 +2,21 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
+import 'package:waioz/ui/widgets/image_uploader.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/pin_code_response.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_assets.dart';
@@ -369,7 +373,7 @@ class _CustomerRegisterPageState extends State<CustomerRegisterPage> {
       }
 
       final response =
-      await ApiService().checkPinCode(context, _postalCodeController.text);
+      await ApiService().pinCodeCheck(context, _postalCodeController.text);
 
       _showConfirmationAlert(context, response);
       return;
