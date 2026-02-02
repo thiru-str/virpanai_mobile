@@ -48,6 +48,8 @@ Future<void> main() async {
   await SharedPreferencesUtil().saveString('invoice_url', publicDetailsResponse.storeDetails?.storeMetadata?.invoiceUrl??'');
   bool skipLogin = publicDetailsResponse.storeDetails?.storeMetadata?.skipLogin?? false;
   await SharedPreferencesUtil().saveBool('skip_login', skipLogin);
+  await SharedPreferencesUtil().saveBool('email_login', ((publicDetailsResponse.storeDetails?.loginType??'')=='email'));
+
 
 
   FontUtils.updateFonts(

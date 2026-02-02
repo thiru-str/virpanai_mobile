@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/model/email_register_response.dart';
 import 'package:waioz/model/refresh_token_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
@@ -36,9 +38,28 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
-  bool apiCalling = true;
+
+  bool apiCalling = false;
   RegisterResponse? registerResponse;
+  EmailRegisterResponse? emailRegisterResponse;
+  bool isEmailLogin = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getLoginType();
+  }
+
+  Future<void> getLoginType() async {
+    final loginType = await SharedPreferencesUtil().getBool('email_login')?? false;
+    setState(() {
+      isEmailLogin = loginType;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,12 +131,56 @@ class _RegisterPageState extends State<RegisterPage> {
                       return null;
                     },
                   ),
+                  if (isEmailLogin) ...[
+                    const SizedBox(height: 16),
+
+                    CustomTextField(
+                      hintText: AppStrings.password,
+                      controller: passwordController,
+                      textCapitalization: TextCapitalization.none,
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),)],
+                      isPassword: true,
+                      validator: (value) {
+                        if (!isEmailLogin) return null;
+
+                        if (value == null || value.isEmpty) {
+                          return AppStrings.password_required;
+                        }
+                        if (value.length < 5) {
+                          return AppStrings.password_min_length;
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    CustomTextField(
+                      hintText: AppStrings.confirm_password,
+                      controller: confirmPasswordController,
+                      textCapitalization: TextCapitalization.none,
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),)],
+                      isPassword: true,
+                      validator: (value) {
+                        if (!isEmailLogin) return null;
+
+                        if (value == null || value.isEmpty) {
+                          return AppStrings.confirm_password_required;
+                        }
+                        if (value != passwordController.text) {
+                          return AppStrings.password_mismatch;
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
+
+
+                  apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
+                    onPressed:() {
                       if (_formKey.currentState!.validate()) {
-                        // Handle registration logic
-                        print("Form is valid. Proceed to register.");
                         register();
                       }
                     },
@@ -146,37 +211,46 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void register() async {
     try {
-      final ApiService apiService = ApiService();
-      registerResponse = await apiService.register(
-          context,
-          emailController.text,
-          companyController.text,
-          firstNameController.text,
-          lastNameController.text,
-          widget.countryCode,
-          widget.phoneNo,
-          widget.token);
-
-      RefreshTokenResponse refreshTokenResponse =
-          await apiService.refreshToken(context, widget.token);
-
       setState(() {
-        apiCalling = false;
+        apiCalling = true;
       });
+      final ApiService apiService = ApiService();
+      if(!isEmailLogin) {
+        registerResponse = await apiService.register(
+            context,
+            emailController.text,
+            companyController.text,
+            firstNameController.text,
+            lastNameController.text,
+            widget.countryCode,
+            widget.phoneNo,
+            widget.token);
 
-      SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
-      SharedPreferencesUtil()
-          .saveMap('customer', registerResponse?.customer?.toJson() ?? {});
+        RefreshTokenResponse refreshTokenResponse =
+        await apiService.refreshToken(context, widget.token);
+        SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
+        SharedPreferencesUtil()
+            .saveMap('customer', registerResponse?.customer?.toJson() ?? {});
+      }
+      else{
+        emailRegisterResponse = await apiService.registerEmail(
+            context,
+            emailController.text,
+            companyController.text,
+            firstNameController.text,
+            lastNameController.text,
+            widget.countryCode,
+            widget.phoneNo,
+            passwordController.text);
+        SharedPreferencesUtil().saveString('token', emailRegisterResponse?.token??'');
+        SharedPreferencesUtil()
+            .saveMap('customer', emailRegisterResponse?.customer?.toJson() ?? {});
+      }
+
 
       if (mounted) {
         if (widget.redirectPage != null) {
-          setState(() {
-            apiCalling = true;
-          });
           getHomePageApi();
-          setState(() {
-            apiCalling = false;
-          });
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
           PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());

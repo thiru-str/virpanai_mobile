@@ -11,7 +11,6 @@ String publicDetailsResponseToJson(PublicDetailsResponse data) => json.encode(da
 class PublicDetailsResponse {
   bool? maintainance;
   String? token;
-  String? loginType;
   Theme? theme;
   bool? googleMapUsage;
   bool? showLocationAtStart;
@@ -25,7 +24,6 @@ class PublicDetailsResponse {
   PublicDetailsResponse({
     this.maintainance,
     this.token,
-    this.loginType,
     this.theme,
     this.googleMapUsage,
     this.showLocationAtStart,
@@ -40,7 +38,6 @@ class PublicDetailsResponse {
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
       maintainance: json["maintainance"],
       token: json["token"],
-      loginType: json["loginType"],
       theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
       googleMapUsage: json["googleMapUsage"],
       showLocationAtStart: json["showLocationAtStart"],
@@ -55,7 +52,6 @@ class PublicDetailsResponse {
   Map<String, dynamic> toJson() => {
     "maintainance": maintainance,
     "token": token,
-    "loginType": loginType,
     "theme": theme?.toJson(),
     "googleMapUsage": googleMapUsage,
     "showLocationAtStart": showLocationAtStart,
@@ -70,17 +66,21 @@ class PublicDetailsResponse {
 
 class StoreDetails {
   StoreMetadata? storeMetadata;
+  String? loginType;
 
   StoreDetails({
     this.storeMetadata,
+    this.loginType,
   });
 
   factory StoreDetails.fromJson(Map<String, dynamic> json) => StoreDetails(
     storeMetadata: json["storeMetadata"] == null ? null : StoreMetadata.fromJson(json["storeMetadata"]),
+    loginType: json["loginType"],
   );
 
   Map<String, dynamic> toJson() => {
     "storeMetadata": storeMetadata?.toJson(),
+    "loginType": loginType,
   };
 }
 

@@ -40,6 +40,7 @@ import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
+import '../model/email_register_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../model/tags_response.dart';
@@ -88,7 +89,7 @@ class ApiService {
         await _handleLogout(context, response.data['error']);
         throw Exception('Unauthorized: ${response.data['error']}');
       } else {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -129,7 +130,7 @@ class ApiService {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
         await _handleLogout(context!, response.data['error']);
@@ -174,7 +175,7 @@ class ApiService {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -216,7 +217,7 @@ class ApiService {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
+        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -321,6 +322,34 @@ class ApiService {
           }
         },
         (data) => RegisterResponse.fromJson(data),
+        context);
+  }
+
+  Future<EmailRegisterResponse> registerEmail(
+      BuildContext context,
+      String email,
+      String companyName,
+      String firstName,
+      String lastName,
+      String countryCode,
+      String phone,
+      String password) async {
+    String? deviceId = await _updateToken();
+    return _makePostRequest(
+        "store/customers/email-register",
+        {
+          "email": email,
+          "company_name": companyName,
+          "first_name": firstName,
+          "last_name": lastName,
+          "phone": phone,
+          "password": password,
+          "metadata": {
+            "country_code":countryCode,
+            "device_id":deviceId
+          }
+        },
+        (data) => EmailRegisterResponse.fromJson(data),
         context);
   }
 
@@ -962,6 +991,16 @@ class ApiService {
   Future<void> setPublishableKey() async {
     String? publishableKey = await SharedPreferencesUtil().getString('publishable_key');
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
+  }
+
+  Future<VerifyOtpResponse> loginWithEmail(
+      BuildContext context,String email,String password) async {
+    String? deviceId = await _updateToken();
+    return _makePostRequest(
+        "store/customers/email-login",
+        {"device_id": deviceId,"email":email,"password": password},
+            (data) => VerifyOtpResponse.fromJson(data),
+        context);
   }
 
 

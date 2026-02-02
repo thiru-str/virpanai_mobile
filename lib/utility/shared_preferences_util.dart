@@ -114,6 +114,7 @@ class SharedPreferencesUtil {
       await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
       bool skipLogin = publicDetailsResponse.storeDetails?.storeMetadata?.skipLogin?? false;
       await SharedPreferencesUtil().saveBool('skip_login', skipLogin);
+      await SharedPreferencesUtil().saveBool('email_login', ((publicDetailsResponse.storeDetails?.loginType??'')=='email'));
     }
   }
 

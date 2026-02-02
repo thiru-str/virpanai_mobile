@@ -199,4 +199,12 @@ class AppStrings {
 
   static const String androidPackage = 'com.rodeodigital.wellmartmas';
   static const String appId = '1611964854';
+
+  static const String login = 'Login';
+  static const String password = 'Password';
+  static const String confirm_password = 'Confirm Password';
+  static const String password_required = 'Password Required';
+  static const String password_min_length = 'Password should be minimum 5 characters';
+  static const String confirm_password_required = 'Confirm password Required';
+  static const String password_mismatch = 'Password mismatch';
 }
