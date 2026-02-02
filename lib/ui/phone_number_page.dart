@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
+import 'package:waioz/ui/register_page.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -151,6 +153,17 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                           return null;
                         },
                       ),
+                      newToAppRegisterText(onRegisterTap: () {
+                        PageRouteUtils.pushWithSlide(
+                            context,
+                            RegisterPage(
+                              phoneNo: _phoneNumber!,
+                              countryCode: _countryCode!,
+                              token: '',
+                              redirectPage: widget.redirectPage,
+                            ));
+                      })
+
                     ] else ...[
                       Text(
                         AppStrings.mobile_number,
@@ -332,6 +345,40 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
       print(e);
     }
   }
+
+  Widget newToAppRegisterText({
+    required VoidCallback onRegisterTap,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: RichText(
+          text: TextSpan(
+            style: FontUtils.primaryFontStyle(
+              fontSize: 14,
+              color: Colors.grey[700]!,
+            ),
+            children: [
+              const TextSpan(
+                text: 'Don’t have an account? ',
+              ),
+              TextSpan(
+                text: 'Register',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = onRegisterTap,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 
 
 

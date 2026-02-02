@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -175,6 +176,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ],
 
+                  newToAppRegisterText(onRegisterTap: () {
+                    Navigator.pop(context);
+                  }),
+
                   const SizedBox(height: 16),
 
 
@@ -280,4 +285,38 @@ class _RegisterPageState extends State<RegisterPage> {
       print(e);
     }
   }
+
+  Widget newToAppRegisterText({
+    required VoidCallback onRegisterTap,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: RichText(
+          text: TextSpan(
+            style: FontUtils.primaryFontStyle(
+              fontSize: 14,
+              color: Colors.grey[700]!,
+            ),
+            children: [
+              const TextSpan(
+                text: 'Already have an account? ',
+              ),
+              TextSpan(
+                text: 'Login',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = onRegisterTap,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 }
