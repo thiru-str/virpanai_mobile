@@ -174,13 +174,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         return null;
                       },
                     ),
+                    newToAppRegisterText(onRegisterTap: () {
+                      Navigator.pop(context);
+                    }),
                   ],
-
-                  newToAppRegisterText(onRegisterTap: () {
-                    Navigator.pop(context);
-                  }),
-
-                  const SizedBox(height: 16),
 
 
                   apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
