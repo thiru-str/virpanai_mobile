@@ -207,11 +207,11 @@ class Item {
   List<dynamic>? taxLines;
   List<dynamic>? adjustments;
   dynamic compareAtUnitPrice;
-  int? unitPrice;
+  num? unitPrice;
   int? quantity;
   Raw? rawQuantity;
   Detail? detail;
-  int? subtotal;
+  num? subtotal;
   num? total;
   num? originalTotal;
   num? discountTotal;
