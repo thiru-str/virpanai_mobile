@@ -184,7 +184,7 @@ class Item {
   String? variantTitle;
   String? variantSku;
   String? thumbnail;
-  int? unitPrice;
+  num? unitPrice;
   int? quantity;
   String? status;
   String? fulfillmentId;

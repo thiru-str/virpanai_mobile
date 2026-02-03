@@ -88,7 +88,7 @@ class StoreMetadata {
   bool? skipLogin;
   String? versionCheck;
   String? invoiceUrl;
-  int? minimumOrderValue;
+  num? minimumOrderValue;
 
   StoreMetadata({
     this.skipLogin,

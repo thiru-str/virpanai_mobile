@@ -126,7 +126,7 @@ class LayoutDatum {
   String? salesText;
   Prices? prices;
   RedirectData? redirectData;
-  int? rating;
+  num? rating;
   VariantDetails? variantDetails;
   CartDetails? cartDetails;
 
