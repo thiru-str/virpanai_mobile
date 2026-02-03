@@ -28,7 +28,7 @@ class Grid1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppUtils.rgbStringToColor(content.layoutBgColor ?? ''),
+      decoration: AppUtils.buildLayoutBackground(content),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -39,24 +39,31 @@ class Grid1 extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  content.layoutTitle ?? '',
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
+                Expanded(
+                  child: Text(
+                    content.layoutTitle ?? '',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2, // Allow up to 2 lines for the title
                   ),
                 ),
+                const SizedBox(width: 4), // Add some spacing between title and redirect
                 Visibility(
-                  visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
+                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
                   child: GestureDetector(
                     onTap: () {
+                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content.redirectData!,
                       );
                     },
                     child: Row(
+                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
                       children: [
                         Text(
                           content.layoutRedirectTitle!,
@@ -66,7 +73,7 @@ class Grid1 extends StatelessWidget {
                             color: AppColors.textColor,
                           ),
                         ),
-                        const Icon(Icons.chevron_right, size: 18)
+                        const Icon(Icons.chevron_right, size: 18),
                       ],
                     ),
                   ),
@@ -200,49 +207,55 @@ class _Grid1Card extends StatelessWidget {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade600,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            layoutData.featureText ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
+                  child: Visibility(
+                    visible: layoutData.featureText?.isNotEmpty == true,
+                    child: Container(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade600,
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(4),bottomRight: Radius.circular(4)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              layoutData.featureText ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.star,
-                                  size: 10, color: Colors.green),
-                              const SizedBox(width: 2),
-                              Text(
-                                _generateRandomRating(),
-                                style: const TextStyle(fontSize: 10),
+                          Visibility(
+                            visible: false,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
                               ),
-                            ],
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.star,
+                                      size: 10, color: Colors.green),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    _generateRandomRating(),
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

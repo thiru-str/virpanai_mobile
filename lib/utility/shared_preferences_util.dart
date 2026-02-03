@@ -35,6 +35,33 @@ class SharedPreferencesUtil {
     await prefs.setString(key, jsonString);
   }
 
+  Future<void> saveJson(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    String jsonString = jsonEncode(value);
+    await prefs.setString(key, jsonString);
+  }
+
+  Future<dynamic> getJson(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(key);
+    if (jsonString == null) return null;
+
+    try {
+      final decoded = jsonDecode(jsonString);
+
+      if (decoded is List) {
+        return decoded;
+      } else if (decoded is Map<String, dynamic>) {
+        return decoded;
+      } else {
+        return decoded;
+      }
+    } catch (e) {
+      print('Error decoding JSON for key $key: $e');
+      return null;
+    }
+  }
+
   // Retrieve data from SharedPreferences
   Future<String?> getString(String key) async {
     final prefs = await SharedPreferences.getInstance();
@@ -85,7 +112,9 @@ class SharedPreferencesUtil {
       await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
       await SharedPreferencesUtil().saveBool('google_map_usage', false);
       await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
-      await SharedPreferencesUtil().saveBool('skip_login', false);
+      bool skipLogin = publicDetailsResponse.storeDetails?.storeMetadata?.skipLogin?? false;
+      await SharedPreferencesUtil().saveBool('skip_login', skipLogin);
+      await SharedPreferencesUtil().saveBool('email_login', ((publicDetailsResponse.storeDetails?.loginType??'')=='email'));
     }
   }
 

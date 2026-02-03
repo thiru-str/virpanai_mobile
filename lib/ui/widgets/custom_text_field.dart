@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/utility/app_colors.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final String? Function(String?) validator;
   final bool isPassword;
   final TextInputType keyboardType;
-  final int? maxLength; // Optional: Allows multi-line input
-  final int maxLines; // Optional: Allows multi-line input
-  final bool enabled; // Optional: Allows multi-line input
+  final int? maxLength;
+  final int maxLines;
+  final bool enabled;
   final List<TextInputFormatter>? inputFormatters;
-
+  final TextCapitalization textCapitalization;
 
   const CustomTextField({
     Key? key,
@@ -22,32 +22,61 @@ class CustomTextField extends StatelessWidget {
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.maxLength,
-    this.maxLines = 1, // Default single-line, can be changed
+    this.maxLines = 1,
     this.enabled = true,
     this.inputFormatters,
+    this.textCapitalization = TextCapitalization.sentences,
   }) : super(key: key);
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.isPassword;
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      enabled: enabled,
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: keyboardType,
-      maxLength: maxLength,
-      textCapitalization: TextCapitalization.sentences,
-      maxLines: maxLines,
-      inputFormatters: inputFormatters,
+      enabled: widget.enabled,
+      controller: widget.controller,
+      obscureText: widget.isPassword ? _obscureText : false,
+      keyboardType: widget.keyboardType,
+      maxLength: widget.maxLength,
+      maxLines: widget.maxLines,
+      inputFormatters: widget.inputFormatters,
+      textCapitalization: widget.textCapitalization,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
         filled: true,
         fillColor: AppColors.secondary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
           borderSide: BorderSide.none,
         ),
+        suffixIcon: widget.isPassword
+            ? IconButton(
+          icon: Icon(
+            _obscureText ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscureText = !_obscureText;
+            });
+          },
+        )
+            : null,
       ),
-      validator: validator,
+      validator: widget.validator,
     );
   }
 }
+

@@ -20,7 +20,6 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200, // Adjusted height to match the image
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -68,16 +67,18 @@ class CategoryCard extends StatelessWidget {
                         ), // Placeholder background
                       ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 16, // Adjusted for better readability
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 14, // Adjusted for better readability
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ],

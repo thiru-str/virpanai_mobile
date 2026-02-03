@@ -6,6 +6,8 @@ import 'dart:convert';
 
 import 'package:waioz/model/order_history_reponse.dart';
 
+import '../model/shipping_response.dart';
+
 CartResponse addCartResponseFromJson(String str) => CartResponse.fromJson(json.decode(str));
 
 String cartResponseToJson(CartResponse data) => json.encode(data.toJson());
@@ -59,12 +61,14 @@ class Cart {
   String? shippingAddressId;
   String? customerId;
   List<Item>? items;
-  List<dynamic>? shippingMethods;
+  List<ShippingMethod>? shippingMethods;
   ShippingAddress? shippingAddress;
   dynamic billingAddress;
   Customer? customer;
   Region? region;
   List<Promotion>? promotions;
+  PaymentCollection? paymentCollection;
+  bool? error;
 
   Cart({
     this.id,
@@ -105,6 +109,8 @@ class Cart {
     this.customer,
     this.region,
     this.promotions,
+    this.paymentCollection,
+    this.error,
   });
 
   factory Cart.fromJson(Map<String, dynamic> json) => Cart(
@@ -140,12 +146,18 @@ class Cart {
     shippingAddressId: json["shipping_address_id"],
     customerId: json["customer_id"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
-    shippingMethods: json["shipping_methods"] == null ? [] : List<dynamic>.from(json["shipping_methods"]!.map((x) => x)),
+    shippingMethods: json["shipping_methods"] == null ? [] : List<ShippingMethod>.from(json["shipping_methods"]!.map((x) => ShippingMethod.fromJson(x))),
     shippingAddress: json["shipping_address"] == null ? null : ShippingAddress.fromJson(json["shipping_address"]),
     billingAddress: json["billing_address"],
     customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
     region: json["region"] == null ? null : Region.fromJson(json["region"]),
-    promotions: json["promotions"] == null ? [] : List<Promotion>.from(json["promotions"]!.map((x) => Promotion.fromJson(x))),
+    promotions: json["promotions"] == null
+        ? []
+        : List<Promotion>.from(
+        json["promotions"]!.where((x) => x != null).map((x) => Promotion.fromJson(x))
+    ),
+    paymentCollection: json["payment_collection"] == null ? null : PaymentCollection.fromJson(json["payment_collection"]),
+    error: json["error"],
 
   );
 
@@ -182,12 +194,14 @@ class Cart {
     "shipping_address_id": shippingAddressId,
     "customer_id": customerId,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
-    "shipping_methods": shippingMethods == null ? [] : List<dynamic>.from(shippingMethods!.map((x) => x)),
+    "shipping_methods": shippingMethods == null ? [] : List<dynamic>.from(shippingMethods!.map((x) => x.toJson())),
     "shipping_address": shippingAddress?.toJson(),
     "billing_address": billingAddress,
     "customer": customer?.toJson(),
     "region": region?.toJson(),
     "promotions": promotions == null ? [] : List<dynamic>.from(promotions!.map((x) => x)),
+    "payment_collection": paymentCollection?.toJson(),
+    "error": error,
   };
 }
 
@@ -285,6 +299,9 @@ class Item {
   Raw? rawReturnDismissedTotal;
   Raw? rawWriteOffTotal;
   bool? isUpdating;
+  bool? inStock;
+  String? error;
+  int? inventoryQuantity;
 
   Item({
     this.id,
@@ -355,6 +372,9 @@ class Item {
     this.rawReturnDismissedTotal,
     this.rawWriteOffTotal,
     this.isUpdating = false,
+    this.error,
+    this.inStock,
+    this.inventoryQuantity,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
@@ -425,6 +445,9 @@ class Item {
     rawReturnReceivedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
     rawReturnDismissedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
     rawWriteOffTotal: json["raw_write_off_total"] == null ? null : Raw.fromJson(json["raw_write_off_total"]),
+    error: json["error"],
+    inStock: json["in_stock"],
+    inventoryQuantity: json["inventory_quantity"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -495,6 +518,9 @@ class Item {
     "raw_return_received_total": rawReturnReceivedTotal,
     "raw_return_dismissed_total": rawReturnDismissedTotal,
     "raw_write_off_total": rawWriteOffTotal,
+    "error": error,
+    "inventory_quantity": inventoryQuantity,
+    "in_stock": inStock,
   };
 }
 
@@ -698,7 +724,7 @@ class ShippingAddress {
   dynamic firstName;
   dynamic lastName;
   dynamic company;
-  dynamic address1;
+  String? address1;
   dynamic address2;
   dynamic city;
   dynamic postalCode;
@@ -748,3 +774,205 @@ class ShippingAddress {
     "phone": phone,
   };
 }
+
+class PaymentCollection {
+  String? id;
+  String? currencyCode;
+  dynamic completedAt;
+  String? status;
+  dynamic metadata;
+  dynamic rawAuthorizedAmount;
+  dynamic rawCapturedAmount;
+  dynamic rawRefundedAmount;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+  List<PaymentSession>? paymentSessions;
+  num? amount;
+  dynamic authorizedAmount;
+  dynamic capturedAmount;
+  dynamic refundedAmount;
+
+  PaymentCollection({
+    this.id,
+    this.currencyCode,
+    this.completedAt,
+    this.status,
+    this.metadata,
+    this.rawAuthorizedAmount,
+    this.rawCapturedAmount,
+    this.rawRefundedAmount,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.paymentSessions,
+    this.amount,
+    this.authorizedAmount,
+    this.capturedAmount,
+    this.refundedAmount,
+  });
+
+  factory PaymentCollection.fromJson(Map<String, dynamic> json) => PaymentCollection(
+    id: json["id"],
+    currencyCode: json["currency_code"],
+    completedAt: json["completed_at"],
+    status: json["status"],
+    metadata: json["metadata"],
+    rawAuthorizedAmount: json["raw_authorized_amount"],
+    rawCapturedAmount: json["raw_captured_amount"],
+    rawRefundedAmount: json["raw_refunded_amount"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+    paymentSessions: json["payment_sessions"] == null ? [] : List<PaymentSession>.from(json["payment_sessions"]!.map((x) => PaymentSession.fromJson(x))),
+    amount: json["amount"],
+    authorizedAmount: json["authorized_amount"],
+    capturedAmount: json["captured_amount"],
+    refundedAmount: json["refunded_amount"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "currency_code": currencyCode,
+    "completed_at": completedAt,
+    "status": status,
+    "metadata": metadata,
+    "raw_authorized_amount": rawAuthorizedAmount,
+    "raw_captured_amount": rawCapturedAmount,
+    "raw_refunded_amount": rawRefundedAmount,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+    "payment_sessions": paymentSessions == null ? [] : List<dynamic>.from(paymentSessions!.map((x) => x.toJson())),
+    "amount": amount,
+    "authorized_amount": authorizedAmount,
+    "captured_amount": capturedAmount,
+    "refunded_amount": refundedAmount,
+  };
+}
+
+class PaymentSession {
+  String? id;
+  String? currencyCode;
+  String? providerId;
+  Data? data;
+  Metadata? context;
+  String? status;
+  dynamic authorizedAt;
+  String? paymentCollectionId;
+  Metadata? metadata;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+  num? amount;
+
+  PaymentSession({
+    this.id,
+    this.currencyCode,
+    this.providerId,
+    this.data,
+    this.context,
+    this.status,
+    this.authorizedAt,
+    this.paymentCollectionId,
+    this.metadata,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    this.amount,
+  });
+
+  factory PaymentSession.fromJson(Map<String, dynamic> json) => PaymentSession(
+    id: json["id"],
+    currencyCode: json["currency_code"],
+    providerId: json["provider_id"],
+    data: json["data"] == null ? null : Data.fromJson(json["data"]),
+    context: json["context"] == null ? null : Metadata.fromJson(json["context"]),
+    status: json["status"],
+    authorizedAt: json["authorized_at"],
+    paymentCollectionId: json["payment_collection_id"],
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+    amount: json["amount"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "currency_code": currencyCode,
+    "provider_id": providerId,
+    //"data": data?.toJson(),
+    "context": context?.toJson(),
+    "status": status,
+    "authorized_at": authorizedAt,
+    "payment_collection_id": paymentCollectionId,
+    "metadata": metadata?.toJson(),
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+    "amount": amount,
+  };
+}
+
+// class Data {
+//   String? id;
+//
+//
+//   Data({
+//     this.id,
+//   });
+//
+//   factory Data.fromJson(Map<String, dynamic> json) => Data(
+//     id: json["id"],
+//   );
+//
+//   Map<String, dynamic> toJson() => {
+//     "id": id,
+//   };
+// }
+
+class ShippingMethod {
+  int? amount;
+  bool? isTaxInclusive;
+  String? shippingOptionId;
+  String? id;
+  String? name;
+  List<dynamic>? taxLines;
+  List<dynamic>? adjustments;
+  ShippingOption? shippingOption;
+
+  ShippingMethod({
+    this.amount,
+    this.isTaxInclusive,
+    this.shippingOptionId,
+    this.id,
+    this.name,
+    this.taxLines,
+    this.adjustments,
+    this.shippingOption,
+  });
+
+  factory ShippingMethod.fromJson(Map<String, dynamic> json) => ShippingMethod(
+    amount: json["amount"],
+    isTaxInclusive: json["is_tax_inclusive"],
+    shippingOptionId: json["shipping_option_id"],
+    id: json["id"],
+    name: json["name"],
+    taxLines: json["tax_lines"] == null ? [] : List<dynamic>.from(json["tax_lines"]!.map((x) => x)),
+    adjustments: json["adjustments"] == null ? [] : List<dynamic>.from(json["adjustments"]!.map((x) => x)),
+    shippingOption: json["shipping_option"] == null ? null : ShippingOption.fromJson(json["shipping_option"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "amount": amount,
+    "is_tax_inclusive": isTaxInclusive,
+    "shipping_option_id": shippingOptionId,
+    "id": id,
+    "name": name,
+    "tax_lines": taxLines == null ? [] : List<dynamic>.from(taxLines!.map((x) => x)),
+    "adjustments": adjustments == null ? [] : List<dynamic>.from(adjustments!.map((x) => x)),
+    "shipping_option": shippingOption?.toJson(),
+  };
+}
+

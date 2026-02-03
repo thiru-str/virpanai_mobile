@@ -6,152 +6,214 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Slider2 extends StatelessWidget {
-  final Content? content;
+  final Content content;
 
   const Slider2({Key? key, required this.content}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  content?.layoutTitle ?? '',
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
-                ),
-              ),
-              if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    // Handle redirection
-                    RedirectUtils.handleContentRedirectViewAll(
-                      context: context,
-                      redirectData: content!.redirectData!,
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        content?.layoutRedirectTitle ?? "",
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
-                        ),
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 🔹 Title + Redirect
+          Visibility(
+            visible: content.layoutTitle?.isNotEmpty== true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
                       ),
-                      const Icon(Icons.chevron_right, size: 18)
-                    ],
+                    ),
                   ),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 140,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: content?.layoutData?.length ?? 0,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final layoutData = content?.layoutData?[index];
-              return GestureDetector(
-                onTap: () {
-                  RedirectUtils.handleContentRedirect(
-                    context: context,
-                    layoutOption: content?.layoutOption ?? "",
-                    layoutData: layoutData,
-                  );
-                },
-                child: SizedBox(
-                  width: 90,
-                  height: 120, // extra height to accommodate badge + image
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      // Rounded card with image & title
-                      Positioned(
-                        top: 10, // Push image down to leave space for badge
-                        left: 0,
-                        right: 0,
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 90,
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: AppColors.secondary,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: CachedNetworkImage(
-                                  imageUrl: layoutData!.image!,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) =>
-                                  const    ImageFallbackWidget(
-                                    h: 80,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              layoutData.title ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: FontUtils.primaryFontStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Discount badge floating on top
-                      if (layoutData.prices != null &&
-                          layoutData.prices?.discountedPrice != null &&
-                          layoutData.prices?.discountedPrice != "0")
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.blueGrey.shade800,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            layoutData.prices?.discountPercentage ?? '',
+                  if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirectViewAll(
+                          context: context,
+                          redirectData: content.redirectData!,
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle ?? "",
                             style: FontUtils.primaryFontStyle(
-                              fontSize: 10,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: AppColors.textColor,
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                          const Icon(Icons.chevron_right, size: 18)
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
+
+          // 🔹 Horizontal scrollable product slider
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // ✅ ensures image alignment
+                children: [
+                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                    _Slider2Card(
+                      layoutData: content.layoutData![i],
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption ?? "",
+                          layoutData: content.layoutData![i],
+                        );
+                      },
+                    ),
+                    if (i != content.layoutData!.length - 1)
+                      const SizedBox(width: 12),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+class _Slider2Card extends StatelessWidget {
+  final LayoutDatum layoutData;
+  final VoidCallback onTap;
+
+  const _Slider2Card({
+    Key? key,
+    required this.layoutData,
+    required this.onTap,
+  }) : super(key: key);
+
+  bool get _hasDiscount =>
+      layoutData.prices?.discountedPrice != null &&
+          layoutData.prices?.discountedPrice != "0";
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: isSmallScreen ? 80 : 90,
+        margin: const EdgeInsets.only(top:8,bottom: 4),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ✅ Fixed image section (all aligned)
+                Container(
+                  width: isSmallScreen ? 80 : 90,
+                  height: isSmallScreen ? 80 : 90,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: (imageUrl.isNotEmpty)
+                        ? CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) =>
+                      const ImageFallbackWidget(h: 80),
+                    )
+                        : const ImageFallbackWidget(h: 80),
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                // ✅ Text section (auto height but doesn’t affect image line)
+                Visibility(
+                  visible: layoutData.title?.isNotEmpty == true,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: isSmallScreen ? 32 : 34,
+                      maxHeight: isSmallScreen ? 40 : 44,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        layoutData.title ?? '',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: isSmallScreen ? 11 : 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // ✅ Floating discount badge (stays above)
+            if (_hasDiscount)
+              Positioned(
+                top: 0,
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    layoutData.prices?.discountPercentage ?? '',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+

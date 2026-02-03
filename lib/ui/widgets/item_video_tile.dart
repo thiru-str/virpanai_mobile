@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import 'package:waioz/utility/image_fallback_widget.dart';
 
 class ItemVideoTile extends StatefulWidget {
-  final String? videoUrl;
-  final String? title;
+  final String videoUrl;
+  final String title;
+  final bool isActive;
 
   const ItemVideoTile({
     super.key,
     required this.videoUrl,
     required this.title,
+    required this.isActive,
   });
 
   @override
@@ -20,27 +21,24 @@ class ItemVideoTile extends StatefulWidget {
 class _ItemVideoTileState extends State<ItemVideoTile> {
   VideoPlayerController? _controller;
 
-  bool _isError = false;
-
   @override
   void initState() {
     super.initState();
-    if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
-      _controller = VideoPlayerController.network(widget.videoUrl!)
-        ..initialize().then((_) {
-          if (!mounted) return;
-          setState(() {});
-          _controller!
-            ..setLooping(true)
-            ..setVolume(0)
-            ..play();
-        }).catchError((error) {
-          setState(() {
-            _isError = true;
-          });
-        });
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        if (mounted) setState(() {});
+      });
+  }
+
+  @override
+  void didUpdateWidget(covariant ItemVideoTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive) {
+      _controller?.setLooping(true);
+      _controller?.setVolume(0);
+      _controller?.play();
     } else {
-      _isError = true;
+      _controller?.pause();
     }
   }
 
@@ -57,21 +55,39 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
-            width: 150,
-            height: 150,
-            child: _isError
-                ? const ImageFallbackWidget(h: 120) // fallback widget
-                : (_controller != null && _controller!.value.isInitialized
-                    ? VideoPlayer(_controller!)
-                    : Container(color: Colors.black12)),
+            width: 160,
+            height: 150, // 👈 fixed compact size (same as image)
+            child: _controller?.value.isInitialized ?? false
+                ? FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: _controller!.value.size.width,
+                height: _controller!.value.size.height,
+                child: VideoPlayer(_controller!),
+              ),
+            )
+                : Container(color: Colors.black12),
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          widget.title ?? "",
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        Visibility(
+          visible: widget.title.isNotEmpty,
+          child: Column(
+            children: [
+              const SizedBox(height: 6),
+              Flexible(
+                child: Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  widget.title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
         ),
+
       ],
     );
   }
 }
+

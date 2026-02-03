@@ -8,8 +8,6 @@ import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
 
 class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
   final Product product;
   final VoidCallback onTapCard;
   final VoidCallback? onTapFavorite;
@@ -17,8 +15,6 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({
     Key? key,
-    required this.imageUrl,
-    required this.title,
     required this.product,
     required this.onTapCard,
     this.onTapFavorite,
@@ -93,7 +89,7 @@ class ProductCard extends StatelessWidget {
                     top: Radius.circular(12),
                   ),
                   child: CachedNetworkImage(
-                    imageUrl: imageUrl,
+                    imageUrl: product.thumbnail ?? '',
                     height: 225,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -152,7 +148,7 @@ class ProductCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                title,
+                product.title??'',
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
@@ -171,7 +167,7 @@ class ProductCard extends StatelessWidget {
                   Text(
                     _fmt(calc ?? orig ?? 0), // show calc, else original
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
                     ),
@@ -182,7 +178,7 @@ class ProductCard extends StatelessWidget {
                       _fmt(orig),
                       style: FontUtils.secondaryFontStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
                       ),

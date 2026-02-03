@@ -6,13 +6,14 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/home_page_response.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
 
 class Item3 extends StatelessWidget {
-  final Content? content;
+  final Content content;
 
   const Item3({
     Key? key,
@@ -21,100 +22,142 @@ class Item3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔹 Title + redirect
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
-                    content?.layoutTitle ?? "",
+                    content?.layoutTitle ?? '',
                     style: FontUtils.secondaryFontStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ),
-                Visibility(
-                  visible: content?.layoutRedirectTitle?.isNotEmpty ?? false,
-                  child: GestureDetector(
+                const SizedBox(width: 4),
+                if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
+                  GestureDetector(
                     onTap: () {
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content!.redirectData!,
                       );
                     },
-                    child: Text(
-                      content?.layoutRedirectTitle ?? "",
-                      style: FontUtils.primaryFontStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 120,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: content?.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                LayoutDatum? layoutData = content?.layoutData?[index];
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content?.layoutOption ?? "",
-                      layoutData: layoutData!,
-                    );
-                  },
-                  child: SizedBox(
-                    width: 70,
-                    child: Column(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: ClipOval(
-                            child: (layoutData?.image == null ||
-                                    (layoutData?.image?.isEmpty ?? false))
-                                ? ImageFallbackWidget(h: 75, w: 75)
-                                : CachedNetworkImage(
-                                    imageUrl: layoutData!.image!,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        ImageFallbackWidget(h: 75, w: 75),
-                                  ),
-                          ),
-                        ),
-                        // ),
-                        const SizedBox(height: 8),
                         Text(
-                          textAlign: TextAlign.center,
-                          layoutData?.title ?? "",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(fontSize: 12),
+                          content?.layoutRedirectTitle ?? '',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            color: AppColors.textColor,
+                          ),
                         ),
+                        const Icon(Icons.chevron_right, size: 18),
                       ],
                     ),
                   ),
-                );
-              },
+              ],
+            ),
+          ),
+
+          // 🔹 Horizontal Scroll
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: List.generate(
+                content?.layoutData?.length ?? 0,
+                    (i) {
+                  final layoutData = content!.layoutData![i];
+                  return GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption!,
+                        layoutData: content.layoutData![i],
+                      );
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: i == content.layoutData!.length - 1 ? 0 : 16,
+                      ),
+                      child: _AlignedItemCard(layoutData: layoutData),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+  }
+}
+
+class _AlignedItemCard extends StatelessWidget {
+  final LayoutDatum layoutData;
+  const _AlignedItemCard({super.key, required this.layoutData});
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = layoutData.image ?? '';
+    final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 360;
+
+    return Container(
+      width: isSmallScreen ? 64 : 72,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ✅ FIXED image zone ensures all aligned perfectly
+          SizedBox(
+            width: isSmallScreen ? 64 : 72,
+            height: isSmallScreen ? 64 : 72,
+            child: ClipOval(
+              child: Container(
+                color: AppColors.secondary.withOpacity(0.15),
+                child: (imageUrl.isNotEmpty)
+                    ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) =>
+                      ImageFallbackWidget(h: 70, w: 70),
+                )
+                    : ImageFallbackWidget(h: 70, w: 70),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // ✅ Flexible text zone (auto height but doesn’t affect image alignment)
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: isSmallScreen ? 32 : 36, // reserve space for 2 lines
+              maxHeight: isSmallScreen ? 40 : 44, // allows wrapping without clipping
+            ),
+            child: Text(
+              layoutData.title ?? '',
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: FontUtils.primaryFontStyle(
+                fontSize: isSmallScreen ? 11 : 12,
+              ),
             ),
           ),
         ],
@@ -122,3 +165,6 @@ class Item3 extends StatelessWidget {
     );
   }
 }
+
+
+

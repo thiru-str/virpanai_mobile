@@ -14,15 +14,11 @@ if (localPropertiesFile.exists()) {
 }
 
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+def flutterVersionCode = project.hasProperty('flutter.versionCode') ? project['flutter.versionCode'].toInteger() : 1
+def flutterVersionName = project.hasProperty('flutter.versionName') ? project['flutter.versionName'] : "1.0.0"
+def flutterCompileSdkVersion = project.hasProperty('flutter.compileSdkVersion') ? project['flutter.compileSdkVersion'] : 35
+def flutterTargetSdkVersion = project.hasProperty('flutter.targetSdkVersion') ? project['flutter.targetSdkVersion'] : 35
+def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? project['flutter.minSdkVersion'] : 21
 
 android {
     namespace "com.waioz.cartel"
@@ -32,6 +28,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -72,4 +69,5 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.1.1') // Use latest BOM
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.stripe:stripe-android:17.1.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

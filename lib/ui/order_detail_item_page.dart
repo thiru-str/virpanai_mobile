@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/model/order_history_reponse.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:waioz/model/order_detail_response.dart';
+import 'package:waioz/model/return_response.dart';
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
+import 'package:waioz/ui/widgets/order_status_widget.dart';
+import 'package:waioz/ui/widgets/order_tab_switcher.dart';
+import 'package:waioz/ui/widgets/profile_item_widget.dart';
+import 'package:waioz/ui/widgets/return_order_bottom_sheet.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 import 'widgets/cart_calculation.dart';
 import 'widgets/common_header_app_bar.dart';
@@ -26,7 +33,7 @@ class OrderDetailItemPage extends StatefulWidget {
 
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   String paymentType = "Unknown"; // Default value
-  Order? order;
+  Data? order;
   Map<String, String> paymentTypeMap = {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
@@ -34,28 +41,60 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_neft_neft": "NEFT",
   };
   bool apiLoading = true;
+  int _currentTab = 0;
+  List<ReturnReason>? returnReasons;
+  String invoiceUrl = "";
+  String token = "";
+
+
+
 
   @override
   void initState() {
     super.initState();
+    initReturn();
     initializePages();
   }
 
   Future<void> initializePages() async {
     getOrderHistoryAPI();
+    invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url'))??'';
+    token = (await SharedPreferencesUtil().getString('token'))??'';
+  }
+
+  Future<void> initReturn() async {
+    var response = await getReturnReasons();
+
+    if (response?.isNotEmpty == true) {
+      setState(() {
+        returnReasons = response;
+      });
+    }
+  }
+
+  Future<List<ReturnReason>?> getReturnReasons() async {
+    dynamic global = await SharedPreferencesUtil().getJson('return_reasons');
+    if (global != null && global is List) {
+      try {
+        return global
+            .map((e) => ReturnReason.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (e) {
+        print('Error parsing return reasons: $e');
+      }
+    }
+    return null;
   }
 
   void getOrderHistoryAPI() async {
     try {
       final ApiService apiService = ApiService();
-      var response = await apiService.getIndividualOrderHistory(
-          context, widget.orderId ?? '');
+      var response =
+          await apiService.getOrderDetails(context, widget.orderId ?? '');
       setState(() {
-        order = response.order;
+        order = response.data;
         debugPrint('order details called');
-        String? paymentId = order
-            ?.paymentCollections?.first.payments?.firstOrNull?.providerId ??
-            '';
+        String? paymentId = order?.paymentMethod ?? '';
         print(paymentId);
         paymentType = paymentTypeMap[paymentId] ?? "Unknown";
         apiLoading = false;
@@ -73,21 +112,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    // First check if canceled
-    final isCanceled = order?.status == 'canceled';
-
-    // Map fulfillmentStatus
-    final fulfillmentStatus = order?.metadata?.fulfillmentStatus ?? '';
-
-    final (statusTitle, statusColor) = isCanceled
-        ? ('Canceled', Colors.red)
-        : switch (fulfillmentStatus) {
-      'not_fulfilled' => ('Order Processing', Colors.grey),
-      'fulfilled' => ('Ready For Dispatch', Colors.blue),
-      'shipped' => ('Shipped', Colors.orange),
-      'delivered' => ('Delivered', Colors.green),
-      _ => ('Processing', Colors.grey),
-    };
 
     return PopScope(
         canPop: false, // Disable default back button
@@ -97,7 +121,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
             Navigator.pop(context); // Normal back navigation
           } else {
             // Redirect to home when no backstack exists
-            PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+            PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
           }
         },
         child: Scaffold(
@@ -108,128 +132,123 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
               } else {
-                PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());
+                PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
               }
             },
           ),
           body: apiLoading
               ? Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-            ),
-          )
-              : SingleChildScrollView(
-            // Wrap the body with SingleChildScrollView for scrolling
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-            child: Column(
-              // Use a Column to arrange the widgets vertically
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildOrdersList(),
-                _buildSectionTitle('Billing details'),
-                const SizedBox(height: 10), // List of order items
-                Container(
-                  padding: const EdgeInsets.all(0.0),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
                   ),
+                )
+              : SingleChildScrollView(
+                  // Wrap the body with SingleChildScrollView for scrolling
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   child: Column(
+                    // Use a Column to arrange the widgets vertically
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Status',
-                            style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                color: AppColors.textColor50),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              borderRadius: BorderRadius.circular(8),
+                      _buildOrdersList(),
+                      const SizedBox(height: 10), // List of order items
+                      _buildSectionTitle('Billing details'),
+                      const SizedBox(height: 10), // List of order items
+                      Container(
+                        padding: const EdgeInsets.all(0.0),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CartPaymentMethodWidget(
+                              paymentMethod: paymentType,
+                              // Or any other payment method
+                              onTap: () {
+                                PageRouteUtils.pushWithSlide(
+                                    context,
+                                    TransactionDetailsScreen(
+                                      orderID: order?.id ?? "",
+                                    ));
+                              },
                             ),
-                            child: Text(
-                              statusTitle,
-                              style: FontUtils.primaryFontStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Visibility(
+                              visible: (order?.prices?.itemSubtotal ?? 0) > 0,
+                              child: CartCalculation(
+                                keyText: '${AppStrings.subTotal}:',
+                                valueText: CurrencyUtil.appendCurrency(
+                                    (order?.prices?.itemSubtotal ?? 0)
+                                        .toString()),
                               ),
                             ),
+                            Visibility(
+                              visible: (order?.prices?.taxTotal ?? 0) > 0,
+                              child: CartCalculation(
+                                keyText: '${AppStrings.tax}:',
+                                valueText: CurrencyUtil.appendCurrency(
+                                    (order?.prices?.taxTotal ?? 0).toString()),
+                              ),
+                            ),
+                            Visibility(
+                              visible: (order?.prices?.total ?? 0) > 0,
+                              child: CartCalculation(
+                                  keyText: '${AppStrings.total}:',
+                                  valueText: CurrencyUtil.appendCurrency(
+                                      (order?.prices?.total ?? 0).toString())),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle('Shipping details'),
+                      const SizedBox(height: 20), // List of order items
+                      _buildShippingDetailsCard(), // Shipping details card
+                      const SizedBox(height: 20),
+                      Visibility(
+                        visible: (order?.paymentStatus ?? '') == 'pending',
+                        child: GestureDetector(
+                          onTap: () {
+                            _showCancellation(context, order?.id ?? '');
+                          },
+                          child: Text(
+                            'Cancel Order',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 15,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      CartPaymentMethodWidget(
-                        paymentMethod: paymentType,
-                        // Or any other payment method
-                        onTap: () {
-                          PageRouteUtils.pushWithSlide(
-                              context,
-                              TransactionDetailsScreen(
-                                orderID: order?.id ?? "",
-                              ));
-                        },
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Visibility(
-                        visible: (order?.subtotal ?? 0) > 0,
-                        child: CartCalculation(
-                          keyText: '${AppStrings.subTotal}:',
-                          valueText: CurrencyUtil.appendCurrency(
-                              (order?.subtotal ?? 0).toString()),
                         ),
                       ),
                       Visibility(
-                        visible: (order?.taxTotal ?? 0) > 0,
-                        child: CartCalculation(
-                          keyText: '${AppStrings.tax}:',
-                          valueText: CurrencyUtil.appendCurrency(
-                              (order?.taxTotal ?? 0).toString()),
+                        visible: (order?.paymentStatus ?? '') == 'delivered',
+                        child: ProfileItemWidget(
+                          title: 'Download Invoice',
+                          onTap: () {
+                            _launchURL('$invoiceUrl/${order?.id??''}?token=${token}&isdownload=true');
+                          },
                         ),
-                      ),
-                      Visibility(
-                        visible: (order?.total ?? 0) > 0,
-                        child: CartCalculation(
-                            keyText: '${AppStrings.total}:',
-                            valueText: CurrencyUtil.appendCurrency(
-                                (order?.total ?? 0).toString())),
-                      ),
+                      )
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                _buildSectionTitle('Shipping details'),
-                const SizedBox(height: 20), // List of order items
-                _buildShippingDetailsCard(), // Shipping details card
-                const SizedBox(height: 20), // List of order items
-                Visibility(
-                  visible: fulfillmentStatus == 'not_fulfilled' &&
-                      !isCanceled,
-                  child: GestureDetector(
-                    onTap: (){
-                      _showCancellation(context,order?.id??'');
-                    },
-                    child: Text(
-                      'Cancel Order',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 15,
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
         ));
+  }
+
+  void _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication, // Opens in external browser
+      );
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   Widget _buildSectionTitle(String title) {
@@ -242,7 +261,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     );
   }
 
-  void _showCancellation(BuildContext context,String orderId) {
+  void _showCancellation(BuildContext context, String orderId) {
     showDialog(
       context: context,
       builder: (context) {
@@ -258,8 +277,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 apiLoading = true;
               });
               final response = await ApiService().cancelOrder(context, orderId);
-              debugPrint('order status ${response.status??false}');
-              if(response.status??false) {
+              debugPrint('order status ${response.status ?? false}');
+              if (response.status ?? false) {
                 getOrderHistoryAPI();
               }
             } catch (e) {
@@ -269,61 +288,184 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 apiLoading = false;
               });
             }
-
           },
         );
       },
     );
   }
 
-  // Method to build the list of orders
   Widget _buildOrdersList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      // Prevent the list from taking up unnecessary space
-      physics: NeverScrollableScrollPhysics(),
-      // Disable scrolling for the list within SingleChildScrollView
-      itemCount: order?.items?.length ?? 0,
-      // Define the number of items you want to show
-      itemBuilder: (context, index) {
-        final itemDetail = order?.items?[index];
-        return OrderDetailItemCard(
-          imageUrl: itemDetail?.thumbnail ?? "",
-          size: itemDetail?.variantTitle ?? "",
-          productName: (itemDetail?.quantity ?? "").toString() +
-              " x " +
-              (itemDetail?.productTitle ?? ""),
-          color: '',
-          // Product color
-          price:
-          CurrencyUtil.appendCurrency(itemDetail?.total.toString() ?? "0"),
-        );
-      },
+    final List<Item> allItems = order?.items ?? [];
+
+    // Split items by status
+    final List<Item> returnedItems = allItems
+        .where((item) => (item.status ?? '').toLowerCase().contains('returned'))
+        .toList();
+
+    final List<Item> deliveredItems = allItems
+        .where((item) => !(item.status ?? '').toLowerCase().contains('returned'))
+        .toList();
+
+    final bool hasReturned = returnedItems.isNotEmpty;
+    final bool hasDelivered = deliveredItems.isNotEmpty;
+
+
+    final List<Item> visibleItems = !hasReturned
+        ? deliveredItems
+        : !hasDelivered
+        ? returnedItems
+        : (_currentTab == 0 ? deliveredItems : returnedItems);
+
+    if (visibleItems.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 40),
+        child: Center(
+          child: Text(
+            "No items found.",
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasDelivered && hasReturned) ...[
+          OrderTabSwitcher(
+            initialIndex: _currentTab,
+            onTabChanged: (index) {
+              setState(() => _currentTab = index);
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: visibleItems.length,
+          itemBuilder: (context, index) {
+            final itemDetail = visibleItems[index];
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: (index == visibleItems.length - 1) ? 0 : 16.0,
+              ),
+              child: OrderDetailItemCard(
+                showReturnButton: itemDetail.isReturnable ?? false,
+                showRating: itemDetail.status == 'delivered',
+                imageUrl: itemDetail.thumbnail ?? '',
+                variant: itemDetail.variantTitle ?? '',
+                productName:
+                '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
+                status: itemDetail.status ?? '',
+                price: CurrencyUtil.appendCurrency(
+                  ((itemDetail.unitPrice ?? 0) * (itemDetail.quantity ?? 0))
+                      .toString(),
+                ),
+                onReturnTap: () async {
+                  final response = await showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) {
+                      return ReturnOrderBottomSheet(
+                        orderId: widget.orderId ?? '',
+                        cartId: order?.cartId ?? '',
+                        orderItem: itemDetail,
+                        reasons: returnReasons ?? [],
+                      );
+                    },
+                  );
+                  if (response == true) {
+                    getOrderHistoryAPI();
+                  }
+                },
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
+
+
   Widget _buildShippingDetailsCard() {
     return Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         width: double.infinity, // Full width
         decoration: BoxDecoration(
           color: AppColors.secondary, // Background color
           borderRadius:
-          BorderRadius.circular(8), // Border radius for rounded corners
+              BorderRadius.circular(8), // Border radius for rounded corners
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //
             Text(
-              '${order?.cart?.shippingAddress?.address1}, '
-                  '${order?.cart?.shippingAddress?.city}, '
-                  '${order?.cart?.shippingAddress?.postalCode}, '
-                  '${order?.cart?.shippingAddress?.province ?? ''}.',
+              '${order?.shippingAddress?.address1}, '
+              '${order?.shippingAddress?.city}, '
+              '${order?.shippingAddress?.postalCode}, '
+              '${order?.shippingAddress?.province ?? ''}.',
             ),
-            SizedBox(height: 8),
-            Text('${order?.cart?.shippingAddress?.phone ?? ''}'),
+            const SizedBox(height: 8),
+            Text('${order?.shippingAddress?.phone ?? ''}'),
           ],
         ));
+  }
+
+  List<OrderStatusStep> buildOrderSteps(
+      String? orderStatus, String? fulfillmentStatus) {
+    if (orderStatus == 'canceled') {
+      return [
+        OrderStatusStep(
+          label: 'Processing',
+          svgAsset: AppAssets.order_processing,
+          activeColor: Colors.grey,
+        ),
+        OrderStatusStep(
+          label: 'Cancelled',
+          svgAsset: AppAssets.order_canceled,
+          activeColor: Colors.red,
+        ),
+      ];
+    }
+
+    return [
+      OrderStatusStep(
+        label: 'Order Processing',
+        svgAsset: AppAssets.order_processing,
+        activeColor: Colors.grey,
+      ),
+      OrderStatusStep(
+        label: 'Ready For Dispatch',
+        svgAsset: AppAssets.order_dispatch,
+        activeColor: Colors.blue,
+      ),
+      OrderStatusStep(
+        label: 'Shipped',
+        svgAsset: AppAssets.order_shipped,
+        activeColor: Colors.orange,
+      ),
+      OrderStatusStep(
+        label: 'Delivered',
+        svgAsset: AppAssets.order_delivered,
+        activeColor: Colors.green,
+      ),
+    ];
+  }
+
+  int getCurrentStep(String? orderStatus, String? fulfillmentStatus) {
+    if (orderStatus == 'canceled') return 1;
+
+    return switch (fulfillmentStatus) {
+      'not_fulfilled' => 0,
+      'fulfilled' => 1,
+      'shipped' => 2,
+      'delivered' => 3,
+      _ => 0,
+    };
   }
 }

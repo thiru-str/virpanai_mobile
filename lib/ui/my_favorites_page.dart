@@ -5,6 +5,7 @@ import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
+import 'package:waioz/ui/widgets/product_view.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -78,10 +79,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                         final product = wishListResponse!.products?[index];
                         return GestureDetector(
                           onTap: () {},
-                          child: ProductCard(
-                              imageUrl:
-                              product?.thumbnail ?? "",
-                              title: product?.title ?? "",
+                          child: ProductView(
                               product: product!,
                               onTapFavorite: () {
                                 String currentCustomerId = customer?.id ?? "";

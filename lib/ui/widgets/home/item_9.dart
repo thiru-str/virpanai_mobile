@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -8,6 +9,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../model/view_cart_model.dart';
 import '../../../utility/app_colors.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/page_route_utils.dart';
@@ -53,73 +55,105 @@ class _Item9State extends State<Item9> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        /// Title and See All
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.content.layoutTitle ?? "",
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
-                ),
-              ),
-              Visibility(
-                visible:
-                    widget.content.layoutRedirectTitle?.isNotEmpty ?? false,
-                child: GestureDetector(
-                  onTap: () {
-                    // handle redirect
-                  },
+    final content = widget.content;
+
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Title + See All
+            Row(
+              children: [
+                Expanded(
                   child: Text(
-                    widget.content.layoutRedirectTitle!,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                    content.layoutTitle ?? '',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Visibility(
+                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                  child: GestureDetector(
+                    onTap: () {
+                      RedirectUtils.handleContentRedirectViewAll(
+                        context: context,
+                        redirectData: content.redirectData!,
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          content.layoutRedirectTitle!,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 18),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 300,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.content.layoutData?.length ?? 0,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final layoutData = widget.content.layoutData?[index];
-                final variantId = layoutData?.variantDetails?.variantId;
-                final prices = layoutData?.prices;
-
-                // updated qty from event (fallback to original)
-                final cartQty = variantQtyMap[variantId] ??
-                    layoutData?.cartDetails?.quantity ??
-                    0;
-
-                return buildProductCard(layoutData, prices, cartQty);
-              },
+              ],
             ),
-          ),
+
+            const SizedBox(height: 16),
+
+            // 🔹 Scrollable horizontal list (adaptive height)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                    _Item9Card(
+                      layoutData: content.layoutData![i],
+                      cartQty: variantQtyMap[
+                      content.layoutData![i].variantDetails?.variantId] ??
+                          content.layoutData![i].cartDetails?.quantity ??
+                          0,
+                      onCartQtyChanged: widget.onCartQtyChanged,
+                    ),
+                    if (i != content.layoutData!.length - 1)
+                      const SizedBox(width: 16),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
+}
 
-  Widget buildProductCard(dynamic layoutData, dynamic prices, int cartQty) {
+class _Item9Card extends StatelessWidget {
+  final dynamic layoutData;
+  final int cartQty;
+  final void Function(int delta, String variantId)? onCartQtyChanged;
+
+  const _Item9Card({
+    Key? key,
+    required this.layoutData,
+    required this.cartQty,
+    required this.onCartQtyChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final prices = layoutData.prices ?? {};
+    final variantId = layoutData.variantDetails?.variantId ?? '';
+
     return Container(
       width: 180,
       decoration: BoxDecoration(
@@ -131,18 +165,18 @@ class _Item9State extends State<Item9> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          /// Image & Discount
+          // 🔹 Image & Discount
           Stack(
             children: [
               ClipRRect(
                 borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  layoutData.image ?? '',
+                const BorderRadius.vertical(top: Radius.circular(16)),
+                child: CachedNetworkImage(
+                  imageUrl: layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, url, error) => ImageFallbackWidget(
+                  errorWidget: (context, url, error) => ImageFallbackWidget(
                     h: 150,
                     w: double.infinity,
                   ),
@@ -155,7 +189,7 @@ class _Item9State extends State<Item9> {
                   left: 6,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade800,
                       borderRadius: BorderRadius.circular(12),
@@ -173,15 +207,15 @@ class _Item9State extends State<Item9> {
               Positioned(
                 top: 6,
                 right: 6,
-                child:
-                    Icon(Icons.favorite_border, size: 20, color: Colors.grey),
+                child: Icon(Icons.favorite_border,
+                    size: 20, color: Colors.grey),
               ),
             ],
           ),
 
           const SizedBox(height: 8),
 
-          /// Title
+          // 🔹 Title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
@@ -196,7 +230,7 @@ class _Item9State extends State<Item9> {
             ),
           ),
 
-          /// Price
+          // 🔹 Price
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
@@ -209,13 +243,15 @@ class _Item9State extends State<Item9> {
             ),
           ),
 
-          /// Rating
+          // 🔹 Rating
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             child: Row(
               children: List.generate(5, (i) {
                 return Icon(
-                  i < (layoutData.rating ?? 0) ? Icons.star : Icons.star_border,
+                  i < (layoutData.rating ?? 0)
+                      ? Icons.star
+                      : Icons.star_border,
                   color: Colors.amber,
                   size: 16,
                 );
@@ -223,48 +259,45 @@ class _Item9State extends State<Item9> {
             ),
           ),
 
-          /// Add to Cart OR Quantity Selector
+          // 🔹 Add to Cart / Quantity
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: cartQty > 0
                 ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _qtyButton(Icons.remove, () {
-                        if (cartQty > 0) {
-                          widget.onCartQtyChanged
-                              ?.call(-1, layoutData.variantDetails.variantId);
-                        }
-                      }),
-                      Text(
-                        '$cartQty',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      _qtyButton(Icons.add, () {
-                        widget.onCartQtyChanged
-                            ?.call(1, layoutData.variantDetails.variantId);
-                      }),
-                    ],
-                  )
-                : SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        widget.onCartQtyChanged?.call(
-                            1, layoutData.variantDetails.variantId); // add 1
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey.shade400),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text("Add To Cart"),
-                    ),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _qtyButton(Icons.remove, () {
+                  if (cartQty > 0) {
+                    onCartQtyChanged?.call(-1, variantId);
+                  }
+                }),
+                Text(
+                  '$cartQty',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                _qtyButton(Icons.add, () {
+                  onCartQtyChanged?.call(1, variantId);
+                }),
+              ],
+            )
+                : SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  onCartQtyChanged?.call(1, variantId);
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.grey.shade400),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text("Add To Cart"),
+              ),
+            ),
           ),
         ],
       ),
@@ -279,10 +312,7 @@ class _Item9State extends State<Item9> {
       ),
       child: IconButton(
         color: Colors.white,
-        icon: Icon(
-          icon,
-          size: 16,
-        ),
+        icon: Icon(icon, size: 16),
         onPressed: onPressed,
         padding: const EdgeInsets.all(4),
         constraints: const BoxConstraints(minWidth: 32, minHeight: 32),

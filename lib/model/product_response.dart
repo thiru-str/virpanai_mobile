@@ -57,10 +57,10 @@ class Product {
   dynamic material;
   DateTime? createdAt;
   DateTime? updatedAt;
-  dynamic? metadata;
+  Metadata? metadata;
   dynamic type;
   Tion? collection;
-  List<Image>? options;
+  List<ProductOption>? options;
   List<dynamic>? tags;
   List<Image>? images;
   List<Variant>? variants;
@@ -122,10 +122,13 @@ class Product {
     material: json["material"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    metadata: json["metadata"],
+    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
     type: json["type"],
     collection: json["collection"] == null ? null : Tion.fromJson(json["collection"]),
-    options: json["options"] == null ? [] : List<Image>.from(json["options"]!.map((x) => Image.fromJson(x))),
+    options: json["options"] == null
+        ? []
+        : List<ProductOption>.from(
+        json["options"].map((x) => ProductOption.fromJson(x))),
     tags: json["tags"] == null ? [] : List<dynamic>.from(json["tags"]!.map((x) => x)),
     images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
     variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
@@ -155,15 +158,57 @@ class Product {
     "material": material,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
-    "metadata": metadata,
+    "metadata": metadata?.toJson(),
     "type": type,
     "collection": collection?.toJson(),
-    "options": options == null ? [] : List<dynamic>.from(options!.map((x) => x.toJson())),
+    "options": options == null
+        ? []
+        : List<dynamic>.from(options!.map((x) => x.toJson())),
     "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
     "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
     "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
     "product_review": productReview == null ? [] : List<dynamic>.from(productReview!.map((x) => x.toJson())),
     "product_wishlist": productWishlist?.toJson(),
+  };
+}
+
+class Metadata {
+  ReviewSummary? reviewSummary;
+  String? additionalDescription;
+
+  Metadata({
+    this.reviewSummary,
+    this.additionalDescription,
+  });
+
+  factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    reviewSummary: json["review_summary"] == null ? null : ReviewSummary.fromJson(json["review_summary"]),
+    additionalDescription: json["additional_description"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "review_summary": reviewSummary?.toJson(),
+    "additional_description": additionalDescription,
+  };
+}
+
+class ReviewSummary {
+  String? totalReviews;
+  String? averageRating;
+
+  ReviewSummary({
+    this.totalReviews,
+    this.averageRating,
+  });
+
+  factory ReviewSummary.fromJson(Map<String, dynamic> json) => ReviewSummary(
+    totalReviews: json["total_reviews"],
+    averageRating: json["average_rating"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "total_reviews": totalReviews,
+    "average_rating": averageRating,
   };
 }
 
@@ -369,7 +414,7 @@ class Variant {
   dynamic length;
   dynamic height;
   dynamic width;
-  dynamic metadata;
+  VariantMetaData? metadata;
   int? variantRank;
   String? productId;
   DateTime? createdAt;
@@ -424,7 +469,7 @@ class Variant {
     length: json["length"],
     height: json["height"],
     width: json["width"],
-    metadata: json["metadata"],
+    metadata: json["metadata"] == null ? null : VariantMetaData.fromJson(json["metadata"]),
     variantRank: json["variant_rank"],
     productId: json["product_id"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
@@ -452,7 +497,7 @@ class Variant {
     "length": length,
     "height": height,
     "width": width,
-    "metadata": metadata,
+    "metadata": metadata?.toJson(),
     "variant_rank": variantRank,
     "product_id": productId,
     "created_at": createdAt?.toIso8601String(),
@@ -574,3 +619,100 @@ class RawAmount {
     "precision": precision,
   };
 }
+
+class ProductOption {
+  String? id;
+  String? title;
+  List<Value>? values;
+
+  ProductOption({this.id, this.title, this.values});
+
+  factory ProductOption.fromJson(Map<String, dynamic> json) => ProductOption(
+    id: json["id"],
+    title: json["title"],
+    values: json["values"] == null
+        ? []
+        : List<Value>.from(
+        json["values"].map((x) => Value.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "values":
+    values == null ? [] : List<dynamic>.from(values!.map((x) => x.toJson())),
+  };
+}
+
+class ProductImage {
+  String? id;
+  String? url;
+  dynamic metadata;
+  int? rank;
+  String? productId;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic deletedAt;
+
+  ProductImage({
+    this.id,
+    this.url,
+    this.metadata,
+    this.rank,
+    this.productId,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  factory ProductImage.fromJson(Map<String, dynamic> json) => ProductImage(
+    id: json["id"],
+    url: json["url"],
+    metadata: json["metadata"],
+    rank: json["rank"],
+    productId: json["product_id"],
+    createdAt: json["created_at"] == null
+        ? null
+        : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null
+        ? null
+        : DateTime.parse(json["updated_at"]),
+    deletedAt: json["deleted_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "url": url,
+    "metadata": metadata,
+    "rank": rank,
+    "product_id": productId,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "deleted_at": deletedAt,
+  };
+}
+
+class VariantMetaData {
+  List<Image>? images;
+  String? thumbnail;
+  String? description;
+
+  VariantMetaData({
+    this.images,
+    this.thumbnail,
+    this.description,
+  });
+
+  factory VariantMetaData.fromJson(Map<String, dynamic> json) => VariantMetaData(
+    images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
+    description: json["description"],
+    thumbnail: json["thumbnail"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
+    "description": description,
+    "thumbnail": thumbnail,
+  };
+}
+

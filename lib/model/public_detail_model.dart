@@ -36,16 +36,16 @@ class PublicDetailsResponse {
   });
 
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
-    maintainance: json["maintainance"],
-    token: json["token"],
-    theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
-    googleMapUsage: json["googleMapUsage"],
-    showLocationAtStart: json["showLocationAtStart"],
-    restrictLocation: json["restrictLocation"],
-    singleShippingAddress: json["singleShippingAddress"],
-    restrictLocationBy: json["restrictLocationBy"],
-    bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
-    upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
+      maintainance: json["maintainance"],
+      token: json["token"],
+      theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
+      googleMapUsage: json["googleMapUsage"],
+      showLocationAtStart: json["showLocationAtStart"],
+      restrictLocation: json["restrictLocation"],
+      singleShippingAddress: json["singleShippingAddress"],
+      restrictLocationBy: json["restrictLocationBy"],
+      bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
+      upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
       storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"])
   );
 
@@ -66,36 +66,48 @@ class PublicDetailsResponse {
 
 class StoreDetails {
   StoreMetadata? storeMetadata;
+  String? loginType;
 
   StoreDetails({
     this.storeMetadata,
+    this.loginType,
   });
 
   factory StoreDetails.fromJson(Map<String, dynamic> json) => StoreDetails(
     storeMetadata: json["storeMetadata"] == null ? null : StoreMetadata.fromJson(json["storeMetadata"]),
+    loginType: json["loginType"],
   );
 
   Map<String, dynamic> toJson() => {
     "storeMetadata": storeMetadata?.toJson(),
+    "loginType": loginType,
   };
 }
 
 class StoreMetadata {
   bool? skipLogin;
+  String? versionCheck;
+  String? invoiceUrl;
   int? minimumOrderValue;
 
   StoreMetadata({
     this.skipLogin,
+    this.versionCheck,
+    this.invoiceUrl,
     this.minimumOrderValue,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
     skipLogin: json["skip_login"],
+    versionCheck: json["version_check"],
+    invoiceUrl: json["invoice_url"],
     minimumOrderValue: json["minimum_order_value"],
   );
 
   Map<String, dynamic> toJson() => {
     "skip_login": skipLogin,
+    "version_check": versionCheck,
+    "invoice_url": invoiceUrl,
     "minimum_order_value": minimumOrderValue,
   };
 }

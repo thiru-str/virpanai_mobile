@@ -12,23 +12,35 @@ class HomePageResponse {
   String? status;
   List<Content>? content;
   Global? global;
+  int? count;
+  int? offset;
+  int? limit;
 
   HomePageResponse({
     this.status,
     this.content,
     this.global,
+    this.count,
+    this.offset,
+    this.limit,
   });
 
   factory HomePageResponse.fromJson(Map<String, dynamic> json) => HomePageResponse(
     status: json["status"],
     content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
     global: json["global"] == null ? null : Global.fromJson(json["global"]),
+    count: json["count"],
+    offset: json["offset"],
+    limit: json["limit"],
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
     "content": content == null ? [] : List<dynamic>.from(content!.map((x) => x.toJson())),
     "global": global?.toJson(),
+    "count": count,
+    "offset": offset,
+    "limit": limit,
   };
 }
 
@@ -37,11 +49,15 @@ class Content {
   String? layoutTitle;
   String? layoutSubTitle;
   String? layoutBannerImage;
+  String? layoutSlideTimeInterval;
   String? layoutBgColor;
+  String? layoutBgImage;
+  String? layoutBgType;
   String? layoutRedirectTitle;
   String? layoutRedirect;
   String? layoutOption;
   String? layoutSearchFilter;
+  //int? layoutHeight;
   List<LayoutDatum>? layoutData;
   RedirectData? redirectData;
 
@@ -50,13 +66,17 @@ class Content {
     this.layoutTitle,
     this.layoutSubTitle,
     this.layoutBannerImage,
+    this.layoutSlideTimeInterval,
     this.layoutBgColor,
+    this.layoutBgImage,
+    this.layoutBgType,
     this.layoutRedirectTitle,
     this.layoutRedirect,
     this.layoutOption,
     this.layoutSearchFilter,
     this.layoutData,
     this.redirectData,
+    //this.layoutHeight,
   });
 
   factory Content.fromJson(Map<String, dynamic> json) => Content(
@@ -64,13 +84,17 @@ class Content {
     layoutTitle: json["layout_title"],
     layoutSubTitle: json["layout_sub_title"],
     layoutBannerImage: json["layout_banner_image"],
+    layoutSlideTimeInterval: json["layout_slide_time_interval"],
     layoutBgColor: json["layout_bg_color"],
+    layoutBgImage: json["layout_bg_image"],
+    layoutBgType: json["layout_bg_type"],
     layoutRedirectTitle: json["layout_redirect_title"],
     layoutRedirect: json["layout_redirect"],
     layoutOption: json["layout_option"],
     layoutSearchFilter: json["layout_search_filter"],
     layoutData: json["layout_data"] == null ? [] : List<LayoutDatum>.from(json["layout_data"]!.map((x) => LayoutDatum.fromJson(x))),
     redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
+    //layoutHeight: json["layout_height"],
 
   );
 
@@ -79,16 +103,17 @@ class Content {
     "layout_title": layoutTitle,
     "layout_sub_title": layoutSubTitle,
     "layout_banner_image": layoutBannerImage,
+    "layout_slide_time_interval": layoutSlideTimeInterval,
     "layout_bg_color": layoutBgColor,
+    "layout_bg_image": layoutBgImage,
+    "layout_bg_type": layoutBgType,
     "layout_redirect_title": layoutRedirectTitle,
     "layout_redirect": layoutRedirect,
     "layout_option": layoutOption,
     "layout_search_filter": layoutSearchFilter,
     "layout_data": layoutData == null ? [] : List<dynamic>.from(layoutData!.map((x) => x.toJson())),
     "redirect_data": redirectData?.toJson(),
-
-
-
+    //"layout_height": layoutHeight,
   };
 }
 
@@ -263,6 +288,7 @@ class RedirectData {
   final RedirectSearchData? redirectSearchData;
   final RedirectUrlData? redirectUrlData;
   final RedirectOrderData? redirectOrderData;
+  final RedirectPageData? redirectPageData;
 
   RedirectData({
     this.redirectType,
@@ -270,6 +296,7 @@ class RedirectData {
     this.redirectSearchData,
     this.redirectUrlData,
     this.redirectOrderData,
+    this.redirectPageData,
   });
 
   factory RedirectData.fromJson(Map<String, dynamic> json) {
@@ -287,6 +314,9 @@ class RedirectData {
       redirectOrderData: json['redirect_order_data'] != null
           ? RedirectOrderData.fromJson(json['redirect_order_data'])
           : null,
+      redirectPageData: json['redirect_page_data'] != null
+          ? RedirectPageData.fromJson(json['redirect_page_data'])
+          : null,
     );
   }
 
@@ -295,6 +325,7 @@ class RedirectData {
     'redirect_product_data': redirectProductData?.toJson(),
     'redirect_search_data': redirectSearchData?.toJson(),
     'redirect_url_data': redirectUrlData?.toJson(),
+    'redirect_page_data': redirectPageData?.toJson(),
   };
 }
 
@@ -333,8 +364,25 @@ class RedirectOrderData {
   };
 }
 
+class RedirectPageData {
+  final String? slug;
+
+  RedirectPageData({this.slug});
+
+  factory RedirectPageData.fromJson(Map<String, dynamic> json) {
+    return RedirectPageData(
+      slug: json['slug'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'slug': slug,
+  };
+}
+
 class RedirectSearchData {
   final String? category;
+  final String? tag;
   final String? collection;
   final String? brand;
   final String? minPrice;
@@ -342,6 +390,7 @@ class RedirectSearchData {
 
   RedirectSearchData({
     this.category,
+    this.tag,
     this.collection,
     this.brand,
     this.minPrice,
@@ -351,6 +400,7 @@ class RedirectSearchData {
   factory RedirectSearchData.fromJson(Map<String, dynamic> json) {
     return RedirectSearchData(
       category: json['category'],
+      tag: json['tag'],
       collection: json['collection'],
       brand: json['brand'],
       minPrice: json['min_price'],
@@ -360,6 +410,7 @@ class RedirectSearchData {
 
   Map<String, dynamic> toJson() => {
     'category': category,
+    'tag': tag,
     'collection': collection,
     'brand': brand,
     'min_price': minPrice,
@@ -419,22 +470,26 @@ class PaymentProvider {
   String? id;
   bool? isEnabled;
   String? name;
+  String? apiKey;
 
   PaymentProvider({
     this.id,
     this.isEnabled,
     this.name,
+    this.apiKey,
   });
 
   factory PaymentProvider.fromJson(Map<String, dynamic> json) => PaymentProvider(
     id: json["id"],
     isEnabled: json["is_enabled"],
     name: json["name"],
+    apiKey: json["api_key"],
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "is_enabled": isEnabled,
     "name": name,
+    "api_key": apiKey,
   };
 }

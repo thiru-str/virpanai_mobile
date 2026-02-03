@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 
 class CurrencyUtil {
   static String? _cachedCurrencySymbol;
@@ -14,8 +15,21 @@ class CurrencyUtil {
   }
 
   // Append the currency symbol to a value
-  static String appendCurrency(String? value) {
+  static String appendCurrency(String value) {
     final currencySymbol = getCurrencySymbol();
+
+    try {
+      final number = double.tryParse(value.replaceAll(',', ''));
+      if (number != null) {
+        final formatter = NumberFormat("#,##0.00", "en_IN");
+        final formattedValue = formatter.format(number);
+        return '$currencySymbol$formattedValue';
+      }
+    } catch (e) {
+      // If parsing fails, return original with symbol
+    }
+
+    // Fallback: return original value with currency symbol
     return '$currencySymbol$value';
   }
 }

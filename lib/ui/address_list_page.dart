@@ -75,6 +75,7 @@ class _AddressListPageState extends State<AddressListPage> {
                                 addressListResponse?.addresses?[index];
                             return GestureDetector(
                               child: AddressCard(
+                                isFromEdit: widget.isFromCheckout? false:true,
                                 title: address?.addressName ??
                                     'Others', // If address name is null, show 'Untitled'
                                 address:

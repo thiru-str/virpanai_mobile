@@ -28,15 +28,39 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
   OrderHistoryResponse? orderHistoryResponse;
   bool apiLoading = true;
 
+  final int _limit = 20;
+  int _offset = 0;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
-    getOrderHistoryAPI();
-    _tabController = TabController(length: 5, vsync: this); // 5 tabs
+    _tabController = TabController(length: 5, vsync: this);
+    getOrderHistoryAPI(offset: _offset, limit: _limit);
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoadingMore &&
+          _hasMore) {
+        _loadMoreOrders();
+      }
+    });
+  }
+
+  Future<void> _loadMoreOrders() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+
+    _offset += _limit;
+    await getOrderHistoryAPI(offset: _offset, limit: _limit, isLoadMore: true);
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -63,38 +87,12 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
             Expanded(
               child: _buildOrdersList(),
             ),
-            // const SizedBox(height: 20),
-            // CustomScrollableTabBar(
-            //   tabController: _tabController,
-            //   tabs: const [
-            //     Tab(text: "Processing"),
-            //     Tab(text: "Shipped"),
-            //     Tab(text: "Delivered"),
-            //     Tab(text: "Returned"),
-            //     Tab(text: "Cancelled"),
-            //   ],
-            // ),
-            // const SizedBox(height: 20),
-            // Expanded(
-            //   child: Padding(
-            //     padding: EdgeInsets.symmetric(horizontal: 25),
-            //     child: TabBarView(
-            //       controller: _tabController,
-            //       children: [
-            //         _buildOrdersList(["#428912", "#427364"]),
-            //         _buildOrdersList(["#458912", "#457364"]),
-            //         _buildOrdersList(["#453219"]),
-            //         _buildOrdersList(["#451234", "#450678"]),
-            //         _buildOrdersList(["#459876"]),
-            //       ],
-            //     ),
-            //   ),
-            // ),
           ],
         ),) : NoOrdersWidget(
         message: AppStrings.no_order_yet,
         buttonText: AppStrings.explore_categories,
         iconPath: AppAssets.ic_cart_empty,
+        showExplore: false,
         onButtonTap: () async {
           // final result = await PageRouteUtils.pushWithSlide(
           //     context,
@@ -109,50 +107,85 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
 
   Widget _buildOrdersList() {
     return ListView.builder(
-      itemCount: orderHistoryResponse?.orders?.length ?? 1,
+      controller: _scrollController,
+      itemCount: (orderHistoryResponse?.orders?.length ?? 0) + 1,
       itemBuilder: (context, index) {
-        return OrderWidget(
-          orderId: (orderHistoryResponse?.orders?[index].displayId ?? 1).toString(),
-          itemCount: (orderHistoryResponse?.orders?[index].items?.length ?? 1).toString(),
-          createdAt: toIST(orderHistoryResponse?.orders?[index].createdAt??DateTime.now()),
-          itemPrice: (orderHistoryResponse?.orders?[index].total?? 0),
-          onTap: () {
-            // PageRouteUtils.pushWithSlide(context, OrderDetailPage());
-            PageRouteUtils.pushWithSlide(context, OrderDetailItemPage(orderId: orderHistoryResponse?.orders?[index].id??'',));
-          },
-        );
+        final orders = orderHistoryResponse?.orders ?? [];
+
+        if (index < orders.length) {
+          final order = orders[index];
+          return OrderWidget(
+            orderId: (order.displayId ?? 1).toString(),
+            itemCount: (order.items?.length ?? 1).toString(),
+            createdAt: toIST(order.createdAt ?? DateTime.now()),
+            itemPrice: (order.status ?? '').toLowerCase() == 'canceled'
+                ? (order.subtotal ?? 0)
+                : (order.total ?? 0),
+            onTap: () {
+              PageRouteUtils.pushWithSlide(
+                context,
+                OrderDetailItemPage(orderId: order.id ?? ''),
+              );
+            },
+          );
+        }
+
+        return _isLoadingMore
+            ?  Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+        )
+            : const SizedBox.shrink();
       },
     );
+
   }
 
   DateTime toIST(DateTime utcTime) {
     return utcTime.add(Duration(hours: 5, minutes: 30));
   }
 
-  void getOrderHistoryAPI() async {
+  Future<void> getOrderHistoryAPI({int offset = 0, int limit = 10, bool isLoadMore = false}) async {
     try {
+      if (!isLoadMore) setState(() => apiLoading = true);
+
       final ApiService apiService = ApiService();
-      var response = await apiService.getOrderHistory(context);
+      var response = await apiService.getOrderHistory(
+        context,
+        limit,
+        offset
+      );
+
       if (mounted) {
         setState(() {
           apiLoading = false;
-          // Sort orders by displayId in descending order, handling nullable displayId
-          if (response?.orders != null) {
-            response?.orders?.sort((a, b) {
-              // Use null-coalescing operator to handle null values (default to 0)
-              return (b.displayId ?? 0).compareTo(a.displayId ?? 0);  // Sort in descending order
-            });
+          _isLoadingMore = false;
+
+          final fetchedOrders = response.orders ?? [];
+
+          if (isLoadMore) {
+            orderHistoryResponse?.orders?.addAll(fetchedOrders);
+          } else {
+            orderHistoryResponse = response;
           }
-          orderHistoryResponse = response;
+
+          orderHistoryResponse?.orders?.sort(
+                  (a, b) => (b.displayId ?? 0).compareTo(a.displayId ?? 0));
+
+          final totalCount = response.count ?? fetchedOrders.length;
+          _hasMore = (orderHistoryResponse?.orders?.length ?? 0) < totalCount;
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          apiLoading = false;
-        });
-      }
-      print(e);
+      setState(() {
+        apiLoading = false;
+        _isLoadingMore = false;
+      });
+      print('Order history API error: $e');
     }
   }
+
+
+
+
 }

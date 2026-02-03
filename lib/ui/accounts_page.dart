@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
@@ -18,6 +20,9 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/utility/version_utils.dart';
+
+import '../model/view_cart_model.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -28,6 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Customer? customer;
   List<ContentData> storeContentList = [];
   bool isLoading = false;
+  String? _appVersion;
 
   @override
   void initState() {
@@ -35,6 +41,34 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
+    listenToEvents();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final version = await VersionUtils.getCurrentAppVersion();
+    setState(() {
+      _appVersion = version;
+    });
+  }
+
+  late StreamSubscription<ProfileEvent> _eventSubscription;
+  void listenToEvents() {
+    _eventSubscription = eventBus.on<ProfileEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          if(event.customer!=null) {
+            customer = event.customer;
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -54,8 +88,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Container(
                     child: Center(
                       child: Text(
-                          (customer?.firstName ?? "C")
-                              .substring(0, 1), // The letter to display
+                        (customer?.firstName?.isNotEmpty == true
+                            ? customer!.firstName!.substring(0, 1)
+                            : "V"),
                           style: FontUtils.primaryFontStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -68,7 +103,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.primary, width: 1.5),
+                    border: Border.all(color: AppColors.primary, width: 1),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Row(
@@ -104,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       TextButton(
                         onPressed: () async {
                           final result = await PageRouteUtils.pushWithSlide(
-                              context, EditProfilePage());
+                              context, const EditProfilePage());
                           if (result == true) {
                             setState(() {
                               getCustomerInfo();
@@ -151,7 +186,12 @@ class _SettingsPageState extends State<SettingsPage> {
                               htmlData: contentItem.content!.data!),
                         );
                       }
-                    }))
+                    })),
+                _buildProfileItem(
+                  AppStrings.deleteAccount,
+                      () =>
+                      _showDeleteAccount(context), // use separate method
+                ),
               ],
             ),
           ),
@@ -172,6 +212,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
+          Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey,fontSize: 12),)
         ],
       )),
     );
@@ -234,6 +275,34 @@ class _SettingsPageState extends State<SettingsPage> {
           onTapOk: () async {
             bool skipLogin =
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
+
+            // Handle sign out action
+            await SharedPreferencesUtil().clear();
+
+            if (mounted) {
+              PageRouteUtils.pushAndRemoveUntil(
+                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: AppStrings.deleteAccount,
+          content: "Are you sure you want to permanently delete your account?",
+          contentOk: AppStrings.yes,
+          contentCancel: AppStrings.no,
+          onTapOk: () async {
+            await ApiService().deleteAccount(context);
+
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
             await SharedPreferencesUtil().clear();
             if (mounted) {
@@ -245,4 +314,5 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
+
 }
