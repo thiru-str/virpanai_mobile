@@ -56,7 +56,7 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
             width: 160,
-            height: 150, // 👈 fixed compact size (same as image)
+            height: 250, // 👈 fixed compact size (same as image)
             child: _controller?.value.isInitialized ?? false
                 ? FittedBox(
               fit: BoxFit.cover,

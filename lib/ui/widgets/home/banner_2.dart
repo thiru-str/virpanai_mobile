@@ -194,7 +194,7 @@ class _Banner2State extends State<Banner2> {
           child: CachedNetworkImage(
             imageUrl: url,
             width: 160,
-            height: 150,
+            height: 250,
             fit: BoxFit.cover,
             errorWidget: (_, __, ___) => _imageFallback(160,150),
           ),
