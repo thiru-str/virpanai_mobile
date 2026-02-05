@@ -134,6 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     hintText: AppStrings.email,
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textCapitalization: TextCapitalization.none,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return AppStrings.email_required;
