@@ -8,9 +8,10 @@ const Map<String, String> kDisplayToApi = {
   'Processing': 'fulfilled',
   'Completed':  'delivered',
   'Cancelled':  'cancelled',
+  'Shipped':  'shipped',
 };
 
-const List<String> kDisplayOrder = ['Processing', 'Completed', 'Cancelled'];
+const List<String> kDisplayOrder = ['Processing', 'Completed', 'Cancelled','Shipped'];
 
 String? displayFromApi(String api) {
   for (final e in kDisplayToApi.entries) {
@@ -31,6 +32,7 @@ Future<OrdersFilterResult?> showOrdersFilterSheet(
         'Processing',
         'Completed',
         'Cancelled',
+        'Shipped',
       ],
     }) {
   assert(showDate || showStatus,

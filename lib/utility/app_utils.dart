@@ -89,4 +89,9 @@ class AppUtils {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  static bool isValidPAN(String pan) {
+    final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
+    return panRegex.hasMatch(pan.trim().toUpperCase());
+  }
+
 }

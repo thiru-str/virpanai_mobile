@@ -26,163 +26,235 @@ class LiveOrderPage extends StatefulWidget {
 }
 
 class _LiveOrderPageState extends State<LiveOrderPage> {
-
   final ApiService apiService = ApiService();
   LiveOrdersResponse? _liveOrdersResponse;
   DealerResponse? _dealerResponse;
   bool apiLoading = true;
 
+  final int _limit = 10;
+  int _offset = 0;
+
+  bool _isFetchingMore = false;
+  bool _hasMore = true;
+
+  final List<LiveOrder> _orders = [];
+
+  late ScrollController _scrollController;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    initApis();
+    _scrollController = ScrollController()..addListener(_onScroll);
+    getInitialApis();
   }
 
-  Future<void> initApis() async {
-    getApis();
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> getInitialApis() async {
+    try {
+      final dealerResponse = await apiService.getDealerDetails(context);
+      await SharedPreferencesUtil()
+          .saveMap('dealer_info', dealerResponse.toJson());
+
+      await fetchLiveOrders(isInitial: true);
+
+      setState(() {
+        _dealerResponse = dealerResponse;
+        apiLoading = false;
+      });
+    } catch (e) {
+      apiLoading = false;
+    }
+  }
+
+  Future<void> fetchLiveOrders({bool isInitial = false}) async {
+    if (_isFetchingMore || !_hasMore) return;
+
+    _isFetchingMore = true;
+
+    final response = await apiService.liveOrders(
+      context,
+      limit: _limit,
+      offset: _offset,
+    );
+
+    final newOrders = response.liveOrders ?? [];
+
+    setState(() {
+      if (isInitial) {
+        _orders.clear();
+      }
+
+      _orders.addAll(newOrders);
+      _offset += newOrders.length;
+
+      _hasMore = _orders.length < (response.count ?? 0);
+      _isFetchingMore = false;
+      _liveOrdersResponse = response;
+    });
+
+    if (response.hasPending == true && isInitial) {
+      showPendingOrdersDialog(context);
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isFetchingMore &&
+        _hasMore) {
+      fetchLiveOrders();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: apiLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: apiLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              )
+            : ListView(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 children: [
-                    Column(
+                  Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'Hello!',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'Hello!',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                _dealerResponse?.dealer?.name ?? '',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            _dealerResponse?.dealer?.name ?? '',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                        IconButton(
+                            onPressed: () {
+                              PageRouteUtils.pushWithFade(
+                                  context, ProfilePage());
+                            },
+                            icon: Icon(
+                              Icons.account_circle_outlined,
+                              color: AppColors.primary,
+                              size: 32,
+                            ))
+                      ]),
+                  const SizedBox(height: 24),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Live Orders',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Ledger Balance Card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          (_liveOrdersResponse?.rawLedgerBalance ?? 0) >= 0
+                              ? AppAssets.order_bg
+                              : AppAssets.order_bg_red,
+                          height: 120,
+                          fit: BoxFit.fill,
+                        ),
+                        Column(
+                          children: [
+                            const Text(
+                              'Ledger Balance',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14),
+                            ),
+                            Text(
+                              _liveOrdersResponse?.ledgerBalance ?? '',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Text(
+                              'Total Value Of All Orders',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    IconButton(onPressed: (){
-                      PageRouteUtils.pushWithFade(
-                          context,
-                        ProfilePage()
+                  ),
+                  const SizedBox(height: 16),
+                  if (_orders.isEmpty)
+                    const EmptyView(
+                      imageAsset: AppAssets.ic_no_list,
+                      title: 'No Live Orders',
+                      description: 'You currently don\'t have any live orders',
+                      imageHeight: 150,
+                    )
+                  else
+                    ..._orders.map((item) {
+                      return GestureDetector(
+                        onTap: () {
+                          PageRouteUtils.pushWithFade(
+                            context,
+                            OrderDetailsPage(
+                              orderId: item.id ?? '',
+                              isFromLiveOrder: true,
+                            ),
                           );
-                    }, icon: Icon(Icons.account_circle_outlined,color: AppColors.primary,size: 32,))
-                  ]),
-                  const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Live Orders',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Ledger Balance Card
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SvgPicture.asset(
-                    (_liveOrdersResponse?.rawLedgerBalance??0)>=0?AppAssets.order_bg:AppAssets.order_bg_red,
-                    height: 120,
-                    fit: BoxFit.fill,
-                  ),
-              Column(
-                    children: [
-                      const Text(
-                        'Ledger Balance',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                      Text(
-                        _liveOrdersResponse?.ledgerBalance??'',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
+                        },
+                        child: OrderItemCard(
+                          imageUrl: item.shopImage ?? '',
+                          storeName: item.shopName ?? '',
+                          storeAddress: item.shopAddress ?? '',
+                          productCount: item.noOfProducts ?? '',
+                          totalPrice: item.totalPrice ?? '',
+                          phoneNumber: item.phone ?? '',
+                          orderDate: item.date ?? '',
+                          orderId: '#${item.displayId}',
                         ),
-                      ),
-                      const Text(
-                        'Total Value Of All Orders',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
+                      );
+                    }).toList(),
+
+                  if (_hasMore)
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+                    ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            (_liveOrdersResponse?.liveOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Live Orders', description: 'You currently don\'t have any live orders',imageHeight: 150,):ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _liveOrdersResponse?.liveOrders?.length??0,
-              itemBuilder: (context, index) {
-                final item = _liveOrdersResponse?.liveOrders?[index];
-                return GestureDetector(
-                  onTap: (){
-                    PageRouteUtils.pushWithFade(
-                        context,OrderDetailsPage(orderId: item?.id??'',isFromLiveOrder: true,));
-                  },
-                  child: OrderItemCard(
-                    imageUrl: item?.shopImage??'',
-                    storeName: item?.shopName??'',
-                    storeAddress: item?.shopAddress??'',
-                    productCount: item?.noOfProducts??'',
-                    totalPrice: item?.totalPrice??'',
-                    phoneNumber: item?.phone??'',
-                    orderDate: item?.date??'',
-                    orderId: '#${(item?.displayId??0).toString()}',
-                  ),
-                );
-              },
-            )
-          ],
-        ),
       ),
     );
-  }
-
-  void getApis() async {
-    try {
-      final ApiService apiService = ApiService();
-      final dealerResponse = await apiService.getDealerDetails(context);
-      if (dealerResponse != null) {
-       await SharedPreferencesUtil().saveMap('dealer_info', dealerResponse.toJson());
-      }
-      final liveOrderResponse = await apiService.liveOrders(context);
-      setState(() {
-        _dealerResponse = dealerResponse;
-        _liveOrdersResponse = liveOrderResponse;
-        apiLoading = false;
-        if(_liveOrdersResponse?.hasPending??false)
-          {
-            showPendingOrdersDialog(context);
-          }
-      });
-    } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
-      print(e);
-    }
   }
 
   void showPendingOrdersDialog(BuildContext context) {
@@ -190,7 +262,6 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-
         eventBus.on<ClosePendingOrdersDialogEvent>().listen((event) {
           Navigator.of(context, rootNavigator: true).pop();
           Navigator.pop(context);

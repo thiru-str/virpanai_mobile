@@ -33,12 +33,23 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
   bool apiLoading = true;
   final TextEditingController _searchController = TextEditingController();
 
+  final int _limit = 20;
+  int _offset = 0;
+
+  bool _isFetchingMore = false;
+  bool _hasMore = true;
+
+  final List<Customer> _allCustomers = [];
+
+  late ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+
+    _scrollController = ScrollController()..addListener(_onScroll);
     initApis();
 
-    // Listen to search text changes
     _searchController.addListener(() {
       _filterCustomers(_searchController.text);
     });
@@ -46,35 +57,86 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
+  Future<void> fetchCustomers({bool isInitial = false}) async {
+    if (_isFetchingMore || !_hasMore) return;
+
+    _isFetchingMore = true;
+
+    final response = await ApiService().getCustomerList(
+      context,
+      limit: _limit,
+      offset: _offset,
+    );
+
+    final newCustomers = response.customers ?? [];
+
+    setState(() {
+      if (isInitial) {
+        _allCustomers.clear();
+        _offset = 0;
+      }
+
+      _allCustomers.addAll(newCustomers);
+      _offset += newCustomers.length;
+
+      _hasMore = _allCustomers.length < (response.count ?? 0);
+
+      _customerListResponse = response;
+      _filteredCustomers = _applySearch(
+        _searchController.text,
+        _allCustomers,
+      );
+
+      _isFetchingMore = false;
+      apiLoading = false;
+    });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200 &&
+        !_isFetchingMore &&
+        _hasMore &&
+        _searchController.text.isEmpty) {
+      fetchCustomers();
+    }
+  }
+
   Future<void> initApis() async {
-    getApis();
+    setState(() {
+      apiLoading = true;
+    });
+
+    await fetchCustomers(isInitial: true);
   }
 
   void _filterCustomers(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        _filteredCustomers = _customerListResponse?.customers;
-      });
-    } else {
-      final allCustomers = _customerListResponse?.customers ?? [];
-      final filtered = allCustomers.where((c) {
-        final name = c.metadata?.shopName?.toLowerCase() ?? '';
-        final phone = c.phone?.toLowerCase() ?? '';
-        final email = c.email?.toLowerCase() ?? '';
-        return name.contains(query.toLowerCase()) ||
-            phone.contains(query.toLowerCase()) ||
-            email.contains(query.toLowerCase());
-      }).toList();
-
-      setState(() {
-        _filteredCustomers = filtered;
-      });
-    }
+    setState(() {
+      _filteredCustomers = _applySearch(query, _allCustomers);
+    });
   }
+
+  List<Customer> _applySearch(String query, List<Customer> source) {
+    if (query.isEmpty) return List.from(source);
+
+    final q = query.toLowerCase();
+
+    return source.where((c) {
+      final name = c.metadata?.shopName?.toLowerCase() ?? '';
+      final phone = c.phone?.toLowerCase() ?? '';
+      final email = c.email?.toLowerCase() ?? '';
+
+      return name.contains(q) ||
+          phone.contains(q) ||
+          email.contains(q);
+    }).toList();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,8 +158,6 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔎 Search Bar
-
               Visibility(
                 visible: (_customerListResponse?.customers??[]).isNotEmpty,
                 child: Container(
@@ -150,9 +210,18 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
                   ),
                 )
                     : ListView.builder(
-                  itemCount: _filteredCustomers?.length ?? 0,
+                  controller: _scrollController,
+                  itemCount: _filteredCustomers!.length + (_hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final item = _filteredCustomers?[index];
+                    if (index == _filteredCustomers!.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final item = _filteredCustomers![index];
+
                     return GestureDetector(
                       onTap: () {
                         PageRouteUtils.push(
@@ -161,12 +230,11 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
                         );
                       },
                       child: StoreContactCard(
-                        imageUrl:
-                        item?.metadata?.shopNameBoardImage ?? '',
-                        storeName: item?.metadata?.shopName ?? '',
-                        address: item?.metadata?.postalCode ?? '',
-                        phoneNumber: '+91 ${item?.phone ?? ''}',
-                        email: item?.email ?? '',
+                        imageUrl: item.metadata?.shopNameBoardImage ?? '',
+                        storeName: item.metadata?.shopName ?? '',
+                        address: item.metadata?.postalCode ?? '',
+                        phoneNumber: '+91 ${item.phone ?? ''}',
+                        email: item.email ?? '',
                       ),
                     );
                   },
@@ -182,7 +250,7 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
               const PhoneNumberPage(),
             );
             if (result == true) {
-              getApis();
+              _resetAndReload();
             }
           },
           backgroundColor: const Color(0xFF005B65),
@@ -192,24 +260,18 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
         );
   }
 
-  void getApis() async {
-    try {
-      setState(() {
-        apiLoading = true;
-      });
-      final ApiService apiService = ApiService();
-      final customerListResponse = await apiService.getCustomerList(context);
-      setState(() {
-        _customerListResponse = customerListResponse;
-        _filteredCustomers = customerListResponse.customers; // init filter list
-        apiLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
-      print(e);
-    }
+  void _resetAndReload() {
+    setState(() {
+      _offset = 0;
+      _hasMore = true;
+      _isFetchingMore = false;
+
+      _allCustomers.clear();
+      _filteredCustomers?.clear();
+    });
+
+    fetchCustomers(isInitial: true);
   }
+
 }
 

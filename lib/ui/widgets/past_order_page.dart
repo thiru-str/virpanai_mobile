@@ -31,17 +31,33 @@ class _PastOrderPageState extends State<PastOrderPage> {
   DateTime? endTimeUtc;
   late StreamSubscription<ReloadEvent> _eventSubscription;
 
+  final int _limit = 10;
+  int _offset = 0;
+
+  bool _isFetchingMore = false;
+  bool _hasMore = true;
+
+  final List<PastOrder> _orders = [];
+
+  late ScrollController _scrollController;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     initApis();
     listenToEvents();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _eventSubscription.cancel();
+    super.dispose();
+  }
+
   Future<void> initApis() async {
-    getApis();
+    _resetAndReload();
   }
 
   void listenToEvents() {
@@ -52,10 +68,57 @@ class _PastOrderPageState extends State<PastOrderPage> {
     });
   }
 
-  @override
-  void dispose() {
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
-    super.dispose();
+  Future<void> fetchPastOrders({bool isInitial = false}) async {
+    if (_isFetchingMore || !_hasMore) return;
+
+    _isFetchingMore = true;
+
+    final response = await ApiService().pastOrders(
+      context,
+      startUtc ?? '',
+      endUtc ?? '',
+      limit: _limit,
+      offset: _offset,
+    );
+
+    final newOrders = response.pastOrders ?? [];
+
+    setState(() {
+      if (isInitial) {
+        _orders.clear();
+        _offset = 0;
+      }
+
+      _orders.addAll(newOrders);
+      _offset += newOrders.length;
+
+      _hasMore = _orders.length < (response.count ?? 0);
+      _pastOrderResponse = response;
+
+      _isFetchingMore = false;
+      apiLoading = false;
+    });
+  }
+
+  void _resetAndReload() {
+    setState(() {
+      apiLoading = true;
+      _offset = 0;
+      _hasMore = true;
+      _isFetchingMore = false;
+      _orders.clear();
+    });
+
+    fetchPastOrders(isInitial: true);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200 &&
+        !_isFetchingMore &&
+        _hasMore) {
+      fetchPastOrders();
+    }
   }
 
   @override
@@ -77,59 +140,59 @@ class _PastOrderPageState extends State<PastOrderPage> {
                     );
                     if (result != null) {
                       startUtc = result.startUtc != null
-                          ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.startUtc!.toUtc())
+                          ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'")
+                          .format(result.startUtc!.toUtc())
                           : '';
+
                       endUtc = result.endUtc != null
-                          ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'").format(result.endUtc!.toUtc())
+                          ? DateFormat("yyyy-MM-ddTHH:mm:ss'Z'")
+                          .format(result.endUtc!.toUtc())
                           : '';
+
                       setState(() {
                         startTimeUtc = result.startUtc;
                         endTimeUtc = result.endUtc;
                       });
-                      debugPrint('Result: $result'); // Better debug logging
-                      getApis();
+
+                      _resetAndReload();
                     }
                   }),
               body: apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SafeArea(
-          child: ( _pastOrderResponse?.pastOrders?.length??0) == 0?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Past Orders', description: 'You currently don\'t have any past orders',imageHeight: 150,):ListView.builder(
-            itemCount: _pastOrderResponse?.pastOrders?.length??0,
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
+          child: _orders.isEmpty && !apiLoading ?const EmptyView(imageAsset: AppAssets.ic_no_list, title: 'No Past Orders', description: 'You currently don\'t have any past orders',imageHeight: 150,)
+              :ListView.builder(
+            controller: _scrollController,
+            itemCount: _orders.length + (_hasMore ? 1 : 0),
             itemBuilder: (context, index) {
-              final item= _pastOrderResponse?.pastOrders?[index];
+              if (index == _orders.length) {
+                return  Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+                );
+              }
+
+              final item = _orders[index];
+
               return GestureDetector(
-                onTap: (){
+                onTap: () {
                   PageRouteUtils.pushWithFade(
-                      context, PastOrderDetailsPage(date: item?.formatedDate??'',));
+                    context,
+                    PastOrderDetailsPage(
+                      date: item.formatedDate ?? '',
+                    ),
+                  );
                 },
                 child: PastOrderCard(
-                  dateLabel: item?.date??'',
-                  imageUrls:item?.data?.customerImages??[],
-                  productCount: item?.data?.totalOrders??0,
-                  totalPrice: item?.data?.totalPrice??'',
+                  dateLabel: item.date ?? '',
+                  imageUrls: item.data?.customerImages ?? [],
+                  productCount: item.data?.totalOrders ?? 0,
+                  totalPrice: item.data?.totalPrice ?? '',
                 ),
               );
             },
           ),
-        ),
+              ),
       ),
     );
-  }
-
-  void getApis() async {
-    try {
-      final ApiService apiService = ApiService();
-      final pastOrderResponse = await apiService.pastOrders(context,startUtc??'',endUtc??'');
-      setState(() {
-        _pastOrderResponse = pastOrderResponse;
-        apiLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
-      print(e);
-    }
   }
 
 }

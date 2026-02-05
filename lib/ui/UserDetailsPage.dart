@@ -2,11 +2,15 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/ui/ApprovalPage.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
+import 'package:waioz/ui/widgets/image_uploader.dart';
 import 'package:waioz/ui/widgets/label_text_field.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -147,23 +151,23 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
             label: "PAN Number",
             controller: _panNumberController,
             validator: (val) =>
-                val == null || val.isEmpty ? 'Enter PAN Number' : null,
+                val == null || val.isEmpty ? 'Enter PAN Number' : !AppUtils.isValidPAN(val) ? 'Enter Valid PAN' : null,
           ),
           const SizedBox(height: 6),
-          buildImageUploader(
+          ImageUploader(
             label: "PAN Image",
             imageFile: _panImage,
-            isLoading: _isPanImageUploading,
-            onUploadTap: () async {
-              setState(() => _isPanImageUploading = true);
-              await pickImage(
-                (img) => setState(() => _panImage = img),
-                (path) => setState(() {
-                  _panImagePath = path;
-                  _isPanImageUploading = false;
-                }),
-              );
-            },
+            isUploading: _isPanImageUploading,
+            onTap: () => _pickAndUploadImage(
+              onPick: (file) => setState(() => _panImage = file),
+              onUploaded: (path) => setState(() => _panImagePath = path),
+              onUploadFailed: () => setState(() {
+                _panImage = null;
+                _panImagePath = null;
+                AppUtils.showToast('GST image upload failed. Please try again');
+              }),
+              setLoading: (val) => setState(() => _isPanImageUploading = val),
+            ),
           ),
           const SizedBox(height: 20),
         ],
@@ -473,54 +477,86 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     );
   }
 
-  Widget buildImageUploader({
-    required String label,
-    required File? imageFile,
-    required bool isLoading,
-    required VoidCallback onUploadTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-        const SizedBox(height: 6),
-        GestureDetector(
-          onTap: isLoading ? null : onUploadTap,
-          child: DottedBorder(
-            color: AppColors.primary,
-            strokeWidth: 1.5,
-            dashPattern: const [6, 3],
-            borderType: BorderType.RRect,
-            radius: const Radius.circular(10),
-            child: Container(
-              width: double.infinity,
-              height: 150,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.all(10),
-              child: isLoading
-                  ? CircularProgressIndicator(color: AppColors.primary)
-                  : (imageFile != null)
-                      ? Image.file(imageFile, fit: BoxFit.cover)
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.cloud_upload_outlined,
-                                size: 40, color: AppColors.primary),
-                            const SizedBox(height: 10),
-                            Text("Click to Upload",
-                                style: TextStyle(color: AppColors.primary)),
-                            Text("(Max. File size: 5 MB)",
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-            ),
+  Future<void> _pickAndUploadImage({
+    required Function(File) onPick,
+    required Function(String?) onUploaded,
+    required VoidCallback onUploadFailed,
+    required Function(bool) setLoading,
+  }) async {
+    try {
+      setLoading(true);
+
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Take Photo"),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Choose from Gallery"),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 20),
-      ],
+      );
+
+      if (source == null) return;
+
+      final picked = await ImagePicker().pickImage(source: source);
+      if (picked == null) return;
+
+      final originalFile = File(picked.path);
+
+      final compressedFile = await _compressImage(originalFile);
+
+
+      onPick(compressedFile);
+
+      final response = await ApiService()
+          .uploadDocImages(context, '', compressedFile);
+
+      final path = response?['file']?['path'];
+      if (path == null) throw Exception('Upload failed');
+
+      onUploaded(path);
+    } catch (e) {
+      onUploadFailed();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  Future<File> _compressImage(File file) async {
+    final dir = await getTemporaryDirectory();
+    final targetPath = p.join(
+      dir.path,
+      'cmp_${DateTime.now().millisecondsSinceEpoch}.jpg',
     );
+
+    final XFile? compressed = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 75,
+      minWidth: 1080,
+      minHeight: 1080,
+      format: CompressFormat.jpeg,
+    );
+
+    if (compressed == null) {
+      return file;
+    }
+
+    return File(compressed.path);
   }
 
   Future<void> pickImage(

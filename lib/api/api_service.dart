@@ -290,7 +290,7 @@ class ApiService {
           // "state": "Tamil Nadu",
           // "postal_code": "625009",
           // "country": "India",
-          "pan_number": "1234n23j42k",
+          "pan_number": panNo,
           "documents": [
             {"name": "PAN", "url": panImage}
           ]
@@ -852,15 +852,20 @@ class ApiService {
   }
 
   Future<PastOrderResponse> pastOrders(
-      BuildContext context,String startUtc,String endUtc) async {
+      BuildContext context,String startUtc,String endUtc, {
+        required int limit,
+        required int offset,
+      }) async {
     await addToken();
-    final queryParams = <String, String>{};
+    final queryParams = <String, dynamic>{};
     if (startUtc.isNotEmpty) {
       queryParams['start_date'] = startUtc;
     }
     if (endUtc.isNotEmpty) {
       queryParams['end_date'] = endUtc;
     }
+    queryParams['limit'] = limit;
+    queryParams['offset'] = offset;
     return _makeGetRequest<PastOrderResponse>(
       'dealer/get-past-orders',
       null,
@@ -871,16 +876,24 @@ class ApiService {
   }
 
   Future<LiveOrdersResponse> liveOrders(
-      BuildContext context) async {
+      BuildContext context, {
+        required int limit,
+        required int offset,
+      }) async {
     await addToken();
+
     return _makeGetRequest<LiveOrdersResponse>(
       'dealer/get-live-orders',
       null,
-      null,
+      {
+        'limit': limit,
+        'offset': offset,
+      },
           (json) => LiveOrdersResponse.fromJson(json),
       context,
     );
   }
+
 
   Future<DealerResponse> getDealerDetails(BuildContext context) async {
     await addToken();
@@ -894,12 +907,19 @@ class ApiService {
   }
 
   Future<CustomerListResponse> getCustomerList(
-      BuildContext context) async {
+      BuildContext context, {
+        required int limit,
+        required int offset,
+      }) async {
     await addToken();
+
     return _makeGetRequest<CustomerListResponse>(
       'dealer/customer',
       null,
-      null,
+      {
+        'limit': limit,
+        'offset': offset,
+      },
           (json) => CustomerListResponse.fromJson(json),
       context,
     );
