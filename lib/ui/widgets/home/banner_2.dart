@@ -141,7 +141,7 @@ class _Banner2State extends State<Banner2> {
 
                 /// Carousel
                 SizedBox(
-                  height: 160,
+                  height: 260,
                   child: PageView.builder(
                     controller: _pageController,
                     padEnds: false,
@@ -194,7 +194,7 @@ class _Banner2State extends State<Banner2> {
           child: CachedNetworkImage(
             imageUrl: url,
             width: 160,
-            height: 250,
+            height: 150,
             fit: BoxFit.cover,
             errorWidget: (_, __, ___) => _imageFallback(160,150),
           ),
