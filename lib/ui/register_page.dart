@@ -100,26 +100,34 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  CustomTextField(
-                    hintText: AppStrings.firstname,
-                    controller: firstNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppStrings.firstname_required;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: AppStrings.lastname,
-                    controller: lastNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppStrings.lastname_required;
-                      }
-                      return null;
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          hintText: AppStrings.firstname,
+                          controller: firstNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.firstname_required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: CustomTextField(
+                          hintText: AppStrings.lastname,
+                          controller: lastNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.lastname_required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
@@ -138,27 +146,29 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                   if (isEmailLogin) ...[
+                    const SizedBox(height: 16),
 
                     IntlPhoneField(
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
+                        fillColor: AppColors.secondary,
                         filled: true,
                         contentPadding:
                         const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                          BorderSide(color: AppColors.primary, width: 1.5),
+                          BorderSide(color: AppColors.secondary, width: 1.5),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                          BorderSide(color: AppColors.primary, width: 1.5),
+                          BorderSide(color: AppColors.secondary, width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                          BorderSide(color: AppColors.primary, width: 1.5),
+                          BorderSide(color: AppColors.secondary, width: 1.5),
                         ),
                       ),
                       initialCountryCode: AppStrings.country_code,
