@@ -33,7 +33,7 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
   bool apiLoading = true;
   final TextEditingController _searchController = TextEditingController();
 
-  final int _limit = 20;
+  final int _limit = 500;
   int _offset = 0;
 
   bool _isFetchingMore = false;
