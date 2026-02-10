@@ -23,17 +23,23 @@ class Item9 extends StatelessWidget {
     required this.content,
   }) : super(key: key);
 
+  // Card height breakdown: 140(img) + 6 + 36(title) + 2 + 20(price) + 20(discount) + 4 + 2(border)
+  static const double _cardHeight = 232;
+
   @override
   Widget build(BuildContext context) {
     final decoration = AppUtils.buildLayoutBackground(content);
     final hasDecoration = decoration != null;
+    final horizontalPadding = hasDecoration ? 20.0 : 16.0;
+    final itemSpacing = hasDecoration ? 20.0 : 16.0;
+    final items = content.layoutData ?? [];
 
     return Container(
       decoration: decoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
+          // ── Title Row ──
           Padding(
             padding: EdgeInsets.symmetric(
               horizontal: 16,
@@ -75,45 +81,47 @@ class Item9 extends StatelessWidget {
                         const Icon(Icons.chevron_right, size: 18),
                       ],
                     ),
-                  )
+                  ),
               ],
             ),
           ),
 
-
-          // Product list horizontal
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: hasDecoration ? 20 : 16,
-              vertical: hasDecoration?5:0
-            ),
-            child: SingleChildScrollView(
+          // ── Horizontal Product List (virtualized) ──
+          SizedBox(
+            height: _cardHeight,
+            child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item9Card(
-                      layoutData: content.layoutData![i],
-                      onTap: () {
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
-                        );
-                      },
-                    ),
-                    if (i != content.layoutData!.length - 1)
-                      SizedBox(width: hasDecoration ? 20 : 16),
-                  ],
-                ],
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: hasDecoration ? 5 : 0,
               ),
+              itemCount: items.length,
+              addAutomaticKeepAlives: false,
+              addRepaintBoundaries: true,
+              itemBuilder: (context, i) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: i < items.length - 1 ? itemSpacing : 0,
+                  ),
+                  child: _Item9Card(
+                    layoutData: items[i],
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption!,
+                        layoutData: items[i],
+                      );
+                    },
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
     );
   }
-
 }
 
 class _Item9Card extends StatelessWidget {
@@ -144,7 +152,7 @@ class _Item9Card extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Image + wishlist + add button ---
+            // --- Image + ADD button ---
             Stack(
               children: [
                 ClipRRect(
@@ -163,6 +171,10 @@ class _Item9Card extends StatelessWidget {
                       imageUrl: layoutData.image!,
                       fit: BoxFit.contain,
                       width: double.infinity,
+                      // ⬇️ Decode at display size, not full resolution
+                      memCacheWidth: 320,  // 160 logical * 2x pixel ratio
+                      memCacheHeight: 280, // 140 logical * 2x pixel ratio
+                      fadeInDuration: Duration.zero, // skip fade animation
                       errorWidget: (c, u, e) =>
                       const ImageFallbackWidget(
                           h: 140,
@@ -171,8 +183,6 @@ class _Item9Card extends StatelessWidget {
                     ),
                   ),
                 ),
-
-
                 // ADD button
                 Positioned(
                   bottom: 8,
@@ -181,23 +191,24 @@ class _Item9Card extends StatelessWidget {
                     onPressed: onTap,
                     style: ButtonStyle(
                       backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
+                      WidgetStateProperty.all<Color>(Colors.white),
                       foregroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.primary),
-                      side: MaterialStateProperty.all<BorderSide>(
+                      WidgetStateProperty.all<Color>(AppColors.primary),
+                      side: WidgetStateProperty.all<BorderSide>(
                           BorderSide(color: AppColors.primary, width: 1)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      shape:
+                      WidgetStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                      padding: MaterialStateProperty.all<EdgeInsets>(
+                      padding: WidgetStateProperty.all<EdgeInsets>(
                           const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 4)),
                       minimumSize:
-                      MaterialStateProperty.all<Size>(Size.zero),
+                      WidgetStateProperty.all<Size>(Size.zero),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      elevation: MaterialStateProperty.all<double>(0),
+                      elevation: WidgetStateProperty.all<double>(0),
                     ),
                     child: Text(
                       "ADD",
@@ -276,25 +287,9 @@ class _Item9Card extends StatelessWidget {
                 ),
               ),
 
-
             const SizedBox(height: 4),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _imageFallback() {
-    return Container(
-      height: 280,
-      width: double.infinity,
-      color:AppColors.secondary, // light grey background
-      alignment: Alignment.center,
-      child: SvgPicture.asset(
-        AppAssets.ic_no_image, // <- your SVG path
-        width: 56,
-        height: 56,
-        // optional tint to match your UI
       ),
     );
   }

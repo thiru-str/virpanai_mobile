@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -22,9 +23,12 @@ class Item5 extends StatelessWidget {
     required this.content,
   }) : super(key: key);
 
+  // 280(img) + 16 + 38(title) + 4 + 26(price) = ~364
+  static const double _cardHeight = 367;
+
   @override
   Widget build(BuildContext context) {
-    final hasViewAll = (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
+    final items = content.layoutData ?? [];
 
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
@@ -45,22 +49,20 @@ class Item5 extends StatelessWidget {
                       color: AppColors.textColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
+                    maxLines: 2,
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
-                Visibility(
-                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                  child: GestureDetector(
+                const SizedBox(width: 4),
+                if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                  GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content.redirectData!,
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           content.layoutRedirectTitle!,
@@ -74,36 +76,39 @@ class Item5 extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               ],
             ),
           ),
 
           const SizedBox(height: 16),
 
-          // Horizontal scroller without fixed height
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
+          // ── Virtualized horizontal list ──
+          SizedBox(
+            height: _cardHeight,
+            child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item5Card(
-                      layoutData: content.layoutData![i],
-                      onTap: () {
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
-                        );
-                      },
-                    ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
-                ],
-              ),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              itemCount: items.length,
+              addAutomaticKeepAlives: false,
+              addRepaintBoundaries: true,
+              itemBuilder: (context, i) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: i < items.length - 1 ? 16 : 0,
+                  ),
+                  child: _Item5Card(
+                    layoutData: items[i],
+                    onTap: () {
+                      RedirectUtils.handleContentRedirect(
+                        context: context,
+                        layoutOption: content.layoutOption!,
+                        layoutData: items[i],
+                      );
+                    },
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -133,7 +138,7 @@ class _Item5Card extends StatelessWidget {
       child: Container(
         width: 200,
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.05),
+          color: AppColors.primary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -146,23 +151,20 @@ class _Item5Card extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: (layoutData.image??'').isNotEmpty?Image(
-                    image: CachedNetworkImageProvider(layoutData.image??''),
+                  child: (layoutData.image ?? '').isNotEmpty
+                      ? CachedNetworkImage(
+                    imageUrl: layoutData.image!,
                     height: 280,
                     width: double.infinity,
                     fit: BoxFit.contain,
                     alignment: Alignment.center,
-                    errorBuilder: (context, error, stackTrace) => _imageFallback(),
-                  ):_imageFallback(),
+                    memCacheWidth: 400,  // 200 logical × 2x
+                    memCacheHeight: 560, // 280 logical × 2x
+                    fadeInDuration: Duration.zero,
+                    errorWidget: (c, u, e) => const ImageFallbackWidget(h: 280,),
+                  )
+                      : const ImageFallbackWidget(h: 280,),
                 ),
-                // Positioned(
-                //   top: 8,
-                //   right: 8,
-                //   child: Icon(
-                //     Icons.favorite_border,
-                //     color: AppColors.secondary,
-                //   ),
-                // ),
                 if (_hasDiscount)
                   Positioned(
                     top: 0,
@@ -198,7 +200,7 @@ class _Item5Card extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
@@ -238,7 +240,7 @@ class _Item5Card extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.textColor.withOpacity(0.6),
+                          color: AppColors.textColor.withValues(alpha: 0.6),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -248,21 +250,6 @@ class _Item5Card extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _imageFallback() {
-    return Container(
-      height: 280,
-      width: double.infinity,
-      color:AppColors.secondary, // light grey background
-      alignment: Alignment.center,
-      child: SvgPicture.asset(
-        AppAssets.ic_no_image, // <- your SVG path
-        width: 56,
-        height: 56,
-        // optional tint to match your UI
       ),
     );
   }

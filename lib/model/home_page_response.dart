@@ -13,12 +13,18 @@ class HomePageResponse {
   List<Content>? content;
   Global? global;
   Error? error;
+  int? count;
+  int? offset;
+  int? limit;
 
   HomePageResponse({
     this.status,
     this.content,
     this.global,
     this.error,
+    this.count,
+    this.offset,
+    this.limit,
   });
 
   factory HomePageResponse.fromJson(Map<String, dynamic> json) => HomePageResponse(
@@ -26,6 +32,9 @@ class HomePageResponse {
     content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
     global: json["global"] == null ? null : Global.fromJson(json["global"]),
     error: json["error"] == null ? null : Error.fromJson(json["error"]), // <-- Deserialize
+    count: json["count"],
+    offset: json["offset"],
+    limit: json["limit"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -33,6 +42,9 @@ class HomePageResponse {
     "content": content == null ? [] : List<dynamic>.from(content!.map((x) => x.toJson())),
     "global": global?.toJson(),
     "error": error?.toJson(),
+    "count": count,
+    "offset": offset,
+    "limit": limit,
   };
 }
 
@@ -117,7 +129,7 @@ class LayoutDatum {
   String? salesText;
   Prices? prices;
   RedirectData? redirectData;
-  int? rating;
+  num? rating;
   VariantDetails? variantDetails;
   CartDetails? cartDetails;
 

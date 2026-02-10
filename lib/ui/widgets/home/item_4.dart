@@ -6,6 +6,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
+import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
 
 class Item4 extends StatelessWidget {
@@ -16,8 +17,12 @@ class Item4 extends StatelessWidget {
     required this.content,
   }) : super(key: key);
 
+  // 230(img) + 8 + 34(title) + 4 + 35(price) = ~311
+  static const double _cardHeight = 314;
+
   @override
   Widget build(BuildContext context) {
+    final items = content.layoutData ?? [];
 
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
@@ -38,22 +43,20 @@ class Item4 extends StatelessWidget {
                       color: AppColors.textColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
+                    maxLines: 2,
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
-                Visibility(
-                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                  child: GestureDetector(
+                const SizedBox(width: 4),
+                if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                  GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content.redirectData!,
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           content.layoutRedirectTitle!,
@@ -67,31 +70,36 @@ class Item4 extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Horizontal scroller: adaptive height (no fixed SizedBox wrapper)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item4Card(
-                      layoutData: content.layoutData![i],
+            // ── Virtualized horizontal list ──
+            SizedBox(
+              height: _cardHeight,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: items.length,
+                addAutomaticKeepAlives: false,
+                addRepaintBoundaries: true,
+                itemBuilder: (context, i) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: i < items.length - 1 ? 16 : 0,
+                    ),
+                    child: _Item4Card(
+                      layoutData: items[i],
                       onTap: () {
                         RedirectUtils.handleContentRedirect(
                           context: context,
                           layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
+                          layoutData: items[i],
                         );
                       },
                     ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
-                ],
+                  );
+                },
               ),
             ),
           ],
@@ -135,11 +143,19 @@ class _Item4Card extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: Image(
-                    image: CachedNetworkImageProvider(layoutData.image!),
+                  child: CachedNetworkImage(
+                    imageUrl: layoutData.image ?? '',
                     height: 230,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    memCacheWidth: 320,   // 160 logical × 2x
+                    memCacheHeight: 460,  // 230 logical × 2x
+                    fadeInDuration: Duration.zero,
+                    errorWidget: (c, u, e) => const ImageFallbackWidget(
+                      h: 230,
+                      w: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 if (_hasDiscount)
@@ -177,7 +193,7 @@ class _Item4Card extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
@@ -215,7 +231,7 @@ class _Item4Card extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.textColor.withOpacity(0.6),
+                          color: AppColors.textColor.withValues(alpha: 0.6),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
