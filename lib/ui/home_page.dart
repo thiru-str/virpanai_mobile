@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
             _isInitialLoading
                 ? Center(child: CircularProgressIndicator(color: AppColors.primary,))
                 : CustomScrollView(
-              physics: const ScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: KeyedSubtree(
-                            key: ValueKey(content.layoutName),
+                            key: ValueKey(content.contentId??''),
                             child: getLayoutWidget(content),
                           ),
                         );

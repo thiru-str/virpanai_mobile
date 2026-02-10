@@ -49,6 +49,7 @@ class HomePageResponse {
 }
 
 class Content {
+  String? contentId;
   String? layoutName;
   String? layoutTitle;
   String? layoutSubTitle;
@@ -65,6 +66,7 @@ class Content {
   RedirectData? redirectData;
 
   Content({
+    this.contentId,
     this.layoutName,
     this.layoutTitle,
     this.layoutSubTitle,
@@ -82,6 +84,7 @@ class Content {
   });
 
   factory Content.fromJson(Map<String, dynamic> json) => Content(
+    contentId: json["content_id"],
     layoutName: json["layout_name"],
     layoutTitle: json["layout_title"],
     layoutSubTitle: json["layout_sub_title"],
@@ -100,6 +103,7 @@ class Content {
   );
 
   Map<String, dynamic> toJson() => {
+    "content_id": contentId,
     "layout_name": layoutName,
     "layout_title": layoutTitle,
     "layout_sub_title": layoutSubTitle,
