@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
             _isInitialLoading
                 ? Center(child: CircularProgressIndicator(color: AppColors.primary,))
                 : CustomScrollView(
-              physics: const BouncingScrollPhysics(),
+              physics: const ScrollPhysics(),
               slivers: [
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 16),

@@ -75,6 +75,7 @@ class Slider2 extends StatelessWidget {
             height: 130,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: content.layoutData!.length,
               separatorBuilder: (_, __) => const SizedBox(width: 12),

@@ -109,7 +109,7 @@ class Grid1 extends StatelessWidget {
             height: _cardHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               itemCount: items.length,
               addAutomaticKeepAlives: false,

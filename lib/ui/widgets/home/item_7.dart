@@ -67,6 +67,7 @@ class Item7 extends StatelessWidget {
             height: 180,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              physics: const ClampingScrollPhysics(),
               itemCount: content.layoutData!.length,
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {

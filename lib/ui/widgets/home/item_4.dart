@@ -79,7 +79,7 @@ class Item4 extends StatelessWidget {
               height: _cardHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 itemCount: items.length,
                 addAutomaticKeepAlives: false,
                 addRepaintBoundaries: true,
