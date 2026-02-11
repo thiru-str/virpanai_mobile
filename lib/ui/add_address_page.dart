@@ -121,7 +121,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       }
       zipCodeController.text =
           customer?.metadata?.postalCode??'';
-      firstNameController.text = customer?.firstName??'';
+      firstNameController.text = '${customer?.firstName??''} ${customer?.lastName??''}';
       lastNameController.text = customer?.lastName??'';
       phoneNumberController.text = customer?.phone??'';
     }
@@ -177,19 +177,19 @@ class _AddAddressPage extends State<AddAddressPage> {
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: CustomTextField(
-                                  hintText: AppStrings.lastname,
-                                  controller: lastNameController,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return AppStrings.lastname_required;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
+                              // const SizedBox(width: 16),
+                              // Expanded(
+                              //   child: CustomTextField(
+                              //     hintText: AppStrings.lastname,
+                              //     controller: lastNameController,
+                              //     validator: (value) {
+                              //       if (value == null || value.isEmpty) {
+                              //         return AppStrings.lastname_required;
+                              //       }
+                              //       return null;
+                              //     },
+                              //   ),
+                              // ),
                             ],
                           ),
                           const SizedBox(height: 16),

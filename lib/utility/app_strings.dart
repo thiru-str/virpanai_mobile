@@ -42,7 +42,7 @@ class AppStrings {
   static const String no_order_yet = 'No Orders Yet';
   static const String no_wishlist_yet = 'No Wishlist Yet';
   static const String edit_profile = 'Edit Profile';
-  static const String firstname = 'First Name';
+  static const String firstname = 'Name';
   static const String lastname = 'Last Name';
   static const String edit = 'EDIT';
   static const String address = 'Address';
