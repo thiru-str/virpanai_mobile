@@ -27,11 +27,11 @@ class AddAddressPage extends StatefulWidget {
 
   const AddAddressPage(
       {super.key,
-      this.selectedAddress,
-      this.isFromMap = false,
-      this.place,
-      this.currentPosition,
-      this.doublePop = false});
+        this.selectedAddress,
+        this.isFromMap = false,
+        this.place,
+        this.currentPosition,
+        this.doublePop = false});
 
   //ScreenFrom
   // 1-> Home page
@@ -115,13 +115,13 @@ class _AddAddressPage extends State<AddAddressPage> {
     });
     if (mounted) {
       if ((customer?.metadata?.postalCode ?? '').isEmpty) {
-       setState(() {
-         enablePinCode = true;
-       });
+        setState(() {
+          enablePinCode = true;
+        });
       }
       zipCodeController.text =
           customer?.metadata?.postalCode??'';
-      firstNameController.text = customer?.firstName??'';
+      firstNameController.text = '${customer?.firstName??''} ${customer?.lastName??''}';
       lastNameController.text = customer?.lastName??'';
       phoneNumberController.text = customer?.phone??'';
     }
@@ -177,19 +177,19 @@ class _AddAddressPage extends State<AddAddressPage> {
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: CustomTextField(
-                                  hintText: AppStrings.lastname,
-                                  controller: lastNameController,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return AppStrings.lastname_required;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
+                              // const SizedBox(width: 16),
+                              // Expanded(
+                              //   child: CustomTextField(
+                              //     hintText: AppStrings.lastname,
+                              //     controller: lastNameController,
+                              //     validator: (value) {
+                              //       if (value == null || value.isEmpty) {
+                              //         return AppStrings.lastname_required;
+                              //       }
+                              //       return null;
+                              //     },
+                              //   ),
+                              // ),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -322,18 +322,18 @@ class _AddAddressPage extends State<AddAddressPage> {
                           return;
                         }
                         _lastPressed = now;
-                              if (_formKey.currentState!.validate()) {
-                                if (enablePinCode) {
-                                  final response = await ApiService()
-                                      .pinCodeCheck(
-                                          context, zipCodeController.text);
-                                  _showConfirmationAlert(context, response);
-                                } else {
-                                  createOrUpdateAddress();
-                                }
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
+                        if (_formKey.currentState!.validate()) {
+                          if (enablePinCode) {
+                            final response = await ApiService()
+                                .pinCodeCheck(
+                                context, zipCodeController.text);
+                            _showConfirmationAlert(context, response);
+                          } else {
+                            createOrUpdateAddress();
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
@@ -388,7 +388,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       height: 40, // Adjust height based on your design needs
       child: ListView.builder(
         scrollDirection:
-            Axis.horizontal, // Makes the ListView scroll horizontally
+        Axis.horizontal, // Makes the ListView scroll horizontally
         itemCount: locationItems.length, // The total number of items
         itemBuilder: (context, index) {
           final location = locationItems[index]; // Get the location data
@@ -396,12 +396,12 @@ class _AddAddressPage extends State<AddAddressPage> {
               selectedLocation == location['name']; // Selection logic
           return Padding(
             padding:
-                const EdgeInsets.only(right: 8.0), // Add spacing between items
+            const EdgeInsets.only(right: 8.0), // Add spacing between items
             child: GestureDetector(
               onTap: () {
                 setState(() {
                   selectedLocation =
-                      location['name']; // Update selected location
+                  location['name']; // Update selected location
                 });
               },
               child: _buildLocationButton(
@@ -464,7 +464,7 @@ class _AddAddressPage extends State<AddAddressPage> {
       registerResponse = await apiService.createOrUpdateAddress(
           context,
           firstNameController.text,
-          lastNameController.text,
+          '',
           widget.selectedAddress?.id,
           streetAddressController.text,
           phoneNumberController.text,
