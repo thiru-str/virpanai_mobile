@@ -305,7 +305,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           await apiService.orderDetail(context, widget.orderId);
       setState(() {
         _liveOrderDetailResponse = orderDetailResponse;
-        debugPrint('order status ${(_liveOrderDetailResponse?.data?.orderStatus ?? '').toLowerCase()}');
         apiLoading = false;
       });
     } catch (e) {
