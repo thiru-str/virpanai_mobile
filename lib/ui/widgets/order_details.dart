@@ -35,6 +35,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   bool apiLoading = true;
   bool completeOrderLoading = false;
 
+  String _selectedCompletionStatus = 'Delivered'; // default
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -174,37 +177,87 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       },
                     ),
                     Visibility(
-                      visible:
-                          (_liveOrderDetailResponse?.data?.orderStatus ?? '').toLowerCase()== 'processing',
+                      visible: (_liveOrderDetailResponse?.data?.orderStatus ?? '')
+                          .toLowerCase() ==
+                          'shipped',
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8),
-                        child: completeOrderLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
-                          onPressed: () async {
-                            if((_liveOrderDetailResponse?.data?.paymentMethod ?? '').toLowerCase() == 'cod') {
-                              _showPaymentConfirmation(context);
-                            }else {
-                              markAsComplete(context);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary, // Button color
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Update Order Status",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                            minimumSize: const Size(double.infinity, 60),
-                          ),
-                          child: Text(
-                            'Mark as Completed',
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            const SizedBox(height: 10),
+
+                            // Radio Buttons
+                            ...completionStatuses.keys.map((displayStatus) {
+                              return RadioListTile<String>(
+                                value: displayStatus,
+                                groupValue: _selectedCompletionStatus,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedCompletionStatus = value!;
+                                  });
+                                },
+                                title: Text(
+                                  displayStatus,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                activeColor: AppColors.primary,
+                                contentPadding: EdgeInsets.zero,
+                                dense: true, // 🔥 reduces height
+                                visualDensity: const VisualDensity(
+                                  vertical: -4, // 🔥 tighter spacing
+                                ),
+                              );
+                            }).toList(),
+
+                            const SizedBox(height: 12),
+
+                            // Button
+                            completeOrderLoading
+                                ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                                : ElevatedButton(
+                              onPressed: () async {
+                                if ((_liveOrderDetailResponse
+                                    ?.data?.paymentMethod ??
+                                    '')
+                                    .toLowerCase() ==
+                                    'cod') {
+                                  _showPaymentConfirmation(context);
+                                } else {
+                                  markAsComplete(context);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                minimumSize: const Size(double.infinity, 60),
+                              ),
+                              child: Text(
+                                'Update Status',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
+
                   ],
                 ),
               ),
@@ -217,10 +270,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       completeOrderLoading = true;
     });
     try {
+      final selectedApiStatus =
+      completionStatuses[_selectedCompletionStatus]!;
+
       final response = await ApiService().completeOrder(
         context,
         _liveOrderDetailResponse?.data?.orderId ?? '',
         _liveOrderDetailResponse?.data?.fulfillmentId ?? '',
+          selectedApiStatus
       );
 
       if ((response.message ?? '').isNotEmpty) {
@@ -248,6 +305,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           await apiService.orderDetail(context, widget.orderId);
       setState(() {
         _liveOrderDetailResponse = orderDetailResponse;
+        debugPrint('order status ${(_liveOrderDetailResponse?.data?.orderStatus ?? '').toLowerCase()}');
         apiLoading = false;
       });
     } catch (e) {
@@ -275,4 +333,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       },
     );
   }
+
+  final Map<String, String> completionStatuses = {
+    'Delivered': 'delivered',
+    'Partially Delivered': 'partially delivered',
+    'Canceled': 'canceled',
+    'Partially Canceled': 'partially canceled',
+  };
+
 }
+
+

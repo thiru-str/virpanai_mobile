@@ -6,12 +6,11 @@ import '../model/order_filter_result.dart';
 
 const Map<String, String> kDisplayToApi = {
   'Processing': 'fulfilled',
-  'Completed':  'delivered',
-  'Cancelled':  'cancelled',
+  'Delivered':  'delivered',
   'Shipped':  'shipped',
 };
 
-const List<String> kDisplayOrder = ['Processing', 'Completed', 'Cancelled','Shipped'];
+const List<String> kDisplayOrder = ['Processing', 'Delivered','Shipped'];
 
 String? displayFromApi(String api) {
   for (final e in kDisplayToApi.entries) {
@@ -27,11 +26,10 @@ Future<OrdersFilterResult?> showOrdersFilterSheet(
       bool singleDateSelection = false,
       DateTime? initialStart,
       DateTime? initialEnd,
-      List<String> initialStatuses = const [],
+      String? initialStatus,
       List<String> allStatuses = const [
         'Processing',
-        'Completed',
-        'Cancelled',
+        'Delivered',
         'Shipped',
       ],
     }) {
@@ -52,7 +50,7 @@ Future<OrdersFilterResult?> showOrdersFilterSheet(
       singleDateSelection: singleDateSelection,
       initialStart: initialStart,
       initialEnd: initialEnd,
-      initialStatuses: initialStatuses,
+      initialStatus: initialStatus,
       allStatuses: allStatuses,
     ),
   );
@@ -64,7 +62,7 @@ class _OrdersFilterSheet extends StatefulWidget {
   final bool singleDateSelection;
   final DateTime? initialStart;
   final DateTime? initialEnd;
-  final List<String> initialStatuses;
+  final String? initialStatus;
   final List<String> allStatuses;
 
   const _OrdersFilterSheet({
@@ -73,7 +71,7 @@ class _OrdersFilterSheet extends StatefulWidget {
     required this.singleDateSelection,
     this.initialStart,
     this.initialEnd,
-    required this.initialStatuses,
+    this.initialStatus,
     required this.allStatuses,
   });
 
@@ -89,7 +87,7 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
   DateTime? _rangeEnd;         // for range mode
   RangeSelectionMode _rangeMode = RangeSelectionMode.toggledOff;
 
-  late Set<String> _selectedDisplayStatuses;
+  String? _selectedDisplayStatus;
 
   @override
   void initState() {
@@ -107,10 +105,11 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
     }
 
     // statuses: initialStatuses are API values -> convert to display labels
-    _selectedDisplayStatuses = widget.initialStatuses
-        .map(displayFromApi)
-        .whereType<String>()
-        .toSet();
+    _selectedDisplayStatus =
+    widget.initialStatus != null
+        ? displayFromApi(widget.initialStatus!)
+        : null;
+
   }
 
 
@@ -120,8 +119,7 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
       _selectedDay = null;
       _rangeStart = null;
       _rangeEnd = null;
-      //_rangeMode = RangeSelectionMode.toggledOff;
-      _selectedDisplayStatuses.clear();
+      _selectedDisplayStatus = null;
     });
   }
 
@@ -159,9 +157,9 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
       OrdersFilterResult(
         startUtc: startUtc,
         endUtc: endUtc,
-        statuses: _selectedDisplayStatuses
-            .map((display) => kDisplayToApi[display]!)
-            .toList(),
+        status: _selectedDisplayStatus != null
+            ? kDisplayToApi[_selectedDisplayStatus!]
+            : null,
       ),
     );
   }
@@ -199,13 +197,6 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.showDate) ...[
-                    const SizedBox(height: 8),
-                    Text('Select Date', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 12),
-                    _buildCalendarCard(theme),
-                    const SizedBox(height: 24),
-                  ],
                   if (widget.showStatus) ...[
                     Text('Order Status', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
@@ -213,17 +204,14 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
                       spacing: 12,
                       runSpacing: 12,
                       children: kDisplayOrder.map((display) {
-                        final selected = _selectedDisplayStatuses.contains(display);
+                        final selected = _selectedDisplayStatus == display;
+
                         return ChoiceChip(
                           label: Text(display),
                           selected: selected,
                           onSelected: (_) {
                             setState(() {
-                              if (selected) {
-                                _selectedDisplayStatuses.remove(display);
-                              } else {
-                                _selectedDisplayStatuses.add(display);
-                              }
+                              _selectedDisplayStatus = display;
                             });
                           },
                           selectedColor: const Color(0xFF0B8F79),
@@ -232,11 +220,23 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
                             fontWeight: FontWeight.w500,
                           ),
                           backgroundColor: const Color(0xFFEDEDED),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                         );
                       }).toList(),
                     ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (widget.showDate) ...[
+                    const SizedBox(height: 8),
+                    Text('Select Date', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+                    _buildCalendarCard(theme),
                     const SizedBox(height: 24),
                   ],
 

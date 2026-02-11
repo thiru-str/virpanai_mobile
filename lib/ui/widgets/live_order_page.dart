@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/dealer_response.dart';
@@ -16,6 +18,7 @@ import 'package:waioz/utility/shared_preferences_util.dart';
 import '../../api/api_service.dart';
 import '../../model/view_cart_model.dart';
 import '../../utility/page_route_utils.dart';
+import '../welcome_page.dart';
 import 'order_details.dart';
 
 class LiveOrderPage extends StatefulWidget {
@@ -193,13 +196,29 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                               style:
                                   TextStyle(color: Colors.white, fontSize: 14),
                             ),
-                            Text(
-                              _liveOrdersResponse?.ledgerBalance ?? '',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Text(
+                                  _liveOrdersResponse?.ledgerBalance ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (_liveOrdersResponse?.hasPending==true)
+                                  Positioned.fill(
+                                    child: ClipRect(
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                        child: Container(
+                                          color: Colors.black.withOpacity(0.1),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                             const Text(
                               'Total Value Of All Orders',
@@ -273,6 +292,10 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
             return false;
           },
           child: ClearPendingOrdersDialog(
+            onLogOut: (){
+              SharedPreferencesUtil().clear();
+              PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+            },
             onJoin: () async {
               PageRouteUtils.push(context, const PendingOrderDetailsPage());
             },

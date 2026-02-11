@@ -29,6 +29,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
   String? endUtc = '';
   DateTime? startTimeUtc;
   DateTime? endTimeUtc;
+  String? status = 'shipped';
   late StreamSubscription<ReloadEvent> _eventSubscription;
 
   final int _limit = 10;
@@ -77,6 +78,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
       context,
       startUtc ?? '',
       endUtc ?? '',
+      status??'shipped',
       limit: _limit,
       offset: _offset,
     );
@@ -134,9 +136,10 @@ class _PastOrderPageState extends State<PastOrderPage> {
                     final result = await showOrdersFilterSheet(
                       context,
                       showDate: true,
-                      showStatus: false,
+                      showStatus: true,
                       initialStart: startTimeUtc,
-                      initialEnd: endTimeUtc
+                      initialEnd: endTimeUtc,
+                      initialStatus: status,
                     );
                     if (result != null) {
                       startUtc = result.startUtc != null
@@ -152,6 +155,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
                       setState(() {
                         startTimeUtc = result.startUtc;
                         endTimeUtc = result.endUtc;
+                        status = result.status;
                       });
 
                       _resetAndReload();
@@ -177,6 +181,7 @@ class _PastOrderPageState extends State<PastOrderPage> {
                   PageRouteUtils.pushWithFade(
                     context,
                     PastOrderDetailsPage(
+                      status: status??'',
                       date: item.formatedDate ?? '',
                     ),
                   );

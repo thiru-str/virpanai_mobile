@@ -804,9 +804,9 @@ class ApiService {
     );
   }
 
-  Future<CompleteOrderResponse> completeOrder(BuildContext context, String orderId,String fulfillmentId) async {
+  Future<CompleteOrderResponse> completeOrder(BuildContext context, String orderId,String fulfillmentId,String additionalStatus) async {
     await addToken();
-    return _makePostRequest('dealer/orders/fulfillments//mark-as-delivered', {"order_id":orderId,"fulfillment_id": fulfillmentId},
+    return _makePostRequest('dealer/orders/fulfillments/mark-as-delivered', {"order_id":orderId,"fulfillment_id": fulfillmentId,'additional_status':additionalStatus},
             (data) => CompleteOrderResponse.fromJson(data), context);
   }
 
@@ -823,11 +823,11 @@ class ApiService {
   }
 
   Future<PastOrderDetailResponse> pastOrderDetail(
-      BuildContext context, String date,List<String> status) async {
+      BuildContext context, String date,String status) async {
     await addToken();
     final queryParams = <String, String>{};
     if (status.isNotEmpty) {
-      queryParams['status'] = status.join(',') ?? '';
+      queryParams['status'] = status;
     }
     return _makeGetRequest<PastOrderDetailResponse>(
       'dealer/get-past-orders/$date',
@@ -839,20 +839,23 @@ class ApiService {
   }
 
   Future<PendingOrderDetailResponse> pendingOrderDetail(
-      BuildContext context) async {
+      BuildContext context,{required int limit,required int offset}) async {
     await addToken();
 
     return _makeGetRequest<PendingOrderDetailResponse>(
       'dealer/get-pending-orders',
       null,
-          null,
+        {
+          'limit': limit,
+          'offset': offset,
+        },
           (json) => PendingOrderDetailResponse.fromJson(json),
       context,
     );
   }
 
   Future<PastOrderResponse> pastOrders(
-      BuildContext context,String startUtc,String endUtc, {
+      BuildContext context,String startUtc,String endUtc,String status, {
         required int limit,
         required int offset,
       }) async {
@@ -863,6 +866,9 @@ class ApiService {
     }
     if (endUtc.isNotEmpty) {
       queryParams['end_date'] = endUtc;
+    }
+    if (status.isNotEmpty) {
+      queryParams['status'] = status;
     }
     queryParams['limit'] = limit;
     queryParams['offset'] = offset;

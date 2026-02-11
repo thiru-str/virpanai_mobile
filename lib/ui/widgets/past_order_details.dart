@@ -22,7 +22,8 @@ import 'order_details.dart';
 
 class PastOrderDetailsPage extends StatefulWidget {
   final String date;
-  const PastOrderDetailsPage({Key? key,required this.date}) : super(key: key);
+  final String status;
+  const PastOrderDetailsPage({Key? key,required this.date,required this.status}) : super(key: key);
 
   @override
   State<PastOrderDetailsPage> createState() => _PastOrderDetailsPageState();
@@ -33,7 +34,6 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
   PastOrderDetailResponse? _pastOrderDetailResponse;
   PastOrderDetailResponse? _filteredPastOrderDetailResponse;
   bool apiLoading = true;
-  List<String> initialStatuses = [];
   late StreamSubscription<ReloadEvent> _eventSubscription;
   TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -152,32 +152,32 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
                       ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () async {
-                      final result = await showOrdersFilterSheet(
-                        context,
-                        showDate: false,
-                        showStatus: true,
-                        initialStatuses: initialStatuses,
-                      );
-                      if (result != null) {
-                        debugPrint('Result: $result');
-                        setState(() {
-                          initialStatuses = result.statuses;
-                        });
-                        getApis();
-                      }
-                    },
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF005B65),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.tune, color: Colors.white, size: 20),
-                    ),
-                  ),
+                  // GestureDetector(
+                  //   onTap: () async {
+                  //     final result = await showOrdersFilterSheet(
+                  //       context,
+                  //       showDate: false,
+                  //       showStatus: true,
+                  //       initialStatuses: initialStatuses,
+                  //     );
+                  //     if (result != null) {
+                  //       debugPrint('Result: $result');
+                  //       setState(() {
+                  //         initialStatuses = result.statuses;
+                  //       });
+                  //       getApis();
+                  //     }
+                  //   },
+                  //   child: Container(
+                  //     height: 40,
+                  //     width: 40,
+                  //     decoration: const BoxDecoration(
+                  //       color: Color(0xFF005B65),
+                  //       shape: BoxShape.circle,
+                  //     ),
+                  //     child: const Icon(Icons.tune, color: Colors.white, size: 20),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -231,7 +231,7 @@ class _PastOrderDetailsPageState extends State<PastOrderDetailsPage> {
   void getApis() async {
     try {
       final ApiService apiService = ApiService();
-      final pastOrderDetailResponse = await apiService.pastOrderDetail(context,widget.date,initialStatuses);
+      final pastOrderDetailResponse = await apiService.pastOrderDetail(context,widget.date,widget.status);
       setState(() {
         _pastOrderDetailResponse = pastOrderDetailResponse;
         apiLoading = false;

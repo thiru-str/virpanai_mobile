@@ -1,11 +1,11 @@
 class OrdersFilterResult {
   final DateTime? startUtc;
   final DateTime? endUtc;
-  final List<String> statuses;
+  final String? status;
 
-  OrdersFilterResult({this.startUtc, this.endUtc, required this.statuses});
+  OrdersFilterResult({this.startUtc, this.endUtc, required this.status});
 
   @override
   String toString() =>
-      'OrdersFilterResult(startUtc: $startUtc, endUtc: $endUtc, statuses: $statuses)';
+      'OrdersFilterResult(startUtc: $startUtc, endUtc: $endUtc, statuses: $status)';
 }

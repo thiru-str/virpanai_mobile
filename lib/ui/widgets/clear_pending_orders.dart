@@ -6,11 +6,13 @@ import '../../utility/app_colors.dart';
 
 class ClearPendingOrdersDialog extends StatelessWidget {
   final VoidCallback onJoin;
+  final VoidCallback onLogOut;
   final bool loading;
 
   const ClearPendingOrdersDialog({
     super.key,
     required this.onJoin,
+    required this.onLogOut,
     this.loading = false,
   });
 
@@ -73,6 +75,11 @@ class ClearPendingOrdersDialog extends StatelessWidget {
                 ),
               ),
             ),
+
+            const SizedBox(height: 10),
+            
+            GestureDetector(
+                onTap:onLogOut, child: Text('Logout',style: TextStyle(decoration: TextDecoration.underline,decorationColor:AppColors.primary,color: AppColors.primary,fontSize: 16,fontWeight: FontWeight.bold),))
 
           ],
         ),

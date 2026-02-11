@@ -36,21 +36,39 @@ class _PendingOrderDetailsPageState extends State<PendingOrderDetailsPage> {
   late StreamSubscription<ReloadEvent> _eventSubscription;
   String _searchQuery = '';
 
+  int _totalCount = 0;
+
+  final int _limit = 10;
+  int _offset = 0;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+
+  final ScrollController _scrollController = ScrollController();
+
+
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initApis();
     listenToEvents();
-  }
 
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoadingMore &&
+          _hasMore) {
+        loadMore();
+      }
+    });
+  }
 
 
 
   @override
   void dispose() {
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -63,6 +81,21 @@ class _PendingOrderDetailsPageState extends State<PendingOrderDetailsPage> {
   }
 
   Future<void> initApis() async {
+    _offset = 0;
+    _hasMore = true;
+    apiLoading = true;
+    setState(() {});
+    await getApis();
+  }
+
+  void loadMore() {
+    if (!_hasMore || _isLoadingMore) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    _offset += _limit;
     getApis();
   }
 
@@ -94,54 +127,83 @@ class _PendingOrderDetailsPageState extends State<PendingOrderDetailsPage> {
                 ),
               )
                   : ListView.builder(
-                itemCount: displayResponse?.pendingOrderDetails?.length ?? 0,
+                controller: _scrollController,
+                itemCount: (displayResponse?.pendingOrderDetails?.length ?? 0) + 1,
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  final item = displayResponse?.pendingOrderDetails?[index];
-                  return GestureDetector(
-                    onTap: () {
-                      PageRouteUtils.pushWithFade(
-                        context,
-                        OrderDetailsPage(orderId: item?.id ?? ''),
-                      );
-                    },
-                    child: OrderItemCard(
-                      imageUrl: item?.shopImage ?? '',
-                      storeName: item?.shopName ?? '',
-                      storeAddress: item?.shopAddress ?? '',
-                      phoneNumber: item?.phone ?? '',
-                      productCount: item?.noOfProducts ?? '',
-                      totalPrice: item?.totalPrice ?? '',
-                      statusText: item?.orderStatus ?? '',
-                      paymentMode: item?.paymentMethod,
-                        orderDate: item?.date??'',
-                        orderId: '#${(item?.displayId??0).toString()}'
-                    ),
-                  );
+                  final list = displayResponse?.pendingOrderDetails ?? [];
+
+                  if (index < list.length) {
+                    final item = list[index];
+                    return GestureDetector(
+                      onTap: () {
+                        PageRouteUtils.pushWithFade(
+                          context,
+                          OrderDetailsPage(orderId: item.id ?? ''),
+                        );
+                      },
+                      child: OrderItemCard(
+                        imageUrl: item.shopImage ?? '',
+                        storeName: item.shopName ?? '',
+                        storeAddress: item.shopAddress ?? '',
+                        phoneNumber: item.phone ?? '',
+                        productCount: item.noOfProducts ?? '',
+                        totalPrice: item.totalPrice ?? '',
+                        statusText: item.orderStatus ?? '',
+                        paymentMode: item.paymentMethod,
+                        orderDate: item.date ?? '',
+                        orderId: '#${(item.displayId ?? 0)}',
+                      ),
+                    );
+                  }
+
+                  // Loader at bottom
+                  return _isLoadingMore
+                      ?  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+                  )
+                      : const SizedBox();
                 },
-              ),
+              )
+              ,
             ),
           ],
         ),
       ),
     );
   }
-  void getApis() async {
+  Future<void> getApis() async {
     try {
       final ApiService apiService = ApiService();
-      final pastOrderDetailResponse = await apiService.pendingOrderDetail(context);
+
+      final response = await apiService.pendingOrderDetail(
+        context,
+        limit: _limit,
+        offset: _offset,
+      );
+
       setState(() {
-        _pastOrderDetailResponse = pastOrderDetailResponse;
-        apiLoading = false;
-        if (_pastOrderDetailResponse?.pendingOrderDetails?.isEmpty??false) {
-          eventBus.fire(ClosePendingOrdersDialogEvent());
+        _totalCount = response.count ?? 0;
+
+        if (_offset == 0) {
+          _pastOrderDetailResponse = response;
+        } else {
+          _pastOrderDetailResponse?.pendingOrderDetails
+              ?.addAll(response.pendingOrderDetails ?? []);
         }
+
+        apiLoading = false;
+        _isLoadingMore = false;
+
+        _hasMore = (_offset + _limit) < _totalCount;
       });
     } catch (e) {
       setState(() {
         apiLoading = false;
+        _isLoadingMore = false;
       });
-      print(e);
     }
   }
+
 }
