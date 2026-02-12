@@ -119,7 +119,10 @@ class _OrdersFilterSheetState extends State<_OrdersFilterSheet> {
       _selectedDay = null;
       _rangeStart = null;
       _rangeEnd = null;
-      _selectedDisplayStatus = null;
+      _selectedDisplayStatus =
+      widget.initialStatus != null
+          ? displayFromApi(widget.initialStatus!)
+          : null;
     });
   }
 
