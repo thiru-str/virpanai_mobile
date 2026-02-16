@@ -13,6 +13,7 @@ class CartItemCard extends StatelessWidget {
   final String size;
   final String color;
   final String price;
+  final String error;
   final int quantity;
   final bool isUpdating;
   final Function(int newQty) onUpdateQuantity;
@@ -26,6 +27,7 @@ class CartItemCard extends StatelessWidget {
     required this.size,
     required this.color,
     required this.price,
+    this.error = '',
     required this.quantity,
     this.isUpdating = false,
     required this.onUpdateQuantity,
@@ -169,7 +171,12 @@ class CartItemCard extends StatelessWidget {
                   ),
                 ],
               ),
-
+              Visibility(
+                visible: error.isNotEmpty,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0,right: 8.0,top: 8.0),
+                  child: Text(error,style: FontUtils.secondaryFontStyle(color: Colors.red),maxLines: 2,),),
+              )
             ],
           ),
         ),
