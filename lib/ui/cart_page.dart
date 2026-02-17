@@ -218,16 +218,104 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                 //updateCart(0,cartItem.id!,index);
                                 removeCart(cartItem.id!,index);
                               },
-                              onUpdateQuantity: (newQty) {
-                              setState(() {
-                                cartResponse!.cart!.items![index].isUpdating = true;
-                              });
-                              if (newQty == 0) {
-                                removeCart(cartItem.id!, index);
-                              } else {
-                                updateCart(newQty, cartItem.id!, index);
-                              }
-                            },
+                              onUpdateQuantity: (newQty) async {
+                                final item = cartResponse!.cart!.items![index];
+                                final stockQty = item.inventoryQuantity ?? 0;
+
+                                setState(() => item.isUpdating = true);
+
+                                if (newQty <= 0) {
+                                  removeCart(item.id!, index);
+                                  return;
+                                }
+
+                                if (stockQty == 0) {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(
+                                        'Out of Stock',
+                                        style: FontUtils.primaryFontStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      content: Text(
+                                        'This product is currently not available.',
+                                        style: FontUtils.secondaryFontStyle(),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: Text(
+                                            'OK',
+                                            style: FontUtils.primaryFontStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  setState(() => item.isUpdating = false);
+                                  return;
+                                }
+
+
+                                if (newQty > stockQty) {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(
+                                        'Stock Update',
+                                        style: FontUtils.primaryFontStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      content: Text(
+                                        'Only $stockQty items available in stock.\n'
+                                            'Do you want to update quantity to $stockQty?',
+                                        style: FontUtils.secondaryFontStyle(),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, false),
+                                          child: Text(
+                                            'Cancel',
+                                            style: FontUtils.primaryFontStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, true),
+                                          child: Text(
+                                            'Update',
+                                            style: FontUtils.primaryFontStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirmed == true) {
+                                    updateCart(stockQty, item.id!, index);
+                                  } else {
+                                    setState(() => item.isUpdating = false);
+                                  }
+                                  return;
+                                }
+
+                                updateCart(newQty, item.id!, index);
+                              },
+
                             );
                           },
                         ),
@@ -776,10 +864,10 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       });
       PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
     } catch (e) {
+      getCartApi();
       setState(() {
         cartLoading = false;
       });
-      print(e);
     }
   }
 

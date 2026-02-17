@@ -300,6 +300,7 @@ class Item {
   Raw? rawWriteOffTotal;
   bool? isUpdating;
   String? error;
+  int? inventoryQuantity;
 
   Item({
     this.id,
@@ -370,7 +371,8 @@ class Item {
     this.rawReturnDismissedTotal,
     this.rawWriteOffTotal,
     this.isUpdating = false,
-    this.error
+    this.error,
+    this.inventoryQuantity
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
@@ -442,6 +444,7 @@ class Item {
     rawReturnDismissedTotal: json["raw_return_received_total"] == null ? null : Raw.fromJson(json["raw_return_received_total"]),
     rawWriteOffTotal: json["raw_write_off_total"] == null ? null : Raw.fromJson(json["raw_write_off_total"]),
     error: json["error"],
+    inventoryQuantity: json["inventory_quantity"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -513,6 +516,7 @@ class Item {
     "raw_return_dismissed_total": rawReturnDismissedTotal,
     "raw_write_off_total": rawWriteOffTotal,
     "error": error,
+    "inventory_quantity": inventoryQuantity,
   };
 }
 
