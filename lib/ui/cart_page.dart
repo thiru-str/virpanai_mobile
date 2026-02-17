@@ -100,12 +100,31 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
         paymentProviders = global!.paymentProvider!;
       });
     }
+    getCustomerInfo();
   }
 
   Future<Global?> getGlobal() async {
     dynamic global = await SharedPreferencesUtil().getMap('global');
     if (global != null) {
       return Global.fromJson(global);
+    }
+    return null;
+  }
+
+  RegisterResponse.Customer? customer;
+  Future<void> getCustomerInfo() async {
+    customer = await getCustomerResponse();
+    if (customer != null) {
+      setState(() {
+        customer;
+      });
+    }
+  }
+
+  Future<RegisterResponse.Customer?> getCustomerResponse() async {
+    dynamic userData = await SharedPreferencesUtil().getMap('customer');
+    if (userData != null) {
+      return RegisterResponse.Customer.fromJson(userData);
     }
     return null;
   }
@@ -880,7 +899,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       'order_id': orderId,
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
-      'prefill': {'contact': '8888888888', 'email': 'test@razorpay.com'},
+      'prefill': {'contact': customer?.phone??'', 'email': customer?.email??''},
       'theme': {'color': AppUtils.colorToHex(AppColors.primary)},
       'experiments.upi_turbo': true,
       'external': {
