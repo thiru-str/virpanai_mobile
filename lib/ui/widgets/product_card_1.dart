@@ -33,12 +33,12 @@ class _ProductCard1State extends State<ProductCard1> {
 
     Variant? cheapest;
     for (final v in p.variants!) {
-      final calc = double.tryParse(v.calculatedPrice?.rawCalculatedAmount?.value ?? '');
+      final calc = double.tryParse(v.calculatedPrice?.calculatedAmount?.toString() ?? '');
       if (calc == null) continue;
       if (cheapest == null) {
         cheapest = v;
       } else {
-        final cheapestCalc = double.tryParse(cheapest.calculatedPrice?.rawCalculatedAmount?.value ?? '') ?? double.infinity;
+        final cheapestCalc = double.tryParse(cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '') ?? double.infinity;
         if (calc < cheapestCalc) {
           cheapest = v;
         }
@@ -56,11 +56,11 @@ class _ProductCard1State extends State<ProductCard1> {
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null
-        ? double.tryParse(cheapest.calculatedPrice?.rawCalculatedAmount?.value ?? '')
+        ? double.tryParse(cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '')
         : null;
 
     final orig = cheapest != null
-        ? double.tryParse(cheapest.calculatedPrice?.rawOriginalAmount?.value ?? '')
+        ? double.tryParse(cheapest.calculatedPrice?.originalAmount?.toString() ?? '')
         : null;
 
     final hasDiscount = (orig != null && calc != null && orig > calc);
