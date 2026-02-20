@@ -247,41 +247,59 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
                                 return;
                               }
 
-
-                              if (stockQty == 0) {
-                                removeCart(item.id!, index);
-                                return;
-                              }
-
-                              if (currentQty > stockQty) {
-                                final confirmed = await showDialog<bool>(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: Text('Stock Update',style: FontUtils.primaryFontStyle(color: AppColors.primary,fontWeight: FontWeight.bold),),
-                                    content: Text(
-                                      'This product now has only $stockQty in stock. '
-                                          'Do you want to update your cart quantity to $stockQty?',
-                                      style: FontUtils.secondaryFontStyle(),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context, false),
-                                        child: Text('Cancel',style: FontUtils.primaryFontStyle(color: AppColors.primary,fontWeight: FontWeight.bold),),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context, true),
-                                        child: Text('Yes, Update',style: FontUtils.primaryFontStyle(color: AppColors.primary,fontWeight: FontWeight.bold),),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (confirmed == true) {
-                                  updateCart(stockQty, item.id!, index);
-                                } else {
-                                  setState(() => item.isUpdating = false);
+                              if(!(item.inStock??false)) {
+                                if (stockQty == 0) {
+                                  removeCart(item.id!, index);
+                                  return;
                                 }
-                                return;
+
+                                if (currentQty > stockQty) {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) =>
+                                        AlertDialog(
+                                          title: Text('Stock Update',
+                                            style: FontUtils.primaryFontStyle(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.bold),),
+                                          content: Text(
+                                            'This product now has only $stockQty in stock. '
+                                                'Do you want to update your cart quantity to $stockQty?',
+                                            style: FontUtils
+                                                .secondaryFontStyle(),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
+                                              child: Text('Cancel',
+                                                style: FontUtils
+                                                    .primaryFontStyle(
+                                                    color: AppColors.primary,
+                                                    fontWeight: FontWeight
+                                                        .bold),),
+                                            ),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
+                                              child: Text('Yes, Update',
+                                                style: FontUtils
+                                                    .primaryFontStyle(
+                                                    color: AppColors.primary,
+                                                    fontWeight: FontWeight
+                                                        .bold),),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+
+                                  if (confirmed == true) {
+                                    updateCart(stockQty, item.id!, index);
+                                  } else {
+                                    setState(() => item.isUpdating = false);
+                                  }
+                                  return;
+                                }
                               }
 
 
