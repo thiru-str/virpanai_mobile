@@ -1,5 +1,5 @@
 class AppConfig {
-  static const String appName = 'VirpanAi';
+  static const String appName = 'SVR Cashews';
   static const String baseUrl = 'https://api.svrcashew.com/';
   // static const String baseUrl = 'https://virpanai.api.waioz.com/';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
