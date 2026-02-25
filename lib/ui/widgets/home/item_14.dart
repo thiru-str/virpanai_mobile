@@ -20,85 +20,94 @@ class Item14 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasViewAll = (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 Title + View All
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if (hasViewAll)
-                  GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 🔹 Horizontal scroll
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Title + View All
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item14Card(
-                      layoutData: content.layoutData![i],
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  if (hasViewAll)
+                    GestureDetector(
                       onTap: () {
-                        RedirectUtils.handleContentRedirect(
+                        RedirectUtils.handleContentRedirectViewAll(
                           context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
+                          redirectData: content.redirectData!,
                         );
                       },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle!,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
                     ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
                 ],
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 16),
+
+            // 🔹 Horizontal scroll
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (int i = 0;
+                        i < (content.layoutData?.length ?? 0);
+                        i++) ...[
+                      _Item14Card(
+                        layoutData: content.layoutData![i],
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: content.layoutData![i],
+                          );
+                        },
+                      ),
+                      if (i != content.layoutData!.length - 1)
+                        const SizedBox(width: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -116,7 +125,7 @@ class _Item14Card extends StatelessWidget {
 
   bool get _hasDiscount =>
       layoutData.prices?.discountedPrice != null &&
-          layoutData.prices!.discountedPrice != "0";
+      layoutData.prices!.discountedPrice != "0";
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +134,7 @@ class _Item14Card extends StatelessWidget {
     final original = double.tryParse(prices?.originalPrice ?? "0") ?? 0;
     final hasDiscount = original > selling && selling > 0;
     final percentOff =
-    hasDiscount ? (((original - selling) / original) * 100).round() : null;
+        hasDiscount ? (((original - selling) / original) * 100).round() : null;
 
     return GestureDetector(
       onTap: onTap,
@@ -138,23 +147,23 @@ class _Item14Card extends StatelessWidget {
             // 🔹 Product Image
             ClipRRect(
               borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(0)),
+                  const BorderRadius.vertical(top: Radius.circular(0)),
               child: Container(
                 height: 240,
                 color: Colors.grey[100],
                 child: (layoutData.image ?? '').isEmpty
                     ? const ImageFallbackWidget(
-                  h: 240,
-                  w: double.infinity,
-                  fit: BoxFit.contain,
-                )
+                        h: 240,
+                        w: double.infinity,
+                        fit: BoxFit.contain,
+                      )
                     : CachedNetworkImage(
-                  imageUrl: layoutData.image!,
-                  fit: BoxFit.contain,
-                  width: double.infinity,
-                  errorWidget: (c, u, e) =>
-                  const ImageFallbackWidget(h: 140, w: double.infinity),
-                ),
+                        imageUrl: layoutData.image!,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        errorWidget: (c, u, e) => const ImageFallbackWidget(
+                            h: 140, w: double.infinity),
+                      ),
               ),
             ),
 
@@ -228,7 +237,3 @@ class _Item14Card extends StatelessWidget {
     );
   }
 }
-
-
-
-

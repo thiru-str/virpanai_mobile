@@ -22,89 +22,97 @@ class Item3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 Title + redirect
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    content?.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
-                  GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content!.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          content?.layoutRedirectTitle ?? '',
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
-          // 🔹 Horizontal Scroll
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: List.generate(
-                content?.layoutData?.length ?? 0,
-                    (i) {
-                  final layoutData = content!.layoutData![i];
-                  return GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirect(
-                        context: context,
-                        layoutOption: content.layoutOption!,
-                        layoutData: content.layoutData![i],
-                      );
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: i == content.layoutData!.length - 1 ? 0 : 16,
+    return Container(
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Title + redirect
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      content?.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
                       ),
-                      child: _AlignedItemCard(layoutData: layoutData),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(width: 4),
+                  if ((content?.layoutRedirectTitle ?? '').isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirectViewAll(
+                          context: context,
+                          redirectData: content!.redirectData!,
+                        );
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            content?.layoutRedirectTitle ?? '',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-        ],
+
+            // 🔹 Horizontal Scroll
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: List.generate(
+                  content?.layoutData?.length ?? 0,
+                  (i) {
+                    final layoutData = content!.layoutData![i];
+                    return GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption!,
+                          layoutData: content.layoutData![i],
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: i == content.layoutData!.length - 1 ? 0 : 16,
+                        ),
+                        child: _AlignedItemCard(layoutData: layoutData),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
-
   }
 }
 
@@ -132,11 +140,11 @@ class _AlignedItemCard extends StatelessWidget {
                 color: AppColors.secondary.withOpacity(0.15),
                 child: (imageUrl.isNotEmpty)
                     ? CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) =>
-                      ImageFallbackWidget(h: 70, w: 70),
-                )
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) =>
+                            ImageFallbackWidget(h: 70, w: 70),
+                      )
                     : ImageFallbackWidget(h: 70, w: 70),
               ),
             ),
@@ -148,7 +156,8 @@ class _AlignedItemCard extends StatelessWidget {
           ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: isSmallScreen ? 32 : 36, // reserve space for 2 lines
-              maxHeight: isSmallScreen ? 40 : 44, // allows wrapping without clipping
+              maxHeight:
+                  isSmallScreen ? 40 : 44, // allows wrapping without clipping
             ),
             child: Text(
               layoutData.title ?? '',
@@ -165,6 +174,3 @@ class _AlignedItemCard extends StatelessWidget {
     );
   }
 }
-
-
-

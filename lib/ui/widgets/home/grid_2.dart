@@ -17,12 +17,17 @@ class Grid2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<LayoutDatum> items = content.layoutData!.take(15).toList(); // Max 5x3 = 15 items
+    final List<LayoutDatum> items =
+        content.layoutData!.take(15).toList(); // Max 5x3 = 15 items
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: backgroundDecoration,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppUtils.buildLayoutBackground(content)==null?8.0:16),
+        padding: containerPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -146,11 +151,10 @@ class _Grid2Card extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: (imageUrl.isNotEmpty)
                   ? CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                errorWidget: (context, url, error) =>
-                    _fallbackWidget(),
-              )
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => _fallbackWidget(),
+                    )
                   : _fallbackWidget(),
             ),
           ),
@@ -193,4 +197,3 @@ class _Grid2Card extends StatelessWidget {
     );
   }
 }
-

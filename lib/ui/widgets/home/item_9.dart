@@ -56,11 +56,15 @@ class _Item9State extends State<Item9> {
   @override
   Widget build(BuildContext context) {
     final content = widget.content;
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: backgroundDecoration,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+        padding: containerPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,11 +119,13 @@ class _Item9State extends State<Item9> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                  for (int i = 0;
+                      i < (content.layoutData?.length ?? 0);
+                      i++) ...[
                     _Item9Card(
                       layoutData: content.layoutData![i],
-                      cartQty: variantQtyMap[
-                      content.layoutData![i].variantDetails?.variantId] ??
+                      cartQty: variantQtyMap[content
+                              .layoutData![i].variantDetails?.variantId] ??
                           content.layoutData![i].cartDetails?.quantity ??
                           0,
                       onCartQtyChanged: widget.onCartQtyChanged,
@@ -170,7 +176,7 @@ class _Item9Card extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
+                    const BorderRadius.vertical(top: Radius.circular(16)),
                 child: CachedNetworkImage(
                   imageUrl: layoutData.image ?? '',
                   height: 150,
@@ -189,7 +195,7 @@ class _Item9Card extends StatelessWidget {
                   left: 6,
                   child: Container(
                     padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade800,
                       borderRadius: BorderRadius.circular(12),
@@ -207,8 +213,8 @@ class _Item9Card extends StatelessWidget {
               Positioned(
                 top: 6,
                 right: 6,
-                child: Icon(Icons.favorite_border,
-                    size: 20, color: Colors.grey),
+                child:
+                    Icon(Icons.favorite_border, size: 20, color: Colors.grey),
               ),
             ],
           ),
@@ -249,9 +255,7 @@ class _Item9Card extends StatelessWidget {
             child: Row(
               children: List.generate(5, (i) {
                 return Icon(
-                  i < (layoutData.rating ?? 0)
-                      ? Icons.star
-                      : Icons.star_border,
+                  i < (layoutData.rating ?? 0) ? Icons.star : Icons.star_border,
                   color: Colors.amber,
                   size: 16,
                 );
@@ -264,40 +268,40 @@ class _Item9Card extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: cartQty > 0
                 ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _qtyButton(Icons.remove, () {
-                  if (cartQty > 0) {
-                    onCartQtyChanged?.call(-1, variantId);
-                  }
-                }),
-                Text(
-                  '$cartQty',
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                _qtyButton(Icons.add, () {
-                  onCartQtyChanged?.call(1, variantId);
-                }),
-              ],
-            )
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _qtyButton(Icons.remove, () {
+                        if (cartQty > 0) {
+                          onCartQtyChanged?.call(-1, variantId);
+                        }
+                      }),
+                      Text(
+                        '$cartQty',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      _qtyButton(Icons.add, () {
+                        onCartQtyChanged?.call(1, variantId);
+                      }),
+                    ],
+                  )
                 : SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  onCartQtyChanged?.call(1, variantId);
-                },
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade400),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        onCartQtyChanged?.call(1, variantId);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("Add To Cart"),
+                    ),
                   ),
-                ),
-                child: const Text("Add To Cart"),
-              ),
-            ),
           ),
         ],
       ),

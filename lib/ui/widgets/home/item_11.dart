@@ -9,7 +9,6 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
 
-
 class Item11 extends StatelessWidget {
   final Content content;
 
@@ -21,86 +20,94 @@ class Item11 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasViewAll = (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 Header: Title + View All
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if (hasViewAll)
-                  GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // 🔹 Horizontal list (adaptive height)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Header: Title + View All
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item11Card(
-                      layoutData: content.layoutData![i],
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  if (hasViewAll)
+                    GestureDetector(
                       onTap: () {
-                        RedirectUtils.handleContentRedirect(
+                        RedirectUtils.handleContentRedirectViewAll(
                           context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
+                          redirectData: content.redirectData!,
                         );
                       },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle!,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
                     ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
                 ],
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 12),
+
+            // 🔹 Horizontal list (adaptive height)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (int i = 0;
+                        i < (content.layoutData?.length ?? 0);
+                        i++) ...[
+                      _Item11Card(
+                        layoutData: content.layoutData![i],
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: content.layoutData![i],
+                          );
+                        },
+                      ),
+                      if (i != content.layoutData!.length - 1)
+                        const SizedBox(width: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -131,7 +138,7 @@ class _Item11CardState extends State<_Item11Card> {
     final original = double.tryParse(prices?.originalPrice ?? "0") ?? 0;
     final hasDiscount = original > selling && selling > 0;
     final percentOff =
-    hasDiscount ? (((original - selling) / original) * 100).round() : null;
+        hasDiscount ? (((original - selling) / original) * 100).round() : null;
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -157,17 +164,16 @@ class _Item11CardState extends State<_Item11Card> {
               children: [
                 ClipRRect(
                   borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: SizedBox(
-                    height: 150,
-                    child: CachedNetworkImage(
-                      imageUrl: data.image??'',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorWidget: (c, u, e) =>
-                      const ImageFallbackWidget(h: 150, w: double.infinity),
-                    )
-                  ),
+                      height: 150,
+                      child: CachedNetworkImage(
+                        imageUrl: data.image ?? '',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorWidget: (c, u, e) => const ImageFallbackWidget(
+                            h: 150, w: double.infinity),
+                      )),
                 ),
 
                 // 🔹 Discount badge
@@ -243,8 +249,7 @@ class _Item11CardState extends State<_Item11Card> {
 
             // 🔹 Description
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
               child: Text(
                 data.subTitle ?? '',
                 style: FontUtils.secondaryFontStyle(
@@ -258,8 +263,7 @@ class _Item11CardState extends State<_Item11Card> {
 
             // 🔹 Price Row
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
               child: Row(
                 children: [
                   Text(
@@ -274,7 +278,8 @@ class _Item11CardState extends State<_Item11Card> {
                     Padding(
                       padding: const EdgeInsets.only(left: 6.0),
                       child: Text(
-                        CurrencyUtil.appendCurrency(original.toStringAsFixed(0)),
+                        CurrencyUtil.appendCurrency(
+                            original.toStringAsFixed(0)),
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -316,6 +321,3 @@ class _Item11CardState extends State<_Item11Card> {
     );
   }
 }
-
-
-
