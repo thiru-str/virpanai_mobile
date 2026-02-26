@@ -1,15 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../../../model/home_page_response.dart';
 import '../../../utility/app_utils.dart';
-import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
-import '../../product_detail_page.dart';
-import '../../product_page.dart';
 
 class Item3 extends StatelessWidget {
   final Content content;
@@ -21,10 +17,15 @@ class Item3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0);
+
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: backgroundDecoration,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: containerPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -36,41 +37,39 @@ class Item3 extends StatelessWidget {
                   Text(
                     content.layoutTitle!,
                     style: FontUtils.secondaryFontStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor
-                    ),
+                        color: AppColors.textColor),
                   ),
-                    Visibility(
-                      visible: content.layoutRedirectTitle!.isNotEmpty,
-                      child: GestureDetector(
-                        onTap: (){
-                          RedirectUtils.handleContentRedirectViewAll(
-                            context: context,
-                            redirectData: content.redirectData!,
-                          );
-                        },
-                        child: Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
+                  Visibility(
+                    visible: content.layoutRedirectTitle!.isNotEmpty,
+                    child: GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirectViewAll(
+                          context: context,
+                          redirectData: content.redirectData!,
+                        );
+                      },
+                      child: Text(
+                        content.layoutRedirectTitle!,
+                        style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
-                              color: AppColors.textColor
-                          ),
-                        ),
+                            color: AppColors.textColor),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             SizedBox(
               height: 100,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
                 itemCount: content.layoutData!.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 16),
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   LayoutDatum layoutData = content.layoutData![index];
                   return GestureDetector(
@@ -88,11 +87,16 @@ class Item3 extends StatelessWidget {
                           Container(
                             width: 70,
                             height: 70,
-                            decoration:  BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.secondary,
                               shape: BoxShape.circle,
                             ),
-                            child: ClipOval(child: CachedNetworkImage(imageUrl:layoutData.image!,fit: BoxFit.cover,),),
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: layoutData.image!,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(

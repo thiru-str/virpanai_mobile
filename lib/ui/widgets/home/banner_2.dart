@@ -9,6 +9,7 @@ import 'package:waioz/ui/widgets/item_video_tile.dart';
 
 import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
+import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 
@@ -41,7 +42,7 @@ class _Banner2State extends State<Banner2> {
     _autoScrollTimer?.cancel();
     _autoScrollTimer = Timer.periodic(
       Duration(seconds: slideInterval.toInt()),
-          (_) {
+      (_) {
         if (!mounted || !_isVisible) return;
         final count = widget.content.layoutData?.length ?? 0;
         if (count == 0) return;
@@ -83,97 +84,105 @@ class _Banner2State extends State<Banner2> {
   Widget build(BuildContext context) {
     final content = widget.content;
     final items = content.layoutData ?? [];
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0);
 
-    return VisibilityDetector(
-      key: Key('Banner2-${content.layoutTitle ?? ""}'),
-      onVisibilityChanged: _onVisibilityChanged,
-      child: AnimatedOpacity(
-        opacity: _isVisible ? 1 : 0.5,
-        duration: const Duration(milliseconds: 300),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// Title Row
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      content.layoutTitle ?? '',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+    return Container(
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: VisibilityDetector(
+          key: Key('Banner2-${content.layoutTitle ?? ""}'),
+          onVisibilityChanged: _onVisibilityChanged,
+          child: AnimatedOpacity(
+            opacity: _isVisible ? 1 : 0.5,
+            duration: const Duration(milliseconds: 300),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// Title Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        content.layoutTitle ?? '',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
                       ),
-                    ),
-                    Visibility(
-                      visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
-                      child: GestureDetector(
-                        onTap: () {
-                          RedirectUtils.handleContentRedirectViewAll(
-                            context: context,
-                            redirectData: content.redirectData!,
-                          );
-                        },
-                        child: Text(
-                          content.layoutRedirectTitle ?? '',
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                      Visibility(
+                        visible:
+                            content.layoutRedirectTitle?.isNotEmpty ?? false,
+                        child: GestureDetector(
+                          onTap: () {
+                            RedirectUtils.handleContentRedirectViewAll(
+                              context: context,
+                              redirectData: content.redirectData!,
+                            );
+                          },
+                          child: Text(
+                            content.layoutRedirectTitle ?? '',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-              /// Carousel
-              SizedBox(
-                height: 190,
-                child: PageView.builder(
-                  controller: _pageController,
-                  padEnds: false,
-                  itemCount: items.length,
-                  onPageChanged: (i) {
-                    setState(() => _currentPage = i);
-                    if (_isVisible) _startAutoScroll();
-                  },
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final mediaUrl = item.image ?? '';
-                    final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
+                /// Carousel
+                SizedBox(
+                  height: 190,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    padEnds: false,
+                    itemCount: items.length,
+                    onPageChanged: (i) {
+                      setState(() => _currentPage = i);
+                      if (_isVisible) _startAutoScroll();
+                    },
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final mediaUrl = item.image ?? '';
+                      final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
 
-                    return GestureDetector(
-                      onTap: () {
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: item,
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: isVideo
-                            ? ItemVideoTile(
-                          key: ValueKey(mediaUrl),
-                          videoUrl: mediaUrl,
-                          title: item.title ?? '',
-                          isActive: _isVisible && index == _currentPage,
-                        )
-                            : _buildImageTile(mediaUrl, item.title ?? ''),
-                      ),
-                    );
-                  },
+                      return GestureDetector(
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: item,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: isVideo
+                              ? ItemVideoTile(
+                                  key: ValueKey(mediaUrl),
+                                  videoUrl: mediaUrl,
+                                  title: item.title ?? '',
+                                  isActive: _isVisible && index == _currentPage,
+                                )
+                              : _buildImageTile(mediaUrl, item.title ?? ''),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -190,7 +199,7 @@ class _Banner2State extends State<Banner2> {
             width: 160,
             height: 150,
             fit: BoxFit.cover,
-            errorWidget: (_, __, ___) => _imageFallback(160,150),
+            errorWidget: (_, __, ___) => _imageFallback(160, 150),
           ),
         ),
         const SizedBox(height: 6),
@@ -199,8 +208,6 @@ class _Banner2State extends State<Banner2> {
     );
   }
 }
-
-
 
 Widget _imageFallback(double w, double h) {
   return Container(

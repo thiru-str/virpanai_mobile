@@ -21,31 +21,38 @@ class CustomSearchAppBar extends StatelessWidget
     this.onCartClick,
   }) : super(key: key);
 
-
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Container(
-        color: AppColors.primary,
-        padding: const EdgeInsets.only(top: 40, left: 12, right: 12, bottom: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildIcon(null, svgPath: AppAssets.app_icon_svg, size: 50),
-                Text('GoWelMart',style: FontUtils.primaryFontStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),),
-                _buildIcon(Icons.shopping_cart,
-                    color: Colors.white,
-                    onPressed: onCartClick,
-                    cartCount: cartCount),
-              ],
-            ),
-            const SizedBox(height: 8), // give breathing room
-            SizedBox(height: 48, child: SearchBarWithRollingHint(onTap: onSearchTap)),
-          ],
-        ),
+    return Container(
+      color: AppColors.primary,
+      padding: const EdgeInsets.only(top: 40, left: 12, right: 12, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildIcon(null, svgPath: AppAssets.app_icon_svg, size: 50),
+              Text(
+                'GoWelMart',
+                style: FontUtils.primaryFontStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              _buildIcon(
+                Icons.shopping_cart,
+                color: Colors.white,
+                onPressed: onCartClick,
+                cartCount: cartCount,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+              height: 48, child: SearchBarWithRollingHint(onTap: onSearchTap)),
+        ],
       ),
     );
   }
@@ -55,16 +62,16 @@ class CustomSearchAppBar extends StatelessWidget
 }
 
 Widget _buildIcon(
-    IconData? icon, {
-      String? assetPath,
-      String? svgPath,
-      VoidCallback? onPressed,
-      double? size,
-      double? width,
-      double? height,
-      Color? color,
-      int cartCount = 0,
-    }) {
+  IconData? icon, {
+  String? assetPath,
+  String? svgPath,
+  VoidCallback? onPressed,
+  double? size,
+  double? width,
+  double? height,
+  Color? color,
+  int cartCount = 0,
+}) {
   // Decide which icon type to render
   Widget iconWidget;
   if (svgPath != null) {
@@ -137,6 +144,3 @@ Widget _buildIcon(
     ),
   );
 }
-
-
-

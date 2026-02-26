@@ -17,16 +17,20 @@ class Grid2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<LayoutDatum> items = content.layoutData!.take(15).toList(); // Max 5x3 = 15 items
+    final List<LayoutDatum> items = content.layoutData!.take(15).toList();
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
@@ -38,22 +42,21 @@ class Grid2 extends StatelessWidget {
                       color: AppColors.textColor,
                     ),
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
+                    maxLines: 2,
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
+                const SizedBox(width: 4),
                 Visibility(
                   visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
                   child: GestureDetector(
                     onTap: () {
-                      // Handle section-level redirection if needed
                       RedirectUtils.handleContentRedirectViewAll(
                         context: context,
                         redirectData: content.redirectData!,
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           content.layoutRedirectTitle!,
@@ -70,73 +73,80 @@ class Grid2 extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: MasonryGridView.count(
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: MasonryGridView.count(
                 crossAxisCount: 5,
-                mainAxisSpacing: 24,
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final layoutData = items[index];
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: content.layoutOption!,
-                      layoutData: layoutData,
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: CachedNetworkImage(
-                          imageUrl: layoutData.image??'',
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) => _fallbackWidget(),
-                        ),
-                      ),
-                      Visibility(
-                        visible: (layoutData.title ?? '').isNotEmpty,
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              width: 60,
-                              height: MediaQuery.of(context).size.shortestSide < 360 ? 32 : 30,
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: Text(
-                                  layoutData.title ?? '',
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: FontUtils.primaryFontStyle(fontSize: 11,fontWeight: FontWeight.w700,),
-                                ),
-                              ),
+                mainAxisSpacing: 16,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final layoutData = items[index];
+                  return GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption!,
+                          layoutData: layoutData,
+                        );
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: CachedNetworkImage(
+                              imageUrl: layoutData.image ?? '',
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) =>
+                                  _fallbackWidget(),
                             ),
-                          ],
-                        ),
-                      ),
-
-                    ],
-                  )
-                );
-              },
+                          ),
+                          Visibility(
+                            visible: (layoutData.title ?? '').isNotEmpty,
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: 60,
+                                  height:
+                                      MediaQuery.of(context).size.shortestSide <
+                                              360
+                                          ? 32
+                                          : 30,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: Text(
+                                      layoutData.title ?? '',
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: FontUtils.primaryFontStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ));
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  double _calculateTextHeight(BuildContext context, String text, TextStyle style) {
+  double _calculateTextHeight(
+      BuildContext context, String text, TextStyle style) {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(text: text, style: style),
       maxLines: 2,
@@ -145,7 +155,6 @@ class Grid2 extends StatelessWidget {
 
     return textPainter.size.height;
   }
-
 
   Widget _fallbackWidget() {
     return Container(
