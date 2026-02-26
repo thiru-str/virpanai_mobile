@@ -105,7 +105,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         final latestBuild = androidConfig['current_version_code'];
 
         if (currentBuild < minBuild) {
-          _navigateToHome();
+          _showForceUpdate();
+          return;
         } else if (currentBuild < latestBuild && !forceUpdate) {
           _showSoftUpdate();
           return;
