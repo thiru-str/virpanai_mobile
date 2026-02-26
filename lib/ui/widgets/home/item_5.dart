@@ -17,7 +17,8 @@ class Item5 extends StatelessWidget {
     required this.content,
   }) : super(key: key);
 
-  static const double _railHeight = 368;
+  static const double _railHeightWithDiscount = 384;
+  static const double _railHeightWithoutDiscount = 366;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +27,11 @@ class Item5 extends StatelessWidget {
         ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
         : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0);
     final items = content.layoutData ?? [];
+    final hasAnyDiscount = items.any(
+      (item) =>
+          item.prices?.discountedPrice != null &&
+          item.prices!.discountedPrice != "0",
+    );
 
     return Container(
       decoration: backgroundDecoration,
@@ -80,7 +86,9 @@ class Item5 extends StatelessWidget {
 
             // ── Virtualized horizontal list ──
             SizedBox(
-              height: _railHeight,
+              height: hasAnyDiscount
+                  ? _railHeightWithDiscount
+                  : _railHeightWithoutDiscount,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
@@ -192,7 +200,7 @@ class _Item5Card extends StatelessWidget {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: 10,
                               ),
                             ),
                           ),
@@ -209,7 +217,7 @@ class _Item5Card extends StatelessWidget {
                   child: Text(
                     layoutData.title ?? '',
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textColor,
                     ),
@@ -248,7 +256,7 @@ class _Item5Card extends StatelessWidget {
                                 layoutData.prices?.originalPrice ?? '0',
                               ),
                               style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w400,
                                 color:
                                     AppColors.textColor.withValues(alpha: 0.6),

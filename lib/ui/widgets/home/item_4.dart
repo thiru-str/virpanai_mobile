@@ -17,7 +17,8 @@ class Item4 extends StatelessWidget {
     required this.content,
   }) : super(key: key);
 
-  static const double _railHeight = 296;
+  static const double _railHeightWithDiscount = 330;
+  static const double _railHeightWithoutDiscount = 316;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +27,11 @@ class Item4 extends StatelessWidget {
         ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
         : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0);
     final items = content.layoutData ?? [];
+    final hasAnyDiscount = items.any(
+      (item) =>
+          item.prices?.discountedPrice != null &&
+          item.prices!.discountedPrice != "0",
+    );
 
     return Container(
       decoration: backgroundDecoration,
@@ -79,7 +85,9 @@ class Item4 extends StatelessWidget {
 
             // ── Virtualized horizontal list ──
             SizedBox(
-              height: _railHeight,
+              height: hasAnyDiscount
+                  ? _railHeightWithDiscount
+                  : _railHeightWithoutDiscount,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
@@ -187,7 +195,7 @@ class _Item4Card extends StatelessWidget {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: 10,
                               ),
                             ),
                           ),
@@ -204,8 +212,8 @@ class _Item4Card extends StatelessWidget {
                   child: Text(
                     layoutData.title ?? '',
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textColor,
                     ),
                     maxLines: 2,
@@ -225,7 +233,7 @@ class _Item4Card extends StatelessWidget {
                           CurrencyUtil.appendCurrency(
                               layoutData.prices?.sellingPrice ?? '0'),
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 21,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textColor,
                           ),
@@ -241,7 +249,7 @@ class _Item4Card extends StatelessWidget {
                               CurrencyUtil.appendCurrency(
                                   layoutData.prices?.originalPrice ?? '0'),
                               style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w400,
                                 color:
                                     AppColors.textColor.withValues(alpha: 0.6),

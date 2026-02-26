@@ -17,8 +17,8 @@ class Item9 extends StatelessWidget {
     required this.content,
   }) : super(key: key);
 
-  static const double _railHeightWithDiscount = 232;
-  static const double _railHeightWithoutDiscount = 214;
+  static const double _railHeightWithDiscount = 252;
+  static const double _railHeightWithoutDiscount = 236;
 
   @override
   Widget build(BuildContext context) {
@@ -267,7 +267,7 @@ class _Item9Card extends StatelessWidget {
                               layoutData.prices?.originalPrice ?? '0',
                             ),
                             style: FontUtils.secondaryFontStyle(
-                              fontSize: 14,
+                              fontSize: 11,
                               color: Colors.grey,
                               decoration: TextDecoration.lineThrough,
                             ),
@@ -285,7 +285,7 @@ class _Item9Card extends StatelessWidget {
                     child: Text(
                       'SAVE ${layoutData.prices!.discountPercentage ?? ''}',
                       style: FontUtils.secondaryFontStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: Colors.green,
                       ),

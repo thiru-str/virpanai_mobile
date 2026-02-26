@@ -213,6 +213,7 @@ class _Grid1Card extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 10,
                               color: Colors.white,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -278,8 +279,8 @@ class _Grid1Card extends StatelessWidget {
                   child: Text(
                     layoutData.title ?? '',
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textColor,
                     ),
                     maxLines: 2,
@@ -307,7 +308,7 @@ class _Grid1Card extends StatelessWidget {
                       layoutData.prices?.sellingPrice ?? '',
                     ),
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
@@ -328,7 +329,7 @@ class _Grid1Card extends StatelessWidget {
                               layoutData.prices?.originalPrice ?? '',
                             ),
                             style: FontUtils.primaryFontStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w400,
                               color: Colors.grey,
                               decoration: TextDecoration.lineThrough,
@@ -342,8 +343,9 @@ class _Grid1Card extends StatelessWidget {
                           child: Text(
                             layoutData.prices?.discountPercentage ?? '',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 10,
                               color: Colors.green.shade700,
+                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
