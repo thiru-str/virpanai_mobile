@@ -19,83 +19,95 @@ class Slider2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 Title + Redirect
-          Visibility(
-            visible: content.layoutTitle?.isNotEmpty== true,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      content.layoutTitle ?? '',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
-                      ),
-                    ),
-                  ),
-                  if ((content.layoutRedirectTitle ?? '').isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        RedirectUtils.handleContentRedirectViewAll(
-                          context: context,
-                          redirectData: content.redirectData!,
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          Text(
-                            content.layoutRedirectTitle ?? "",
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 14,
-                              color: AppColors.textColor,
-                            ),
-                          ),
-                          const Icon(Icons.chevron_right, size: 18)
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
-          // 🔹 Horizontal scrollable product slider
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start, // ✅ ensures image alignment
-                children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Slider2Card(
-                      layoutData: content.layoutData![i],
-                      onTap: () {
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption ?? "",
-                          layoutData: content.layoutData![i],
-                        );
-                      },
+    return Container(
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Title + Redirect
+            Visibility(
+              visible: content.layoutTitle?.isNotEmpty == true,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        content.layoutTitle ?? '',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
+                      ),
                     ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 12),
+                    if ((content.layoutRedirectTitle ?? '').isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          RedirectUtils.handleContentRedirectViewAll(
+                            context: context,
+                            redirectData: content.redirectData!,
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              content.layoutRedirectTitle ?? "",
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 14,
+                                color: AppColors.textColor,
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right, size: 18)
+                          ],
+                        ),
+                      ),
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+
+            // 🔹 Horizontal scrollable product slider
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // ✅ ensures image alignment
+                  children: [
+                    for (int i = 0;
+                        i < (content.layoutData?.length ?? 0);
+                        i++) ...[
+                      _Slider2Card(
+                        layoutData: content.layoutData![i],
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption ?? "",
+                            layoutData: content.layoutData![i],
+                          );
+                        },
+                      ),
+                      if (i != content.layoutData!.length - 1)
+                        const SizedBox(width: 12),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -113,7 +125,7 @@ class _Slider2Card extends StatelessWidget {
 
   bool get _hasDiscount =>
       layoutData.prices?.discountedPrice != null &&
-          layoutData.prices?.discountedPrice != "0";
+      layoutData.prices?.discountedPrice != "0";
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +137,7 @@ class _Slider2Card extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: isSmallScreen ? 80 : 90,
-        margin: const EdgeInsets.only(top:8,bottom: 4),
+        margin: const EdgeInsets.only(top: 8, bottom: 4),
         child: Stack(
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
@@ -145,11 +157,11 @@ class _Slider2Card extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: (imageUrl.isNotEmpty)
                         ? CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) =>
-                      const ImageFallbackWidget(h: 80),
-                    )
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) =>
+                                const ImageFallbackWidget(h: 80),
+                          )
                         : const ImageFallbackWidget(h: 80),
                   ),
                 ),
@@ -187,7 +199,7 @@ class _Slider2Card extends StatelessWidget {
                 top: 0,
                 child: Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(4),
@@ -215,5 +227,3 @@ class _Slider2Card extends StatelessWidget {
     );
   }
 }
-
-

@@ -20,86 +20,94 @@ class Item13 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasViewAll = (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 Header (Title + View All)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if (hasViewAll)
-                  GestureDetector(
-                    onTap: () {
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 🔹 Horizontal scroll list (auto height)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Header (Title + View All)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item13Card(
-                      layoutData: content.layoutData![i],
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  if (hasViewAll)
+                    GestureDetector(
                       onTap: () {
-                        RedirectUtils.handleContentRedirect(
+                        RedirectUtils.handleContentRedirectViewAll(
                           context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
+                          redirectData: content.redirectData!,
                         );
                       },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle!,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
                     ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
                 ],
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 16),
+
+            // 🔹 Horizontal scroll list (auto height)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (int i = 0;
+                        i < (content.layoutData?.length ?? 0);
+                        i++) ...[
+                      _Item13Card(
+                        layoutData: content.layoutData![i],
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: content.layoutData![i],
+                          );
+                        },
+                      ),
+                      if (i != content.layoutData!.length - 1)
+                        const SizedBox(width: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -122,7 +130,7 @@ class _Item13Card extends StatelessWidget {
     final original = double.tryParse(prices?.originalPrice ?? "0") ?? 0;
     final hasDiscount = original > selling && selling > 0;
     final percentOff =
-    hasDiscount ? (((original - selling) / original) * 100).round() : null;
+        hasDiscount ? (((original - selling) / original) * 100).round() : null;
 
     return GestureDetector(
       onTap: onTap,
@@ -152,7 +160,7 @@ class _Item13Card extends StatelessWidget {
                       fit: BoxFit.contain,
                       width: double.infinity,
                       errorWidget: (c, u, e) =>
-                      const ImageFallbackWidget(w: 80, h: 80),
+                          const ImageFallbackWidget(w: 80, h: 80),
                     ),
                   ),
                 ),
@@ -187,8 +195,7 @@ class _Item13Card extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.brown[50],
                   borderRadius: BorderRadius.circular(4),
@@ -259,7 +266,8 @@ class _Item13Card extends StatelessWidget {
 
             if (percentOff != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
                   style: const TextStyle(
@@ -272,8 +280,7 @@ class _Item13Card extends StatelessWidget {
 
             // 🔹 Add to cart button
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
               child: ElevatedButton.icon(
                 onPressed: onTap,
                 icon: const Icon(Icons.shopping_cart_outlined,
@@ -318,7 +325,3 @@ class _DiagonalClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
-
-
-
-

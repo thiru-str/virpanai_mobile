@@ -27,7 +27,7 @@ class ProductCard extends StatelessWidget {
     if (p.variants?.isEmpty ?? true) return null;
     final vals = p.variants!
         .map((v) => double.tryParse(
-              v.calculatedPrice?.rawCalculatedAmount?.value ?? '',
+              v.calculatedPrice?.calculatedAmount?.toString() ?? '',
             ))
         .whereType<double>()
         .toList();
@@ -39,7 +39,7 @@ class ProductCard extends StatelessWidget {
     if (p.variants?.isEmpty ?? true) return null;
     final vals = p.variants!
         .map((v) => double.tryParse(
-              v.calculatedPrice?.rawOriginalAmount?.value ?? '',
+              v.calculatedPrice?.originalAmount?.toString() ?? '',
             ))
         .whereType<double>()
         .toList();
