@@ -588,7 +588,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     // if variant has inventory_quantity
     if (variant.inventoryQuantity != null) {
-      return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
+      return (variant.inventoryQuantity!.toInt() - cartQuantity).clamp(0, 9999);
     }
 
     // default max = 10

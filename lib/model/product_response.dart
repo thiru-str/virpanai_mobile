@@ -405,7 +405,7 @@ class Variant {
   dynamic upc;
   bool? allowBackorder;
   bool? manageInventory;
-  int? inventoryQuantity;
+  num? inventoryQuantity;
   dynamic hsCode;
   dynamic originCountry;
   dynamic midCode;

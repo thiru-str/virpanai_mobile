@@ -301,7 +301,7 @@ class Item {
   bool? isUpdating;
   bool? inStock;
   String? error;
-  int? inventoryQuantity;
+  num? inventoryQuantity;
 
   Item({
     this.id,
