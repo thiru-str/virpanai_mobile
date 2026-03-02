@@ -791,6 +791,7 @@ class _CartPageState extends State<CartPage>  with SingleTickerProviderStateMixi
       });
       PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
     } catch (e) {
+      getCartApi();
       setState(() {
         cartLoading = false;
       });
