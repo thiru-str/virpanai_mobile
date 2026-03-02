@@ -809,7 +809,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
-      'store/carts/$cartId/complete',
+      'store/custom-carts/$cartId/complete',
       null,
           (json) => PlaceOrderResponse.fromJson(json),
       context,
