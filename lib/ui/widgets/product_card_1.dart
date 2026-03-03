@@ -212,14 +212,14 @@ class _ProductCard1State extends State<ProductCard1> {
                   fontWeight: FontWeight.w700,
                   color: AppColors.textColor,
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
 
             // Subtitle / Description
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.description ?? '',
                 style: FontUtils.primaryFontStyle(
@@ -234,7 +234,8 @@ class _ProductCard1State extends State<ProductCard1> {
             // Price row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
@@ -244,18 +245,35 @@ class _ProductCard1State extends State<ProductCard1> {
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  if (hasDiscount && orig != null)
-                    Text(
-                      _fmt(orig),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
-                      ),
+                  if (hasDiscount && orig != null) ...[
+                    const SizedBox(height: 2),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 2,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          _fmt(orig),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        if (percentOff != null)
+                          Text(
+                            '$percentOff% Off',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.green,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
                     ),
-                  if (percentOff != null) ...[
-                    const SizedBox(width: 6),
+                  ],
+                  if (!hasDiscount && percentOff != null) ...[
+                    const SizedBox(height: 2),
                     Text(
                       '$percentOff% Off',
                       style: const TextStyle(
@@ -312,5 +330,4 @@ class _ProductCard1State extends State<ProductCard1> {
   }
 
 }
-
 
