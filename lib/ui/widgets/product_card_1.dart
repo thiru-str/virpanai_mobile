@@ -53,6 +53,7 @@ class _ProductCard1State extends State<ProductCard1> {
   Widget build(BuildContext context) {
     final product = widget.product;
     final images = product.images ?? [];
+    final description = (product.description ?? '').trim();
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null
@@ -218,18 +219,19 @@ class _ProductCard1State extends State<ProductCard1> {
             ),
 
             // Subtitle / Description
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                product.description ?? '',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 12,
-                  color: AppColors.textColor,
+            if (description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 2),
+                child: Text(
+                  description,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 12,
+                    color: AppColors.textColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
 
             // Price row
             Padding(
@@ -330,4 +332,3 @@ class _ProductCard1State extends State<ProductCard1> {
   }
 
 }
-
