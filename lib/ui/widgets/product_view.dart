@@ -4,6 +4,9 @@ import 'package:waioz/ui/widgets/product_card_1.dart';
 import 'package:waioz/ui/widgets/product_card_2.dart';
 import 'package:waioz/ui/widgets/product_card_3.dart';
 import 'package:waioz/ui/widgets/product_card_4.dart';
+import 'package:waioz/ui/widgets/product_card_7.dart';
+import 'package:waioz/ui/widgets/product_card_8.dart';
+import 'package:waioz/ui/widgets/product_card_9.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../model/product_response.dart';
@@ -41,23 +44,25 @@ class _ProductViewState extends State<ProductView> {
   }
 
   Future<void> _loadType() async {
-    final savedTypeString = await SharedPreferencesUtil().getString('product_view');
+    final savedTypeString =
+        await SharedPreferencesUtil().getString('product_view');
+    debugPrint('product view $savedTypeString');
 
     setState(() {
       _resolvedType = _mapStringToType(widget.type) ??
           _mapStringToType(savedTypeString) ??
           ProductCardType.productView1;
+      debugPrint('product view $_resolvedType');
       _isLoading = false;
     });
   }
-
 
   ProductCardType? _mapStringToType(String? type) {
     if (type == null) return null;
 
     try {
       return ProductCardType.values.firstWhere(
-            (e) => e.name == type,
+        (e) => e.name == type,
         orElse: () => ProductCardType.productView1,
       );
     } catch (_) {
@@ -65,10 +70,8 @@ class _ProductViewState extends State<ProductView> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     if (_isLoading) {
       return const SizedBox();
     }
@@ -115,15 +118,37 @@ class _ProductViewState extends State<ProductView> {
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
         );
+
+      case ProductCardType.productView7:
+        return ProductCard7(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+        );
+
+      case ProductCardType.productView8:
+        return ProductCard8(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+        );
+
+      case ProductCardType.productView9:
+        return ProductCard9(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+          onTapFavorite: widget.onTapFavorite,
+          onAddToCart: widget.onAddToCart,
+          isFavorite: widget.isFavorite,
+        );
     }
   }
 }
-
 
 enum ProductCardType {
   productView1,
   productView2,
   productView3,
   productView4,
+  productView7,
+  productView8,
+  productView9,
 }
-
