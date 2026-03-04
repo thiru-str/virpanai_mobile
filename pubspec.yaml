@@ -73,6 +73,7 @@ dependencies:
   app_links: ^6.4.0
   share_plus: ^7.0.1
   video_thumbnail: ^0.5.3
+  logger: ^2.6.2
 
 
 

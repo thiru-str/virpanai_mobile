@@ -19,9 +19,9 @@ class Grid3 extends StatelessWidget {
   Widget build(BuildContext context) {
     final backgroundDecoration = AppUtils.buildLayoutBackground(content);
     final containerPadding = backgroundDecoration == null
-        ? const EdgeInsets.symmetric(horizontal: 0, vertical: 8)
-        : const EdgeInsets.symmetric(horizontal: 0, vertical: 8);
-    final items = content.layoutData ?? [];
+        ? const EdgeInsets.only(top: 8)
+        : const EdgeInsets.only(top: 8);
+    final items = (content.layoutData ?? []).take(3).toList();
     final heroImage = content.layoutBannerImage?.isNotEmpty == true
         ? content.layoutBannerImage!
         : (items.isNotEmpty ? (items.first.image ?? '') : '');
@@ -51,53 +51,61 @@ class Grid3 extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            Container(
-              width: double.infinity,
-              height: 220,
-              color: const Color(0xFFE1E4ED),
-              alignment: Alignment.center,
-              child: SizedBox(
-                width: 110,
-                height: 110,
-                child: heroImage.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: heroImage,
-                        fit: BoxFit.contain,
-                        errorWidget: (_, __, ___) => const ImageFallbackWidget(
-                            w: 64, h: 64, fit: BoxFit.contain),
-                      )
-                    : const ImageFallbackWidget(
-                        w: 64, h: 64, fit: BoxFit.contain),
-              ),
-            ),
-            Transform.translate(
-              offset: const Offset(0, -55),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (int i = 0; i < items.length; i++) ...[
-                        _Grid3Card(
-                          layoutData: items[i],
-                          onTap: () {
-                            RedirectUtils.handleContentRedirect(
-                              context: context,
-                              layoutOption: content.layoutOption ?? "",
-                              layoutData: items[i],
-                            );
-                          },
-                        ),
-                        if (i != items.length - 1) const SizedBox(width: 30),
-                      ],
-                    ],
+            SizedBox(
+              height: 268,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: 220,
+                    child: Container(
+                      color: const Color(0xFFE1E4ED),
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        height: 220,
+                        width: double.infinity,
+                        child: heroImage.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: heroImage,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) =>
+                                    const ImageFallbackWidget(
+                                        w: 64, h: 64, fit: BoxFit.contain),
+                              )
+                            : const ImageFallbackWidget(
+                                w: 64, h: 64, fit: BoxFit.contain),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    left: 15,
+                    right: 15,
+                    top: 165,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (int i = 0; i < items.length; i++) ...[
+                          _Grid3Card(
+                            layoutData: items[i],
+                            onTap: () {
+                              RedirectUtils.handleContentRedirect(
+                                context: context,
+                                layoutOption: content.layoutOption ?? "",
+                                layoutData: items[i],
+                              );
+                            },
+                          ),
+                          if (i != items.length - 1) const SizedBox(width: 30),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -138,12 +146,10 @@ class _Grid3Card extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: SizedBox(
-                width: 54,
-                height: 54,
                 child: imageUrl.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: imageUrl,
-                        fit: BoxFit.contain,
+                        fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => const ImageFallbackWidget(
                             w: 34, h: 34, fit: BoxFit.contain),
                       )
