@@ -18,6 +18,7 @@ import 'package:waioz/utility/page_route_utils.dart';
 import '../api/api_service.dart';
 import '../utility/app_assets.dart';
 import '../utility/currency_util.dart';
+import '../utility/shared_preferences_util.dart';
 import 'widgets/common_header_app_bar.dart';
 
 class ProductPage extends StatefulWidget {
@@ -27,7 +28,11 @@ class ProductPage extends StatefulWidget {
   final bool isFromBrand;
 
   const ProductPage(
-      {super.key, this.categoryId = '', this.isFromBrand = false,this.collectionId = '',this.tagId = ''});
+      {super.key,
+      this.categoryId = '',
+      this.isFromBrand = false,
+      this.collectionId = '',
+      this.tagId = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -52,14 +57,19 @@ class _ProductPageState extends State<ProductPage> {
   bool isPaginating = false;
   bool isFilterApplied = false;
   ScrollController scrollController = ScrollController();
+  String? productViewType = ProductCardType.productView1.name;
 
   @override
   void initState() {
     super.initState();
-    getProductsApi(categoryIds: widget.categoryId,collectionIds: widget.collectionId,tagIds: widget.tagId);
+    _loadProductViewType();
+    getProductsApi(
+        categoryIds: widget.categoryId,
+        collectionIds: widget.collectionId,
+        tagIds: widget.tagId);
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent &&
+              scrollController.position.maxScrollExtent &&
           hasMore &&
           !isPaginating) {
         loadMoreProducts();
@@ -70,13 +80,27 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
+  Future<void> _loadProductViewType() async {
+    final type = await SharedPreferencesUtil().getString('product_view');
+    if (!mounted) return;
+    setState(() {
+      productViewType = type;
+    });
+  }
+
   void loadMoreProducts() {
     isPaginating = true;
     currentPage++;
     getProductsApi(
-      categoryIds: selectedCategoriesList.isNotEmpty? selectedCategoriesList.join(','): widget.categoryId,
-      collectionIds: selectedCollectionsList.isNotEmpty?selectedCollectionsList.join(','):widget.collectionId,
-      tagIds: selectedTagsList.isNotEmpty? selectedTagsList.join(','):widget.tagId,
+      categoryIds: selectedCategoriesList.isNotEmpty
+          ? selectedCategoriesList.join(',')
+          : widget.categoryId,
+      collectionIds: selectedCollectionsList.isNotEmpty
+          ? selectedCollectionsList.join(',')
+          : widget.collectionId,
+      tagIds: selectedTagsList.isNotEmpty
+          ? selectedTagsList.join(',')
+          : widget.tagId,
       searchString: searchController.text,
       minPrice: minPrice,
       maxPrice: maxPrice,
@@ -120,10 +144,10 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
-
-
   @override
   void dispose() {
+    _debounce?.cancel();
+    scrollController.dispose();
     searchController.dispose();
     super.dispose();
   }
@@ -134,10 +158,10 @@ class _ProductPageState extends State<ProductPage> {
         filteredProducts = productsResponse?.products ?? [];
       } else {
         filteredProducts = productsResponse?.products
-            ?.where((product) => product.title!
-            .toLowerCase()
-            .contains(searchController.text.toLowerCase()))
-            .toList() ??
+                ?.where((product) => product.title!
+                    .toLowerCase()
+                    .contains(searchController.text.toLowerCase()))
+                .toList() ??
             [];
       }
     });
@@ -146,7 +170,7 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: CommonHeaderAppBar(
@@ -177,16 +201,16 @@ class _ProductPageState extends State<ProductPage> {
                           hintText: AppStrings.search_product,
                           border: InputBorder.none,
                           prefixIcon:
-                          const Icon(Icons.search, color: Colors.grey),
+                              const Icon(Icons.search, color: Colors.grey),
                           suffixIcon: searchController.text.isNotEmpty
                               ? IconButton(
-                            icon:
-                            const Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () => searchController.clear(),
-                          )
+                                  icon: const Icon(Icons.clear,
+                                      color: Colors.grey),
+                                  onPressed: () => searchController.clear(),
+                                )
                               : null,
                           contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
+                              const EdgeInsets.symmetric(horizontal: 16),
                         ),
                       ),
                     ),
@@ -212,17 +236,18 @@ class _ProductPageState extends State<ProductPage> {
                       if (result != null && mounted) {
                         final data = result as Map<String, dynamic>;
                         selectedCategoriesList =
-                        List<String>.from(data['selectedCategories'] ?? []);
-                        selectedCollectionsList =
-                        List<String>.from(data['selectedCollections'] ?? []);
+                            List<String>.from(data['selectedCategories'] ?? []);
+                        selectedCollectionsList = List<String>.from(
+                            data['selectedCollections'] ?? []);
                         selectedTagsList =
-                        List<String>.from(data['selectedTags'] ?? []);
+                            List<String>.from(data['selectedTags'] ?? []);
                         minPrice = data['minPrice'];
                         maxPrice = data['maxPrice'];
                         sortBy = data['sortBy'];
                         debugPrint('min price product ${minPrice}');
                         debugPrint('max Price product ${maxPrice}');
-                        selectedSection = data['selectedSection'] ??selectedSection;
+                        selectedSection =
+                            data['selectedSection'] ?? selectedSection;
                         final categoryIds = selectedCategoriesList.isNotEmpty
                             ? selectedCategoriesList.join(',')
                             : widget.categoryId;
@@ -233,28 +258,38 @@ class _ProductPageState extends State<ProductPage> {
                         currentPage = 0;
                         filteredProducts.clear();
                         getProductsApi(
-                          categoryIds: categoryIds.isNotEmpty? categoryIds:widget.categoryId,
-                          collectionIds: collectionIds.isNotEmpty?collectionIds:widget.collectionId,
-                          tagIds: tagIds.isNotEmpty?tagIds:widget.tagId,
+                          categoryIds: categoryIds.isNotEmpty
+                              ? categoryIds
+                              : widget.categoryId,
+                          collectionIds: collectionIds.isNotEmpty
+                              ? collectionIds
+                              : widget.collectionId,
+                          tagIds: tagIds.isNotEmpty ? tagIds : widget.tagId,
                           searchString: searchController.text,
                           minPrice: minPrice,
                           maxPrice: maxPrice,
                           sortBy: sortBy,
                         );
                         setState(() {
-                          isFilterApplied = selectedCategoriesList.isNotEmpty || selectedCollectionsList.isNotEmpty || selectedTagsList.isNotEmpty || (minPrice != null || maxPrice != null)|| sortBy!=AppStrings.low_high;
+                          isFilterApplied = selectedCategoriesList.isNotEmpty ||
+                              selectedCollectionsList.isNotEmpty ||
+                              selectedTagsList.isNotEmpty ||
+                              (minPrice != null || maxPrice != null) ||
+                              sortBy != AppStrings.low_high;
                         });
-
                       }
                     },
-                    child:Container(
+                    child: Container(
                       height: 48,
                       width: 48,
                       decoration: BoxDecoration(
                         color: AppColors.secondary,
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      child: Icon(Icons.filter_list, color: isFilterApplied? AppColors.primary: Colors.grey),
+                      child: Icon(Icons.filter_list,
+                          color: isFilterApplied
+                              ? AppColors.primary
+                              : Colors.grey),
                     ),
                   ),
                 ],
@@ -302,17 +337,22 @@ class _ProductPageState extends State<ProductPage> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
-                      itemCount: filteredProducts.length + (isPaginating ? 1 : 0),
+                      itemCount:
+                          filteredProducts.length + (isPaginating ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == filteredProducts.length && isPaginating) {
                           return Padding(
                             padding: const EdgeInsets.all(16),
-                            child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+                            child: Center(
+                                child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            )),
                           );
                         }
                         final product = filteredProducts[index];
                         return ProductView(
                           product: product,
+                          type: productViewType,
                           onTapCard: () {
                             PageRouteUtils.pushWithSlide(
                               context,
@@ -396,5 +436,4 @@ class _ProductPageState extends State<ProductPage> {
       print(e);
     }
   }
-
 }

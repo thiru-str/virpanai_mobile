@@ -6,6 +6,7 @@ import '../../api/api_service.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 
 import '../../model/view_cart_model.dart';
+import '../../utility/app_strings.dart';
 import '../../utility/currency_util.dart';
 
 class ProductQuickViewSheet extends StatefulWidget {
@@ -232,8 +233,6 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
     );
   }
 
-  
-
   Widget buildVariants() {
     final options = product?.options ?? [];
 
@@ -314,7 +313,7 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),
-      child: const Text('Add to Cartsssssss',
+      child: const Text(AppStrings.add_to_cart,
           style: TextStyle(color: Colors.white, fontSize: 16)),
     );
   }

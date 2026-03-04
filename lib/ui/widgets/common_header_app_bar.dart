@@ -10,6 +10,7 @@ class CommonHeaderAppBar extends StatelessWidget
   final VoidCallback onBackTap;
   final VoidCallback? onFavTap;
   final VoidCallback? onCartTap;
+  final VoidCallback? onShareTap;
   final bool leading;
   final bool? isFavorite;
   final bool? showCart;
@@ -20,6 +21,7 @@ class CommonHeaderAppBar extends StatelessWidget
     required this.onBackTap,
     this.onFavTap,
     this.onCartTap,
+    this.onShareTap,
     this.leading = true,
     this.isFavorite = false,
     this.showCart = false,
@@ -33,24 +35,26 @@ class CommonHeaderAppBar extends StatelessWidget
       centerTitle: true,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
-      leading: leading ? GestureDetector(
-        onTap: onBackTap,
-        child: Container(
-          margin: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.secondary, // Background color
-          ),
-          child: Center(
-            child: SvgPicture.asset(
-              AppAssets.ic_arrow_svg,
-              height: 19,
-              width: 16,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-      ) : null,
+      leading: leading
+          ? GestureDetector(
+              onTap: onBackTap,
+              child: Container(
+                margin: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondary, // Background color
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    AppAssets.ic_arrow_svg,
+                    height: 19,
+                    width: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            )
+          : null,
       title: Text(
         title,
         style: FontUtils.primaryFontStyle(
@@ -60,15 +64,23 @@ class CommonHeaderAppBar extends StatelessWidget
         ),
       ),
       actions: [
+        if (onShareTap != null)
+          IconButton(
+            icon: Icon(Icons.share, color: AppColors.primary),
+            onPressed: onShareTap,
+          ),
         if (onCartTap != null)
           GestureDetector(
             onTap: onCartTap,
             child: Container(
               width: 48,
               height: 48,
-              child: IconButton(onPressed: onCartTap, icon:  Icon(Icons.shopping_cart, color: AppColors.primary, size: 24)),
+              child: IconButton(
+                  onPressed: onCartTap,
+                  icon: Icon(Icons.shopping_cart,
+                      color: AppColors.primary, size: 24)),
             ),
-        ),
+          ),
         if (onFavTap != null)
           GestureDetector(
             onTap: onFavTap,
@@ -89,16 +101,16 @@ class CommonHeaderAppBar extends StatelessWidget
                   color: isFavorite ?? false ? Colors.red : Colors.grey[600],
                 )
 
-                  // SvgPicture.asset(
-                  //   AppAssets.ic_fav,
-                  //   height: 16,
-                  //   width: 16,
-                  //   color: Colors.black87,
-                  // ),
-                  ),
+                    // SvgPicture.asset(
+                    //   AppAssets.ic_fav,
+                    //   height: 16,
+                    //   width: 16,
+                    //   color: Colors.black87,
+                    // ),
+                    ),
+              ),
             ),
           ),
-        ),
       ],
     );
   }

@@ -240,7 +240,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       'key': AppConfig.razorPayKey,
       'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
       'name': AppConfig.appName,
-      'description': 'Payment to ${AppConfig.appName}',
+      'description': '${AppStrings.payment_to} ${AppConfig.appName}',
       'order_id': orderId,
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
@@ -448,7 +448,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context,  OrderPlacedPage(orderId: '',));
+      PageRouteUtils.pushAndRemoveUntil(
+          context,
+          OrderPlacedPage(
+            orderId: '',
+          ));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
@@ -464,7 +468,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
+      PageRouteUtils.pushAndRemoveUntil(
+          context,
+          OrderPlacedPage(
+            orderId: response.order?.id ?? '',
+          ));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -24,12 +25,15 @@ class ProductCard3 extends StatelessWidget {
 
     Variant? cheapest;
     for (final v in p.variants!) {
-      final calc = double.tryParse(v.calculatedPrice?.calculatedAmount?.toString() ?? '');
+      final calc = double.tryParse(
+          v.calculatedPrice?.calculatedAmount?.toString() ?? '');
       if (calc == null) continue;
       if (cheapest == null) {
         cheapest = v;
       } else {
-        final cheapestCalc = double.tryParse(cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '') ?? double.infinity;
+        final cheapestCalc = double.tryParse(
+                cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '') ??
+            double.infinity;
         if (calc < cheapestCalc) {
           cheapest = v;
         }
@@ -45,15 +49,18 @@ class ProductCard3 extends StatelessWidget {
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null
-        ? double.tryParse(cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '')
+        ? double.tryParse(
+            cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '')
         : null;
 
     final orig = cheapest != null
-        ? double.tryParse(cheapest.calculatedPrice?.originalAmount?.toString() ?? '')
+        ? double.tryParse(
+            cheapest.calculatedPrice?.originalAmount?.toString() ?? '')
         : null;
 
     final hasDiscount = (orig != null && calc != null && orig > calc);
-    final percentOff = hasDiscount ? ((orig - calc) / orig * 100).round() : null;
+    final percentOff =
+        hasDiscount ? ((orig - calc) / orig * 100).round() : null;
 
     return GestureDetector(
       onTap: onTapCard,
@@ -79,11 +86,11 @@ class ProductCard3 extends StatelessWidget {
                     height: 140,
                     color: Colors.grey[100],
                     child: CachedNetworkImage(
-                      imageUrl: product.thumbnail??'',
+                      imageUrl: product.thumbnail ?? '',
                       fit: BoxFit.contain,
                       width: double.infinity,
                       errorWidget: (c, u, e) =>
-                      const ImageFallbackWidget(w: 80, h: 80),
+                          const ImageFallbackWidget(w: 80, h: 80),
                     ),
                   ),
                 ),
@@ -99,7 +106,7 @@ class ProductCard3 extends StatelessWidget {
                       color: Colors.green,
                       alignment: Alignment.center,
                       child: const Text(
-                        "NEW",
+                        AppStrings.new_tag,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -188,7 +195,8 @@ class ProductCard3 extends StatelessWidget {
 
             if (percentOff != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
                   style: const TextStyle(
@@ -202,13 +210,14 @@ class ProductCard3 extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
                 child: ElevatedButton.icon(
                   onPressed: onAddToCart,
                   icon: const Icon(Icons.shopping_cart_outlined,
                       size: 16, color: Colors.brown),
                   label: const Text(
-                    "ADD TO CART",
+                    AppStrings.add_to_cart,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -251,5 +260,3 @@ class _DiagonalClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
-
-

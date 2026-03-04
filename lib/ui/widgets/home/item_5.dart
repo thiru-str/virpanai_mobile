@@ -25,87 +25,98 @@ class Item5 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasViewAll = (content.layoutRedirectTitle ?? '').trim().isNotEmpty;
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header: Title + View All
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
-                  ),
-                ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
-                Visibility(
-                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Handle section-level redirection if needed
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Horizontal scroller without fixed height
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header: Title + View All
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
-                    _Item5Card(
-                      layoutData: content.layoutData![i],
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2, // Allow up to 2 lines for the title
+                    ),
+                  ),
+                  const SizedBox(
+                      width: 4), // Add some spacing between title and redirect
+                  Visibility(
+                    visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                    child: GestureDetector(
                       onTap: () {
-                        RedirectUtils.handleContentRedirect(
+                        // Handle section-level redirection if needed
+                        RedirectUtils.handleContentRedirectViewAll(
                           context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: content.layoutData![i],
+                          redirectData: content.redirectData!,
                         );
                       },
+                      child: Row(
+                        mainAxisSize:
+                            MainAxisSize.min, // Prevent redirect from expanding
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle!,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
                     ),
-                    if (i != content.layoutData!.length - 1)
-                      const SizedBox(width: 16),
-                  ],
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 16),
+
+            // Horizontal scroller without fixed height
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (int i = 0;
+                        i < (content.layoutData?.length ?? 0);
+                        i++) ...[
+                      _Item5Card(
+                        layoutData: content.layoutData![i],
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: content.layoutData![i],
+                          );
+                        },
+                      ),
+                      if (i != content.layoutData!.length - 1)
+                        const SizedBox(width: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -123,7 +134,7 @@ class _Item5Card extends StatelessWidget {
 
   bool get _hasDiscount =>
       layoutData.prices?.discountedPrice != null &&
-          layoutData.prices!.discountedPrice != "0";
+      layoutData.prices!.discountedPrice != "0";
 
   @override
   Widget build(BuildContext context) {
@@ -145,14 +156,18 @@ class _Item5Card extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: (layoutData.image??'').isNotEmpty?Image(
-                    image: CachedNetworkImageProvider(layoutData.image??''),
-                    height: 280,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                    errorBuilder: (context, error, stackTrace) => _imageFallback(),
-                  ):_imageFallback(),
+                  child: (layoutData.image ?? '').isNotEmpty
+                      ? Image(
+                          image: CachedNetworkImageProvider(
+                              layoutData.image ?? ''),
+                          height: 280,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _imageFallback(),
+                        )
+                      : _imageFallback(),
                 ),
                 // Positioned(
                 //   top: 8,
@@ -197,7 +212,9 @@ class _Item5Card extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
@@ -258,7 +275,7 @@ class _Item5Card extends StatelessWidget {
     return Container(
       height: 280,
       width: double.infinity,
-      color:AppColors.secondary, // light grey background
+      color: AppColors.secondary, // light grey background
       alignment: Alignment.center,
       child: SvgPicture.asset(
         AppAssets.ic_no_image, // <- your SVG path
@@ -269,4 +286,3 @@ class _Item5Card extends StatelessWidget {
     );
   }
 }
-

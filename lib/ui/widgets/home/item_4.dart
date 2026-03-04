@@ -19,11 +19,15 @@ class Item4 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8.0);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: backgroundDecoration,
       child: Padding(
-        padding: AppUtils.buildLayoutBackground(content)==null?const EdgeInsets.symmetric(horizontal: 8.0,vertical: 8.0):const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16.0),
+        padding: containerPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -42,7 +46,8 @@ class Item4 extends StatelessWidget {
                     maxLines: 2, // Allow up to 2 lines for the title
                   ),
                 ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
+                const SizedBox(
+                    width: 4), // Add some spacing between title and redirect
                 Visibility(
                   visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
                   child: GestureDetector(
@@ -54,7 +59,8 @@ class Item4 extends StatelessWidget {
                       );
                     },
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
+                      mainAxisSize:
+                          MainAxisSize.min, // Prevent redirect from expanding
                       children: [
                         Text(
                           content.layoutRedirectTitle!,
@@ -77,7 +83,9 @@ class Item4 extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  for (int i = 0; i < (content.layoutData?.length ?? 0); i++) ...[
+                  for (int i = 0;
+                      i < (content.layoutData?.length ?? 0);
+                      i++) ...[
                     _Item4Card(
                       layoutData: content.layoutData![i],
                       onTap: () {
@@ -113,7 +121,7 @@ class _Item4Card extends StatelessWidget {
 
   bool get _hasDiscount =>
       layoutData.prices?.discountedPrice != null &&
-          layoutData.prices!.discountedPrice != "0";
+      layoutData.prices!.discountedPrice != "0";
 
   @override
   Widget build(BuildContext context) {
@@ -136,15 +144,15 @@ class _Item4Card extends StatelessWidget {
                     top: Radius.circular(12),
                   ),
                   child: Image(
-                    image: CachedNetworkImageProvider(layoutData.image!),
-                    height: 230,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                      errorBuilder: (context, url, error) => const ImageFallbackWidget(
-                        h: 230,
-                        w: double.infinity,
-                      )
-                  ),
+                      image: CachedNetworkImageProvider(layoutData.image!),
+                      height: 230,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, url, error) =>
+                          const ImageFallbackWidget(
+                            h: 230,
+                            w: double.infinity,
+                          )),
                 ),
                 if (_hasDiscount)
                   Positioned(
@@ -181,7 +189,9 @@ class _Item4Card extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
               child: Text(
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
@@ -193,7 +203,6 @@ class _Item4Card extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-
 
             // Prices
             Padding(
@@ -236,4 +245,3 @@ class _Item4Card extends StatelessWidget {
     );
   }
 }
-

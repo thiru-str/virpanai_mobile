@@ -64,10 +64,7 @@ class _FilterPageState extends State<FilterPage> {
   List<ProductCategory> categoryList = [];
   List<ProductTag> tagsList = [];
 
-  static const sortOptions = [
-    'Lowest - Highest Price',
-    'Highest - Lowest Price'
-  ];
+  static const sortOptions = [AppStrings.low_high, AppStrings.high_low];
 
   final sidebarItems = [
     {'label': AppStrings.collections, 'section': FilterSection.collections},
@@ -83,13 +80,13 @@ class _FilterPageState extends State<FilterPage> {
     selectedCollections = widget.preSelectedCollections.toSet();
     selectedCategories = widget.preSelectedCategories.toSet();
     selectedTags = widget.preSelectedTags.toSet();
-    if(widget.preMinPrice!=null) {
+    if (widget.preMinPrice != null) {
       minPriceController.text = '${widget.preMinPrice!.toInt()}';
     }
-    if(widget.preMaxPrice!=null) {
+    if (widget.preMaxPrice != null) {
       maxPriceController.text = '${widget.preMaxPrice!.toInt()}';
     }
-    if(widget.preSortBy!=null) {
+    if (widget.preSortBy != null) {
       sortBy = widget.preSortBy!;
     }
     selectedSection = widget.preSelectedSection;
@@ -148,7 +145,7 @@ class _FilterPageState extends State<FilterPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -167,7 +164,7 @@ class _FilterPageState extends State<FilterPage> {
               child: Text(
                 AppStrings.clear_all,
                 style:
-                FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
+                    FontUtils.primaryFontStyle(fontSize: 16, color: Colors.red),
               ),
             ),
           ],
@@ -222,99 +219,108 @@ class _FilterPageState extends State<FilterPage> {
         return isLoadingCollections
             ? const Center(child: CircularProgressIndicator())
             : _buildFilterList(
-          collectionsList.map((e) => e.id ?? '').toList(),
-          selectedCollections,
-          labelMap: Map.fromEntries(collectionsList
-              .where((e) => e.id != null && e.title != null)
-              .map((e) => MapEntry(e.id!, e.title!))),
-        );
+                collectionsList.map((e) => e.id ?? '').toList(),
+                selectedCollections,
+                labelMap: Map.fromEntries(collectionsList
+                    .where((e) => e.id != null && e.title != null)
+                    .map((e) => MapEntry(e.id!, e.title!))),
+              );
       case FilterSection.categories:
         return isLoadingCategories
             ? const Center(child: CircularProgressIndicator())
             : Column(
-          children: [
-            // 🔎 Minimal search field with underline + clear
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4.0),
-              child: TextField(
-                controller: categorySearchController,
-                decoration: InputDecoration(
-                  hintText: "Search categories",
-                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                  border: const UnderlineInputBorder(),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey), // light grey line
+                children: [
+                  // 🔎 Minimal search field with underline + clear
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: TextField(
+                      controller: categorySearchController,
+                      decoration: InputDecoration(
+                        hintText: AppStrings.search_categories,
+                        hintStyle:
+                            const TextStyle(color: Colors.grey, fontSize: 14),
+                        border: const UnderlineInputBorder(),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.grey), // light grey line
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                              color: AppColors.primary,
+                              width: 2), // highlight on focus
+                        ),
+                        suffixIcon: categorySearchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear,
+                                    size: 18, color: Colors.grey),
+                                onPressed: () {
+                                  categorySearchController.clear();
+                                  setState(() {
+                                    categorySearchQuery = '';
+                                  });
+                                },
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 0, vertical: 16),
+                      ),
+                      style: const TextStyle(fontSize: 14),
+                      onChanged: (value) {
+                        setState(() {
+                          categorySearchQuery = value.toLowerCase();
+                        });
+                      },
+                    ),
                   ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primary, width: 2), // highlight on focus
-                  ),
-                  suffixIcon: categorySearchQuery.isNotEmpty
-                      ? IconButton(
-                    icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
-                    onPressed: () {
-                      categorySearchController.clear();
-                      setState(() {
-                        categorySearchQuery = '';
-                      });
-                    },
-                  )
-                      : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
-                ),
-                style: const TextStyle(fontSize: 14),
-                onChanged: (value) {
-                  setState(() {
-                    categorySearchQuery = value.toLowerCase();
-                  });
-                },
-              ),
-            ),
 
-            // Filtered list
-            Expanded(
-              child: _buildFilterList(
-                categoryList
-                    .where((e) =>
-                e.name != null &&
-                    e.name!.toLowerCase().contains(categorySearchQuery))
-                    .map((e) => e.id ?? '')
-                    .toList(),
-                selectedCategories,
-                labelMap: Map.fromEntries(
-                  categoryList
-                      .where((e) =>
-                  e.id != null &&
-                      e.name != null &&
-                      e.name!.toLowerCase().contains(categorySearchQuery))
-                      .map((e) => MapEntry(e.id!, e.name!)),
-                ),
-              ),
-            ),
-          ],
-        );
+                  // Filtered list
+                  Expanded(
+                    child: _buildFilterList(
+                      categoryList
+                          .where((e) =>
+                              e.name != null &&
+                              e.name!
+                                  .toLowerCase()
+                                  .contains(categorySearchQuery))
+                          .map((e) => e.id ?? '')
+                          .toList(),
+                      selectedCategories,
+                      labelMap: Map.fromEntries(
+                        categoryList
+                            .where((e) =>
+                                e.id != null &&
+                                e.name != null &&
+                                e.name!
+                                    .toLowerCase()
+                                    .contains(categorySearchQuery))
+                            .map((e) => MapEntry(e.id!, e.name!)),
+                      ),
+                    ),
+                  ),
+                ],
+              );
       case FilterSection.tags:
         return isTagsLoading
             ? const Center(child: CircularProgressIndicator())
             : _buildFilterList(
-          tagsList.map((e) => e.id ?? '').toList(),
-          selectedTags,
-          labelMap: Map.fromEntries(tagsList
-              .where((e) => e.id != null && e.value != null)
-              .map((e) => MapEntry(e.id!, e.value!))),
-        );
+                tagsList.map((e) => e.id ?? '').toList(),
+                selectedTags,
+                labelMap: Map.fromEntries(tagsList
+                    .where((e) => e.id != null && e.value != null)
+                    .map((e) => MapEntry(e.id!, e.value!))),
+              );
       case FilterSection.price:
         return _buildPriceFilter();
       case FilterSection.sortBy:
         return _buildSortByFilter();
-
     }
   }
 
   Widget _buildFilterList(
-      List<String> items,
-      Set<String> selectedSet, {
-        Map<String, String>? labelMap,
-      }) {
+    List<String> items,
+    Set<String> selectedSet, {
+    Map<String, String>? labelMap,
+  }) {
     return ListView(
       children: items.map((id) {
         final isSelected = selectedSet.contains(id);
@@ -333,18 +339,23 @@ class _FilterPageState extends State<FilterPage> {
   Widget _buildPriceFilter() {
     return Column(
       children: [
-        _buildPriceInput('Min: ',minPriceController, 1,minPrice, (value) {
-          setState(() => minPrice = value.isEmpty ? null : double.tryParse(value));
+        _buildPriceInput('${AppStrings.min}: ', minPriceController, 1, minPrice,
+            (value) {
+          setState(
+              () => minPrice = value.isEmpty ? null : double.tryParse(value));
         }),
-        _buildPriceInput('Max: ',maxPriceController, 999999,maxPrice, (value) {
-          setState(() => maxPrice = value.isEmpty ? null : double.tryParse(value));
+        _buildPriceInput(
+            '${AppStrings.max}: ', maxPriceController, 999999, maxPrice,
+            (value) {
+          setState(
+              () => maxPrice = value.isEmpty ? null : double.tryParse(value));
         }),
       ],
     );
   }
 
-  Widget _buildPriceInput(
-      String label, TextEditingController textController,double hint,double? value, ValueChanged<String> onChanged) {
+  Widget _buildPriceInput(String label, TextEditingController textController,
+      double hint, double? value, ValueChanged<String> onChanged) {
     return Row(
       children: [
         Text(label),
@@ -356,7 +367,8 @@ class _FilterPageState extends State<FilterPage> {
             ],
             keyboardType: TextInputType.number,
             controller: textController,
-            decoration: InputDecoration(hintText: '₹${hint.toInt()}'),
+            decoration: InputDecoration(
+                hintText: '${AppStrings.rupee_symbol}${hint.toInt()}'),
             onChanged: onChanged,
           ),
         ),
@@ -462,7 +474,7 @@ class SidebarItem extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
           color:
-          selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
+              selected ? AppColors.primary.withAlpha(50) : Colors.transparent,
           border: Border(
             left: BorderSide(
               color: selected ? AppColors.primary : Colors.transparent,
@@ -506,7 +518,9 @@ class FilterOption extends StatelessWidget {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             const SizedBox(width: 8),
-            Flexible(child: Text(title, style: FontUtils.primaryFontStyle(fontSize: 16))),
+            Flexible(
+                child: Text(title,
+                    style: FontUtils.primaryFontStyle(fontSize: 16))),
           ],
         ),
       ),

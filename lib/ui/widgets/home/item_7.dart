@@ -20,10 +20,15 @@ class Item7 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: backgroundDecoration,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: containerPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -31,7 +36,8 @@ class Item7 extends StatelessWidget {
             Visibility(
               visible: content.layoutTitle?.isNotEmpty == true,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -85,7 +91,7 @@ class Item7 extends StatelessWidget {
               child: Row(
                 children: List.generate(
                   content.layoutData?.length ?? 0,
-                      (index) {
+                  (index) {
                     final layoutData = content.layoutData![index];
                     return GestureDetector(
                       onTap: () {
@@ -97,7 +103,8 @@ class Item7 extends StatelessWidget {
                       },
                       child: Padding(
                         padding: EdgeInsets.only(
-                          right: index == content.layoutData!.length - 1 ? 0 : 16,
+                          right:
+                              index == content.layoutData!.length - 1 ? 0 : 16,
                         ),
                         child: _Item7Card(layoutData: layoutData),
                       ),
@@ -125,7 +132,7 @@ class _Item7Card extends StatelessWidget {
     return Container(
       width: 150, // You can also make this dynamic if needed
       decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.15),
+        color: AppColors.secondary,
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(12),
@@ -141,18 +148,16 @@ class _Item7Card extends StatelessWidget {
                 color: Colors.white,
                 child: imageUrl.isNotEmpty
                     ? CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) =>
-                  const ImageFallbackWidget(h: 60, w: 60),
-                )
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) =>
+                            const ImageFallbackWidget(h: 60, w: 60),
+                      )
                     : const ImageFallbackWidget(h: 60, w: 60),
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
           Text(
             layoutData.title ?? "",
             maxLines: 1,
@@ -163,9 +168,7 @@ class _Item7Card extends StatelessWidget {
               color: AppColors.textColor,
             ),
           ),
-
           const SizedBox(height: 6),
-
           Text(
             layoutData.subTitle ?? "",
             maxLines: 2,
@@ -180,6 +183,3 @@ class _Item7Card extends StatelessWidget {
     );
   }
 }
-
-
-
