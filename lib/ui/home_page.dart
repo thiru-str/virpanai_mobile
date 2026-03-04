@@ -15,7 +15,9 @@ import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
+import 'package:waioz/ui/widgets/home/banner_3_4.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
+import 'package:waioz/ui/widgets/home/grid_3.dart';
 import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_12.dart';
 import 'package:waioz/ui/widgets/home/item_13.dart';
@@ -311,6 +313,10 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Grid2(content: homePageContent!);
+      case "Grid3":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid3(content: homePageContent!);
       case "Banner2": // video
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -323,6 +329,14 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Banner1(content: homePageContent!);
+      case "Banner3":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner3(content: homePageContent!);
+      case "Banner4":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner4(content: homePageContent!);
       case "item9":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
