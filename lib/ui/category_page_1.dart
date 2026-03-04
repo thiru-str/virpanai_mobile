@@ -44,121 +44,133 @@ class _CategoryPage1State extends State<CategoryPage1> {
       backgroundColor: Colors.white,
       body: apiLoading
           ? Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : Row(
-        children: [
-          // LEFT MAIN CATEGORY LIST
-          Container(
-            width: 100,
-            color: Color(0xFFF5FEF2),
-            child: ListView.builder(
-              itemCount: productCategoriesResponse!.productCategories!.length,
-              itemBuilder: (context, index) {
-                final mainCategory =
-                productCategoriesResponse!.productCategories![index];
-                final isSelected = index == selectedIndex;
+              children: [
+                // LEFT MAIN CATEGORY LIST
+                Container(
+                  width: 100,
+                  color: Color(0xFFF5FEF2),
+                  child: ListView.builder(
+                    itemCount:
+                        productCategoriesResponse!.productCategories!.length,
+                    itemBuilder: (context, index) {
+                      final mainCategory =
+                          productCategoriesResponse!.productCategories![index];
+                      final isSelected = index == selectedIndex;
 
-                return InkWell(
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                    });
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.white : Color(0xFFF5FEF2),
-                      border: Border(
-                        left: BorderSide(
-                          color: isSelected ? AppColors.primary : Colors.transparent,
-                          width: 4, // Blue indicator width
-                        ),
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (mainCategory.image != null && mainCategory.image!.isNotEmpty)
-                          CachedNetworkImage(imageUrl:mainCategory.image!,
-                              height: 40, width: 40, fit: BoxFit.contain),
-                        const SizedBox(height: 6),
-                        Text(
-                          mainCategory.name ?? '',
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? AppColors.primary : Colors.black,
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected ? Colors.white : Color(0xFFF5FEF2),
+                            border: Border(
+                              left: BorderSide(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.transparent,
+                                width: 4, // Blue indicator width
+                              ),
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (mainCategory.image != null &&
+                                  mainCategory.image!.isNotEmpty)
+                                CachedNetworkImage(
+                                    imageUrl: mainCategory.image!,
+                                    height: 40,
+                                    width: 40,
+                                    fit: BoxFit.contain),
+                              const SizedBox(height: 6),
+                              Text(
+                                mainCategory.name ?? '',
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-
-              },
-            ),
-          ),
-
-          // RIGHT SUBCATEGORY GRID
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Builder(
-                builder: (_) {
-                  final selectedCategory = productCategoriesResponse!
-                      .productCategories![selectedIndex];
-
-                  final subCategories =
-                      selectedCategory.categoryChildren ?? [];
-
-                  if (subCategories.isEmpty) {
-                    return Center(
-                      child: Text("No subcategories found"),
-                    );
-                  }
-
-                  return MasonryGridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    itemCount: subCategories.length,
-                    itemBuilder: (context, index) {
-                      final subCategory = subCategories[index];
-
-                      return SubCategoryTile(
-                        imagePath: subCategory.image ?? '',
-                        title: subCategory.name ?? '',
-                        onTap: () {
-                          if (subCategory.categoryChildren != null &&
-                              subCategory.categoryChildren!.isNotEmpty) {
-                            PageRouteUtils.pushWithFade(
-                              context,
-                              SubCategoryPage(
-                                categoryTitle: subCategory.name!,
-                                productCategory:
-                                subCategory.categoryChildren!,
-                              ),
-                            );
-                          } else {
-                            PageRouteUtils.pushWithFade(
-                              context,
-                              ProductPage(categoryId: subCategory.id!),
-                            );
-                          }
-                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+
+                // RIGHT SUBCATEGORY GRID
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Builder(
+                      builder: (_) {
+                        final selectedCategory = productCategoriesResponse!
+                            .productCategories![selectedIndex];
+
+                        final subCategories =
+                            selectedCategory.categoryChildren ?? [];
+
+                        if (subCategories.isEmpty) {
+                          return Center(
+                            child: Text(AppStrings.no_subcategories_found),
+                          );
+                        }
+
+                        return MasonryGridView.count(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          itemCount: subCategories.length,
+                          itemBuilder: (context, index) {
+                            final subCategory = subCategories[index];
+
+                            return SubCategoryTile(
+                              imagePath: subCategory.image ?? '',
+                              title: subCategory.name ?? '',
+                              onTap: () {
+                                if (subCategory.categoryChildren != null &&
+                                    subCategory.categoryChildren!.isNotEmpty) {
+                                  PageRouteUtils.pushWithFade(
+                                    context,
+                                    SubCategoryPage(
+                                      categoryTitle: subCategory.name!,
+                                      productCategory:
+                                          subCategory.categoryChildren!,
+                                    ),
+                                  );
+                                } else {
+                                  PageRouteUtils.pushWithFade(
+                                    context,
+                                    ProductPage(categoryId: subCategory.id!),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                )
+              ],
             ),
-          )
-        ],
-      ),
     );
   }
 
@@ -209,7 +221,7 @@ class SubCategoryTile extends StatelessWidget {
               height: 70,
               width: 70,
               child: imagePath.isNotEmpty
-                  ? CachedNetworkImage(imageUrl:imagePath, fit: BoxFit.contain)
+                  ? CachedNetworkImage(imageUrl: imagePath, fit: BoxFit.contain)
                   : const Icon(Icons.image_not_supported, size: 40),
             ),
           ),
@@ -232,5 +244,3 @@ class SubCategoryTile extends StatelessWidget {
     );
   }
 }
-
-

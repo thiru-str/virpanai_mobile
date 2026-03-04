@@ -40,6 +40,12 @@ class _ProductViewState extends State<ProductView> {
   @override
   void initState() {
     super.initState();
+    final providedType = _mapStringToType(widget.type);
+    if (providedType != null) {
+      _resolvedType = providedType;
+      _isLoading = false;
+      return;
+    }
     _loadType();
   }
 
@@ -48,6 +54,7 @@ class _ProductViewState extends State<ProductView> {
         await SharedPreferencesUtil().getString('product_view');
     debugPrint('product view $savedTypeString');
 
+    if (!mounted) return;
     setState(() {
       _resolvedType = _mapStringToType(widget.type) ??
           _mapStringToType(savedTypeString) ??

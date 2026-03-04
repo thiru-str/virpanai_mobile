@@ -34,6 +34,7 @@ import 'package:waioz/utility/app_colors.dart';
 import '../../api/api_service.dart';
 import '../model/custom_page_response.dart';
 import '../utility/app_assets.dart';
+import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
 import '../utility/page_route_utils.dart';
 import 'bottom_nav_page.dart';
@@ -134,8 +135,9 @@ class _CustomPageState extends State<CustomPage> {
                             child: customPageResponse?.content?.isEmpty == true
                                 ? Center(
                                     child: NoOrdersWidget(
-                                        message: 'Your Components is Empty',
-                                        buttonText: 'Explore Categories',
+                                        message: AppStrings.components_empty,
+                                        buttonText:
+                                            AppStrings.explore_categories,
                                         iconPath: AppAssets.ic_cart_empty,
                                         onButtonTap: () {
                                           eventBus.fire(TabSwitchEvent(1));

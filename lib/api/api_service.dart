@@ -51,16 +51,22 @@ import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
 class ApiService {
-  final Dio _dio = Dio();
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
+  late final Dio _dio;
 
-  ApiService() {
+  ApiService._internal() {
     // Configure Dio
-    _dio.options.baseUrl = AppConfig.baseUrl;
-    _dio.options.headers = {
-      "Content-Type": "application/json",
-    };
-    _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
-    _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppConfig.baseUrl,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
   }
 
   Future<T> _makePostRequest<T>(

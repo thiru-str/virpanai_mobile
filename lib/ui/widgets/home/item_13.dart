@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -176,7 +177,7 @@ class _Item13Card extends StatelessWidget {
                       color: Colors.green,
                       alignment: Alignment.center,
                       child: const Text(
-                        "NEW",
+                        AppStrings.new_tag,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -286,7 +287,7 @@ class _Item13Card extends StatelessWidget {
                 icon: const Icon(Icons.shopping_cart_outlined,
                     size: 16, color: Colors.brown),
                 label: const Text(
-                  "ADD TO CART",
+                  AppStrings.add_to_cart,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,

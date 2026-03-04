@@ -299,7 +299,7 @@ class _Item9Card extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text("Add To Cart"),
+                      child: const Text(AppStrings.add_to_cart),
                     ),
                   ),
           ),

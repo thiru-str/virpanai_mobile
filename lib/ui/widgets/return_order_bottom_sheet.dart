@@ -3,11 +3,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:waioz/model/return_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 
 import '../../api/api_service.dart';
 import '../../model/order_detail_response.dart';
-
 
 class ReturnOrderBottomSheet extends StatefulWidget {
   final String orderId;
@@ -38,7 +38,7 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _selectedQty = (widget.orderItem.quantity??1).toInt();
+    _selectedQty = (widget.orderItem.quantity ?? 1).toInt();
   }
 
   @override
@@ -61,7 +61,7 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  "Return Order",
+                  AppStrings.return_order,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -89,12 +89,12 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: CachedNetworkImage(
-                      imageUrl: order.thumbnail??'',
+                      imageUrl: order.thumbnail ?? '',
                       width: 50,
                       height: 50,
                       fit: BoxFit.cover,
                       errorWidget: (_, __, ___) =>
-                      const Icon(Icons.image_not_supported),
+                          const Icon(Icons.image_not_supported),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -103,7 +103,7 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          order.productTitle??'',
+                          order.productTitle ?? '',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -113,7 +113,7 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          order.variantTitle??'',
+                          order.variantTitle ?? '',
                           style: const TextStyle(
                               fontSize: 13, color: Colors.black54),
                         ),
@@ -123,8 +123,8 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
 
                   // 🔹 Quantity Selector (no dropdown)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade300),
                       borderRadius: BorderRadius.circular(8),
@@ -154,7 +154,8 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              if (_selectedQty < (order.quantity??0)) _selectedQty++;
+                              if (_selectedQty < (order.quantity ?? 0))
+                                _selectedQty++;
                             });
                           },
                           child: const Icon(Icons.add,
@@ -171,7 +172,7 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
 
             // 🔹 Reason
             const Text(
-              "Reason",
+              AppStrings.reason,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -184,34 +185,35 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
               return RadioListTile<String>(
                 contentPadding: EdgeInsets.zero,
                 dense: true,
-                value: reason.id??'',
+                value: reason.id ?? '',
                 groupValue: _selectedReasonId,
-                title: Text(reason.label??'',
-                    style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                title: Text(reason.label ?? '',
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.black87)),
                 activeColor: AppColors.primary,
                 onChanged: (val) {
                   setState(() {
                     _selectedReasonId = val;
                     _selectedReason = reason.label;
-                    if (val != "Others") _customReason = null;
+                    if (val != AppStrings.others) _customReason = null;
                   });
                 },
               );
             }).toList(),
 
             // 🔹 Custom Reason TextField (if Others)
-            if (_selectedReason == "Others")
+            if (_selectedReason == AppStrings.others)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 12),
                 child: TextField(
                   onChanged: (value) => _customReason = value,
                   maxLines: 3,
                   decoration: InputDecoration(
-                    hintText: "Write a reason",
+                    hintText: AppStrings.write_a_reason,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide:
-                      BorderSide(color: Colors.grey.shade300, width: 1),
+                          BorderSide(color: Colors.grey.shade300, width: 1),
                     ),
                   ),
                 ),
@@ -220,38 +222,45 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
             const SizedBox(height: 10),
 
             // 🔹 Confirm Button
-            apiLoading?Center(child: CircularProgressIndicator(color: AppColors.primary,),):SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _selectedReasonId == null
-                    ? null
-                    : () {
-                  processReturn();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            apiLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  )
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _selectedReasonId == null
+                          ? null
+                          : () {
+                              processReturn();
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        AppStrings.confirm_return,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  "Confirm Return",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
+
   Future<void> processReturn() async {
     try {
       final order = widget.orderItem;
@@ -259,12 +268,19 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
         apiLoading = true;
       });
       final ApiService apiService = ApiService();
-      final response = await apiService.processReturn(context, widget.orderId??'', widget.cartId, order.id??'', _selectedQty, _selectedReasonId??'', _customReason??'', order.fulfillmentId??'');
-      if(response.status??false)
-        {
-          AppUtils.showToast(response.message??'');
-          Navigator.pop(context,true);
-        }
+      final response = await apiService.processReturn(
+          context,
+          widget.orderId ?? '',
+          widget.cartId,
+          order.id ?? '',
+          _selectedQty,
+          _selectedReasonId ?? '',
+          _customReason ?? '',
+          order.fulfillmentId ?? '');
+      if (response.status ?? false) {
+        AppUtils.showToast(response.message ?? '');
+        Navigator.pop(context, true);
+      }
       setState(() {
         apiLoading = false;
       });
@@ -275,5 +291,4 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
       });
     }
   }
-
 }

@@ -198,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                             const Padding(
                               padding: EdgeInsets.all(16.0),
                               child: Text(
-                                "End of page",
+                                AppStrings.end_of_page,
                                 style: TextStyle(color: Colors.grey),
                               ),
                             ),

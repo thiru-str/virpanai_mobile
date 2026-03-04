@@ -46,9 +46,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   String invoiceUrl = "";
   String token = "";
 
-
-
-
   @override
   void initState() {
     super.initState();
@@ -58,8 +55,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   Future<void> initializePages() async {
     getOrderHistoryAPI();
-    invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url'))??'';
-    token = (await SharedPreferencesUtil().getString('token'))??'';
+    invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url')) ?? '';
+    token = (await SharedPreferencesUtil().getString('token')) ?? '';
   }
 
   Future<void> initReturn() async {
@@ -112,7 +109,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return PopScope(
         canPop: false, // Disable default back button
         onPopInvoked: (didPop) async {
@@ -132,7 +128,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
               } else {
-                PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+                PageRouteUtils.pushAndRemoveUntil(
+                    context, const BottomNavPage());
               }
             },
           ),
@@ -144,14 +141,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 )
               : SingleChildScrollView(
                   // Wrap the body with SingleChildScrollView for scrolling
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   child: Column(
                     // Use a Column to arrange the widgets vertically
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildOrdersList(),
                       const SizedBox(height: 10), // List of order items
-                      _buildSectionTitle('Billing details'),
+                      _buildSectionTitle(AppStrings.billing_details),
                       const SizedBox(height: 10), // List of order items
                       Container(
                         padding: const EdgeInsets.all(0.0),
@@ -203,7 +201,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildSectionTitle('Shipping details'),
+                      _buildSectionTitle(AppStrings.shipping_details),
                       const SizedBox(height: 20), // List of order items
                       _buildShippingDetailsCard(), // Shipping details card
                       const SizedBox(height: 20),
@@ -214,7 +212,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                             _showCancellation(context, order?.id ?? '');
                           },
                           child: Text(
-                            'Cancel Order',
+                            AppStrings.cancel_order,
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               color: Colors.red,
@@ -226,9 +224,10 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                       Visibility(
                         visible: (order?.paymentStatus ?? '') == 'delivered',
                         child: ProfileItemWidget(
-                          title: 'Download Invoice',
+                          title: AppStrings.download_invoice,
                           onTap: () {
-                            _launchURL('$invoiceUrl/${order?.id??''}?token=${token}&isdownload=true');
+                            _launchURL(
+                                '$invoiceUrl/${order?.id ?? ''}?token=${token}&isdownload=true');
                           },
                         ),
                       )
@@ -266,8 +265,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       context: context,
       builder: (context) {
         return CommonAlertDialog(
-          title: 'Cancel Order',
-          content: 'Are you sure you want to cancel the order?',
+          title: AppStrings.cancel_order,
+          content: AppStrings.cancel_order_confirmation,
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
           onTapOk: () async {
@@ -303,25 +302,25 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         .toList();
 
     final List<Item> deliveredItems = allItems
-        .where((item) => !(item.status ?? '').toLowerCase().contains('returned'))
+        .where(
+            (item) => !(item.status ?? '').toLowerCase().contains('returned'))
         .toList();
 
     final bool hasReturned = returnedItems.isNotEmpty;
     final bool hasDelivered = deliveredItems.isNotEmpty;
 
-
     final List<Item> visibleItems = !hasReturned
         ? deliveredItems
         : !hasDelivered
-        ? returnedItems
-        : (_currentTab == 0 ? deliveredItems : returnedItems);
+            ? returnedItems
+            : (_currentTab == 0 ? deliveredItems : returnedItems);
 
     if (visibleItems.isEmpty) {
       return const Padding(
         padding: EdgeInsets.only(top: 40),
         child: Center(
           child: Text(
-            "No items found.",
+            AppStrings.no_items_found,
             style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
         ),
@@ -340,7 +339,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           ),
           const SizedBox(height: 16),
         ],
-
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -357,7 +355,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 imageUrl: itemDetail.thumbnail ?? '',
                 variant: itemDetail.variantTitle ?? '',
                 productName:
-                '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
+                    '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
                 status: itemDetail.status ?? '',
                 price: CurrencyUtil.appendCurrency(
                   ((itemDetail.unitPrice ?? 0) * (itemDetail.quantity ?? 0))
@@ -389,8 +387,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     );
   }
 
-
-
   Widget _buildShippingDetailsCard() {
     return Container(
         padding: const EdgeInsets.all(20),
@@ -421,12 +417,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     if (orderStatus == 'canceled') {
       return [
         OrderStatusStep(
-          label: 'Processing',
+          label: AppStrings.processing,
           svgAsset: AppAssets.order_processing,
           activeColor: Colors.grey,
         ),
         OrderStatusStep(
-          label: 'Cancelled',
+          label: AppStrings.cancelled,
           svgAsset: AppAssets.order_canceled,
           activeColor: Colors.red,
         ),
@@ -435,22 +431,22 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
     return [
       OrderStatusStep(
-        label: 'Order Processing',
+        label: AppStrings.order_processing,
         svgAsset: AppAssets.order_processing,
         activeColor: Colors.grey,
       ),
       OrderStatusStep(
-        label: 'Ready For Dispatch',
+        label: AppStrings.ready_for_dispatch,
         svgAsset: AppAssets.order_dispatch,
         activeColor: Colors.blue,
       ),
       OrderStatusStep(
-        label: 'Shipped',
+        label: AppStrings.shipped,
         svgAsset: AppAssets.order_shipped,
         activeColor: Colors.orange,
       ),
       OrderStatusStep(
-        label: 'Delivered',
+        label: AppStrings.delivered,
         svgAsset: AppAssets.order_delivered,
         activeColor: Colors.green,
       ),
