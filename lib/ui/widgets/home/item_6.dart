@@ -136,7 +136,7 @@ class _Item6Card extends StatelessWidget {
         width: 220, // similar to item5 width
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.secondary.withOpacity(0.15),
+          color: AppColors.secondary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -181,19 +181,6 @@ class _Item6Card extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if ((layoutData.subTitle ?? '').isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        layoutData.subTitle!,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 12,
-                          color: AppColors.textColor.withOpacity(0.7),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
                 ],
               ),
             ),

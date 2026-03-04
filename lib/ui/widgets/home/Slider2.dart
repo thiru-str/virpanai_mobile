@@ -142,67 +142,70 @@ class _Slider2Card extends StatelessWidget {
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ✅ Fixed image section (all aligned)
-                Container(
-                  width: isSmallScreen ? 80 : 90,
-                  height: isSmallScreen ? 80 : 90,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: (imageUrl.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) =>
-                                const ImageFallbackWidget(h: 80),
-                          )
-                        : const ImageFallbackWidget(h: 80),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // ✅ Text section (auto height but doesn’t affect image line)
-                Visibility(
-                  visible: layoutData.title?.isNotEmpty == true,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: isSmallScreen ? 32 : 34,
-                      maxHeight: isSmallScreen ? 40 : 44,
+            Padding(
+              padding: EdgeInsets.only(top: _hasDiscount ? 10 : 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ✅ Fixed image section (all aligned)
+                  Container(
+                    width: isSmallScreen ? 80 : 90,
+                    height: isSmallScreen ? 80 : 90,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Text(
-                        layoutData.title ?? '',
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: isSmallScreen ? 11 : 12,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: (imageUrl.isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) =>
+                                  const ImageFallbackWidget(h: 80),
+                            )
+                          : const ImageFallbackWidget(h: 80),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 6),
+          
+                  // ✅ Text section (auto height but doesn’t affect image line)
+                  Visibility(
+                    visible: layoutData.title?.isNotEmpty == true,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: isSmallScreen ? 32 : 34,
+                        maxHeight: isSmallScreen ? 40 : 44,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Text(
+                          layoutData.title ?? '',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: isSmallScreen ? 11 : 12,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
-            // ✅ Floating discount badge (stays above)
+            // Keep discount badge on top/front with half overlap
             if (_hasDiscount)
               Positioned(
                 top: 0,
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -216,7 +219,7 @@ class _Slider2Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 10,
                       color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

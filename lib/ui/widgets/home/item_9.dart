@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -193,21 +194,8 @@ class _Item9Card extends StatelessWidget {
                 Positioned(
                   top: 6,
                   left: 6,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueGrey.shade800,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${prices.discountPercentage} OFF',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  child: _DiscountBurstBadge(
+                    discountText: prices.discountPercentage!,
                   ),
                 ),
               Positioned(
@@ -323,4 +311,70 @@ class _Item9Card extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DiscountBurstBadge extends StatelessWidget {
+  final String discountText;
+
+  const _DiscountBurstBadge({
+    required this.discountText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = discountText.contains('%')
+        ? discountText.trim()
+        : '${discountText.trim()}%';
+
+    return ClipPath(
+      clipper: _BurstClipper(),
+      child: Container(
+        width: 34,
+        height: 34,
+        color: Colors.blueGrey.shade800,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(2),
+        child: Text(
+          '$normalized',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 8,
+            height: 1.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BurstClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final outerRadius = math.min(size.width, size.height) / 2;
+    final innerRadius = outerRadius * 0.88;
+    const points = 18;
+
+    final path = Path();
+    for (int i = 0; i < points * 2; i++) {
+      final isOuter = i.isEven;
+      final radius = isOuter ? outerRadius : innerRadius;
+      final angle = (math.pi / points) * i - (math.pi / 2);
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

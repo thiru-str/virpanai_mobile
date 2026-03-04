@@ -140,7 +140,7 @@ class _Item14Card extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 180,
-        color: Colors.transparent,
+        color: AppColors.secondary,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -189,7 +189,10 @@ class _Item14Card extends StatelessWidget {
             // 🔹 Price Row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     CurrencyUtil.appendCurrency(selling.toStringAsFixed(0)),
@@ -211,7 +214,6 @@ class _Item14Card extends StatelessWidget {
                     ),
                   if (percentOff != null)
                     Container(
-                      margin: const EdgeInsets.only(left: 6),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(

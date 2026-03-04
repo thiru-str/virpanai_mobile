@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../model/home_page_response.dart';
@@ -77,7 +76,7 @@ class Grid2 extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 🔹 Responsive Masonry Grid
+            // 🔹 Responsive Grid (keeps strict left-to-right list order)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: LayoutBuilder(
@@ -89,13 +88,16 @@ class Grid2 extends StatelessWidget {
                   final crossAxisCount = isSmallScreen ? 4 : 5;
                   final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
 
-                  return MasonryGridView.count(
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: crossAxisSpacing,
+                  return GridView.builder(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     itemCount: items.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: crossAxisSpacing,
+                      childAspectRatio: isSmallScreen ? 0.78 : 0.84,
+                    ),
                     itemBuilder: (context, index) {
                       final layoutData = items[index];
                       return _Grid2Card(

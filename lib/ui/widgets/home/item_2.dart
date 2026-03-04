@@ -69,6 +69,7 @@ class _Item2State extends State<Item2> {
                 );
               },
             ),
+            if((widget.content?.layoutData?.length ?? 0)>1)...[
             Positioned(
               bottom: 16.0,
               child: Row(
@@ -88,7 +89,7 @@ class _Item2State extends State<Item2> {
                   );
                 }),
               ),
-            ),
+            ),],
           ],
         ),
       ),
