@@ -834,10 +834,6 @@ class _CartPageState extends State<CartPage>
       setState(() {
         cartLoading = false;
       });
-      if(response.order?.id?.isEmpty == true){
-        getCartApi();
-        return;
-      }
       PageRouteUtils.pushAndRemoveUntil(
           context,
           OrderPlacedPage(
