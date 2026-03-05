@@ -87,31 +87,30 @@ class Grid2 extends StatelessWidget {
                   // Dynamically adjust grid spacing & columns
                   final crossAxisCount = isSmallScreen ? 4 : 5;
                   final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
+                  final itemWidth = (screenWidth -
+                          (crossAxisSpacing * (crossAxisCount - 1))) /
+                      crossAxisCount;
 
-                  return GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: items.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: crossAxisSpacing,
-                      childAspectRatio: isSmallScreen ? 0.78 : 0.84,
-                    ),
-                    itemBuilder: (context, index) {
+                  return Wrap(
+                    spacing: crossAxisSpacing,
+                    runSpacing: 10,
+                    children: List.generate(items.length, (index) {
                       final layoutData = items[index];
-                      return _Grid2Card(
-                        layoutData: layoutData,
-                        isSmallScreen: isSmallScreen,
-                        onTap: () {
-                          RedirectUtils.handleContentRedirect(
-                            context: context,
-                            layoutOption: content.layoutOption!,
-                            layoutData: layoutData,
-                          );
-                        },
+                      return SizedBox(
+                        width: itemWidth,
+                        child: _Grid2Card(
+                          layoutData: layoutData,
+                          isSmallScreen: isSmallScreen,
+                          onTap: () {
+                            RedirectUtils.handleContentRedirect(
+                              context: context,
+                              layoutOption: content.layoutOption!,
+                              layoutData: layoutData,
+                            );
+                          },
+                        ),
                       );
-                    },
+                    }),
                   );
                 },
               ),

@@ -839,6 +839,7 @@ class _CartPageState extends State<CartPage>
             orderId: response.order?.id ?? '',
           ));
     } catch (e) {
+      getCartApi();
       setState(() {
         cartLoading = false;
       });
@@ -849,7 +850,7 @@ class _CartPageState extends State<CartPage>
   void makeRazorPayCall(String orderId) {
     var options = {
       'key': _getProviderKey(pp_id, paymentProviders),
-      'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
+      'amount': ((cartResponse?.cart?.total??1) * 100).round(),
       'name': AppConfig.appName,
       'description': '${AppStrings.payment_to} ${AppConfig.appName}',
       'order_id': orderId,

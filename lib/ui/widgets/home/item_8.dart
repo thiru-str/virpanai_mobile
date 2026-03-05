@@ -4,6 +4,8 @@ import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
+import '../../../utility/redirect_utils.dart';
+
 class Item8 extends StatefulWidget {
   final Content? content;
   final double height;
@@ -37,12 +39,22 @@ class _Item8State extends State<Item8> {
         },
         itemBuilder: (context, index) {
           LayoutDatum? layoutdata = widget.content?.layoutData?[index];
-          return CachedNetworkImage(
-            imageUrl:layoutdata!.image!,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            errorWidget: (context, url, error) =>const ImageFallbackWidget(
-              h: 80,
+          return GestureDetector(
+            onTap: () {
+              if (layoutdata == null) return;
+              RedirectUtils.handleContentRedirect(
+                context: context,
+                layoutOption: widget.content?.layoutOption ?? "",
+                layoutData: layoutdata,
+              );
+            },
+            child: CachedNetworkImage(
+              imageUrl: layoutdata?.image ?? '',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorWidget: (context, url, error) => const ImageFallbackWidget(
+                h: 80,
+              ),
             ),
           );
         },
@@ -50,4 +62,3 @@ class _Item8State extends State<Item8> {
     );
   }
 }
-
