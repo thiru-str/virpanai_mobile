@@ -27,37 +27,40 @@ class _Item8State extends State<Item8> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: widget.height,
-      color: AppColors.secondary, // Background color
-      child: PageView.builder(
-        itemCount: widget.content?.layoutData?.length ?? 0,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        itemBuilder: (context, index) {
-          LayoutDatum? layoutdata = widget.content?.layoutData?[index];
-          return GestureDetector(
-            onTap: () {
-              if (layoutdata == null) return;
-              RedirectUtils.handleContentRedirect(
-                context: context,
-                layoutOption: widget.content?.layoutOption ?? "",
-                layoutData: layoutdata,
-              );
-            },
-            child: CachedNetworkImage(
-              imageUrl: layoutdata?.image ?? '',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              errorWidget: (context, url, error) => const ImageFallbackWidget(
-                h: 80,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        height: widget.height,
+        color: AppColors.secondary, // Background color
+        child: PageView.builder(
+          itemCount: widget.content?.layoutData?.length ?? 0,
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            LayoutDatum? layoutdata = widget.content?.layoutData?[index];
+            return GestureDetector(
+              onTap: () {
+                if (layoutdata == null) return;
+                RedirectUtils.handleContentRedirect(
+                  context: context,
+                  layoutOption: widget.content?.layoutOption ?? "",
+                  layoutData: layoutdata,
+                );
+              },
+              child: CachedNetworkImage(
+                imageUrl: layoutdata?.image ?? '',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorWidget: (context, url, error) => const ImageFallbackWidget(
+                  h: 80,
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
