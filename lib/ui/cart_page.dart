@@ -59,6 +59,7 @@ class _CartPageState extends State<CartPage>
   String? orderId;
   String? clientSecret;
   Razorpay razorpay = Razorpay();
+  bool showPriceBreakdown = false;
 
   @override
   void initState() {
@@ -371,31 +372,98 @@ class _CartPageState extends State<CartPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // CartCalculation(
-                            //   keyText: '${AppStrings.subTotal}:',
-                            //   valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
-                            // ),
-                            // Visibility(
-                            //     visible: cartResponse!.cart!.discountSubtotal!>0,
-                            //     child: CartCalculation(
-                            //       keyText: '${AppStrings.discount}:',
-                            //       valueText: '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                            //     )),
-                            // Visibility(
-                            //     visible: cartResponse!.cart!.shippingSubtotal!>0,
-                            //     child: CartCalculation(
-                            //       keyText: '${AppStrings.shipping}:',
-                            //       valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
-                            //     )),
-                            // CartCalculation(
-                            //   keyText: '${AppStrings.tax}:',
-                            //   valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                            // ),
-                            // CartCalculation(
-                            //   keyText: '${AppStrings.total}:',
-                            //   valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.total!.toStringAsFixed(2)),
-                            // ),
-                            // const SizedBox(height: 10,),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () {
+                                setState(() {
+                                  showPriceBreakdown = !showPriceBreakdown;
+                                });
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Price breakdown',
+                                      style: FontUtils.primaryFontStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textColor,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Icon(
+                                      showPriceBreakdown
+                                          ? Icons.keyboard_arrow_up
+                                          : Icons.keyboard_arrow_down,
+                                      color: AppColors.textColor50,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            AnimatedCrossFade(
+                              firstChild: const SizedBox.shrink(),
+                              secondChild: Column(
+                                children: [
+                                  CartCalculation(
+                                    keyText: '${AppStrings.subTotal}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                      _numOrZero(
+                                              cartResponse?.cart?.itemSubtotal)
+                                          .toStringAsFixed(2),
+                                    ),
+                                  ),
+                                  Visibility(
+                                    visible: _numOrZero(cartResponse
+                                            ?.cart?.discountSubtotal) >
+                                        0,
+                                    child: CartCalculation(
+                                      keyText: '${AppStrings.discount}:',
+                                      valueText:
+                                          '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
+                                    ),
+                                  ),
+                                  CartCalculation(
+                                    keyText: '${AppStrings.shipping}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                      _numOrZero(cartResponse
+                                              ?.cart?.shippingSubtotal)
+                                          .toStringAsFixed(2),
+                                    ),
+                                  ),
+                                  CartCalculation(
+                                    keyText: '${AppStrings.tax}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                      _numOrZero(cartResponse?.cart?.taxTotal)
+                                          .toStringAsFixed(2),
+                                    ),
+                                  ),
+                                  CartCalculation(
+                                    keyText: '${AppStrings.total}:',
+                                    keyStyle: FontUtils.primaryFontStyle(
+                                      fontSize: 14,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    valueStyle: FontUtils.primaryFontStyle(
+                                      fontSize: 14,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    valueText: CurrencyUtil.appendCurrency(
+                                      _numOrZero(cartResponse?.cart?.total)
+                                          .toStringAsFixed(2),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                ],
+                              ),
+                              crossFadeState: showPriceBreakdown
+                                  ? CrossFadeState.showSecond
+                                  : CrossFadeState.showFirst,
+                              duration: const Duration(milliseconds: 180),
+                            ),
                             GestureDetector(
                               onTap: () {
                                 if ((cartResponse?.cart?.promotions ?? [])
@@ -850,7 +918,7 @@ class _CartPageState extends State<CartPage>
       setState(() {
         cartLoading = false;
       });
-      if(response.order?.id?.isEmpty == true){
+      if (response.order?.id?.isEmpty == true) {
         getCartApi();
         return;
       }
@@ -871,7 +939,7 @@ class _CartPageState extends State<CartPage>
   void makeRazorPayCall(String orderId) {
     var options = {
       'key': _getProviderKey(pp_id, paymentProviders),
-      'amount': ((cartResponse?.cart?.total??1) * 100).round(),
+      'amount': ((cartResponse?.cart?.total ?? 1) * 100).round(),
       'name': AppConfig.appName,
       'description': '${AppStrings.payment_to} ${AppConfig.appName}',
       'order_id': orderId,
@@ -978,4 +1046,6 @@ class _CartPageState extends State<CartPage>
       return null;
     }
   }
+
+  num _numOrZero(num? value) => value ?? 0;
 }
