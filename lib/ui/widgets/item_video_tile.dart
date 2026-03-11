@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 class ItemVideoTile extends StatefulWidget {
   final String videoUrl;
@@ -24,8 +23,9 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoUrl.trim().replaceAll(' ', '%20')),
+    )..initialize().then((_) {
         if (mounted) setState(() {});
       });
   }
@@ -50,44 +50,41 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
 
   @override
   Widget build(BuildContext context) {
+    final hasTitle = widget.title.isNotEmpty;
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
             width: 160,
-            height: 250, // 👈 fixed compact size (same as image)
+            height: hasTitle ? 228 : 250,
             child: _controller?.value.isInitialized ?? false
                 ? FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: _controller!.value.size.width,
-                height: _controller!.value.size.height,
-                child: VideoPlayer(_controller!),
-              ),
-            )
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _controller!.value.size.width,
+                      height: _controller!.value.size.height,
+                      child: VideoPlayer(_controller!),
+                    ),
+                  )
                 : Container(color: Colors.black12),
           ),
         ),
         Visibility(
-          visible: widget.title.isNotEmpty,
-          child: Column(
-            children: [
-              const SizedBox(height: 6),
-              Flexible(
-                child: Text(
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  widget.title,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
+          visible: hasTitle,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              widget.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ),
-
       ],
     );
   }
 }
-

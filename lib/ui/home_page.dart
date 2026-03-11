@@ -12,12 +12,21 @@ import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/banner_3_4.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
 import 'package:waioz/ui/widgets/home/grid_3.dart';
+import 'package:waioz/ui/widgets/home/grid_5.dart';
+import 'package:waioz/ui/widgets/home/grid_6.dart';
+import 'package:waioz/ui/widgets/home/grid_7.dart';
+import 'package:waioz/ui/widgets/home/grid_8.dart';
+import 'package:waioz/ui/widgets/home/grid_10.dart';
+import 'package:waioz/ui/widgets/home/grid_11.dart';
 import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_12.dart';
 import 'package:waioz/ui/widgets/home/item_13.dart';
 import 'package:waioz/ui/widgets/home/item_14.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
+import 'package:waioz/ui/widgets/home/slider_6.dart';
+import 'package:waioz/ui/widgets/home/slider_7.dart';
+import 'package:waioz/ui/widgets/home/slider_9.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
@@ -322,6 +331,30 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Grid3(content: homePageContent!);
+      case "Grid5":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid5(content: homePageContent!);
+      case "Grid6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid6(content: homePageContent!);
+      case "Grid7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid7(content: homePageContent!);
+      case "Grid8":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid8(content: homePageContent!);
+      case "Grid10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid10(content: homePageContent!);
+      case "Grid11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid11(content: homePageContent!);
       case "Banner2": // video
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -330,6 +363,23 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Slider1(content: homePageContent!);
+      case "Slider6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider6(content: homePageContent!);
+      case "Slider7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider7(content: homePageContent!);
+      case "Slider9":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider9(
+                content: homePageContent!,
+                onCartQtyChanged: (deltaQty, variantId) async {
+                  await addCart(deltaQty, variantId);
+                },
+              );
       case "Banner1":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()

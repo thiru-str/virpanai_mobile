@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-HomePageResponse homePageResponseFromJson(String str) => HomePageResponse.fromJson(json.decode(str));
+HomePageResponse homePageResponseFromJson(String str) =>
+    HomePageResponse.fromJson(json.decode(str));
 
-String homePageResponseToJson(HomePageResponse data) => json.encode(data.toJson());
+String homePageResponseToJson(HomePageResponse data) =>
+    json.encode(data.toJson());
 
 class HomePageResponse {
   String? status;
@@ -25,23 +27,29 @@ class HomePageResponse {
     this.limit,
   });
 
-  factory HomePageResponse.fromJson(Map<String, dynamic> json) => HomePageResponse(
-    status: json["status"],
-    content: json["content"] == null ? [] : List<Content>.from(json["content"]!.map((x) => Content.fromJson(x))),
-    global: json["global"] == null ? null : Global.fromJson(json["global"]),
-    count: json["count"],
-    offset: json["offset"],
-    limit: json["limit"],
-  );
+  factory HomePageResponse.fromJson(Map<String, dynamic> json) =>
+      HomePageResponse(
+        status: json["status"],
+        content: json["content"] == null
+            ? []
+            : List<Content>.from(
+                json["content"]!.map((x) => Content.fromJson(x))),
+        global: json["global"] == null ? null : Global.fromJson(json["global"]),
+        count: json["count"],
+        offset: json["offset"],
+        limit: json["limit"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "status": status,
-    "content": content == null ? [] : List<dynamic>.from(content!.map((x) => x.toJson())),
-    "global": global?.toJson(),
-    "count": count,
-    "offset": offset,
-    "limit": limit,
-  };
+        "status": status,
+        "content": content == null
+            ? []
+            : List<dynamic>.from(content!.map((x) => x.toJson())),
+        "global": global?.toJson(),
+        "count": count,
+        "offset": offset,
+        "limit": limit,
+      };
 }
 
 class Content {
@@ -49,6 +57,8 @@ class Content {
   String? layoutTitle;
   String? layoutSubTitle;
   String? layoutBannerImage;
+  String? layoutLeftCardImage;
+  String? layoutRightCardImage;
   String? layoutSlideTimeInterval;
   String? layoutBgColor;
   String? layoutBgImage;
@@ -66,6 +76,8 @@ class Content {
     this.layoutTitle,
     this.layoutSubTitle,
     this.layoutBannerImage,
+    this.layoutLeftCardImage,
+    this.layoutRightCardImage,
     this.layoutSlideTimeInterval,
     this.layoutBgColor,
     this.layoutBgImage,
@@ -80,41 +92,51 @@ class Content {
   });
 
   factory Content.fromJson(Map<String, dynamic> json) => Content(
-    layoutName: json["layout_name"],
-    layoutTitle: json["layout_title"],
-    layoutSubTitle: json["layout_sub_title"],
-    layoutBannerImage: json["layout_banner_image"],
-    layoutSlideTimeInterval: json["layout_slide_time_interval"],
-    layoutBgColor: json["layout_bg_color"],
-    layoutBgImage: json["layout_bg_image"],
-    layoutBgType: json["layout_bg_type"],
-    layoutRedirectTitle: json["layout_redirect_title"],
-    layoutRedirect: json["layout_redirect"],
-    layoutOption: json["layout_option"],
-    layoutSearchFilter: json["layout_search_filter"],
-    layoutData: json["layout_data"] == null ? [] : List<LayoutDatum>.from(json["layout_data"]!.map((x) => LayoutDatum.fromJson(x))),
-    redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
-    //layoutHeight: json["layout_height"],
-
-  );
+        layoutName: json["layout_name"],
+        layoutTitle: json["layout_title"],
+        layoutSubTitle: json["layout_sub_title"],
+        layoutBannerImage: json["layout_banner_image"],
+        layoutLeftCardImage: json["layout_left_card_image"],
+        layoutRightCardImage: json["layout_right_card_image"],
+        layoutSlideTimeInterval: json["layout_slide_time_interval"],
+        layoutBgColor: json["layout_bg_color"],
+        layoutBgImage: json["layout_bg_image"],
+        layoutBgType: json["layout_bg_type"],
+        layoutRedirectTitle: json["layout_redirect_title"],
+        layoutRedirect: json["layout_redirect"],
+        layoutOption: json["layout_option"],
+        layoutSearchFilter: json["layout_search_filter"],
+        layoutData: json["layout_data"] == null
+            ? []
+            : List<LayoutDatum>.from(
+                json["layout_data"]!.map((x) => LayoutDatum.fromJson(x))),
+        redirectData: json["redirect_data"] == null
+            ? null
+            : RedirectData.fromJson(json["redirect_data"]),
+        //layoutHeight: json["layout_height"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "layout_name": layoutName,
-    "layout_title": layoutTitle,
-    "layout_sub_title": layoutSubTitle,
-    "layout_banner_image": layoutBannerImage,
-    "layout_slide_time_interval": layoutSlideTimeInterval,
-    "layout_bg_color": layoutBgColor,
-    "layout_bg_image": layoutBgImage,
-    "layout_bg_type": layoutBgType,
-    "layout_redirect_title": layoutRedirectTitle,
-    "layout_redirect": layoutRedirect,
-    "layout_option": layoutOption,
-    "layout_search_filter": layoutSearchFilter,
-    "layout_data": layoutData == null ? [] : List<dynamic>.from(layoutData!.map((x) => x.toJson())),
-    "redirect_data": redirectData?.toJson(),
-    //"layout_height": layoutHeight,
-  };
+        "layout_name": layoutName,
+        "layout_title": layoutTitle,
+        "layout_sub_title": layoutSubTitle,
+        "layout_banner_image": layoutBannerImage,
+        "layout_left_card_image": layoutLeftCardImage,
+        "layout_right_card_image": layoutRightCardImage,
+        "layout_slide_time_interval": layoutSlideTimeInterval,
+        "layout_bg_color": layoutBgColor,
+        "layout_bg_image": layoutBgImage,
+        "layout_bg_type": layoutBgType,
+        "layout_redirect_title": layoutRedirectTitle,
+        "layout_redirect": layoutRedirect,
+        "layout_option": layoutOption,
+        "layout_search_filter": layoutSearchFilter,
+        "layout_data": layoutData == null
+            ? []
+            : List<dynamic>.from(layoutData!.map((x) => x.toJson())),
+        "redirect_data": redirectData?.toJson(),
+        //"layout_height": layoutHeight,
+      };
 }
 
 class LayoutDatum {
@@ -124,6 +146,7 @@ class LayoutDatum {
   String? subTitle;
   String? featureText;
   String? salesText;
+  SliderProductData? productData;
   Prices? prices;
   RedirectData? redirectData;
   num? rating;
@@ -137,6 +160,7 @@ class LayoutDatum {
     this.subTitle,
     this.featureText,
     this.salesText,
+    this.productData,
     this.prices,
     this.redirectData,
     this.rating,
@@ -145,32 +169,103 @@ class LayoutDatum {
   });
 
   factory LayoutDatum.fromJson(Map<String, dynamic> json) => LayoutDatum(
-    id: json["id"],
-    image: json["image"],
-    title: json["title"],
-    subTitle: json["sub_title"],
-    featureText: json["feature_text"],
-    salesText: json["sales_text"],
-    prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]), // <-- Deserialize
-    redirectData: json["redirect_data"] == null ? null : RedirectData.fromJson(json["redirect_data"]),
-    rating: json["rating"],
-    variantDetails: json["variant_details"] == null ? null : VariantDetails.fromJson(json["variant_details"]),
-    cartDetails: json["cart_details"] == null ? null : CartDetails.fromJson(json["cart_details"]),
-  );
+        id: json["id"],
+        image: json["image"],
+        title: json["title"],
+        subTitle: json["sub_title"],
+        featureText: json["feature_text"],
+        salesText: json["sales_text"],
+        productData: json["product_data"] == null
+            ? null
+            : SliderProductData.fromJson(json["product_data"]),
+        prices: json["prices"] == null
+            ? null
+            : Prices.fromJson(json["prices"]), // <-- Deserialize
+        redirectData: json["redirect_data"] == null
+            ? null
+            : RedirectData.fromJson(json["redirect_data"]),
+        rating: json["rating"],
+        variantDetails: json["variant_details"] == null
+            ? null
+            : VariantDetails.fromJson(json["variant_details"]),
+        cartDetails: json["cart_details"] == null
+            ? null
+            : CartDetails.fromJson(json["cart_details"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "image": image,
-    "title": title,
-    "feature_text": featureText,
-    "sales_text": salesText,
-    "sub_title": subTitle,
-    "prices": prices?.toJson(), // <-- Serialize
-    "rating": rating,
-    "variant_details": variantDetails?.toJson(),
-    "cart_details": cartDetails?.toJson(),
-    "redirect_data": redirectData?.toJson(),
-  };
+        "id": id,
+        "image": image,
+        "title": title,
+        "feature_text": featureText,
+        "sales_text": salesText,
+        "sub_title": subTitle,
+        "product_data": productData?.toJson(),
+        "prices": prices?.toJson(), // <-- Serialize
+        "rating": rating,
+        "variant_details": variantDetails?.toJson(),
+        "cart_details": cartDetails?.toJson(),
+        "redirect_data": redirectData?.toJson(),
+      };
+}
+
+class SliderProductData {
+  String? id;
+  String? refId;
+  String? image;
+  String? title;
+  String? subTitle;
+  String? description;
+  Prices? prices;
+  VariantDetails? variantDetails;
+  CartDetails? cartDetails;
+  RedirectData? redirectData;
+
+  SliderProductData({
+    this.id,
+    this.refId,
+    this.image,
+    this.title,
+    this.subTitle,
+    this.description,
+    this.prices,
+    this.variantDetails,
+    this.cartDetails,
+    this.redirectData,
+  });
+
+  factory SliderProductData.fromJson(Map<String, dynamic> json) =>
+      SliderProductData(
+        id: json["id"],
+        refId: json["ref_id"],
+        image: json["image"],
+        title: json["title"],
+        subTitle: json["sub_title"],
+        description: json["description"],
+        prices: json["prices"] == null ? null : Prices.fromJson(json["prices"]),
+        variantDetails: json["variant_details"] == null
+            ? null
+            : VariantDetails.fromJson(json["variant_details"]),
+        cartDetails: json["cart_details"] == null
+            ? null
+            : CartDetails.fromJson(json["cart_details"]),
+        redirectData: json["redirect_data"] == null
+            ? null
+            : RedirectData.fromJson(json["redirect_data"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "ref_id": refId,
+        "image": image,
+        "title": title,
+        "sub_title": subTitle,
+        "description": description,
+        "prices": prices?.toJson(),
+        "variant_details": variantDetails?.toJson(),
+        "cart_details": cartDetails?.toJson(),
+        "redirect_data": redirectData?.toJson(),
+      };
 }
 
 class CartDetails {
@@ -187,18 +282,18 @@ class CartDetails {
   });
 
   factory CartDetails.fromJson(Map<String, dynamic> json) => CartDetails(
-    cartId: json["cart_id"],
-    lineItemId: json["line_item_id"],
-    variantId:json["variant_id"],
-    quantity: json["quantity"],
-  );
+        cartId: json["cart_id"],
+        lineItemId: json["line_item_id"],
+        variantId: json["variant_id"],
+        quantity: json["quantity"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "cart_id": cartId,
-    "line_item_id": lineItemId,
-    "variant_id": variantId,
-    "quantity": quantity,
-  };
+        "cart_id": cartId,
+        "line_item_id": lineItemId,
+        "variant_id": variantId,
+        "quantity": quantity,
+      };
 }
 
 class VariantDetails {
@@ -217,20 +312,25 @@ class VariantDetails {
   });
 
   factory VariantDetails.fromJson(Map<String, dynamic> json) => VariantDetails(
-    variantId: json["variant_id"],
-    variantTitle: json["variant_title"],
-    variantSku: json["variant_sku"],
-    variantPrice: json["variant_price"],
-    variantOptions: json["variant_options"] == null ? [] : List<VariantOption>.from(json["variant_options"]!.map((x) => VariantOption.fromJson(x))),
-  );
+        variantId: json["variant_id"],
+        variantTitle: json["variant_title"],
+        variantSku: json["variant_sku"],
+        variantPrice: json["variant_price"],
+        variantOptions: json["variant_options"] == null
+            ? []
+            : List<VariantOption>.from(
+                json["variant_options"]!.map((x) => VariantOption.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "variant_id": variantId,
-    "variant_title": variantTitle,
-    "variant_sku": variantSku,
-    "variant_price": variantPrice,
-    "variant_options": variantOptions == null ? [] : List<dynamic>.from(variantOptions!.map((x) => x.toJson())),
-  };
+        "variant_id": variantId,
+        "variant_title": variantTitle,
+        "variant_sku": variantSku,
+        "variant_price": variantPrice,
+        "variant_options": variantOptions == null
+            ? []
+            : List<dynamic>.from(variantOptions!.map((x) => x.toJson())),
+      };
 }
 
 class VariantOption {
@@ -243,16 +343,15 @@ class VariantOption {
   });
 
   factory VariantOption.fromJson(Map<String, dynamic> json) => VariantOption(
-    optionTitle: json["option_title"],
-    optionValue: json["option_value"],
-  );
+        optionTitle: json["option_title"],
+        optionValue: json["option_value"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "option_title":optionTitle,
-    "option_value": optionValue,
-  };
+        "option_title": optionTitle,
+        "option_value": optionValue,
+      };
 }
-
 
 class Prices {
   String? sellingPrice;
@@ -268,18 +367,18 @@ class Prices {
   });
 
   factory Prices.fromJson(Map<String, dynamic> json) => Prices(
-    sellingPrice: json["selling_price"],
-    originalPrice: json["original_price"],
-    discountedPrice: json["discounted_price"],
-    discountPercentage: json["discount_Percentage"],
-  );
+        sellingPrice: json["selling_price"],
+        originalPrice: json["original_price"],
+        discountedPrice: json["discounted_price"],
+        discountPercentage: json["discount_Percentage"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "selling_price": sellingPrice,
-    "original_price": originalPrice,
-    "discounted_price": discountedPrice,
-    "discount_Percentage": discountPercentage,
-  };
+        "selling_price": sellingPrice,
+        "original_price": originalPrice,
+        "discounted_price": discountedPrice,
+        "discount_Percentage": discountPercentage,
+      };
 }
 
 class RedirectData {
@@ -321,12 +420,12 @@ class RedirectData {
   }
 
   Map<String, dynamic> toJson() => {
-    'redirect_type': redirectType,
-    'redirect_product_data': redirectProductData?.toJson(),
-    'redirect_search_data': redirectSearchData?.toJson(),
-    'redirect_url_data': redirectUrlData?.toJson(),
-    'redirect_page_data': redirectPageData?.toJson(),
-  };
+        'redirect_type': redirectType,
+        'redirect_product_data': redirectProductData?.toJson(),
+        'redirect_search_data': redirectSearchData?.toJson(),
+        'redirect_url_data': redirectUrlData?.toJson(),
+        'redirect_page_data': redirectPageData?.toJson(),
+      };
 }
 
 class RedirectProductData {
@@ -343,9 +442,9 @@ class RedirectProductData {
   }
 
   Map<String, dynamic> toJson() => {
-    'product_id': productId,
-    'variant_id': variantId,
-  };
+        'product_id': productId,
+        'variant_id': variantId,
+      };
 }
 
 class RedirectOrderData {
@@ -360,8 +459,8 @@ class RedirectOrderData {
   }
 
   Map<String, dynamic> toJson() => {
-    'order_id': orderId,
-  };
+        'order_id': orderId,
+      };
 }
 
 class RedirectPageData {
@@ -376,8 +475,8 @@ class RedirectPageData {
   }
 
   Map<String, dynamic> toJson() => {
-    'slug': slug,
-  };
+        'slug': slug,
+      };
 }
 
 class RedirectSearchData {
@@ -409,13 +508,13 @@ class RedirectSearchData {
   }
 
   Map<String, dynamic> toJson() => {
-    'category': category,
-    'tag': tag,
-    'collection': collection,
-    'brand': brand,
-    'min_price': minPrice,
-    'max_price': maxPrice,
-  };
+        'category': category,
+        'tag': tag,
+        'collection': collection,
+        'brand': brand,
+        'min_price': minPrice,
+        'max_price': maxPrice,
+      };
 }
 
 class RedirectUrlData {
@@ -430,13 +529,9 @@ class RedirectUrlData {
   }
 
   Map<String, dynamic> toJson() => {
-    'url': url,
-  };
+        'url': url,
+      };
 }
-
-
-
-
 
 class Global {
   List<PaymentProvider>? paymentProvider;
@@ -452,18 +547,23 @@ class Global {
   });
 
   factory Global.fromJson(Map<String, dynamic> json) => Global(
-    paymentProvider: json["payment_providers"] == null ? [] : List<PaymentProvider>.from(json["payment_providers"]!.map((x) => PaymentProvider.fromJson(x))),
-    regionId: json["region_id"],
-    cartId: json["cart_id"],
-    currencySymbol: json["currency_symbol"],
-  );
+        paymentProvider: json["payment_providers"] == null
+            ? []
+            : List<PaymentProvider>.from(json["payment_providers"]!
+                .map((x) => PaymentProvider.fromJson(x))),
+        regionId: json["region_id"],
+        cartId: json["cart_id"],
+        currencySymbol: json["currency_symbol"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "payment_providers": paymentProvider == null ? [] : List<dynamic>.from(paymentProvider!.map((x) => x.toJson())),
-    "region_id": regionId,
-    "cart_id": cartId,
-    "currency_symbol": currencySymbol,
-  };
+        "payment_providers": paymentProvider == null
+            ? []
+            : List<dynamic>.from(paymentProvider!.map((x) => x.toJson())),
+        "region_id": regionId,
+        "cart_id": cartId,
+        "currency_symbol": currencySymbol,
+      };
 }
 
 class PaymentProvider {
@@ -479,17 +579,18 @@ class PaymentProvider {
     this.apiKey,
   });
 
-  factory PaymentProvider.fromJson(Map<String, dynamic> json) => PaymentProvider(
-    id: json["id"],
-    isEnabled: json["is_enabled"],
-    name: json["name"],
-    apiKey: json["api_key"],
-  );
+  factory PaymentProvider.fromJson(Map<String, dynamic> json) =>
+      PaymentProvider(
+        id: json["id"],
+        isEnabled: json["is_enabled"],
+        name: json["name"],
+        apiKey: json["api_key"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "is_enabled": isEnabled,
-    "name": name,
-    "api_key": apiKey,
-  };
+        "id": id,
+        "is_enabled": isEnabled,
+        "name": name,
+        "api_key": apiKey,
+      };
 }
