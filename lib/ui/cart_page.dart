@@ -3,9 +3,9 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
-import 'package:waioz/ui/checkout_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/checkout_footer.dart';
@@ -15,6 +15,7 @@ import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -41,16 +42,13 @@ class CartPage extends StatefulWidget {
   State<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage>
-    with SingleTickerProviderStateMixin {
+class _CartPageState extends State<CartPage> {
   CartResponse? cartResponse;
   bool apiLoading = true;
   bool cartLoading = false;
   bool addressLoading = false;
   bool isAnimating = false;
 
-  late AnimationController _animationController;
-  late Animation<Offset> _animation;
   bool isLoggedIn = false;
 
   Global? global;
@@ -74,26 +72,6 @@ class _CartPageState extends State<CartPage>
 
     initGlobal();
     getCartApi();
-
-    // Initialize the animation controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-
-    // Define the animation's starting and ending positions
-    _animation = Tween<Offset>(
-      begin: const Offset(0, 1), // Start just below the screen
-      end: Offset.zero, // End at its natural position
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    // Delay animation start by 300ms
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _animationController.forward();
-    });
   }
 
   Future<void> initGlobal() async {
@@ -157,7 +135,6 @@ class _CartPageState extends State<CartPage>
 
   @override
   void dispose() {
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -174,11 +151,7 @@ class _CartPageState extends State<CartPage>
       backgroundColor: Colors.white,
       /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
       body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+          ? const CartPageSkeleton()
           : cartResponse?.cart?.items?.isNotEmpty ?? false
               ? Scaffold(
                   backgroundColor: Colors.white,
@@ -186,37 +159,38 @@ class _CartPageState extends State<CartPage>
                     children: [
                       Visibility(
                         visible: cartResponse!.cart!.items!.isNotEmpty,
-                        child: DeliveryAddressWidget(
-                          address: _buildShippingAddress(cartResponse),
-                          label: null,
-                          isLoading: addressLoading,
-                          onAddAddress: () {
-                            //Navigator.push(context, AddAddressPage.route());
-                            PageRouteUtils.pushWithSlide(
-                                context,
-                                AddressListPage(
-                                  isFromCheckout: true,
-                                  onSelectedAddress: (address) {
-                                    setState(() {
-                                      addressLoading = true;
-                                    });
-                                    updateAddress(address);
-                                  },
-                                ));
-                          },
-                          onChangeAddress: () {
-                            PageRouteUtils.pushWithSlide(
-                                context,
-                                AddressListPage(
-                                  isFromCheckout: true,
-                                  onSelectedAddress: (address) {
-                                    setState(() {
-                                      addressLoading = true;
-                                    });
-                                    updateAddress(address);
-                                  },
-                                ));
-                          },
+                        child: AppReveal(
+                          child: DeliveryAddressWidget(
+                            address: _buildShippingAddress(cartResponse),
+                            label: null,
+                            isLoading: addressLoading,
+                            onAddAddress: () {
+                              PageRouteUtils.pushWithSlide(
+                                  context,
+                                  AddressListPage(
+                                    isFromCheckout: true,
+                                    onSelectedAddress: (address) {
+                                      setState(() {
+                                        addressLoading = true;
+                                      });
+                                      updateAddress(address);
+                                    },
+                                  ));
+                            },
+                            onChangeAddress: () {
+                              PageRouteUtils.pushWithSlide(
+                                  context,
+                                  AddressListPage(
+                                    isFromCheckout: true,
+                                    onSelectedAddress: (address) {
+                                      setState(() {
+                                        addressLoading = true;
+                                      });
+                                      updateAddress(address);
+                                    },
+                                  ));
+                            },
+                          ),
                         ),
                       ),
                       Expanded(
@@ -235,127 +209,130 @@ class _CartPageState extends State<CartPage>
                                   itemBuilder: (context, index) {
                                     final cartItem =
                                         cartResponse!.cart!.items![index];
-                                    return CartItemCard(
-                                      imageUrl: cartItem.thumbnail ?? '',
-                                      productName: cartItem.productTitle!,
-                                      error: cartItem.error ?? '',
-                                      size: cartItem.variantTitle! ==
-                                              "Default variant"
-                                          ? ""
-                                          : cartItem.variantTitle!,
-                                      color: 'color',
-                                      // Replace with actual color
-                                      price: CurrencyUtil.appendCurrency(
-                                          (cartItem.unitPrice! *
-                                                  cartItem.quantity!)
-                                              .toStringAsFixed(2)),
-                                      quantity: cartItem.quantity!,
-                                      isUpdating: cartItem.isUpdating!,
-                                      onRemoveAll: () {
-                                        setState(() {
-                                          cartResponse!.cart!.items![index]
-                                              .isUpdating = true;
-                                        });
-                                        //updateCart(0,cartItem.id!,index);
-                                        removeCart(cartItem.id!, index);
-                                      },
-                                      onIncrease: () {
-                                        setState(() {
-                                          cartResponse!.cart!.items![index]
-                                              .isUpdating = true;
-                                        });
-                                        updateCart(cartItem.quantity! + 1,
-                                            cartItem.id!, index);
-                                      },
-                                      onDecrease: () async {
-                                        final item =
-                                            cartResponse!.cart!.items![index];
-                                        final currentQty = item.quantity ?? 0;
-                                        final stockQty =
-                                            item.inventoryQuantity ?? 0;
+                                    return AppReveal(
+                                      index: index,
+                                      child: CartItemCard(
+                                        imageUrl: cartItem.thumbnail ?? '',
+                                        productName: cartItem.productTitle!,
+                                        error: cartItem.error ?? '',
+                                        size: cartItem.variantTitle! ==
+                                                "Default variant"
+                                            ? ""
+                                            : cartItem.variantTitle!,
+                                        color: 'color',
+                                        price: CurrencyUtil.appendCurrency(
+                                            (cartItem.unitPrice! *
+                                                    cartItem.quantity!)
+                                                .toStringAsFixed(2)),
+                                        quantity: cartItem.quantity!,
+                                        isUpdating: cartItem.isUpdating!,
+                                        onRemoveAll: () {
+                                          setState(() {
+                                            cartResponse!.cart!.items![index]
+                                                .isUpdating = true;
+                                          });
+                                          removeCart(cartItem.id!, index);
+                                        },
+                                        onIncrease: () {
+                                          setState(() {
+                                            cartResponse!.cart!.items![index]
+                                                .isUpdating = true;
+                                          });
+                                          updateCart(cartItem.quantity! + 1,
+                                              cartItem.id!, index);
+                                        },
+                                        onDecrease: () async {
+                                          final item =
+                                              cartResponse!.cart!.items![index];
+                                          final currentQty = item.quantity ?? 0;
+                                          final stockQty =
+                                              item.inventoryQuantity ?? 0;
 
-                                        setState(() => item.isUpdating = true);
+                                          setState(
+                                              () => item.isUpdating = true);
 
-                                        if (currentQty <= 1) {
-                                          removeCart(item.id!, index);
-                                          return;
-                                        }
-
-                                        if (!(item.inStock ?? false)) {
-                                          if (stockQty == 0) {
+                                          if (currentQty <= 1) {
                                             removeCart(item.id!, index);
                                             return;
                                           }
 
-                                          if (currentQty > stockQty) {
-                                            final confirmed =
-                                                await showDialog<bool>(
-                                              context: context,
-                                              builder: (_) => AlertDialog(
-                                                title: Text(
-                                                  AppStrings.stock_update,
-                                                  style: FontUtils
-                                                      .primaryFontStyle(
-                                                          color:
-                                                              AppColors.primary,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                ),
-                                                content: Text(
-                                                  '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
-                                                  '${AppStrings.stock_update_message_suffix} $stockQty?',
-                                                  style: FontUtils
-                                                      .secondaryFontStyle(),
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            context, false),
-                                                    child: Text(
-                                                      AppStrings.cancel,
-                                                      style: FontUtils
-                                                          .primaryFontStyle(
-                                                              color: AppColors
-                                                                  .primary,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            context, true),
-                                                    child: Text(
-                                                      AppStrings.yes_update,
-                                                      style: FontUtils
-                                                          .primaryFontStyle(
-                                                              color: AppColors
-                                                                  .primary,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-
-                                            if (confirmed == true) {
-                                              updateCart(
-                                                  stockQty, item.id!, index);
-                                            } else {
-                                              setState(() =>
-                                                  item.isUpdating = false);
+                                          if (!(item.inStock ?? false)) {
+                                            if (stockQty == 0) {
+                                              removeCart(item.id!, index);
+                                              return;
                                             }
-                                            return;
-                                          }
-                                        }
 
-                                        updateCart(
-                                            currentQty - 1, item.id!, index);
-                                      },
+                                            if (currentQty > stockQty) {
+                                              final confirmed =
+                                                  await showDialog<bool>(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                  title: Text(
+                                                    AppStrings.stock_update,
+                                                    style: FontUtils
+                                                        .primaryFontStyle(
+                                                            color: AppColors
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                  ),
+                                                  content: Text(
+                                                    '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
+                                                    '${AppStrings.stock_update_message_suffix} $stockQty?',
+                                                    style: FontUtils
+                                                        .secondaryFontStyle(),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      child: Text(
+                                                        AppStrings.cancel,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                                color: AppColors
+                                                                    .primary,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      child: Text(
+                                                        AppStrings.yes_update,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                                color: AppColors
+                                                                    .primary,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirmed == true) {
+                                                updateCart(
+                                                    stockQty, item.id!, index);
+                                              } else {
+                                                setState(() =>
+                                                    item.isUpdating = false);
+                                              }
+                                              return;
+                                            }
+                                          }
+
+                                          updateCart(
+                                              currentQty - 1, item.id!, index);
+                                        },
+                                      ),
                                     );
                                   },
                                 ),
@@ -364,162 +341,165 @@ class _CartPageState extends State<CartPage>
                           ),
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            InkWell(
-                              borderRadius: BorderRadius.circular(10),
-                              onTap: () {
-                                setState(() {
-                                  showPriceBreakdown = !showPriceBreakdown;
-                                });
-                              },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
+                      AppReveal(
+                        index: 3,
+                        child: Container(
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
+                                  setState(() {
+                                    showPriceBreakdown = !showPriceBreakdown;
+                                  });
+                                },
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Price breakdown',
+                                        style: FontUtils.primaryFontStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textColor,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Icon(
+                                        showPriceBreakdown
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                        color: AppColors.textColor50,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              AnimatedCrossFade(
+                                firstChild: const SizedBox.shrink(),
+                                secondChild: Column(
                                   children: [
-                                    Text(
-                                      'Price breakdown',
-                                      style: FontUtils.primaryFontStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textColor,
+                                    CartCalculation(
+                                      keyText: '${AppStrings.subTotal}:',
+                                      valueText: CurrencyUtil.appendCurrency(
+                                        _numOrZero(cartResponse
+                                                ?.cart?.itemSubtotal)
+                                            .toStringAsFixed(2),
                                       ),
                                     ),
-                                    const Spacer(),
-                                    Icon(
-                                      showPriceBreakdown
-                                          ? Icons.keyboard_arrow_up
-                                          : Icons.keyboard_arrow_down,
-                                      color: AppColors.textColor50,
+                                    Visibility(
+                                      visible: _numOrZero(cartResponse
+                                              ?.cart?.discountSubtotal) >
+                                          0,
+                                      child: CartCalculation(
+                                        keyText: '${AppStrings.discount}:',
+                                        valueText:
+                                            '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
+                                      ),
                                     ),
+                                    CartCalculation(
+                                      keyText: '${AppStrings.shipping}:',
+                                      valueText: CurrencyUtil.appendCurrency(
+                                        _numOrZero(cartResponse
+                                                ?.cart?.shippingSubtotal)
+                                            .toStringAsFixed(2),
+                                      ),
+                                    ),
+                                    CartCalculation(
+                                      keyText: '${AppStrings.tax}:',
+                                      valueText: CurrencyUtil.appendCurrency(
+                                        _numOrZero(cartResponse?.cart?.taxTotal)
+                                            .toStringAsFixed(2),
+                                      ),
+                                    ),
+                                    CartCalculation(
+                                      keyText: '${AppStrings.total}:',
+                                      keyStyle: FontUtils.primaryFontStyle(
+                                        fontSize: 14,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      valueStyle: FontUtils.primaryFontStyle(
+                                        fontSize: 14,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      valueText: CurrencyUtil.appendCurrency(
+                                        _numOrZero(cartResponse?.cart?.total)
+                                            .toStringAsFixed(2),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
                                   ],
                                 ),
+                                crossFadeState: showPriceBreakdown
+                                    ? CrossFadeState.showSecond
+                                    : CrossFadeState.showFirst,
+                                duration: const Duration(milliseconds: 180),
                               ),
-                            ),
-                            AnimatedCrossFade(
-                              firstChild: const SizedBox.shrink(),
-                              secondChild: Column(
-                                children: [
-                                  CartCalculation(
-                                    keyText: '${AppStrings.subTotal}:',
-                                    valueText: CurrencyUtil.appendCurrency(
-                                      _numOrZero(
-                                              cartResponse?.cart?.itemSubtotal)
-                                          .toStringAsFixed(2),
-                                    ),
+                              GestureDetector(
+                                onTap: () {
+                                  if ((cartResponse?.cart?.promotions ?? [])
+                                      .isEmpty) {
+                                    showPromoCodeBottomSheet(context);
+                                  } else {
+                                    List<String> promotionCodes = cartResponse
+                                            ?.cart?.promotions
+                                            ?.map((promotion) => promotion.code)
+                                            .where((code) => code != null)
+                                            .cast<String>()
+                                            .toList() ??
+                                        [];
+                                    removePromoCode(promotionCodes);
+                                  }
+                                },
+                                child: Container(
+                                  height: 50,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 12.0),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.secondary,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  Visibility(
-                                    visible: _numOrZero(cartResponse
-                                            ?.cart?.discountSubtotal) >
-                                        0,
-                                    child: CartCalculation(
-                                      keyText: '${AppStrings.discount}:',
-                                      valueText:
-                                          '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                    ),
-                                  ),
-                                  CartCalculation(
-                                    keyText: '${AppStrings.shipping}:',
-                                    valueText: CurrencyUtil.appendCurrency(
-                                      _numOrZero(cartResponse
-                                              ?.cart?.shippingSubtotal)
-                                          .toStringAsFixed(2),
-                                    ),
-                                  ),
-                                  CartCalculation(
-                                    keyText: '${AppStrings.tax}:',
-                                    valueText: CurrencyUtil.appendCurrency(
-                                      _numOrZero(cartResponse?.cart?.taxTotal)
-                                          .toStringAsFixed(2),
-                                    ),
-                                  ),
-                                  CartCalculation(
-                                    keyText: '${AppStrings.total}:',
-                                    keyStyle: FontUtils.primaryFontStyle(
-                                      fontSize: 14,
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    valueStyle: FontUtils.primaryFontStyle(
-                                      fontSize: 14,
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    valueText: CurrencyUtil.appendCurrency(
-                                      _numOrZero(cartResponse?.cart?.total)
-                                          .toStringAsFixed(2),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                ],
-                              ),
-                              crossFadeState: showPriceBreakdown
-                                  ? CrossFadeState.showSecond
-                                  : CrossFadeState.showFirst,
-                              duration: const Duration(milliseconds: 180),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                if ((cartResponse?.cart?.promotions ?? [])
-                                    .isEmpty) {
-                                  showPromoCodeBottomSheet(context);
-                                } else {
-                                  List<String> promotionCodes = cartResponse
-                                          ?.cart?.promotions
-                                          ?.map((promotion) => promotion.code)
-                                          .where((code) => code != null)
-                                          .cast<String>()
-                                          .toList() ??
-                                      [];
-                                  removePromoCode(promotionCodes);
-                                }
-                              },
-                              child: Container(
-                                height: 50,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 12.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.secondary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const ImageIcon(
-                                      AssetImage(AppAssets.ic_discount),
-                                      color: Colors.green,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
+                                  child: Row(
+                                    children: [
+                                      const ImageIcon(
+                                        AssetImage(AppAssets.ic_discount),
+                                        color: Colors.green,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          (cartResponse?.cart?.promotions ?? [])
+                                                  .isEmpty
+                                              ? AppStrings.enter_promo_code
+                                              : cartResponse?.cart?.promotions
+                                                      ?.firstOrNull?.code ??
+                                                  '',
+                                          style: FontUtils.primaryFontStyle(
+                                              color: AppColors.textColor),
+                                        ),
+                                      ),
+                                      Text(
                                         (cartResponse?.cart?.promotions ?? [])
                                                 .isEmpty
-                                            ? AppStrings.enter_promo_code
-                                            : cartResponse?.cart?.promotions
-                                                    ?.firstOrNull?.code ??
-                                                '',
-                                        style: FontUtils.primaryFontStyle(
-                                            color: AppColors.textColor),
+                                            ? AppStrings.apply
+                                            : AppStrings.remove,
+                                        style: FontUtils.secondaryFontStyle(
+                                            color: AppColors.primary),
                                       ),
-                                    ),
-                                    Text(
-                                      (cartResponse?.cart?.promotions ?? [])
-                                              .isEmpty
-                                          ? AppStrings.apply
-                                          : AppStrings.remove,
-                                      style: FontUtils.secondaryFontStyle(
-                                          color: AppColors.primary),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            )
-                          ],
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -580,6 +560,14 @@ class _CartPageState extends State<CartPage>
                                 context, const PhoneNumberPage());
                           },
                         )),
+      bottomNavigationBar: apiLoading
+          ? const SafeArea(
+              child: SizedBox(
+                height: 80,
+                child: CartFooterSkeleton(),
+              ),
+            )
+          : null,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/product_card_1.dart';
 import 'package:waioz/ui/widgets/product_card_2.dart';
@@ -20,14 +21,14 @@ class ProductView extends StatefulWidget {
   final bool isFavorite;
 
   const ProductView({
-    Key? key,
+    super.key,
     required this.product,
     this.type,
     required this.onTapCard,
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
-  }) : super(key: key);
+  });
 
   @override
   State<ProductView> createState() => _ProductViewState();
@@ -80,7 +81,7 @@ class _ProductViewState extends State<ProductView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const SizedBox();
+      return const ProductCardSkeleton();
     }
 
     if (_resolvedType == null) {

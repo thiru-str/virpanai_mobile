@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
-import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_link_helper.dart';
@@ -118,6 +116,7 @@ class HomeScreen extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
+      theme: theme,
       home: SplashPage(
         skipLogin: skipLogin,
         publicDetailsResponse: publicDetailsResponse,
@@ -125,7 +124,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  ThemeData theme = ThemeData(
+  final ThemeData theme = ThemeData(
+    scaffoldBackgroundColor: Colors.white,
+    splashFactory: InkRipple.splashFactory,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
     textTheme: TextTheme(
       displayLarge: FontUtils.primaryFontStyle(
           fontWeight: FontWeight.w800, fontSize: 14.0),

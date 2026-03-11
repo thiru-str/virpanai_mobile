@@ -1,17 +1,11 @@
 import 'dart:async';
 
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
-import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
-import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/product_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
-import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
@@ -26,9 +20,6 @@ import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
-import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_quick_view_sheet.dart';
-import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
 import 'package:waioz/ui/widgets/home/item_3.dart';
@@ -37,17 +28,15 @@ import 'package:waioz/ui/widgets/home/item_5.dart';
 import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
-import 'package:waioz/ui/widgets/view_cart.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
-import '../utility/app_assets.dart';
 import '../utility/app_utils.dart';
-import 'widgets/common_header_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   bool apiLoading = true;
   String headerTitle = "";
   String addressType = "";
-  String appHeader = "header-1";
+  String appHeader = "";
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -133,29 +122,42 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> initializePages() async {
+    final savedHeader =
+        await SharedPreferencesUtil().getString('app_header') ?? "";
+    if (mounted && savedHeader.isNotEmpty) {
+      setState(() {
+        appHeader = savedHeader;
+      });
+    }
     getHomePageApi(limit: _limit, offset: _offset);
-    appHeader = (await SharedPreferencesUtil().getString('app_header') ?? "");
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: CombinedHeaderAppBar(
-          headerType: appHeader,
-          title: headerTitle,
-          cartCount: cartItems ?? 0,
-          onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-          onSearchClick: () => PageRouteUtils.pushWithFade(
-            context,
-            const ProductPage(),
-          ),
+    late final PreferredSizeWidget homeAppBar;
+    if (apiLoading) {
+      homeAppBar = HomeHeaderSkeleton(
+        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+      );
+    } else {
+      homeAppBar = CombinedHeaderAppBar(
+        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+        title: headerTitle,
+        cartCount: cartItems ?? 0,
+        onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+        onSearchClick: () => PageRouteUtils.pushWithFade(
+          context,
+          const ProductPage(),
         ),
+      );
+    }
+
+    return Scaffold(
+        appBar: homeAppBar,
         backgroundColor: Colors.white,
         body: SafeArea(
           child: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
+              ? const HomePageSkeleton()
               : RefreshIndicator(
                   onRefresh: () async {
                     _offset = 0;
@@ -225,7 +227,10 @@ class _HomePageState extends State<HomePage> {
         final content = homePageResponse?.content ?? [];
         if (index < content.length) {
           final homePageContent = content[index];
-          return getLayoutWidget(homePageContent);
+          return AppReveal(
+            index: index,
+            child: getLayoutWidget(homePageContent),
+          );
         }
 
         return _isLoadingMore

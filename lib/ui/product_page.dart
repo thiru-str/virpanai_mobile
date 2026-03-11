@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/ui/filter_page.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
-import 'package:waioz/ui/widgets/product_card_4.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/product_view.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -17,7 +16,6 @@ import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 import '../utility/app_assets.dart';
-import '../utility/currency_util.dart';
 import '../utility/shared_preferences_util.dart';
 import 'widgets/common_header_app_bar.dart';
 
@@ -311,58 +309,59 @@ class _ProductPageState extends State<ProductPage> {
 
               // Main Content Area
               Expanded(
-                child: Builder(
-                  builder: (_) {
-                    if (apiLoading && currentPage == 0) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      );
-                    }
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 280),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  child: Builder(
+                    builder: (_) {
+                      if (apiLoading && currentPage == 0) {
+                        return const ProductGridSkeleton();
+                      }
 
-                    if (filteredProducts.isEmpty) {
-                      return NoOrdersWidget(
-                        message: AppStrings.no_product,
-                        buttonText: AppStrings.explore_categories,
-                        iconPath: AppAssets.ic_cart_empty,
-                        onButtonTap: () {},
-                        showExplore: false,
-                      );
-                    }
-
-                    return MasonryGridView.count(
-                      controller: scrollController,
-                      padding: EdgeInsets.zero,
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      itemCount:
-                          filteredProducts.length + (isPaginating ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == filteredProducts.length && isPaginating) {
-                          return Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Center(
-                                child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            )),
-                          );
-                        }
-                        final product = filteredProducts[index];
-                        return ProductView(
-                          product: product,
-                          type: productViewType,
-                          onTapCard: () {
-                            PageRouteUtils.pushWithSlide(
-                              context,
-                              ProductDetailPage(productId: product.id!),
-                            );
-                          },
+                      if (filteredProducts.isEmpty) {
+                        return NoOrdersWidget(
+                          message: AppStrings.no_product,
+                          buttonText: AppStrings.explore_categories,
+                          iconPath: AppAssets.ic_cart_empty,
+                          onButtonTap: () {},
+                          showExplore: false,
                         );
-                      },
-                    );
-                  },
+                      }
+
+                      return MasonryGridView.count(
+                        key: ValueKey(
+                            '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
+                        controller: scrollController,
+                        padding: EdgeInsets.zero,
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        itemCount:
+                            filteredProducts.length + (isPaginating ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == filteredProducts.length &&
+                              isPaginating) {
+                            return const ProductCardSkeleton();
+                          }
+                          final product = filteredProducts[index];
+                          return AppReveal(
+                            index: index % 10,
+                            child: ProductView(
+                              product: product,
+                              type: productViewType,
+                              onTapCard: () {
+                                PageRouteUtils.pushWithSlide(
+                                  context,
+                                  ProductDetailPage(productId: product.id!),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

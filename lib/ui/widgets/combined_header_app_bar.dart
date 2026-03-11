@@ -59,6 +59,29 @@ class CombinedHeaderAppBar extends StatelessWidget
     }
   }
 
+  static double resolveHeaderHeight(String headerType) {
+    switch (headerType) {
+      case "header-1":
+        return 70;
+      case "header-2":
+        return 80;
+      case "header-3":
+        return 120;
+      case "header-4":
+        return 120;
+      case "header-5":
+        return 120;
+      case "header-6":
+        return 140;
+      case "header-7":
+        return 140;
+      case "header-8":
+        return 130;
+      default:
+        return 120;
+    }
+  }
+
   /// --- Header 1: Logo + Cart ---
   AppBar _buildHeader1() {
     return _baseAppBar(
@@ -216,8 +239,7 @@ class CombinedHeaderAppBar extends StatelessWidget
           children: [
             Row(
               children: [
-                _buildIcon(Icons.account_circle,
-                    color: Colors.grey, size: 40),
+                _buildIcon(Icons.account_circle, color: Colors.grey, size: 40),
                 const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,36 +319,16 @@ class CombinedHeaderAppBar extends StatelessWidget
       ),
       leading: showBack
           ? IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        onPressed: onBackTap,
-      )
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+              onPressed: onBackTap,
+            )
           : null,
     );
   }
 
   double _getHeaderHeight() {
-    switch (headerType) {
-      case "header-1":
-        return 70;
-      case "header-2":
-        return 80;
-      case "header-3":
-        return 120;
-      case "header-4":
-        return 120;
-      case "header-5":
-        return 120;
-      case "header-6":
-        return 140;
-      case "header-7":
-        return 140;
-      case "header-8":
-        return 130;
-      default:
-        return 100;
-    }
+    return resolveHeaderHeight(headerType);
   }
-
 
   /// --- Shared Search Bar Widget ---
   Widget _buildSearchBar() {
@@ -359,23 +361,23 @@ class CombinedHeaderAppBar extends StatelessWidget
 
   /// --- Shared Icon with Cart Badge ---
   Widget _buildIcon(
-      IconData? icon, {
-        String? assetPath,
-        VoidCallback? onPressed,
-        double? size,
-        double? width,
-        double? height,
-        Color? color,
-        int cartCount = 0,
-      }) {
+    IconData? icon, {
+    String? assetPath,
+    VoidCallback? onPressed,
+    double? size,
+    double? width,
+    double? height,
+    Color? color,
+    int cartCount = 0,
+  }) {
     Widget iconWidget = assetPath != null
         ? Image.asset(
-      assetPath,
-      width: size ?? 24,
-      height: size ?? 24,
-      color: color,
-      fit: BoxFit.contain,
-    )
+            assetPath,
+            width: size ?? 24,
+            height: size ?? 24,
+            color: color,
+            fit: BoxFit.contain,
+          )
         : Icon(icon, color: color ?? Colors.black, size: size);
 
     if (icon == Icons.shopping_cart && cartCount > 0) {
@@ -387,14 +389,12 @@ class CombinedHeaderAppBar extends StatelessWidget
             right: -2,
             top: -2,
             child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(10),
               ),
-              constraints:
-              const BoxConstraints(minWidth: 16, minHeight: 16),
+              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
               child: Text(
                 cartCount > 99 ? '99+' : '$cartCount',
                 style: const TextStyle(
@@ -421,6 +421,4 @@ class CombinedHeaderAppBar extends StatelessWidget
 
   @override
   Size get preferredSize => Size.fromHeight(_getHeaderHeight());
-
 }
-

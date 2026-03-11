@@ -1,19 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
-import 'package:waioz/model/return_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
-import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
-import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -32,7 +29,8 @@ class BottomNavPage extends StatefulWidget {
   _BottomNavPageState createState() => _BottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
+class _BottomNavPageState extends State<BottomNavPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
   bool _isLoading = true;
@@ -131,7 +129,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   @override
   void dispose() {
     _animationController.dispose();
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription
+        .cancel(); // Cancel the subscription to prevent memory leaks
     _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
@@ -166,13 +165,19 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
             }
           }
         },
-        child:  Scaffold(
+        child: Scaffold(
           backgroundColor: Colors.white,
-          body: _isLoading
-              ?  Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          )
-              : _getPage(), // Dynamically build the current page
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: _isLoading
+                ? const ShellSkeleton()
+                : KeyedSubtree(
+                    key: ValueKey(_currentIndex),
+                    child: _getPage(),
+                  ),
+          ),
           bottomNavigationBar: SlideTransition(
             position: _slideAnimation,
             child: BottomNavigationBar(
@@ -195,7 +200,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
                   icon: Stack(
                     children: [
                       const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                      if ((cartItems?? 0) > 0)
+                      if ((cartItems ?? 0) > 0)
                         Positioned(
                           right: 0,
                           top: 0,
@@ -223,12 +228,12 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
                   ),
                   label: AppStrings.cart,
                 ),
-                if(isLoggedIn)
+                if (isLoggedIn)
                   const BottomNavigationBarItem(
                     icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
                     label: AppStrings.favourite,
                   ),
-                if(isLoggedIn)
+                if (isLoggedIn)
                   const BottomNavigationBarItem(
                     icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
                     label: AppStrings.account,
@@ -242,15 +247,13 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
               selectedLabelStyle: FontUtils.primaryFontStyle(),
               unselectedLabelStyle: FontUtils.primaryFontStyle(),
             ),
-          ),)
-    );
+          ),
+        ));
   }
-
 
   Future<void> getCustomerApi() async {
     try {
-
-      if(!isLoggedIn) {
+      if (!isLoggedIn) {
         debugPrint('calling here');
         return;
       }
@@ -258,8 +261,10 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       Customer? customer = await getCustomerResponse();
       if (customer == null) {
         final ApiService apiService = ApiService();
-        CustomerResponse customerResponse = await apiService.getCustomer(context);
-        await SharedPreferencesUtil().saveMap('customer', customerResponse.customer!.toJson());
+        CustomerResponse customerResponse =
+            await apiService.getCustomer(context);
+        await SharedPreferencesUtil()
+            .saveMap('customer', customerResponse.customer!.toJson());
       }
     } catch (e) {
       print("Error fetching customer: $e");
@@ -278,10 +283,14 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      await SharedPreferencesUtil()
+          .saveString('region_id', homePageResponse!.global!.regionId!);
+      await SharedPreferencesUtil()
+          .saveString('cart_id', homePageResponse!.global!.cartId!);
+      await SharedPreferencesUtil().saveString(
+          'currency_symbol', homePageResponse!.global!.currencySymbol!);
+      await SharedPreferencesUtil()
+          .saveMap('global', homePageResponse!.global!.toJson());
     } catch (e) {
       print("Error fetching home page: $e");
     }
@@ -291,15 +300,10 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.getReturnReasons(context);
-      if(response!=null)
-        {
-          await SharedPreferencesUtil().saveJson('return_reasons', response.returnReasons ?? []);
-        }
+      await SharedPreferencesUtil()
+          .saveJson('return_reasons', response.returnReasons ?? []);
     } catch (e) {
       print("Error fetching home page: $e");
     }
   }
 }
-
-
-

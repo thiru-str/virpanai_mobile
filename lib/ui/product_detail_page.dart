@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -19,18 +17,16 @@ import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/add_on_product_card.dart';
-import 'package:waioz/ui/widgets/cart_button.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/product_view.dart';
-import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_link_helper.dart';
-import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
@@ -42,7 +38,6 @@ import '../api/api_service.dart';
 import '../model/product_response.dart' hide Image;
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
-import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -56,8 +51,7 @@ class ProductDetailPage extends StatefulWidget {
   State<ProductDetailPage> createState() => _ProductDetailPageState();
 }
 
-class _ProductDetailPageState extends State<ProductDetailPage>
-    with SingleTickerProviderStateMixin {
+class _ProductDetailPageState extends State<ProductDetailPage> {
   ProductResponse.Product? product;
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
@@ -72,9 +66,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   bool isFavorite = false;
   String? wishlistId = '';
   int? addOnProductsCount = 0;
-
-  late AnimationController _animationController;
-  late Animation<Offset> _animation;
 
   //ProductResponse.Value? selectedColor;
   //ProductResponse.Value? selectedSize;
@@ -104,24 +95,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         isLoggedIn = value;
       });
       fetchInitialData();
-
-      // Initialize the animation controller
-      _animationController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1000),
-      );
-
-      // Define the animation's starting and ending positions
-      _animation = Tween<Offset>(
-        begin: const Offset(0, 1), // Start just below the screen
-        end: Offset.zero, // End at its natural position
-      ).animate(CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ));
-
-      // Start the animation when the widget is built
-      _animationController.forward();
       listenToEvents();
     });
   }
@@ -141,7 +114,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   void dispose() {
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -202,9 +174,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           ),
           backgroundColor: Colors.white,
           body: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
+              ? const ProductDetailSkeleton()
               : SafeArea(
                   child: Stack(children: [
                     Column(
@@ -216,14 +186,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  buildProductImages(),
+                                  AppReveal(child: buildProductImages()),
                                   const SizedBox(height: 25),
-                                  buildProductDetails(),
-                                  buildCartSection(),
+                                  AppReveal(
+                                      index: 1, child: buildProductDetails()),
+                                  AppReveal(
+                                      index: 2, child: buildCartSection()),
                                   const SizedBox(height: 15),
-                                  buildProductDescription(),
-                                  buildRelatedProducts(),
-                                  buildReviews(),
+                                  AppReveal(
+                                      index: 3,
+                                      child: buildProductDescription()),
+                                  AppReveal(
+                                      index: 4, child: buildRelatedProducts()),
+                                  AppReveal(index: 5, child: buildReviews()),
                                   const SizedBox(height: 90),
                                 ],
                               ),

@@ -4,6 +4,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -43,11 +44,7 @@ class _CategoryPageState extends State<CategoryPage> {
         ),
         backgroundColor: Colors.white,
         body: apiLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
-              )
+            ? const CategoryPageSkeleton()
             : Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -65,21 +62,24 @@ class _CategoryPageState extends State<CategoryPage> {
                     Expanded(
                       child: MasonryGridView.count(
                         crossAxisCount: 2,
-                        itemCount: productCategoriesResponse!.productCategories!.length,
+                        itemCount: productCategoriesResponse!
+                            .productCategories!.length,
                         itemBuilder: (context, index) {
-                          final productCategory =
-                          productCategoriesResponse!.productCategories![index];
+                          final productCategory = productCategoriesResponse!
+                              .productCategories![index];
 
                           return CategoryCard(
                             imagePath: productCategory.image ?? '',
                             title: productCategory.name!,
                             onTap: () {
-                              if (productCategory.categoryChildren!.isNotEmpty) {
+                              if (productCategory
+                                  .categoryChildren!.isNotEmpty) {
                                 PageRouteUtils.pushWithFade(
                                   context,
                                   SubCategoryPage(
                                     categoryTitle: productCategory.name!,
-                                    productCategory: productCategory.categoryChildren!,
+                                    productCategory:
+                                        productCategory.categoryChildren!,
                                   ),
                                 );
                               } else {
