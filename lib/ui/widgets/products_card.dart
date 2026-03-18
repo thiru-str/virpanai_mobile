@@ -8,6 +8,7 @@ import '../../utility/app_colors.dart';
 class ProductsCard extends StatelessWidget {
   final String imageUrl;
   final String title;
+  final String? variantTitle;
   final String productCount;
   final String price;
 
@@ -15,6 +16,7 @@ class ProductsCard extends StatelessWidget {
     Key? key,
     required this.imageUrl,
     required this.title,
+    this.variantTitle,
     required this.productCount,
     required this.price,
   }) : super(key: key);
@@ -45,8 +47,7 @@ class ProductsCard extends StatelessWidget {
               width: 60,
               height: 60,
               fit: BoxFit.cover,
-              placeholder: (_, __) =>
-                  Container(color: Colors.grey.shade200),
+              placeholder: (_, __) => Container(color: Colors.grey.shade200),
               errorWidget: (_, __, ___) => _fallbackWidget(),
             ),
           ),
@@ -55,30 +56,48 @@ class ProductsCard extends StatelessWidget {
           // Title and Right-side content
           Expanded(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Product title
                 Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      if (_shouldShowVariantTitle)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            variantTitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-
                 const SizedBox(width: 12),
-
-                // Product count + Price
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade400),
                         borderRadius: BorderRadius.circular(20),
@@ -124,4 +143,7 @@ class ProductsCard extends StatelessWidget {
     );
   }
 
+  bool get _shouldShowVariantTitle =>
+      (variantTitle ?? '').trim().isNotEmpty &&
+      (variantTitle ?? '').trim().toLowerCase() != 'default variant';
 }

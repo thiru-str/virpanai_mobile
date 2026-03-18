@@ -37,7 +37,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   String _selectedCompletionStatus = 'Delivered'; // default
 
-
   @override
   void initState() {
     // TODO: implement initState
@@ -49,22 +48,21 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     getApis();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: CommonAppBar(
-              title: widget.isFromLiveOrder ? 'Order Details' : 'Past Order',
-              showBack: true,
-            ),
-            body: apiLoading
-                ? Center(
+      backgroundColor: Colors.white,
+      appBar: CommonAppBar(
+        title: widget.isFromLiveOrder ? 'Order Details' : 'Past Order',
+        showBack: true,
+      ),
+      body: apiLoading
+          ? Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
               ),
             )
-                : SafeArea(
+          : SafeArea(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,10 +71,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       storeName: _liveOrderDetailResponse?.data?.shopName ?? '',
                       address:
                           _liveOrderDetailResponse?.data?.shopAddress ?? '',
-                      phone:
-                          _liveOrderDetailResponse?.data?.phone ?? '',
+                      phone: _liveOrderDetailResponse?.data?.phone ?? '',
                       orderDate: _liveOrderDetailResponse?.data?.date ?? '',
-                      orderId: '#${( _liveOrderDetailResponse?.data?.displayId??0).toString()}',
+                      orderId:
+                          '#${(_liveOrderDetailResponse?.data?.displayId ?? 0).toString()}',
                       totalPrice:
                           _liveOrderDetailResponse?.data?.totalPrice ?? '',
                     ),
@@ -88,7 +86,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     //   ),
                     // ),
                     Visibility(
-                      visible: (_liveOrderDetailResponse?.data?.paymentMethod ?? '').isNotEmpty,
+                      visible:
+                          (_liveOrderDetailResponse?.data?.paymentMethod ?? '')
+                              .isNotEmpty,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 24.0, vertical: 16),
@@ -112,7 +112,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                   border: Border.all(color: Colors.green),
                                 ),
                                 child: Text(
-                                  _liveOrderDetailResponse?.data?.paymentMethod ?? '',
+                                  _liveOrderDetailResponse
+                                          ?.data?.paymentMethod ??
+                                      '',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -138,7 +140,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                               ),
                             ),
                             Visibility(
-                              visible: !widget.isFromLiveOrder && (_liveOrderDetailResponse?.data?.orderStatus ?? '').toLowerCase()== 'processing',
+                              visible: !widget.isFromLiveOrder &&
+                                  (_liveOrderDetailResponse
+                                                  ?.data?.orderStatus ??
+                                              '')
+                                          .toLowerCase() ==
+                                      'processing',
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 4),
@@ -171,17 +178,20 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         return ProductsCard(
                           imageUrl: item?.productImage ?? '',
                           title: item?.productTitle ?? '',
+                          variantTitle: item?.variantTitle,
                           productCount: item?.quantity ?? '',
                           price: item?.total ?? '',
                         );
                       },
                     ),
                     Visibility(
-                      visible: (_liveOrderDetailResponse?.data?.orderStatus ?? '')
-                          .toLowerCase() ==
-                          'shipped',
+                      visible:
+                          (_liveOrderDetailResponse?.data?.orderStatus ?? '')
+                                  .toLowerCase() ==
+                              'shipped',
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -223,46 +233,46 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             // Button
                             completeOrderLoading
                                 ? const Center(
-                              child: CircularProgressIndicator(),
-                            )
+                                    child: CircularProgressIndicator(),
+                                  )
                                 : ElevatedButton(
-                              onPressed: () async {
-                                if ((_liveOrderDetailResponse
-                                    ?.data?.paymentMethod ??
-                                    '')
-                                    .toLowerCase() ==
-                                    'cod') {
-                                  _showPaymentConfirmation(context);
-                                } else {
-                                  markAsComplete(context);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                minimumSize: const Size(double.infinity, 60),
-                              ),
-                              child: Text(
-                                'Update Status',
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                                    onPressed: () async {
+                                      if ((_liveOrderDetailResponse
+                                                      ?.data?.paymentMethod ??
+                                                  '')
+                                              .toLowerCase() ==
+                                          'cod') {
+                                        _showPaymentConfirmation(context);
+                                      } else {
+                                        markAsComplete(context);
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      minimumSize:
+                                          const Size(double.infinity, 60),
+                                    ),
+                                    child: Text(
+                                      'Update Status',
+                                      style: FontUtils.primaryFontStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                           ],
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
             ),
-          );
+    );
   }
 
   Future<void> markAsComplete(BuildContext context) async {
@@ -270,15 +280,13 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       completeOrderLoading = true;
     });
     try {
-      final selectedApiStatus =
-      completionStatuses[_selectedCompletionStatus]!;
+      final selectedApiStatus = completionStatuses[_selectedCompletionStatus]!;
 
       final response = await ApiService().completeOrder(
-        context,
-        _liveOrderDetailResponse?.data?.orderId ?? '',
-        _liveOrderDetailResponse?.data?.fulfillmentId ?? '',
-          selectedApiStatus
-      );
+          context,
+          _liveOrderDetailResponse?.data?.orderId ?? '',
+          _liveOrderDetailResponse?.data?.fulfillmentId ?? '',
+          selectedApiStatus);
 
       if ((response.message ?? '').isNotEmpty) {
         AppUtils.showToast(response.message!);
@@ -288,7 +296,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         _liveOrderDetailResponse?.data?.orderStatus = 'Completed';
         eventBus.fire(ReloadEvent(true));
       });
-
     } catch (error) {
       debugPrint('$error');
     } finally {
@@ -321,7 +328,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       builder: (context) {
         return CommonAlertDialog(
           title: 'COD Order',
-          content: 'This is a Cash on Delivery order. Please ensure payment is collected before proceeding.',
+          content:
+              'This is a Cash on Delivery order. Please ensure payment is collected before proceeding.',
           contentOk: 'Proceed',
           contentCancel: 'Cancel',
           onTapOk: () {
@@ -339,7 +347,4 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     'Canceled': 'canceled',
     'Partially Canceled': 'partially canceled',
   };
-
 }
-
-
