@@ -503,16 +503,17 @@ class _HomePageState extends State<HomePage> {
       }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
+      final productItems = cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).toList() ?? [];
       setState(() {
-        cartItems = cartResponse?.cart?.items?.length;
-        cartItemImages = cartResponse?.cart?.items
-            ?.map((item) => item.thumbnail ?? "")
+        cartItems = productItems.length;
+        cartItemImages = productItems
+            .map((item) => item.thumbnail ?? "")
             .toList();
       });
-      if ((cartResponse?.cart?.items?.length ?? 0) > 0) {
+      if (productItems.isNotEmpty) {
         final qtyMap = <String, int>{};
-        for (var item in cartResponse?.cart?.items ?? []) {
-          qtyMap[item.variantId] = item.quantity;
+        for (var item in productItems) {
+          if (item.variantId != null) qtyMap[item.variantId!] = item.quantity ?? 0;
         }
 
         eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));

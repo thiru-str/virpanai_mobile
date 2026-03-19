@@ -522,16 +522,25 @@ class Item {
     "inventory_quantity": inventoryQuantity,
     "in_stock": inStock,
   };
+
+  bool get isPlatformFee => metadata?.type == 'platform_fee';
 }
 
 
 class Metadata {
-  Metadata();
+  String? type;
+  num? percentage;
+
+  Metadata({this.type, this.percentage});
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
+    type: json["type"],
+    percentage: json["percentage"],
   );
 
   Map<String, dynamic> toJson() => {
+    "type": type,
+    "percentage": percentage,
   };
 }
 

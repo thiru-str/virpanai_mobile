@@ -150,7 +150,7 @@ class ProductCard9 extends StatelessWidget {
                     style: FontUtils.secondaryFontStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black.withValues(alpha: 0.8),
+                      color: Colors.black.withOpacity(0.8),
                     ),
                   ),
                   Text(
@@ -166,7 +166,7 @@ class ProductCard9 extends StatelessWidget {
                     style: FontUtils.secondaryFontStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black.withValues(alpha: 0.8),
+                      color: Colors.black.withOpacity(0.8),
                     ),
                   ),
                 ],
@@ -216,7 +216,7 @@ class ProductCard9 extends StatelessWidget {
                 style: FontUtils.secondaryFontStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black.withValues(alpha: 0.8),
+                  color: Colors.black.withOpacity(0.8),
                 ),
               ),
             ),

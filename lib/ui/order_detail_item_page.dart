@@ -178,10 +178,31 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                               child: CartCalculation(
                                 keyText: '${AppStrings.subTotal}:',
                                 valueText: CurrencyUtil.appendCurrency(
-                                    (order?.prices?.itemSubtotal ?? 0)
+                                    ((order?.prices?.itemSubtotal ?? 0) -
+                                        ((order?.items ?? [])
+                                            .where((item) => item.isPlatformFee)
+                                            .fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))))
                                         .toString()),
                               ),
                             ),
+                            Visibility(
+                              visible: (order?.prices?.shippingTotal ?? 0) > 0,
+                              child: CartCalculation(
+                                keyText: '${AppStrings.shipping}:',
+                                valueText: CurrencyUtil.appendCurrency(
+                                    (order?.prices?.shippingTotal ?? 0).toString()),
+                              ),
+                            ),
+                            if ((order?.items ?? []).any((item) => item.isPlatformFee) &&
+                                (order!.items!.where((item) => item.isPlatformFee).fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))) > 0)
+                              CartCalculation(
+                                keyText: '${AppStrings.platform_fee}:',
+                                valueText: CurrencyUtil.appendCurrency(
+                                    ((order?.items ?? [])
+                                        .where((item) => item.isPlatformFee)
+                                        .fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0))))
+                                        .toString()),
+                              ),
                             Visibility(
                               visible: (order?.prices?.taxTotal ?? 0) > 0,
                               child: CartCalculation(
@@ -294,7 +315,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   }
 
   Widget _buildOrdersList() {
-    final List<Item> allItems = order?.items ?? [];
+    final List<Item> allItems = (order?.items ?? []).where((item) => !item.isPlatformFee).toList();
 
     // Split items by status
     final List<Item> returnedItems = allItems

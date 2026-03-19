@@ -116,7 +116,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           final order = orders[index];
           return OrderWidget(
             orderId: (order.displayId ?? 1).toString(),
-            itemCount: (order.items?.length ?? 1).toString(),
+            itemCount: (order.items?.where((item) => !item.isPlatformFee).length ?? 1).toString(),
             createdAt: toIST(order.createdAt ?? DateTime.now()),
             itemPrice: (order.status ?? '').toLowerCase() == 'canceled'
                 ? (order.subtotal ?? 0)

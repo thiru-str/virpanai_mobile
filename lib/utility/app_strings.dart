@@ -267,4 +267,5 @@ class AppStrings {
   static const String confirm_return = 'Confirm Return';
   static const String current_orders = 'Current Orders';
   static const String return_orders = 'Return Orders';
+  static const String platform_fee = 'Platform Fee';
 }
