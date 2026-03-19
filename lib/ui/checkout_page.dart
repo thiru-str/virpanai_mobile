@@ -200,7 +200,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                           if ((cartResponse!.cart!.items?.any((item) => item.isPlatformFee) ?? false) &&
                               (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
                             CartCalculation(
-                              keyText: 'Platform Fee:',
+                              keyText: '${AppStrings.platform_fee}:',
                               valueText: CurrencyUtil.appendCurrency(
                                 (cartResponse!.cart!.items!
                                     .firstWhere((item) => item.isPlatformFee)
@@ -580,7 +580,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["client_secret"];
     } catch (e) {
-      print("Error extracting client secret: $e");
+      debugPrint("Error extracting client secret: $e");
       return null;
     }
   }

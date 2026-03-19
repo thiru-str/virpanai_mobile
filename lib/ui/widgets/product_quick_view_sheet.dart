@@ -305,7 +305,7 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
                 cartResponse.cart?.items
                     ?.where((i) => !i.isPlatformFee)
                     .map((i) => i.thumbnail ?? "")
-                    .toList(),
+                    .toList() ?? [],
               ));
               Navigator.pop(context);
             },
