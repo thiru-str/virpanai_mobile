@@ -301,9 +301,10 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
                   context, selectedQuantity, selectedVariantId!);
               final cartResponse = await apiService.getCart(context);
               eventBus.fire(ViewCartModel(
-                cartResponse.cart?.items?.length ?? 0,
+                cartResponse.cart?.items?.where((i) => !i.isPlatformFee).length ?? 0,
                 cartResponse.cart?.items
-                    ?.map((i) => i.thumbnail ?? "")
+                    ?.where((i) => !i.isPlatformFee)
+                    .map((i) => i.thumbnail ?? "")
                     .toList(),
               ));
               Navigator.pop(context);

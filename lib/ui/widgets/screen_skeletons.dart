@@ -200,7 +200,7 @@ class CategoryCardSkeleton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Colors.black.withOpacity(0.08),
               spreadRadius: 1,
               blurRadius: 8,
               offset: const Offset(0, 4),

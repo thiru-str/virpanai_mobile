@@ -201,7 +201,7 @@ class _Slider6Card extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 14,
-                          color: AppColors.textColor.withValues(alpha: 0.35),
+                          color: AppColors.textColor.withOpacity(0.35),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),

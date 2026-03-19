@@ -1210,12 +1210,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   void emitEvent(CartResponse cartResponse) {
     setState(() {
-      cartItems = cartResponse.cart?.items?.length;
+      cartItems = cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
       cartItemImages = cartResponse.cart?.items
-          ?.map((item) => item.thumbnail ?? "")
+          ?.where((item) => !item.isPlatformFee)
+          .map((item) => item.thumbnail ?? "")
           .toList();
     });
-    if ((cartResponse.cart?.items?.length ?? 0) > 0) {
+    if ((cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length ?? 0) > 0) {
       final qtyMap = <String, int>{};
       for (var item in cartResponse.cart?.items ?? []) {
         qtyMap[item.variantId] = item.quantity;

@@ -205,10 +205,11 @@ class _CartPageState extends State<CartPage> {
                                 ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
-                                  itemCount: cartResponse!.cart!.items!.length,
+                                  itemCount: cartResponse!.cart!.items!.where((item) => !item.isPlatformFee).length,
                                   itemBuilder: (context, index) {
-                                    final cartItem =
-                                        cartResponse!.cart!.items![index];
+                                    final productItems = cartResponse!.cart!.items!.where((item) => !item.isPlatformFee).toList();
+                                    final cartItem = productItems[index];
+                                    final originalIndex = cartResponse!.cart!.items!.indexOf(cartItem);
                                     return AppReveal(
                                       index: index,
                                       child: CartItemCard(
@@ -228,22 +229,22 @@ class _CartPageState extends State<CartPage> {
                                         isUpdating: cartItem.isUpdating!,
                                         onRemoveAll: () {
                                           setState(() {
-                                            cartResponse!.cart!.items![index]
+                                            cartResponse!.cart!.items![originalIndex]
                                                 .isUpdating = true;
                                           });
-                                          removeCart(cartItem.id!, index);
+                                          removeCart(cartItem.id!, originalIndex);
                                         },
                                         onIncrease: () {
                                           setState(() {
-                                            cartResponse!.cart!.items![index]
+                                            cartResponse!.cart!.items![originalIndex]
                                                 .isUpdating = true;
                                           });
                                           updateCart(cartItem.quantity! + 1,
-                                              cartItem.id!, index);
+                                              cartItem.id!, originalIndex);
                                         },
                                         onDecrease: () async {
                                           final item =
-                                              cartResponse!.cart!.items![index];
+                                              cartResponse!.cart!.items![originalIndex];
                                           final currentQty = item.quantity ?? 0;
                                           final stockQty =
                                               item.inventoryQuantity ?? 0;
@@ -252,13 +253,13 @@ class _CartPageState extends State<CartPage> {
                                               () => item.isUpdating = true);
 
                                           if (currentQty <= 1) {
-                                            removeCart(item.id!, index);
+                                            removeCart(item.id!, originalIndex);
                                             return;
                                           }
 
                                           if (!(item.inStock ?? false)) {
                                             if (stockQty == 0) {
-                                              removeCart(item.id!, index);
+                                              removeCart(item.id!, originalIndex);
                                               return;
                                             }
 
@@ -320,7 +321,7 @@ class _CartPageState extends State<CartPage> {
 
                                               if (confirmed == true) {
                                                 updateCart(
-                                                    stockQty, item.id!, index);
+                                                    stockQty, item.id!, originalIndex);
                                               } else {
                                                 setState(() =>
                                                     item.isUpdating = false);
@@ -330,7 +331,7 @@ class _CartPageState extends State<CartPage> {
                                           }
 
                                           updateCart(
-                                              currentQty - 1, item.id!, index);
+                                              currentQty - 1, item.id!, originalIndex);
                                         },
                                       ),
                                     );
@@ -388,8 +389,10 @@ class _CartPageState extends State<CartPage> {
                                     CartCalculation(
                                       keyText: '${AppStrings.subTotal}:',
                                       valueText: CurrencyUtil.appendCurrency(
-                                        _numOrZero(cartResponse
-                                                ?.cart?.itemSubtotal)
+                                        (_numOrZero(cartResponse?.cart?.itemSubtotal) -
+                                            _numOrZero(cartResponse?.cart?.items
+                                                ?.where((item) => item.isPlatformFee)
+                                                .fold<num>(0, (sum, item) => sum + (item.total ?? 0))))
                                             .toStringAsFixed(2),
                                       ),
                                     ),
@@ -411,6 +414,17 @@ class _CartPageState extends State<CartPage> {
                                             .toStringAsFixed(2),
                                       ),
                                     ),
+                                    if ((cartResponse?.cart?.items?.any((item) => item.isPlatformFee) ?? false) &&
+                                        (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
+                                      CartCalculation(
+                                        keyText: 'Platform Fee:',
+                                        valueText: CurrencyUtil.appendCurrency(
+                                          (cartResponse!.cart!.items!
+                                              .firstWhere((item) => item.isPlatformFee)
+                                              .total ?? 0)
+                                              .toStringAsFixed(2),
+                                        ),
+                                      ),
                                     CartCalculation(
                                       keyText: '${AppStrings.tax}:',
                                       valueText: CurrencyUtil.appendCurrency(
@@ -597,12 +611,13 @@ class _CartPageState extends State<CartPage> {
   }
 
   void emitEvent(CartResponse cartResponse) {
-    final totalQty = cartResponse.cart!.items!
-        .map((item) => item.quantity ?? 0) // pick quantity, default to 0
+    final productItems = cartResponse.cart!.items!.where((item) => !item.isPlatformFee).toList();
+    final totalQty = productItems
+        .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
     print('total qty ${totalQty}');
     eventBus.fire(ViewCartModel(totalQty,
-        cartResponse.cart!.items!.map((item) => item.thumbnail!).toList()));
+        productItems.map((item) => item.thumbnail!).toList()));
   }
 
   void addPromoCode(String promoCode) async {
@@ -830,6 +845,8 @@ class _CartPageState extends State<CartPage> {
         pp_id = response
                 .paymentCollection?.paymentSessions?.firstOrNull?.providerId ??
             'pp_system_default';
+        orderId = response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
+        clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret;
       });
       getCartApi();
     } catch (e) {

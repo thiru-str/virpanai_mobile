@@ -204,7 +204,7 @@ class CartItemCard extends StatelessWidget {
           Container(
             height: 100,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.72),
+              color: Colors.white.withOpacity(0.72),
               borderRadius: BorderRadius.circular(12.0),
             ),
             child: const Center(

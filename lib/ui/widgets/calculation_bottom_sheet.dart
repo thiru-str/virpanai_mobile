@@ -39,7 +39,12 @@ class CalculationBottomSheet extends StatelessWidget {
           // ✅ Main white box with rounded border
           CartCalculation(
             keyText: '${AppStrings.subTotal}:',
-            valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.itemSubtotal!.toStringAsFixed(2)),
+            valueText: CurrencyUtil.appendCurrency(
+              ((cartResponse!.cart!.itemSubtotal ?? 0) -
+                  (cartResponse!.cart!.items
+                      ?.where((item) => item.isPlatformFee)
+                      .fold<num>(0, (sum, item) => sum + (item.total ?? 0)) ?? 0))
+                  .toStringAsFixed(2)),
           ),
           Visibility(
               visible: cartResponse!.cart!.discountSubtotal!>0,
@@ -53,6 +58,16 @@ class CalculationBottomSheet extends StatelessWidget {
                 keyText: '${AppStrings.shipping}:',
                 valueText: CurrencyUtil.appendCurrency(cartResponse!.cart!.shippingSubtotal!.toStringAsFixed(2)),
               )),
+          if ((cartResponse!.cart!.items?.any((item) => item.isPlatformFee) ?? false) &&
+              (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
+            CartCalculation(
+              keyText: 'Platform Fee:',
+              valueText: CurrencyUtil.appendCurrency(
+                (cartResponse!.cart!.items!
+                    .firstWhere((item) => item.isPlatformFee)
+                    .total ?? 0)
+                    .toStringAsFixed(2)),
+            ),
           Visibility(
             visible: (cartResponse?.cart?.taxTotal??0)>0,
             child: CartCalculation(

@@ -189,7 +189,7 @@ class _Slider9Card extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: FontUtils.primaryFontStyle(
                     fontSize: 12,
-                    color: AppColors.textColor.withValues(alpha: 0.55),
+                    color: AppColors.textColor.withOpacity(0.55),
                   ),
                 ),
               ),
@@ -228,7 +228,7 @@ class _Slider9Card extends StatelessWidget {
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 12,
                                   color: AppColors.textColor
-                                      .withValues(alpha: 0.4),
+                                      .withOpacity(0.4),
                                   decoration: TextDecoration.lineThrough,
                                 ),
                               ),

@@ -128,20 +128,28 @@ class Order {
 class Metadata {
   String? fulfillmentStatus;
   String? invoice;
+  String? type;
+  num? percentage;
 
   Metadata({
     this.fulfillmentStatus,
     this.invoice,
+    this.type,
+    this.percentage,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     fulfillmentStatus: json["fulfillment_status"],
     invoice: json["invoice"],
+    type: json["type"],
+    percentage: json["percentage"],
   );
 
   Map<String, dynamic> toJson() => {
     "fulfillment_status": fulfillmentStatus,
     "invoice": invoice,
+    "type": type,
+    "percentage": percentage,
   };
 }
 
@@ -515,6 +523,8 @@ class Item {
     "raw_return_dismissed_total": rawReturnDismissedTotal?.toJson(),
     "raw_write_off_total": rawWriteOffTotal?.toJson(),
   };
+
+  bool get isPlatformFee => metadata?.type == 'platform_fee';
 }
 
 class Adjustment {

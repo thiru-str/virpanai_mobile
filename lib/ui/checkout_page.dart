@@ -39,6 +39,7 @@ import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
+import '../model/payment_method_response.dart';
 import '../utility/stripe_service.dart';
 
 class CheckOutPage extends StatefulWidget {
@@ -172,9 +173,12 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         children: [
                           CartCalculation(
                             keyText: '${AppStrings.subTotal}:',
-                            valueText: CurrencyUtil.appendCurrency(cartResponse!
-                                .cart!.itemSubtotal!
-                                .toStringAsFixed(2)),
+                            valueText: CurrencyUtil.appendCurrency(
+                              ((cartResponse!.cart!.itemSubtotal ?? 0) -
+                                  (cartResponse!.cart!.items
+                                      ?.where((item) => item.isPlatformFee)
+                                      .fold<num>(0, (sum, item) => sum + (item.total ?? 0)) ?? 0))
+                                  .toStringAsFixed(2)),
                           ),
                           Visibility(
                               visible:
@@ -193,6 +197,16 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                     cartResponse!.cart!.shippingSubtotal!
                                         .toStringAsFixed(2)),
                               )),
+                          if ((cartResponse!.cart!.items?.any((item) => item.isPlatformFee) ?? false) &&
+                              (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
+                            CartCalculation(
+                              keyText: 'Platform Fee:',
+                              valueText: CurrencyUtil.appendCurrency(
+                                (cartResponse!.cart!.items!
+                                    .firstWhere((item) => item.isPlatformFee)
+                                    .total ?? 0)
+                                    .toStringAsFixed(2)),
+                            ),
                           CartCalculation(
                             keyText: '${AppStrings.tax}:',
                             valueText: CurrencyUtil.appendCurrency(cartResponse!
@@ -547,6 +561,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   String? extractOrderId(dynamic response) {
     try {
+      if (response is PaymentMethodResponse) {
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
+      }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["id"];
     } catch (e) {
@@ -557,10 +574,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   String? extractClientSecret(dynamic response) {
     try {
+      if (response is PaymentMethodResponse) {
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret;
+      }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["client_secret"];
     } catch (e) {
-      print("Error extracting order ID: $e");
+      print("Error extracting client secret: $e");
       return null;
     }
   }
