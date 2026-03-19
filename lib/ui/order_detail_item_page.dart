@@ -196,7 +196,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                             if ((order?.items ?? []).any((item) => item.isPlatformFee) &&
                                 (order!.items!.where((item) => item.isPlatformFee).fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))) > 0)
                               CartCalculation(
-                                keyText: 'Platform Fee:',
+                                keyText: '${AppStrings.platform_fee}:',
                                 valueText: CurrencyUtil.appendCurrency(
                                     ((order?.items ?? [])
                                         .where((item) => item.isPlatformFee)

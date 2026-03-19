@@ -22,7 +22,7 @@ def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? projec
 
 android {
     namespace "com.waioz.cartel"
-    compileSdk 35
+    compileSdk flutterCompileSdkVersion.toInteger()
     ndkVersion "27.0.12077973"
 
     compileOptions {

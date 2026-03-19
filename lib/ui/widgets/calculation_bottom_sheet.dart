@@ -61,7 +61,7 @@ class CalculationBottomSheet extends StatelessWidget {
           if ((cartResponse!.cart!.items?.any((item) => item.isPlatformFee) ?? false) &&
               (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
             CartCalculation(
-              keyText: 'Platform Fee:',
+              keyText: '${AppStrings.platform_fee}:',
               valueText: CurrencyUtil.appendCurrency(
                 (cartResponse!.cart!.items!
                     .firstWhere((item) => item.isPlatformFee)
