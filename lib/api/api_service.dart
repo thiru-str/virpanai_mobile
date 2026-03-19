@@ -18,6 +18,7 @@ import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
+import 'package:waioz/model/wallet_response.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -1054,5 +1055,75 @@ class ApiService {
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
+  }
+
+  // ==================== WALLET ====================
+
+  Future<WalletResponse> getWalletBalance(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest(
+        "store/wallet", null, null,
+        (data) => WalletResponse.fromJson(data), context);
+  }
+
+  Future<WalletTransactionsResponse> getWalletTransactions(
+      BuildContext context,
+      {int limit = 20,
+      int offset = 0,
+      String? type,
+      String? direction}) async {
+    await addToken();
+    final params = <String, dynamic>{
+      'limit': limit,
+      'offset': offset,
+    };
+    if (type != null) params['type'] = type;
+    if (direction != null) params['direction'] = direction;
+
+    return _makeGetRequest(
+        "store/wallet/transactions", null, params,
+        (data) => WalletTransactionsResponse.fromJson(data), context);
+  }
+
+  Future<WalletTopUpResponse> initiateWalletTopUp(
+      BuildContext context, double amount, String paymentProvider,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up",
+        {
+          "amount": amount,
+          "payment_provider": paymentProvider,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletTopUpResponse.fromJson(data),
+        context);
+  }
+
+  Future<WalletCheckoutResponse> getWalletCheckoutInfo(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest(
+        "store/wallet/checkout", null, {'cart_id': cartId},
+        (data) => WalletCheckoutResponse.fromJson(data), context);
+  }
+
+  Future<WalletApplyResponse> applyWalletToCheckout(
+      BuildContext context, String cartId, {double? amount}) async {
+    await addToken();
+    final body = <String, dynamic>{'cart_id': cartId};
+    if (amount != null) body['amount'] = amount;
+
+    return _makePostRequest(
+        "store/wallet/checkout", body,
+        (data) => WalletApplyResponse.fromJson(data), context);
+  }
+
+  Future<WalletApplyResponse> removeWalletFromCheckout(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeDeleteRequest(
+        "store/wallet/checkout", {'cart_id': cartId},
+        (data) => WalletApplyResponse.fromJson(data), context);
   }
 }
