@@ -104,6 +104,9 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
       case "pp_neft_neft":
         return SvgPicture.asset(AppAssets.ic_bank_transfer, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
 
+      case "pp_wallet_wallet":
+        return Icon(Icons.account_balance_wallet, size: 24, color: AppColors.primary);
+
       default:
         return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
     }

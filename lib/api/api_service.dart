@@ -1086,44 +1086,51 @@ class ApiService {
   }
 
   Future<WalletTopUpResponse> initiateWalletTopUp(
-      BuildContext context, double amount, String paymentProvider,
+      BuildContext context, double amount,
       {String currencyCode = 'inr'}) async {
     await addToken();
     return _makePostRequest(
         "store/wallet/top-up",
         {
           "amount": amount,
-          "payment_provider": paymentProvider,
           "currency_code": currencyCode,
         },
         (data) => WalletTopUpResponse.fromJson(data),
         context);
   }
 
-  Future<WalletCheckoutResponse> getWalletCheckoutInfo(
+  Future<WalletConfirmResponse> confirmWalletTopUp(
+      BuildContext context, String razorpayPaymentId, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up/confirm",
+        {
+          "razorpay_payment_id": razorpayPaymentId,
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletConfirmResponse.fromJson(data),
+        context);
+  }
+
+  Future<WalletSplitResponse> applyWalletSplit(
       BuildContext context, String cartId) async {
     await addToken();
-    return _makeGetRequest(
-        "store/wallet/checkout", null, {'cart_id': cartId},
-        (data) => WalletCheckoutResponse.fromJson(data), context);
-  }
-
-  Future<WalletApplyResponse> applyWalletToCheckout(
-      BuildContext context, String cartId, {double? amount}) async {
-    await addToken();
-    final body = <String, dynamic>{'cart_id': cartId};
-    if (amount != null) body['amount'] = amount;
-
     return _makePostRequest(
-        "store/wallet/checkout", body,
-        (data) => WalletApplyResponse.fromJson(data), context);
+        "store/wallet/apply-split",
+        {"cart_id": cartId},
+        (data) => WalletSplitResponse.fromJson(data),
+        context);
   }
 
-  Future<WalletApplyResponse> removeWalletFromCheckout(
+  Future<void> removeWalletSplit(
       BuildContext context, String cartId) async {
     await addToken();
     return _makeDeleteRequest(
-        "store/wallet/checkout", {'cart_id': cartId},
-        (data) => WalletApplyResponse.fromJson(data), context);
+        "store/wallet/apply-split",
+        {"cart_id": cartId},
+        (data) => data,
+        context);
   }
 }

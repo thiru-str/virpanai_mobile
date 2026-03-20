@@ -15,6 +15,7 @@ class WalletPage extends StatefulWidget {
 
 class _WalletPageState extends State<WalletPage> {
   Wallet? wallet;
+  TopUpConfig? topupConfig;
   List<WalletTransaction> transactions = [];
   int transactionCount = 0;
   bool loading = true;
@@ -55,6 +56,7 @@ class _WalletPageState extends State<WalletPage> {
       if (mounted) {
         setState(() {
           wallet = response.wallet;
+          topupConfig = response.topupConfig;
         });
       }
     } catch (e) {
@@ -187,27 +189,29 @@ class _WalletPageState extends State<WalletPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await PageRouteUtils.pushWithSlide(
-                            context,
-                            const WalletTopUpPage(),
-                          );
-                          _loadWallet();
-                          _loadTransactions();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                    if (topupConfig?.canTopUp == true)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final result = await PageRouteUtils.pushWithSlide(
+                              context,
+                              const WalletTopUpPage(),
+                            );
+                            // Refresh if top-up was successful
+                            _loadWallet();
+                            _loadTransactions();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
+                          child: const Text('Add Money'),
                         ),
-                        child: const Text('Add Money'),
                       ),
-                    ),
                   ],
                 ),
               ),

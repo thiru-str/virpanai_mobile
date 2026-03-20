@@ -1,11 +1,50 @@
 class WalletResponse {
   final Wallet? wallet;
+  final TopUpConfig? topupConfig;
+  final String? walletMode; // "full_payment" or "split_payment"
+  final bool autoApplyWallet;
 
-  WalletResponse({this.wallet});
+  WalletResponse({this.wallet, this.topupConfig, this.walletMode, this.autoApplyWallet = true});
 
   factory WalletResponse.fromJson(Map<String, dynamic> json) {
     return WalletResponse(
       wallet: json['wallet'] != null ? Wallet.fromJson(json['wallet']) : null,
+      topupConfig: json['topup_config'] != null
+          ? TopUpConfig.fromJson(json['topup_config'])
+          : null,
+      walletMode: json['wallet_mode'] ?? 'full_payment',
+      autoApplyWallet: json['auto_apply_wallet'] ?? true,
+    );
+  }
+
+  bool get isSplitPayment => walletMode == 'split_payment';
+}
+
+class WalletSplitResponse {
+  final bool walletApplied;
+  final double walletAmount;
+  final double gatewayAmount;
+  final double walletBalance;
+  final bool fullWalletCoverage;
+
+  WalletSplitResponse({
+    this.walletApplied = false,
+    this.walletAmount = 0,
+    this.gatewayAmount = 0,
+    this.walletBalance = 0,
+    this.fullWalletCoverage = false,
+  });
+
+  factory WalletSplitResponse.fromJson(Map<String, dynamic> json) {
+    return WalletSplitResponse(
+      walletApplied: json['wallet_applied'] ?? false,
+      walletAmount:
+          double.tryParse(json['wallet_amount']?.toString() ?? '0') ?? 0,
+      gatewayAmount:
+          double.tryParse(json['gateway_amount']?.toString() ?? '0') ?? 0,
+      walletBalance:
+          double.tryParse(json['wallet_balance']?.toString() ?? '0') ?? 0,
+      fullWalletCoverage: json['full_wallet_coverage'] ?? false,
     );
   }
 }
@@ -42,6 +81,43 @@ class Wallet {
       updatedAt: json['updated_at'],
     );
   }
+}
+
+class TopUpConfig {
+  final bool allowCustomerTopup;
+  final String? topupPaymentProvider;
+  final double minTopupAmount;
+  final double maxTopupAmount;
+  final double maxWalletBalance;
+
+  TopUpConfig({
+    this.allowCustomerTopup = false,
+    this.topupPaymentProvider,
+    this.minTopupAmount = 100,
+    this.maxTopupAmount = 10000,
+    this.maxWalletBalance = 10000,
+  });
+
+  factory TopUpConfig.fromJson(Map<String, dynamic> json) {
+    return TopUpConfig(
+      allowCustomerTopup: json['allow_customer_topup'] ?? false,
+      topupPaymentProvider: json['topup_payment_provider'],
+      minTopupAmount: double.tryParse(
+              json['min_topup_amount']?.toString() ?? '100') ??
+          100,
+      maxTopupAmount: double.tryParse(
+              json['max_topup_amount']?.toString() ?? '10000') ??
+          10000,
+      maxWalletBalance: double.tryParse(
+              json['max_wallet_balance']?.toString() ?? '10000') ??
+          10000,
+    );
+  }
+
+  bool get canTopUp =>
+      allowCustomerTopup &&
+      topupPaymentProvider != null &&
+      topupPaymentProvider!.isNotEmpty;
 }
 
 class WalletTransactionsResponse {
@@ -134,77 +210,14 @@ class WalletTransaction {
   }
 }
 
-class WalletCheckoutResponse {
-  final double walletBalance;
-  final double cartTotal;
-  final double applicableAmount;
-  final bool canUseWallet;
-  final bool autoApply;
-  final double minOrderValue;
-  final double remainingToPay;
-
-  WalletCheckoutResponse({
-    this.walletBalance = 0,
-    this.cartTotal = 0,
-    this.applicableAmount = 0,
-    this.canUseWallet = false,
-    this.autoApply = false,
-    this.minOrderValue = 0,
-    this.remainingToPay = 0,
-  });
-
-  factory WalletCheckoutResponse.fromJson(Map<String, dynamic> json) {
-    return WalletCheckoutResponse(
-      walletBalance:
-          double.tryParse(json['wallet_balance']?.toString() ?? '0') ?? 0,
-      cartTotal:
-          double.tryParse(json['cart_total']?.toString() ?? '0') ?? 0,
-      applicableAmount:
-          double.tryParse(json['applicable_amount']?.toString() ?? '0') ?? 0,
-      canUseWallet: json['can_use_wallet'] ?? false,
-      autoApply: json['auto_apply'] ?? false,
-      minOrderValue:
-          double.tryParse(json['min_order_value']?.toString() ?? '0') ?? 0,
-      remainingToPay:
-          double.tryParse(json['remaining_to_pay']?.toString() ?? '0') ?? 0,
-    );
-  }
-}
-
-class WalletApplyResponse {
-  final bool applied;
-  final double walletAmount;
-  final double remainingAmount;
-  final String? walletId;
-  final String? cartId;
-
-  WalletApplyResponse({
-    this.applied = false,
-    this.walletAmount = 0,
-    this.remainingAmount = 0,
-    this.walletId,
-    this.cartId,
-  });
-
-  factory WalletApplyResponse.fromJson(Map<String, dynamic> json) {
-    return WalletApplyResponse(
-      applied: json['applied'] ?? false,
-      walletAmount:
-          double.tryParse(json['wallet_amount']?.toString() ?? '0') ?? 0,
-      remainingAmount:
-          double.tryParse(json['remaining_amount']?.toString() ?? '0') ?? 0,
-      walletId: json['wallet_id'],
-      cartId: json['cart_id'],
-    );
-  }
-}
-
 class WalletTopUpResponse {
   final String? walletId;
   final double? amount;
   final String? currencyCode;
   final String? paymentProvider;
   final String? customerId;
+  final String? razorpayOrderId;
+  final String? razorpayKey;
 
   WalletTopUpResponse({
     this.walletId,
@@ -212,6 +225,8 @@ class WalletTopUpResponse {
     this.currencyCode,
     this.paymentProvider,
     this.customerId,
+    this.razorpayOrderId,
+    this.razorpayKey,
   });
 
   factory WalletTopUpResponse.fromJson(Map<String, dynamic> json) {
@@ -221,6 +236,22 @@ class WalletTopUpResponse {
       currencyCode: json['currency_code'],
       paymentProvider: json['payment_provider'],
       customerId: json['customer_id'],
+      razorpayOrderId: json['razorpay_order_id'],
+      razorpayKey: json['razorpay_key'],
+    );
+  }
+}
+
+class WalletConfirmResponse {
+  final bool success;
+  final Wallet? wallet;
+
+  WalletConfirmResponse({this.success = false, this.wallet});
+
+  factory WalletConfirmResponse.fromJson(Map<String, dynamic> json) {
+    return WalletConfirmResponse(
+      success: json['success'] ?? false,
+      wallet: json['wallet'] != null ? Wallet.fromJson(json['wallet']) : null,
     );
   }
 }

@@ -1,6 +1,7 @@
 class AppConfig {
   static const String appName = 'VirpanAi';
-  static const String baseUrl = 'https://virpanai.dev.api.waioz.com/';
+  static const String baseUrl = 'http://192.168.1.9:9000/';
+  // static const String baseUrl = 'https://virpanai.dev.api.waioz.com/';
   // static const String baseUrl = 'https://virpanai.api.waioz.com/';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =

@@ -27,6 +27,7 @@ import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
+import '../model/wallet_response.dart';
 import '../utility/app_config.dart';
 import '../utility/currency_util.dart';
 import '../utility/shared_preferences_util.dart';
@@ -910,6 +911,154 @@ class _CartPageState extends State<CartPage> {
       case 'pp_system_default':
         completeCart();
         break;
+      case 'pp_wallet_wallet':
+        _makeWalletPayment();
+        break;
+    }
+  }
+
+  void _makeWalletPayment() async {
+    setState(() => cartLoading = true);
+
+    try {
+      final walletData = await ApiService().getWalletBalance(context);
+      final balance = walletData.wallet?.balance ?? 0;
+      final cartTotal = cartResponse?.cart?.total ?? 0;
+
+      if (balance >= cartTotal) {
+        completeCart();
+      } else {
+        final shortfall = cartTotal - balance;
+        setState(() => cartLoading = false);
+
+        if (walletData.topupConfig?.canTopUp == true) {
+          _showWalletTopUpDialog(shortfall, walletData);
+        } else {
+          AppUtils.showToast(
+              'Insufficient wallet balance. Need ₹${shortfall.toStringAsFixed(2)} more.');
+        }
+      }
+    } catch (e) {
+      setState(() => cartLoading = false);
+      AppUtils.showToast('Failed to check wallet balance');
+      debugPrint('Wallet payment error: $e');
+    }
+  }
+
+  void _showWalletTopUpDialog(double shortfall, WalletResponse walletData) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.account_balance_wallet, color: AppColors.primary),
+            const SizedBox(width: 8),
+            const Text('Insufficient Balance', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Balance: ₹${walletData.wallet?.balance?.toStringAsFixed(2) ?? "0.00"}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Order Total: ₹${cartResponse?.cart?.total?.toStringAsFixed(2) ?? "0.00"}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'You need ₹${shortfall.toStringAsFixed(2)} more.',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.orange.shade800),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _initiateWalletTopUpFromCart(shortfall);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Add ₹${shortfall.toStringAsFixed(0)}'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _initiateWalletTopUpFromCart(double amount) async {
+    setState(() => cartLoading = true);
+
+    try {
+      final result = await ApiService().initiateWalletTopUp(context, amount);
+
+      if (result.razorpayOrderId != null && result.razorpayKey != null) {
+        final topUpRazorpay = Razorpay();
+
+        topUpRazorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
+            (PaymentSuccessResponse response) async {
+          try {
+            await ApiService().confirmWalletTopUp(context, response.paymentId!, amount);
+          } catch (e) {
+            debugPrint('Failed to confirm top-up: $e');
+          }
+          topUpRazorpay.clear();
+
+          // Re-initialize wallet payment session with updated balance, then complete
+          try {
+            await updatePaymentMethod('pp_wallet_wallet');
+            completeCart();
+          } catch (e) {
+            setState(() => cartLoading = false);
+            AppUtils.showToast('Balance added. Please tap Place Order again.');
+          }
+        });
+
+        topUpRazorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
+            (PaymentFailureResponse response) {
+          topUpRazorpay.clear();
+          setState(() => cartLoading = false);
+          AppUtils.showToast('Top-up payment failed. Please try again.');
+        });
+
+        topUpRazorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
+            (ExternalWalletResponse response) {});
+
+        var options = {
+          'key': result.razorpayKey,
+          'amount': (amount * 100).toInt(),
+          'order_id': result.razorpayOrderId,
+          'name': AppConfig.appName,
+          'description': 'Wallet Top-Up',
+          'retry': {'enabled': true, 'max_count': 1},
+          'send_sms_hash': true,
+          'prefill': {
+            'contact': customer?.phone ?? '',
+            'email': customer?.email ?? '',
+          },
+          'theme': {'color': AppUtils.colorToHex(AppColors.primary)},
+        };
+        topUpRazorpay.open(options);
+      } else {
+        setState(() => cartLoading = false);
+        AppUtils.showToast('Wallet top-up is not available');
+      }
+    } catch (e) {
+      setState(() => cartLoading = false);
+      AppUtils.showToast('Failed to initiate top-up');
+      debugPrint('Top-up error: $e');
     }
   }
 

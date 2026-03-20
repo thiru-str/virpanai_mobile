@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/wallet_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_utils.dart';
 
 class WalletTopUpPage extends StatefulWidget {
@@ -13,14 +16,47 @@ class WalletTopUpPage extends StatefulWidget {
 class _WalletTopUpPageState extends State<WalletTopUpPage> {
   final TextEditingController _amountController = TextEditingController();
   bool loading = false;
+  bool loadingConfig = true;
   int? selectedPreset;
+  TopUpConfig? topupConfig;
+  Razorpay? _razorpay;
 
-  final List<int> presetAmounts = [100, 250, 500, 1000, 2000, 5000];
+  final List<int> defaultPresets = [100, 200, 500, 1000, 2000, 5000];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTopUpConfig();
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
+    _razorpay?.clear();
     super.dispose();
+  }
+
+  Future<void> _loadTopUpConfig() async {
+    try {
+      final walletData = await ApiService().getWalletBalance(context);
+      if (mounted) {
+        setState(() {
+          topupConfig = walletData.topupConfig;
+          loadingConfig = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => loadingConfig = false);
+      debugPrint('Error loading top-up config: $e');
+    }
+  }
+
+  List<int> get presetAmounts {
+    if (topupConfig == null) return defaultPresets;
+    return defaultPresets
+        .where((a) =>
+            a >= topupConfig!.minTopupAmount && a <= topupConfig!.maxTopupAmount)
+        .toList();
   }
 
   void _selectPreset(int amount) {
@@ -37,29 +73,106 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
       return;
     }
 
+    if (topupConfig != null) {
+      if (amount < topupConfig!.minTopupAmount) {
+        AppUtils.showToast(
+            'Minimum top-up amount is ₹${topupConfig!.minTopupAmount.toStringAsFixed(0)}');
+        return;
+      }
+      if (amount > topupConfig!.maxTopupAmount) {
+        AppUtils.showToast(
+            'Maximum top-up amount is ₹${topupConfig!.maxTopupAmount.toStringAsFixed(0)}');
+        return;
+      }
+    }
+
     setState(() => loading = true);
 
     try {
-      final result = await ApiService().initiateWalletTopUp(
-        context,
-        amount,
-        'razorpay',
-      );
+      final result = await ApiService().initiateWalletTopUp(context, amount);
 
-      if (result.walletId != null) {
-        // Top-up initiated — redirect to payment or show success
-        AppUtils.showToast('Top-up initiated successfully');
-        if (mounted) Navigator.pop(context);
+      if (result.razorpayOrderId != null && result.razorpayKey != null) {
+        _openRazorpay(result, amount);
+      } else {
+        setState(() => loading = false);
+        AppUtils.showToast('Top-up is not available right now');
       }
     } catch (e) {
+      setState(() => loading = false);
       AppUtils.showToast('Failed to initiate top-up');
-    } finally {
-      if (mounted) setState(() => loading = false);
+      debugPrint('Top-up error: $e');
     }
+  }
+
+  void _openRazorpay(WalletTopUpResponse result, double amount) {
+    _razorpay = Razorpay();
+
+    _razorpay!.on(Razorpay.EVENT_PAYMENT_SUCCESS,
+        (PaymentSuccessResponse response) async {
+      // Confirm top-up on backend
+      try {
+        await ApiService().confirmWalletTopUp(
+          context,
+          response.paymentId!,
+          amount,
+        );
+        AppUtils.showToast('₹${amount.toStringAsFixed(0)} added to wallet');
+      } catch (e) {
+        debugPrint('Failed to confirm top-up: $e');
+        AppUtils.showToast('Payment received. Balance will update shortly.');
+      }
+
+      _razorpay?.clear();
+      if (mounted) {
+        setState(() => loading = false);
+        Navigator.pop(context, true); // Return true to refresh wallet page
+      }
+    });
+
+    _razorpay!.on(Razorpay.EVENT_PAYMENT_ERROR,
+        (PaymentFailureResponse response) {
+      _razorpay?.clear();
+      if (mounted) setState(() => loading = false);
+      AppUtils.showToast('Payment failed. Please try again.');
+    });
+
+    _razorpay!.on(Razorpay.EVENT_EXTERNAL_WALLET,
+        (ExternalWalletResponse response) {});
+
+    var options = {
+      'key': result.razorpayKey ?? AppConfig.razorPayKey,
+      'amount': (amount * 100).toInt(),
+      'order_id': result.razorpayOrderId,
+      'name': AppConfig.appName,
+      'description': 'Wallet Top-Up',
+      'retry': {'enabled': true, 'max_count': 1},
+      'send_sms_hash': true,
+      'theme': {'color': AppUtils.colorToHex(AppColors.primary)},
+    };
+    _razorpay!.open(options);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (loadingConfig) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Add Money to Wallet')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (topupConfig != null && !topupConfig!.canTopUp) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Add Money to Wallet')),
+        body: const Center(
+          child: Text(
+            'Wallet top-up is currently not available',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Money to Wallet'),
@@ -100,7 +213,24 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
               },
             ),
 
+            if (topupConfig != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Min: ₹${topupConfig!.minTopupAmount.toStringAsFixed(0)} · Max: ₹${topupConfig!.maxTopupAmount.toStringAsFixed(0)}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+            ],
+
             const SizedBox(height: 20),
+
+            // Quick Select label
+            if (presetAmounts.isNotEmpty) ...[
+              Text(
+                'Quick Select',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 8),
+            ],
 
             // Preset Amounts
             Wrap(
@@ -162,7 +292,9 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
                         ),
                       )
                     : Text(
-                        'Add ₹${_amountController.text.isNotEmpty ? _amountController.text : '0'} to Wallet',
+                        _amountController.text.isNotEmpty
+                            ? 'Pay ₹${_amountController.text}'
+                            : 'Enter amount',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

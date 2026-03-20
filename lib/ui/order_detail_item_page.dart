@@ -39,6 +39,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_stripe_stripe": "Stripe",
     "pp_razorpay_razorpay": "Razorpay",
     "pp_neft_neft": "NEFT",
+    "pp_payu_payu": "PayU",
+    "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;
   int _currentTab = 0;
