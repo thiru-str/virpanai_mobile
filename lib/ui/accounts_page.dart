@@ -35,15 +35,27 @@ class _SettingsPageState extends State<SettingsPage> {
   List<ContentData> storeContentList = [];
   bool isLoading = false;
   String? _appVersion;
+  List<String> enabledExtensions = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
     listenToEvents();
     _loadVersion();
+    _loadExtensions();
+  }
+
+  Future<void> _loadExtensions() async {
+    try {
+      final details = await ApiService().getPublicDetails();
+      if (mounted) {
+        setState(() {
+          enabledExtensions = details.enabledExtensions;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadVersion() async {
@@ -184,10 +196,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         PageRouteUtils.pushWithSlide(
                             context, OrdersHistoryPage());
                       }),
-                      _buildProfileItem('My Wallet', () {
-                        PageRouteUtils.pushWithSlide(
-                            context, const WalletPage());
-                      }),
+                      if (enabledExtensions.contains('wallet'))
+                        _buildProfileItem('My Wallet', () {
+                          PageRouteUtils.pushWithSlide(
+                              context, const WalletPage());
+                        }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {
                             if (contentItem.content?.data != null) {
