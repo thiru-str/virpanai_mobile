@@ -551,13 +551,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return true;
     }
 
-    // If inventory is managed and quantity > 0
-    if (variant.manageInventory == true &&
-        (variant.inventoryQuantity ?? 0) > 0) {
+    // If inventory is not managed, always in stock
+    if (variant.manageInventory != true) {
       return true;
     }
 
-    // Otherwise out of stock
+    // If inventory is managed, check quantity > 0
+    if ((variant.inventoryQuantity ?? 0) > 0) {
+      return true;
+    }
+
+    // Managed inventory with 0 quantity = out of stock
     return false;
   }
 
