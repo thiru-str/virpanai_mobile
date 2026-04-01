@@ -73,6 +73,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   double splitWalletAmount = 0;
   double splitGatewayAmount = 0;
   bool splitFullCoverage = false;
+  bool isSplitPaymentMode = false; // true when wallet extension is enabled with split_payment mode
 
   // Wallet state
   double walletBalance = 0;
@@ -148,28 +149,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               //           shippingResponse!.shippingOptions!);
                               //     }),
                               // Wallet Split Banner — shown in split_payment mode
-                              if (cartResponse?.cart?.id != null)
-                                WalletSplitWidget(
-                                  cartId: cartResponse!.cart!.id!,
-                                  cartTotal: cartResponse!.cart!.total ?? 0,
-                                  onSplitApplied: (wAmt, gAmt, fullCoverage) {
-                                    setState(() {
-                                      splitActive = true;
-                                      splitWalletAmount = wAmt;
-                                      splitGatewayAmount = gAmt;
-                                      splitFullCoverage = fullCoverage;
-                                    });
-                                  },
-                                  onSplitRemoved: () {
-                                    setState(() {
-                                      splitActive = false;
-                                      splitWalletAmount = 0;
-                                      splitGatewayAmount = 0;
-                                      splitFullCoverage = false;
-                                    });
-                                  },
-                                ),
-
                               // Payment method selection — hide if wallet covers full amount in split mode
                               if (!(splitActive && splitFullCoverage))
                                 CheckoutItemCard(
@@ -192,7 +171,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       Global? global = await getGlobal();
                                       if (global != null) {
                                         // Filter out wallet from payment methods in split mode
-                                        final providers = splitActive
+                                        final providers = isSplitPaymentMode
                                             ? global.paymentProvider!
                                                 .where((p) => p.id != 'pp_wallet_wallet')
                                                 .toList()
@@ -208,64 +187,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CartCalculation(
-                            keyText: '${AppStrings.subTotal}:',
-                            valueText: CurrencyUtil.appendCurrency(
-                              ((cartResponse!.cart!.itemSubtotal ?? 0) -
-                                  (cartResponse!.cart!.items
-                                      ?.where((item) => item.isPlatformFee)
-                                      .fold<num>(0, (sum, item) => sum + (item.total ?? 0)) ?? 0))
-                                  .toStringAsFixed(2)),
-                          ),
-                          Visibility(
-                              visible:
-                                  cartResponse!.cart!.discountSubtotal! > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.discount}:',
-                                valueText:
-                                    '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                              )),
-                          Visibility(
-                              visible:
-                                  cartResponse!.cart!.shippingSubtotal! > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.shipping}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    cartResponse!.cart!.shippingSubtotal!
-                                        .toStringAsFixed(2)),
-                              )),
-                          if ((cartResponse!.cart!.items?.any((item) => item.isPlatformFee) ?? false) &&
-                              (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
-                            CartCalculation(
-                              keyText: '${AppStrings.platform_fee}:',
-                              valueText: CurrencyUtil.appendCurrency(
-                                (cartResponse!.cart!.items!
-                                    .firstWhere((item) => item.isPlatformFee)
-                                    .total ?? 0)
-                                    .toStringAsFixed(2)),
-                            ),
-                          CartCalculation(
-                            keyText: '${AppStrings.tax}:',
-                            valueText: CurrencyUtil.appendCurrency(cartResponse!
-                                .cart!.taxTotal!
-                                .toStringAsFixed(2)),
-                          ),
-                          CartCalculation(
-                            keyText: '${AppStrings.total}:',
-                            valueText: CurrencyUtil.appendCurrency(
-                                cartResponse!.cart!.total!.toStringAsFixed(2)),
-                          ),
-                        ],
                       ),
                     ),
                   ],
@@ -307,9 +228,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void makeRazorPayCall(String orderId) {
+    // Use wallet-reduced amount if split is active, otherwise full cart total
+    final paymentAmount = (splitActive && splitGatewayAmount > 0)
+        ? splitGatewayAmount
+        : cartResponse!.cart!.total!;
     var options = {
       'key': AppConfig.razorPayKey,
-      'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
+      'amount': paymentAmount.toStringAsFixed(2),
       'name': AppConfig.appName,
       'description': '${AppStrings.payment_to} ${AppConfig.appName}',
       'order_id': orderId,

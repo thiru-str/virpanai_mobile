@@ -9,6 +9,7 @@ class WalletSplitWidget extends StatefulWidget {
   final Function(double walletAmount, double gatewayAmount, bool fullCoverage)?
       onSplitApplied;
   final Function()? onSplitRemoved;
+  final Function(bool isSplitMode)? onModeDetected;
 
   const WalletSplitWidget({
     super.key,
@@ -16,6 +17,7 @@ class WalletSplitWidget extends StatefulWidget {
     required this.cartTotal,
     this.onSplitApplied,
     this.onSplitRemoved,
+    this.onModeDetected,
   });
 
   @override
@@ -48,6 +50,9 @@ class _WalletSplitWidgetState extends State<WalletSplitWidget> {
         walletBalance = balance;
         walletMode = mode;
       });
+
+      // Notify parent about the mode (so it can filter wallet from payment methods)
+      widget.onModeDetected?.call(mode == 'split_payment');
 
       if (mode != 'split_payment' || balance <= 0) {
         setState(() => loading = false);

@@ -1124,13 +1124,22 @@ class ApiService {
         context);
   }
 
-  Future<void> removeWalletSplit(
+  Future<dynamic> removeWalletSplit(
       BuildContext context, String cartId) async {
     await addToken();
-    return _makeDeleteRequest(
+    await setPublishableKey();
+    try {
+      final response = await _dio.delete(
         "store/wallet/apply-split",
-        {"cart_id": cartId},
-        (data) => data,
-        context);
+        queryParameters: {"cart_id": cartId},
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+      return response.data ?? {};
+    } catch (e) {
+      debugPrint('removeWalletSplit error: $e');
+      rethrow;
+    }
   }
 }

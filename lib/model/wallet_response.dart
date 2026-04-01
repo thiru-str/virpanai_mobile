@@ -3,8 +3,10 @@ class WalletResponse {
   final TopUpConfig? topupConfig;
   final String? walletMode; // "full_payment" or "split_payment"
   final bool autoApplyWallet;
+  final bool allowCouponWithWallet;
+  final WalletUsageLimit? walletUsageLimit;
 
-  WalletResponse({this.wallet, this.topupConfig, this.walletMode, this.autoApplyWallet = true});
+  WalletResponse({this.wallet, this.topupConfig, this.walletMode, this.autoApplyWallet = true, this.allowCouponWithWallet = true, this.walletUsageLimit});
 
   factory WalletResponse.fromJson(Map<String, dynamic> json) {
     return WalletResponse(
@@ -14,10 +16,41 @@ class WalletResponse {
           : null,
       walletMode: json['wallet_mode'] ?? 'full_payment',
       autoApplyWallet: json['auto_apply_wallet'] ?? true,
+      allowCouponWithWallet: json['allow_coupon_with_wallet'] ?? true,
+      walletUsageLimit: json['wallet_usage_limit'] != null
+          ? WalletUsageLimit.fromJson(json['wallet_usage_limit'])
+          : null,
     );
   }
 
   bool get isSplitPayment => walletMode == 'split_payment';
+}
+
+class WalletUsageLimit {
+  final bool enabled;
+  final double? percentage;
+  final double? maxAmount;
+
+  WalletUsageLimit({this.enabled = false, this.percentage, this.maxAmount});
+
+  factory WalletUsageLimit.fromJson(Map<String, dynamic> json) {
+    return WalletUsageLimit(
+      enabled: json['enabled'] ?? false,
+      percentage: json['percentage'] != null
+          ? double.tryParse(json['percentage'].toString())
+          : null,
+      maxAmount: json['max_amount'] != null
+          ? double.tryParse(json['max_amount'].toString())
+          : null,
+    );
+  }
+
+  String get displayText {
+    final parts = <String>[];
+    if (percentage != null) parts.add('${percentage!.toStringAsFixed(0)}% of subtotal');
+    if (maxAmount != null) parts.add('max ${maxAmount!.toStringAsFixed(0)}');
+    return parts.join(' or ');
+  }
 }
 
 class WalletSplitResponse {

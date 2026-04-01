@@ -47,6 +47,8 @@ class Data {
   List<Item>? items;
   IngAddress? shippingAddress;
   IngAddress? billingAddress;
+  dynamic metadata;
+  String? couponCode;
 
   Data({
     this.id,
@@ -63,6 +65,8 @@ class Data {
     this.items,
     this.shippingAddress,
     this.billingAddress,
+    this.metadata,
+    this.couponCode,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -80,6 +84,8 @@ class Data {
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
     shippingAddress: json["shipping_address"] == null ? null : IngAddress.fromJson(json["shipping_address"]),
     billingAddress: json["billing_address"] == null ? null : IngAddress.fromJson(json["billing_address"]),
+    metadata: json["metadata"],
+    couponCode: json["coupon_code"],
   );
 
   Map<String, dynamic> toJson() => {
