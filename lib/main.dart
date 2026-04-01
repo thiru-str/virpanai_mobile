@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/product_detail_response.dart';
@@ -12,12 +14,13 @@ import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
-import '../ui/splash_page.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
+import 'ui/splash_page.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
@@ -25,6 +28,13 @@ GlobalKey<ScaffoldMessengerState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    AppLogger.error('Unhandled Flutter framework error', details.exception, details.stack);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    AppLogger.error('Unhandled platform error', error, stack);
+    return true;
+  };
 
   // Lock orientation to portrait only
   SystemChrome.setPreferredOrientations([
@@ -39,14 +49,7 @@ Future<void> main() async {
   await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
   await Firebase.initializeApp();
-
-  PublicDetailsResponse publicDetailsResponse = await ApiService().getPublicDetails();
-  await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
-  await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
-  await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
-  await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
-  await SharedPreferencesUtil().saveString('invoice_url', publicDetailsResponse.storeDetails?.storeMetadata?.invoiceUrl??'');
-  await SharedPreferencesUtil().saveString('customer_support', publicDetailsResponse.storeDetails?.storeMetadata?.customerSupport??'');
+  final bootstrapResult = await _bootstrapApp();
   await SharedPreferencesUtil().saveBool('skip_login', false);
 
 
@@ -62,16 +65,59 @@ Future<void> main() async {
   // AppColors.updateColors(newPrimary: apiPrimaryColor, newSecondary: apiSecondaryColor);
 
   SnackBarUtil.init(rootScaffoldMessengerKey);
-  runApp(HomeScreen(skipLogin: false,publicDetailsResponse: publicDetailsResponse,));
+  runApp(
+    HomeScreen(
+      skipLogin: false,
+      publicDetailsResponse: bootstrapResult.publicDetailsResponse,
+      startupError: bootstrapResult.startupError,
+    ),
+  );
   Future.delayed(Duration.zero, () {
     AppLinkHelper.init();
+  });
+}
+
+Future<_AppBootstrapResult> _bootstrapApp() async {
+  try {
+    final publicDetailsResponse = await ApiService().getPublicDetails();
+    await SharedPreferencesUtil().savePublicDetails(publicDetailsResponse);
+    return _AppBootstrapResult(publicDetailsResponse: publicDetailsResponse);
+  } catch (error, stackTrace) {
+    AppLogger.error('Public details bootstrap failed', error, stackTrace);
+    return _AppBootstrapResult(
+      startupError: _formatStartupError(error),
+    );
+  }
+}
+
+String _formatStartupError(Object error) {
+  if (error is ApiRequestException) {
+    return error.displayMessage;
+  }
+
+  return error.toString();
+}
+
+class _AppBootstrapResult {
+  final PublicDetailsResponse? publicDetailsResponse;
+  final String? startupError;
+
+  const _AppBootstrapResult({
+    this.publicDetailsResponse,
+    this.startupError,
   });
 }
 
 class HomeScreen extends StatelessWidget {
    final bool skipLogin;
    final PublicDetailsResponse? publicDetailsResponse;
-   HomeScreen({super.key,this.skipLogin = false,this.publicDetailsResponse});
+   final String? startupError;
+   HomeScreen({
+     super.key,
+     this.skipLogin = false,
+     this.publicDetailsResponse,
+     this.startupError,
+   });
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +126,14 @@ class HomeScreen extends StatelessWidget {
       navigatorKey: navigatorKey, // if you're using it for global navigation
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'MyCustomFont',textTheme: const TextTheme()),
-      home: SplashPage(skipLogin: skipLogin,publicDetailsResponse: publicDetailsResponse,),
+      home: SplashPage(
+        skipLogin: skipLogin,
+        publicDetailsResponse: publicDetailsResponse,
+        startupError: startupError,
+      ),
     );
   }
 
 
 
 }
-
-

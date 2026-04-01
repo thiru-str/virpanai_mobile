@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'dart:convert';
@@ -36,10 +37,18 @@ class AppLogger {
   }
 
   static void warning(String message) {
+    developer.log(message, name: 'AppLogger.warning');
     if (_isDebugMode) _logger.w(message);
   }
 
   static void error(String message, [Object? error, StackTrace? stackTrace]) {
+    developer.log(
+      message,
+      name: 'AppLogger.error',
+      error: error,
+      stackTrace: stackTrace,
+      level: 1000,
+    );
     if (_isDebugMode) {
       _logger.e(message, error: error, stackTrace: stackTrace);
     }
@@ -81,6 +90,5 @@ class AppLogger {
     }
   }
 }
-
 
 

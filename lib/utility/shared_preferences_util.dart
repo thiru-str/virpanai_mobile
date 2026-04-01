@@ -35,6 +35,21 @@ class SharedPreferencesUtil {
     await prefs.setString(key, jsonString);
   }
 
+  Future<void> savePublicDetails(PublicDetailsResponse publicDetailsResponse) async {
+    await saveMap('public_details', publicDetailsResponse.toJson());
+    await saveString('publishable_key', publicDetailsResponse.token ?? '');
+    await saveBool('google_map_usage', publicDetailsResponse.googleMapUsage ?? false);
+    await saveString('app_header', publicDetailsResponse.theme?.header ?? '');
+    await saveString(
+      'invoice_url',
+      publicDetailsResponse.storeDetails?.storeMetadata?.invoiceUrl ?? '',
+    );
+    await saveString(
+      'customer_support',
+      publicDetailsResponse.storeDetails?.storeMetadata?.customerSupport ?? '',
+    );
+  }
+
   // Retrieve data from SharedPreferences
   Future<String?> getString(String key) async {
     final prefs = await SharedPreferences.getInstance();
@@ -81,10 +96,7 @@ class SharedPreferencesUtil {
     await prefs.clear();
 
     if (publicDetailsResponse != null) {
-      await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());
-      await SharedPreferencesUtil().saveString('publishable_key', publicDetailsResponse.token!);
-      await SharedPreferencesUtil().saveBool('google_map_usage', publicDetailsResponse.googleMapUsage!);
-      await SharedPreferencesUtil().saveString('app_header', publicDetailsResponse.theme!.header!);
+      await savePublicDetails(publicDetailsResponse);
       await SharedPreferencesUtil().saveBool('skip_login', false);
     }
   }

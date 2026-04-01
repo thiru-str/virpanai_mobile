@@ -15,12 +15,11 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/push_notification_service.dart';
-import '../utility/app_strings.dart';
+import '../api/api_service.dart';
+import '../utility/app_logger.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
-
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utility/version_utils.dart';
 import 'force_update_page.dart';
@@ -28,7 +27,13 @@ import 'force_update_page.dart';
 class SplashPage extends StatefulWidget {
   final bool skipLogin;
   final PublicDetailsResponse? publicDetailsResponse;
-  const SplashPage({super.key,this.skipLogin = false,this.publicDetailsResponse});
+  final String? startupError;
+  const SplashPage({
+    super.key,
+    this.skipLogin = false,
+    this.publicDetailsResponse,
+    this.startupError,
+  });
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -37,10 +42,14 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  late PublicDetailsResponse? _publicDetailsResponse;
+  String? _startupError;
 
   @override
   void initState() {
     super.initState();
+    _publicDetailsResponse = widget.publicDetailsResponse;
+    _startupError = widget.startupError;
     Future.microtask(() async {
       await PushNotificationService().initialize(context);
     });
@@ -60,8 +69,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     // Start the animation
     _controller.forward();
 
-    // Navigate to next page after animation
-    navToNextPage();
+    if (_publicDetailsResponse != null) {
+      navToNextPage();
+    } else if (_startupError != null) {
+      AppLogger.warning('Startup blocked because public details are unavailable: $_startupError');
+    }
   }
 
   @override
@@ -76,15 +88,47 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: Center(
-          child: SvgPicture.asset(AppAssets.app_logo,height: 250,),
-        ),
+        child: Center(child: _buildBody()),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_publicDetailsResponse != null) {
+      return SvgPicture.asset(AppAssets.app_logo,height: 250,);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(AppAssets.app_logo, height: 180),
+          const SizedBox(height: 32),
+          Text(
+            'Something went wrong.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _startupError ?? 'Unknown startup exception while loading public/details.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   void navToNextPage() async {
-    final versionCheckJson = widget.publicDetailsResponse
+    final versionCheckJson = _publicDetailsResponse
         ?.storeDetails
         ?.storeMetadata
         ?.versionCheck;
@@ -205,6 +249,3 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     super.dispose();
   }
 }
-
-
-
