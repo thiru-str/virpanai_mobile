@@ -28,10 +28,37 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   String? _error;
   String? _actionCode; // code currently being applied/removed
 
+  final TextEditingController _manualController = TextEditingController();
+  String? _manualError;
+
   @override
   void initState() {
     super.initState();
     _loadPromotions();
+  }
+
+  @override
+  void dispose() {
+    _manualController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _applyManual() async {
+    final code = _manualController.text.trim().toUpperCase();
+    if (code.isEmpty) {
+      setState(() => _manualError = 'Please enter a coupon code');
+      return;
+    }
+    setState(() {
+      _manualError = null;
+      _actionCode = code;
+    });
+    try {
+      await widget.onApply(code);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) setState(() => _actionCode = null);
+    }
   }
 
   Future<void> _loadPromotions() async {
@@ -120,6 +147,103 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                       onTap: () => Navigator.pop(context),
                       child: Icon(Icons.close, color: Colors.grey.shade600, size: 22),
                     ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: Colors.grey.shade100),
+              // Manual entry
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _manualController,
+                            textCapitalization: TextCapitalization.characters,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter coupon code',
+                              hintStyle: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade200),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade200),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                    color: AppColors.primary, width: 1.5),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.red.shade300),
+                              ),
+                            ),
+                            onSubmitted: (_) => _applyManual(),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: _actionCode != null ? null : _applyManual,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 13),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: _actionCode != null &&
+                                    _actionCode ==
+                                        _manualController.text
+                                            .trim()
+                                            .toUpperCase()
+                                ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    'Apply',
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_manualError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _manualError!,
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.red.shade600),
+                      ),
+                    ],
                   ],
                 ),
               ),
