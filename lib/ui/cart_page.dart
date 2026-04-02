@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -8,7 +7,6 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
-import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/checkout_footer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -358,6 +356,14 @@ class _CartPageState extends State<CartPage> {
                               ],
                             ),
                           ),
+                      // Coupon Card (Ajio style)
+                      _buildCouponCard(),
+
+                      // Wallet Card (Myntra style)
+                      if (isSplitPaymentMode && isLoggedIn && walletBalance > 0)
+                        _buildWalletCard(),
+
+                      // Price Details (view only)
                       AppReveal(
                         index: 3,
                         child: Container(
@@ -389,152 +395,47 @@ class _CartPageState extends State<CartPage> {
                                   ),
                                 ),
                               ),
-                              Column(
-                                children: [
-                                  _priceRow(AppStrings.subTotal, CurrencyUtil.appendCurrency(
-                                    (_numOrZero(cartResponse?.cart?.itemSubtotal) -
-                                        _numOrZero(cartResponse?.cart?.items
-                                            ?.where((item) => item.isPlatformFee)
-                                            .fold<num>(0, (sum, item) => sum + (item.total ?? 0))))
-                                        .toStringAsFixed(2))),
-                                  _priceRow(AppStrings.shipping,
-                                      _numOrZero(cartResponse?.cart?.shippingSubtotal) > 0
-                                          ? CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.shippingSubtotal).toStringAsFixed(2))
-                                          : 'FREE'),
-                                  if ((cartResponse?.cart?.items?.any((item) => item.isPlatformFee) ?? false) &&
-                                      (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
-                                    _priceRow(AppStrings.platform_fee, CurrencyUtil.appendCurrency(
-                                        (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0).toStringAsFixed(2))),
-                                  if (_numOrZero(cartResponse?.cart?.taxTotal) > 0)
-                                    _priceRow(AppStrings.tax, CurrencyUtil.appendCurrency(
-                                        _numOrZero(cartResponse?.cart?.taxTotal).toStringAsFixed(2))),
-                                  // Coupon — single row with tag
-                                  if ((cartResponse?.cart?.promotions ?? []).isNotEmpty &&
-                                      _numOrZero(cartResponse?.cart?.discountSubtotal) > 0)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4),
-                                      child: Row(
-                                        children: [
-                                          Text('Coupon', style: FontUtils.primaryFontStyle(fontSize: 13, color: AppColors.textColor)),
-                                          const SizedBox(width: 6),
-                                          _tag(cartResponse?.cart?.promotions?.firstOrNull?.code ?? '', Colors.green),
-                                          const Spacer(),
-                                          Text('- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                              style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.green.shade700)),
-                                          const SizedBox(width: 8),
-                                          GestureDetector(
-                                            onTap: () => removePromoCode(cartResponse?.cart?.promotions
-                                                ?.map((p) => p.code).where((c) => c != null).cast<String>().toList() ?? []),
-                                            child: Text(AppStrings.remove,
-                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600)),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  else if (!allowCouponWithWallet && splitActive)
-                                    // Coupon disabled when wallet is active and both can't be used
-                                    _priceRow('Coupon Discount', 'N/A with Wallet', valueColor: Colors.grey)
-                                  else
-                                    _actionRow(
-                                      label: 'Coupon Discount',
-                                      actionText: 'Apply Coupon',
-                                      actionColor: AppColors.primary,
-                                      onTap: () => showPromoCodeBottomSheet(context),
-                                    ),
-                                  // Wallet — single row with tag
-                                  if (isSplitPaymentMode && isLoggedIn && walletBalance > 0)
-                                    walletToggling
-                                        ? _priceRow('Wallet', '...')
-                                        : splitActive
-                                            ? Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Text('Wallet', style: FontUtils.primaryFontStyle(fontSize: 13, color: AppColors.textColor)),
-                                                        const SizedBox(width: 6),
-                                                        _tag(CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(0)), Colors.blue),
-                                                        const Spacer(),
-                                                        Text('- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
-                                                            style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.green.shade700)),
-                                                        const SizedBox(width: 8),
-                                                        GestureDetector(
-                                                          onTap: _toggleWalletSplit,
-                                                          child: Text(AppStrings.remove,
-                                                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600)),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    if (walletUsageLimit != null && walletUsageLimit!.enabled && splitWalletAmount < walletBalance && walletUsageLimit!.displayText.isNotEmpty)
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(top: 2),
-                                                        child: Text(
-                                                          'Limited to ${walletUsageLimit!.displayText}',
-                                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              )
-                                            : (!allowCouponWithWallet && (cartResponse?.cart?.promotions ?? []).isNotEmpty)
-                                                // Wallet disabled when coupon is active and both can't be used
-                                                ? Padding(
-                                                    padding: const EdgeInsets.symmetric(vertical: 4),
-                                                    child: Row(
-                                                      children: [
-                                                        Text('Wallet', style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.grey)),
-                                                        const SizedBox(width: 6),
-                                                        _tag(CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(0)), Colors.grey),
-                                                        const Spacer(),
-                                                        Text('N/A with Coupon', style: FontUtils.primaryFontStyle(fontSize: 12, color: Colors.grey)),
-                                                      ],
-                                                    ),
-                                                  )
-                                                : Padding(
-                                                    padding: const EdgeInsets.symmetric(vertical: 4),
-                                                    child: InkWell(
-                                                      onTap: _toggleWalletSplit,
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Text('Wallet', style: FontUtils.primaryFontStyle(fontSize: 13, color: AppColors.textColor)),
-                                                              const SizedBox(width: 6),
-                                                              _tag(CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(0)), Colors.blue),
-                                                              const Spacer(),
-                                                              Text(AppStrings.apply, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                                                            ],
-                                                          ),
-                                                          if (walletUsageLimit != null && walletUsageLimit!.enabled && walletUsageLimit!.displayText.isNotEmpty)
-                                                            Padding(
-                                                              padding: const EdgeInsets.only(top: 2),
-                                                              child: Text(
-                                                                'Max usable: ${walletUsageLimit!.displayText}',
-                                                                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                                                              ),
-                                                            ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 6),
-                                    child: Divider(color: Colors.grey.shade300, height: 1),
-                                  ),
-                                  _priceRow('Total Amount', CurrencyUtil.appendCurrency(
-                                    (splitActive
-                                        ? (_numOrZero(cartResponse?.cart?.total) - splitWalletAmount).clamp(0, double.infinity)
-                                        : _numOrZero(cartResponse?.cart?.total))
-                                        .toStringAsFixed(2)),
-                                    isBold: true, fontSize: 13),
-                                  const SizedBox(height: 6),
-                                ],
+                              _priceRow(AppStrings.subTotal, CurrencyUtil.appendCurrency(
+                                (_numOrZero(cartResponse?.cart?.itemSubtotal) -
+                                    _numOrZero(cartResponse?.cart?.items
+                                        ?.where((item) => item.isPlatformFee)
+                                        .fold<num>(0, (sum, item) => sum + (item.total ?? 0))))
+                                    .toStringAsFixed(2))),
+                              _priceRow(AppStrings.shipping,
+                                  _numOrZero(cartResponse?.cart?.shippingSubtotal) > 0
+                                      ? CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.shippingSubtotal).toStringAsFixed(2))
+                                      : 'FREE'),
+                              if ((cartResponse?.cart?.items?.any((item) => item.isPlatformFee) ?? false) &&
+                                  (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
+                                _priceRow(AppStrings.platform_fee, CurrencyUtil.appendCurrency(
+                                    (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0).toStringAsFixed(2))),
+                              if (_numOrZero(cartResponse?.cart?.taxTotal) > 0)
+                                _priceRow(AppStrings.tax, CurrencyUtil.appendCurrency(
+                                    _numOrZero(cartResponse?.cart?.taxTotal).toStringAsFixed(2))),
+                              if ((cartResponse?.cart?.promotions ?? []).isNotEmpty &&
+                                  _numOrZero(cartResponse?.cart?.discountSubtotal) > 0)
+                                _priceRow(
+                                  'Coupon Savings',
+                                  '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
+                                  valueColor: Colors.green.shade700,
+                                ),
+                              if (splitActive && splitWalletAmount > 0)
+                                _priceRow(
+                                  'Wallet',
+                                  '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
+                                  valueColor: Colors.blue.shade700,
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Divider(color: Colors.grey.shade300, height: 1),
                               ),
-
-
+                              _priceRow('Total Amount', CurrencyUtil.appendCurrency(
+                                (splitActive
+                                    ? (_numOrZero(cartResponse?.cart?.total) - splitWalletAmount).clamp(0, double.infinity)
+                                    : _numOrZero(cartResponse?.cart?.total))
+                                    .toStringAsFixed(2)),
+                                isBold: true, fontSize: 13),
+                              const SizedBox(height: 6),
                             ],
                           ),
                         ),
@@ -1345,21 +1246,6 @@ class _CartPageState extends State<CartPage> {
 
   num _numOrZero(num? value) => value ?? 0;
 
-  Widget _tag(String text, MaterialColor color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.shade50,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.shade200, width: 0.5),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color.shade700),
-      ),
-    );
-  }
-
   Widget _priceRow(String label, String value, {Color? valueColor, bool isBold = false, double fontSize = 13}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1381,24 +1267,264 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _actionRow({
-    required String label,
-    required String actionText,
-    required Color actionColor,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: onTap,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: FontUtils.primaryFontStyle(fontSize: 13, color: AppColors.textColor)),
-            Text(actionText, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: actionColor)),
-          ],
-        ),
+  // ===== Coupon Card (Ajio style) =====
+  Widget _buildCouponCard() {
+    final coupon = cartResponse?.cart?.promotions?.firstOrNull;
+    final isApplied = (coupon?.code ?? '').isNotEmpty;
+    final discount = _numOrZero(cartResponse?.cart?.discountSubtotal);
+    final canUseCoupon = allowCouponWithWallet || !splitActive;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Text(
+              'OFFERS',
+              style: FontUtils.primaryFontStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade500,
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: canUseCoupon && !isApplied ? () => showPromoCodeBottomSheet(context) : null,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isApplied ? Colors.green.shade50 : Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.local_offer_outlined,
+                      color: isApplied ? Colors.green.shade600 : Colors.orange.shade700,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: isApplied
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    '${coupon!.code}',
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade50,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: Colors.green.shade200, width: 0.5),
+                                    ),
+                                    child: Text(
+                                      'Applied',
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.green.shade700),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Coupon Savings ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
+                                style: TextStyle(fontSize: 12, color: Colors.green.shade600),
+                              ),
+                            ],
+                          )
+                        : !canUseCoupon
+                            ? Text(
+                                'Remove wallet to apply coupon',
+                                style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.grey),
+                              )
+                            : Text(
+                                'Coupon & Bank Offers',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textColor,
+                                ),
+                              ),
+                  ),
+                  if (isApplied)
+                    GestureDetector(
+                      onTap: () => removePromoCode(
+                        cartResponse?.cart?.promotions
+                            ?.map((p) => p.code)
+                            .where((c) => c != null)
+                            .cast<String>()
+                            .toList() ?? [],
+                      ),
+                      child: Text(
+                        AppStrings.remove,
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600),
+                      ),
+                    )
+                  else if (canUseCoupon)
+                    Text(
+                      'Select >',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  // ===== Wallet Card (Myntra style) =====
+  Widget _buildWalletCard() {
+    final couponApplied = (cartResponse?.cart?.promotions ?? []).isNotEmpty;
+    final canUseWallet = allowCouponWithWallet || !couponApplied;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: splitActive ? AppColors.primary.withOpacity(0.4) : Colors.grey.shade200,
+          width: splitActive ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: canUseWallet
+                        ? AppColors.primary.withOpacity(0.1)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: canUseWallet ? AppColors.primary : Colors.grey,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Use Wallet Balance',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: canUseWallet ? AppColors.textColor : Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Available: ${CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(2))}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                      if (walletUsageLimit != null &&
+                          walletUsageLimit!.enabled &&
+                          walletUsageLimit!.displayText.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Max usable: ${walletUsageLimit!.displayText}',
+                            style: TextStyle(fontSize: 11, color: Colors.orange.shade700),
+                          ),
+                        ),
+                      if (!canUseWallet)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Remove coupon to use wallet',
+                            style: TextStyle(fontSize: 11, color: Colors.orange.shade700),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                walletToggling
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : Switch(
+                        value: splitActive,
+                        onChanged: canUseWallet ? (_) => _toggleWalletSplit() : null,
+                        activeColor: AppColors.primary,
+                        inactiveThumbColor: Colors.grey.shade400,
+                        inactiveTrackColor: Colors.grey.shade200,
+                      ),
+              ],
+            ),
+          ),
+          if (splitActive && splitWalletAmount > 0) ...[
+            Divider(height: 1, color: Colors.grey.shade100),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green.shade600, size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
+                    style: TextStyle(fontSize: 12, color: Colors.green.shade700, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
 }
