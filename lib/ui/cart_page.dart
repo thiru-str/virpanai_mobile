@@ -8,7 +8,6 @@ import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
-import 'package:waioz/ui/widgets/checkout_footer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
@@ -43,7 +42,7 @@ class CartPage extends StatefulWidget {
   State<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
+class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
   bool apiLoading = true;
   bool cartLoading = false;
@@ -73,11 +72,25 @@ class _CartPageState extends State<CartPage> {
   WalletUsageLimit? walletUsageLimit;
 
   late ConfettiController _confettiController;
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
+  final GlobalKey _priceDetailsSectionKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 450),
+      vsync: this,
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -7.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -7.0, end: 7.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 7.0, end: -4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -4.0, end: 4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 4.0, end: 0.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
 
     AppUtils.isLoggedIn().then((value) {
       setState(() {
@@ -151,7 +164,28 @@ class _CartPageState extends State<CartPage> {
   @override
   void dispose() {
     _confettiController.dispose();
+    _shakeController.dispose();
     super.dispose();
+  }
+
+  void _scrollToPriceDetails() {
+    final ctx = _priceDetailsSectionKey.currentContext;
+    if (ctx == null) return;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final pos = box.localToGlobal(Offset.zero);
+    final screenH = MediaQuery.of(context).size.height;
+    final isVisible = pos.dy >= 0 && pos.dy + box.size.height <= screenH - 80;
+    if (isVisible) {
+      _shakeController.forward(from: 0.0);
+    } else {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        alignment: 0.1,
+      );
+    }
   }
 
   @override
@@ -356,17 +390,27 @@ class _CartPageState extends State<CartPage> {
                               ],
                             ),
                           ),
-                      // Coupon Card (Ajio style)
-                      _buildCouponCard(),
-
                       // Wallet Card (Myntra style)
                       if (isSplitPaymentMode && isLoggedIn && walletBalance > 0)
                         _buildWalletCard(),
 
+                      // Coupon Card (Ajio style)
+                      _buildCouponCard(),
+
+                      // Payment Method Card
+                      _buildPaymentMethodCard(),
+
                       // Price Details (view only)
                       AppReveal(
                         index: 3,
-                        child: Container(
+                        child: AnimatedBuilder(
+                          animation: _shakeAnimation,
+                          builder: (context, child) => Transform.translate(
+                            offset: Offset(_shakeAnimation.value, 0),
+                            child: child,
+                          ),
+                          child: Container(
+                          key: _priceDetailsSectionKey,
                           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           padding: const EdgeInsets.all(16.0),
                           decoration: BoxDecoration(
@@ -439,50 +483,14 @@ class _CartPageState extends State<CartPage> {
                             ],
                           ),
                         ),
+                        ),
                       ),
+                      const SizedBox(height: 80),
                       ],
                     ),
                   ),
                   bottomNavigationBar: SafeArea(
-                    child: SizedBox(
-                      height: 80,
-                      child: CheckoutFooter(
-                        svgPath: AppAssets.ic_payment_cash,
-                        paymentMethod:
-                            _getProviderName(pp_id, paymentProviders),
-                        isLoading: cartLoading,
-                        onPaymentTap: () {
-                          final providers = isSplitPaymentMode
-                              ? paymentProviders
-                                  .where((p) => p.id != 'pp_wallet_wallet')
-                                  .toList()
-                              : paymentProviders;
-                          showPaymentMethodsBottomSheet(context, providers);
-                        },
-                        onInfoTap: () {
-                          showCalculationBottomSheet(context, cartResponse!);
-                        },
-                        amount: CurrencyUtil.appendCurrency(
-                            (splitActive
-                                ? (cartResponse!.cart!.total! - splitWalletAmount).clamp(0, double.infinity)
-                                : cartResponse!.cart!.total!)
-                                .toStringAsFixed(2)),
-                        onPlaceOrder: () {
-                          if (cartResponse?.cart?.error == true) {
-                            AppUtils.showToast(
-                                AppStrings.remove_unavailable_stock_items);
-                            return;
-                          }
-                          if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
-                            AppUtils.showToast(AppStrings.add_address_to_proceed);
-                            return;
-                          }
-                          if (!addressLoading) {
-                            placeOrder(pp_id!);
-                          }
-                        },
-                      ),
-                    ),
+                    child: _buildAjioBottomBar(),
                   ),
                 )
               : Center(
@@ -1245,6 +1253,198 @@ class _CartPageState extends State<CartPage> {
   }
 
   num _numOrZero(num? value) => value ?? 0;
+
+  // ===== Payment Method Card =====
+  Widget _buildPaymentMethodCard() {
+    final providerName = _getProviderName(pp_id, paymentProviders);
+    final providers = isSplitPaymentMode
+        ? paymentProviders.where((p) => p.id != 'pp_wallet_wallet').toList()
+        : paymentProviders;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: InkWell(
+        onTap: () => showPaymentMethodsBottomSheet(context, providers),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.payment_outlined, color: AppColors.primary, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Payment Method',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      providerName,
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===== Ajio-style Bottom Bar =====
+  Widget _buildAjioBottomBar() {
+    final amount = CurrencyUtil.appendCurrency(
+      (splitActive
+          ? (cartResponse!.cart!.total! - splitWalletAmount).clamp(0, double.infinity)
+          : cartResponse!.cart!.total!)
+          .toStringAsFixed(2),
+    );
+    final providerName = _getProviderName(pp_id, paymentProviders);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            offset: Offset(0, -2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          // Left: Amount + View details
+          Expanded(
+            flex: 2,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  amount,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _scrollToPriceDetails,
+                  child: Text(
+                    'View details',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Right: Place Order button with payment method
+          Expanded(
+            flex: 3,
+            child: ElevatedButton(
+              onPressed: cartLoading
+                  ? null
+                  : () {
+                      if (cartResponse?.cart?.error == true) {
+                        AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+                        return;
+                      }
+                      if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
+                        AppUtils.showToast(AppStrings.add_address_to_proceed);
+                        return;
+                      }
+                      if (!addressLoading) {
+                        placeOrder(pp_id!);
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: cartLoading
+                    ? const SizedBox(
+                        key: ValueKey('loader'),
+                        height: 36,
+                        child: Center(
+                          child: SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Column(
+                        key: const ValueKey('text'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Place Order',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            providerName,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white70,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _priceRow(String label, String value, {Color? valueColor, bool isBold = false, double fontSize = 13}) {
     return Padding(
