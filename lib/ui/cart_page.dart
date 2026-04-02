@@ -1467,7 +1467,7 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
     );
   }
 
-  // ===== Coupon Card (Ajio style) =====
+  // ===== Coupon Card =====
   Widget _buildCouponCard() {
     final coupon = cartResponse?.cart?.promotions?.firstOrNull;
     final isApplied = (coupon?.code ?? '').isNotEmpty;
@@ -1488,115 +1488,55 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         ],
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Text(
-              'OFFERS',
-              style: FontUtils.primaryFontStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey.shade500,
+      child: InkWell(
+        onTap: canUseCoupon ? () => showPromoCodeBottomSheet(context) : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isApplied ? Colors.green.shade50 : Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.local_offer_outlined,
+                  color: isApplied ? Colors.green.shade600 : Colors.orange.shade700,
+                  size: 18,
+                ),
               ),
-            ),
-          ),
-          InkWell(
-            onTap: canUseCoupon && !isApplied ? () => showPromoCodeBottomSheet(context) : null,
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isApplied ? Colors.green.shade50 : Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.local_offer_outlined,
-                      color: isApplied ? Colors.green.shade600 : Colors.orange.shade700,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: isApplied
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    '${coupon!.code}',
-                                    style: FontUtils.primaryFontStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.green.shade700,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade50,
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(color: Colors.green.shade200, width: 0.5),
-                                    ),
-                                    child: Text(
-                                      'Applied',
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.green.shade700),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Coupon Savings ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
-                                style: TextStyle(fontSize: 12, color: Colors.green.shade600),
-                              ),
-                            ],
-                          )
-                        : !canUseCoupon
-                            ? Text(
-                                'Remove wallet to apply coupon',
-                                style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.grey),
-                              )
-                            : Text(
-                                'Coupon & Bank Offers',
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textColor,
-                                ),
-                              ),
-                  ),
-                  if (isApplied)
-                    GestureDetector(
-                      onTap: () => removePromoCode(
-                        cartResponse?.cart?.promotions
-                            ?.map((p) => p.code)
-                            .where((c) => c != null)
-                            .cast<String>()
-                            .toList() ?? [],
-                      ),
-                      child: Text(
-                        AppStrings.remove,
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600),
-                      ),
-                    )
-                  else if (canUseCoupon)
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      'Select >',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
+                      'Coupon',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor,
+                      ),
                     ),
-                ],
+                    const SizedBox(height: 2),
+                    isApplied
+                        ? Text(
+                            '${coupon!.code} · Save ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
+                            style: TextStyle(fontSize: 12, color: Colors.green.shade600),
+                          )
+                        : Text(
+                            canUseCoupon ? 'Apply coupon code' : 'Remove wallet to apply coupon',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                  ],
+                ),
               ),
-            ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
