@@ -222,12 +222,6 @@ class _PromoCard extends StatelessWidget {
     final isApplied = promo.isApplied;
     final isEligible = promo.isEligible;
 
-    Color accentColor = isApplied
-        ? Colors.green.shade600
-        : isEligible
-            ? AppColors.primary
-            : Colors.grey.shade400;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -249,38 +243,6 @@ class _PromoCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left: discount badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isApplied
-                        ? Colors.green.shade50
-                        : isEligible
-                            ? AppColors.primary.withOpacity(0.08)
-                            : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isApplied
-                          ? Colors.green.shade200
-                          : isEligible
-                              ? AppColors.primary.withOpacity(0.25)
-                              : Colors.grey.shade200,
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Text(
-                    promo.discountDisplay.isNotEmpty
-                        ? promo.discountDisplay
-                        : 'OFFER',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: accentColor,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
                 // Middle: code + description
                 Expanded(
                   child: Column(
