@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/promotion_list_model.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class CouponBottomSheet extends StatefulWidget {
@@ -288,37 +286,15 @@ class _PromoCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            promo.code,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isApplied
-                                  ? Colors.green.shade700
-                                  : Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          GestureDetector(
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(text: promo.code));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Code copied'),
-                                  duration: Duration(seconds: 1),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                            child: Icon(
-                              Icons.copy_rounded,
-                              size: 13,
-                              color: Colors.grey.shade400,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        promo.code,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isApplied
+                              ? Colors.green.shade700
+                              : Colors.black87,
+                        ),
                       ),
                       const SizedBox(height: 3),
                       Text(
@@ -329,11 +305,10 @@ class _PromoCard extends StatelessWidget {
                           height: 1.4,
                         ),
                       ),
-                      if (promo.estimatedDiscount != null &&
-                          promo.estimatedDiscount! > 0) ...[
+                      if (promo.estimatedDiscountDisplay != null) ...[
                         const SizedBox(height: 4),
                         Text(
-                          'You save ${CurrencyUtil.appendCurrency((promo.estimatedDiscount! / 100).toStringAsFixed(0))}',
+                          promo.estimatedDiscountDisplay!,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

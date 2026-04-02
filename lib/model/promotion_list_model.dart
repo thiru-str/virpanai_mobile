@@ -19,7 +19,7 @@ class AvailablePromotion {
   final String discountDisplay;
   final bool isEligible;
   final bool isApplied;
-  final num? estimatedDiscount;
+  final String? estimatedDiscountDisplay;
   final String? ineligibilityReason;
 
   AvailablePromotion({
@@ -29,7 +29,7 @@ class AvailablePromotion {
     required this.discountDisplay,
     required this.isEligible,
     required this.isApplied,
-    this.estimatedDiscount,
+    this.estimatedDiscountDisplay,
     this.ineligibilityReason,
   });
 
@@ -41,7 +41,7 @@ class AvailablePromotion {
       discountDisplay: json['discount_display'] as String? ?? '',
       isEligible: json['is_eligible'] as bool? ?? false,
       isApplied: json['is_applied'] as bool? ?? false,
-      estimatedDiscount: json['estimated_discount'] as num?,
+      estimatedDiscountDisplay: json['estimated_discount_display'] as String?,
       ineligibilityReason: json['ineligibility_reason'] as String?,
     );
   }
