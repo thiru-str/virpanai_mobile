@@ -716,6 +716,17 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
     }
   }
 
+  // Silent remove — no toast, used internally when replacing a coupon
+  Future<void> _removePromoCodeSilent(List<String> promoCodes) async {
+    try {
+      final ApiService apiService = ApiService();
+      final response = await apiService.removePromoCode(context, promoCodes);
+      if (mounted) setState(() => cartResponse = response);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void updateCart(int qty, String cartItemId, int index) async {
     try {
       debugPrint('calling update');
@@ -767,6 +778,14 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         cartId: cartId,
         appliedCodes: appliedCodes,
         onApply: (code) async {
+          // Silently remove existing coupon before applying new one (no toast)
+          final existing = cartResponse?.cart?.promotions
+                  ?.map((p) => p.code ?? '')
+                  .where((c) => c.isNotEmpty)
+                  .toList() ?? [];
+          if (existing.isNotEmpty) {
+            await _removePromoCodeSilent(existing);
+          }
           await Future(() => addPromoCode(code));
         },
         onRemove: (codes) async {

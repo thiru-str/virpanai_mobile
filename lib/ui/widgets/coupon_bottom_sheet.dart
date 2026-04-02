@@ -54,10 +54,6 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   Future<void> _apply(String code) async {
     setState(() => _actionCode = code);
     try {
-      // Only one coupon allowed — remove existing before applying new one
-      if (widget.appliedCodes.isNotEmpty) {
-        await widget.onRemove(widget.appliedCodes);
-      }
       await widget.onApply(code);
       if (mounted) Navigator.pop(context);
     } catch (_) {
