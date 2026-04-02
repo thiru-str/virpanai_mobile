@@ -34,11 +34,21 @@ class OrderDetailItemPage extends StatefulWidget {
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   String paymentType = "Unknown"; // Default value
   Data? order;
+
+  double get _walletAmount {
+    final meta = order?.metadata;
+    if (meta is Map && meta['wallet_split'] is Map) {
+      return double.tryParse(meta['wallet_split']['wallet_amount']?.toString() ?? '0') ?? 0;
+    }
+    return 0;
+  }
   Map<String, String> paymentTypeMap = {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
     "pp_razorpay_razorpay": "Razorpay",
     "pp_neft_neft": "NEFT",
+    "pp_payu_payu": "PayU",
+    "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;
   int _currentTab = 0;
@@ -185,6 +195,14 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                         .toString()),
                               ),
                             ),
+                            if ((order?.prices?.discountTotal ?? 0) > 0)
+                              CartCalculation(
+                                keyText: order?.couponCode != null
+                                    ? 'Coupon (${order!.couponCode}):'
+                                    : 'Coupon Discount:',
+                                valueText: '- ${CurrencyUtil.appendCurrency((order?.prices?.discountTotal ?? 0).toStringAsFixed(2))}',
+                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
+                              ),
                             Visibility(
                               visible: (order?.prices?.shippingTotal ?? 0) > 0,
                               child: CartCalculation(
@@ -211,12 +229,19 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                     (order?.prices?.taxTotal ?? 0).toString()),
                               ),
                             ),
+                            if (_walletAmount > 0)
+                              CartCalculation(
+                                keyText: 'Wallet:',
+                                valueText: '- ${CurrencyUtil.appendCurrency(_walletAmount.toStringAsFixed(2))}',
+                                keyStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
+                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
+                              ),
                             Visibility(
                               visible: (order?.prices?.total ?? 0) > 0,
                               child: CartCalculation(
                                   keyText: '${AppStrings.total}:',
                                   valueText: CurrencyUtil.appendCurrency(
-                                      (order?.prices?.total ?? 0).toString())),
+                                      (((order?.prices?.total ?? 0) - _walletAmount).clamp(0, double.infinity)).toStringAsFixed(2))),
                             ),
                           ],
                         ),

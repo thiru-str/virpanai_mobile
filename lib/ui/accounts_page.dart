@@ -9,6 +9,7 @@ import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
+import 'package:waioz/ui/wallet_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
@@ -34,15 +35,27 @@ class _SettingsPageState extends State<SettingsPage> {
   List<ContentData> storeContentList = [];
   bool isLoading = false;
   String? _appVersion;
+  List<String> enabledExtensions = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
     listenToEvents();
     _loadVersion();
+    _loadExtensions();
+  }
+
+  Future<void> _loadExtensions() async {
+    try {
+      final details = await ApiService().getPublicDetails();
+      if (mounted) {
+        setState(() {
+          enabledExtensions = details.enabledExtensions;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadVersion() async {
@@ -183,6 +196,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         PageRouteUtils.pushWithSlide(
                             context, OrdersHistoryPage());
                       }),
+                      if (enabledExtensions.contains('wallet'))
+                        _buildProfileItem('My Wallet', () {
+                          PageRouteUtils.pushWithSlide(
+                              context, const WalletPage());
+                        }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {
                             if (contentItem.content?.data != null) {

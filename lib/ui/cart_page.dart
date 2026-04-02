@@ -1,3 +1,4 @@
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -6,10 +7,9 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
-import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
-import 'package:waioz/ui/widgets/checkout_footer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
@@ -27,6 +27,7 @@ import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
+import '../model/wallet_response.dart';
 import '../utility/app_config.dart';
 import '../utility/currency_util.dart';
 import '../utility/shared_preferences_util.dart';
@@ -42,7 +43,7 @@ class CartPage extends StatefulWidget {
   State<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
+class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
   bool apiLoading = true;
   bool cartLoading = false;
@@ -59,10 +60,38 @@ class _CartPageState extends State<CartPage> {
   Razorpay razorpay = Razorpay();
   bool showPriceBreakdown = false;
 
+  // Wallet split state
+  bool splitActive = false;
+  double splitWalletAmount = 0;
+  double splitGatewayAmount = 0;
+  bool splitFullCoverage = false;
+  bool isSplitPaymentMode = false;
+  double walletBalance = 0;
+  bool walletToggling = false;
+  bool walletAutoApply = true;
+  bool allowCouponWithWallet = true;
+  WalletUsageLimit? walletUsageLimit;
+
+  late ConfettiController _confettiController;
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
+  final GlobalKey _priceDetailsSectionKey = GlobalKey();
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 450),
+      vsync: this,
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -7.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -7.0, end: 7.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 7.0, end: -4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -4.0, end: 4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 4.0, end: 0.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
 
     AppUtils.isLoggedIn().then((value) {
       setState(() {
@@ -135,7 +164,29 @@ class _CartPageState extends State<CartPage> {
 
   @override
   void dispose() {
+    _confettiController.dispose();
+    _shakeController.dispose();
     super.dispose();
+  }
+
+  void _scrollToPriceDetails() {
+    final ctx = _priceDetailsSectionKey.currentContext;
+    if (ctx == null) return;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final pos = box.localToGlobal(Offset.zero);
+    final screenH = MediaQuery.of(context).size.height;
+    final isVisible = pos.dy >= 0 && pos.dy + box.size.height <= screenH - 80;
+    if (isVisible) {
+      _shakeController.forward(from: 0.0);
+    } else {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        alignment: 0.1,
+      );
+    }
   }
 
   @override
@@ -149,14 +200,16 @@ class _CartPageState extends State<CartPage> {
         },
       ),
       backgroundColor: Colors.white,
-      /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
-      body: apiLoading
+      body: Stack(
+        children: [
+          apiLoading
           ? const CartPageSkeleton()
           : cartResponse?.cart?.items?.isNotEmpty ?? false
               ? Scaffold(
                   backgroundColor: Colors.white,
-                  body: Column(
-                    children: [
+                  body: SingleChildScrollView(
+                    child: Column(
+                      children: [
                       Visibility(
                         visible: cartResponse!.cart!.items!.isNotEmpty,
                         child: AppReveal(
@@ -193,9 +246,7 @@ class _CartPageState extends State<CartPage> {
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Padding(
+                      Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                             child: Column(
@@ -340,222 +391,107 @@ class _CartPageState extends State<CartPage> {
                               ],
                             ),
                           ),
-                        ),
-                      ),
+                      // Wallet Card (Myntra style)
+                      if (isSplitPaymentMode && isLoggedIn && walletBalance > 0)
+                        _buildWalletCard(),
+
+                      // Coupon Card (Ajio style)
+                      _buildCouponCard(),
+
+                      // Payment Method Card
+                      _buildPaymentMethodCard(),
+
+                      // Price Details (view only)
                       AppReveal(
                         index: 3,
-                        child: Container(
+                        child: AnimatedBuilder(
+                          animation: _shakeAnimation,
+                          builder: (context, child) => Transform.translate(
+                            offset: Offset(_shakeAnimation.value, 0),
+                            child: child,
+                          ),
+                          child: Container(
+                          key: _priceDetailsSectionKey,
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           padding: const EdgeInsets.all(16.0),
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                            border: Border.all(color: Colors.grey.shade200),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              InkWell(
-                                borderRadius: BorderRadius.circular(10),
-                                onTap: () {
-                                  setState(() {
-                                    showPriceBreakdown = !showPriceBreakdown;
-                                  });
-                                },
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Price breakdown',
-                                        style: FontUtils.primaryFontStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textColor,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Icon(
-                                        showPriceBreakdown
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                        color: AppColors.textColor50,
-                                      ),
-                                    ],
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  'Price Details',
+                                  style: FontUtils.primaryFontStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textColor,
+                                    fontSize: 15,
                                   ),
                                 ),
                               ),
-                              AnimatedCrossFade(
-                                firstChild: const SizedBox.shrink(),
-                                secondChild: Column(
-                                  children: [
-                                    CartCalculation(
-                                      keyText: '${AppStrings.subTotal}:',
-                                      valueText: CurrencyUtil.appendCurrency(
-                                        (_numOrZero(cartResponse?.cart?.itemSubtotal) -
-                                            _numOrZero(cartResponse?.cart?.items
-                                                ?.where((item) => item.isPlatformFee)
-                                                .fold<num>(0, (sum, item) => sum + (item.total ?? 0))))
-                                            .toStringAsFixed(2),
-                                      ),
-                                    ),
-                                    Visibility(
-                                      visible: _numOrZero(cartResponse
-                                              ?.cart?.discountSubtotal) >
-                                          0,
-                                      child: CartCalculation(
-                                        keyText: '${AppStrings.discount}:',
-                                        valueText:
-                                            '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                      ),
-                                    ),
-                                    CartCalculation(
-                                      keyText: '${AppStrings.shipping}:',
-                                      valueText: CurrencyUtil.appendCurrency(
-                                        _numOrZero(cartResponse
-                                                ?.cart?.shippingSubtotal)
-                                            .toStringAsFixed(2),
-                                      ),
-                                    ),
-                                    if ((cartResponse?.cart?.items?.any((item) => item.isPlatformFee) ?? false) &&
-                                        (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
-                                      CartCalculation(
-                                        keyText: '${AppStrings.platform_fee}:',
-                                        valueText: CurrencyUtil.appendCurrency(
-                                          (cartResponse!.cart!.items!
-                                              .firstWhere((item) => item.isPlatformFee)
-                                              .total ?? 0)
-                                              .toStringAsFixed(2),
-                                        ),
-                                      ),
-                                    CartCalculation(
-                                      keyText: '${AppStrings.tax}:',
-                                      valueText: CurrencyUtil.appendCurrency(
-                                        _numOrZero(cartResponse?.cart?.taxTotal)
-                                            .toStringAsFixed(2),
-                                      ),
-                                    ),
-                                    CartCalculation(
-                                      keyText: '${AppStrings.total}:',
-                                      keyStyle: FontUtils.primaryFontStyle(
-                                        fontSize: 14,
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      valueStyle: FontUtils.primaryFontStyle(
-                                        fontSize: 14,
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      valueText: CurrencyUtil.appendCurrency(
-                                        _numOrZero(cartResponse?.cart?.total)
-                                            .toStringAsFixed(2),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                  ],
+                              _priceRow(AppStrings.subTotal, CurrencyUtil.appendCurrency(
+                                (_numOrZero(cartResponse?.cart?.itemSubtotal) -
+                                    _numOrZero(cartResponse?.cart?.items
+                                        ?.where((item) => item.isPlatformFee)
+                                        .fold<num>(0, (sum, item) => sum + (item.total ?? 0))))
+                                    .toStringAsFixed(2))),
+                              _priceRow(AppStrings.shipping,
+                                  _numOrZero(cartResponse?.cart?.shippingSubtotal) > 0
+                                      ? CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.shippingSubtotal).toStringAsFixed(2))
+                                      : 'FREE'),
+                              if ((cartResponse?.cart?.items?.any((item) => item.isPlatformFee) ?? false) &&
+                                  (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0) > 0)
+                                _priceRow(AppStrings.platform_fee, CurrencyUtil.appendCurrency(
+                                    (cartResponse!.cart!.items!.firstWhere((item) => item.isPlatformFee).total ?? 0).toStringAsFixed(2))),
+                              if (_numOrZero(cartResponse?.cart?.taxTotal) > 0)
+                                _priceRow(AppStrings.tax, CurrencyUtil.appendCurrency(
+                                    _numOrZero(cartResponse?.cart?.taxTotal).toStringAsFixed(2))),
+                              if ((cartResponse?.cart?.promotions ?? []).isNotEmpty &&
+                                  _numOrZero(cartResponse?.cart?.discountSubtotal) > 0)
+                                _priceRow(
+                                  'Coupon Savings',
+                                  '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
+                                  valueColor: Colors.green.shade700,
                                 ),
-                                crossFadeState: showPriceBreakdown
-                                    ? CrossFadeState.showSecond
-                                    : CrossFadeState.showFirst,
-                                duration: const Duration(milliseconds: 180),
+                              if (splitActive && splitWalletAmount > 0)
+                                _priceRow(
+                                  'Wallet',
+                                  '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
+                                  valueColor: Colors.blue.shade700,
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Divider(color: Colors.grey.shade300, height: 1),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  if ((cartResponse?.cart?.promotions ?? [])
-                                      .isEmpty) {
-                                    showPromoCodeBottomSheet(context);
-                                  } else {
-                                    List<String> promotionCodes = cartResponse
-                                            ?.cart?.promotions
-                                            ?.map((promotion) => promotion.code)
-                                            .where((code) => code != null)
-                                            .cast<String>()
-                                            .toList() ??
-                                        [];
-                                    removePromoCode(promotionCodes);
-                                  }
-                                },
-                                child: Container(
-                                  height: 50,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0, vertical: 12.0),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.secondary,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const ImageIcon(
-                                        AssetImage(AppAssets.ic_discount),
-                                        color: Colors.green,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          (cartResponse?.cart?.promotions ?? [])
-                                                  .isEmpty
-                                              ? AppStrings.enter_promo_code
-                                              : cartResponse?.cart?.promotions
-                                                      ?.firstOrNull?.code ??
-                                                  '',
-                                          style: FontUtils.primaryFontStyle(
-                                              color: AppColors.textColor),
-                                        ),
-                                      ),
-                                      Text(
-                                        (cartResponse?.cart?.promotions ?? [])
-                                                .isEmpty
-                                            ? AppStrings.apply
-                                            : AppStrings.remove,
-                                        style: FontUtils.secondaryFontStyle(
-                                            color: AppColors.primary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
+                              _priceRow('Total Amount', CurrencyUtil.appendCurrency(
+                                (splitActive
+                                    ? (_numOrZero(cartResponse?.cart?.total) - splitWalletAmount).clamp(0, double.infinity)
+                                    : _numOrZero(cartResponse?.cart?.total))
+                                    .toStringAsFixed(2)),
+                                isBold: true, fontSize: 13),
+                              const SizedBox(height: 6),
                             ],
                           ),
                         ),
+                        ),
                       ),
-                    ],
+                      const SizedBox(height: 80),
+                      ],
+                    ),
                   ),
                   bottomNavigationBar: SafeArea(
-                    child: SizedBox(
-                      height: 80,
-                      child: CheckoutFooter(
-                        svgPath: AppAssets.ic_payment_cash,
-                        paymentMethod:
-                            _getProviderName(pp_id, paymentProviders),
-                        isLoading: cartLoading,
-                        onPaymentTap: () {
-                          showPaymentMethodsBottomSheet(
-                              context, paymentProviders);
-                        },
-                        onInfoTap: () {
-                          showCalculationBottomSheet(context, cartResponse!);
-                        },
-                        amount: CurrencyUtil.appendCurrency(
-                            cartResponse!.cart!.total!.toStringAsFixed(2)),
-                        onPlaceOrder: () {
-                          if (cartResponse?.cart?.error == true) {
-                            AppUtils.showToast(
-                                AppStrings.remove_unavailable_stock_items);
-                            return;
-                          }
-                          // Add checkout logic here
-                          if ((cartResponse?.cart?.shippingAddress?.address1 ??
-                                  '')
-                              .isEmpty) {
-                            AppUtils.showToast(
-                                AppStrings.add_address_to_proceed);
-                            return;
-                          }
-                          if (!addressLoading) {
-                            placeOrder(pp_id!);
-                            //PageRouteUtils.push(context, CheckOutPage(cartResponse: cartResponse));
-                          }
-                        },
-                      ),
-                    ),
+                    child: _buildAjioBottomBar(),
                   ),
                 )
               : Center(
@@ -574,6 +510,35 @@ class _CartPageState extends State<CartPage> {
                                 context, const PhoneNumberPage());
                           },
                         )),
+          // Confetti overlay — full width spread
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              maxBlastForce: 20,
+              minBlastForce: 8,
+              emissionFrequency: 0.08,
+              numberOfParticles: 30,
+              gravity: 0.15,
+              shouldLoop: false,
+              minimumSize: const Size(3, 3),
+              maximumSize: const Size(8, 8),
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple,
+                Colors.red,
+                Colors.yellow,
+                Colors.teal,
+                Colors.amber,
+              ],
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: apiLoading
           ? const SafeArea(
               child: SizedBox(
@@ -583,6 +548,87 @@ class _CartPageState extends State<CartPage> {
             )
           : null,
     );
+  }
+
+  // ===== Wallet Methods =====
+
+  Future<void> _loadWalletInfo() async {
+    final loggedIn = await AppUtils.isLoggedIn();
+    if (!loggedIn) return;
+    try {
+      final walletData = await ApiService().getWalletBalance(context);
+      if (!mounted) return;
+      final balance = walletData.wallet?.balance ?? 0;
+      final mode = walletData.walletMode ?? 'full_payment';
+      final autoApply = walletData.autoApplyWallet;
+
+      setState(() {
+        walletBalance = balance;
+        isSplitPaymentMode = mode == 'split_payment';
+        walletAutoApply = autoApply;
+        allowCouponWithWallet = walletData.allowCouponWithWallet;
+        walletUsageLimit = walletData.walletUsageLimit;
+      });
+
+      // Auto-apply if enabled, cart exists, and customer hasn't dismissed
+      final isDismissed = (cartResponse?.cart?.metadata as Map?)
+          ?['wallet_auto_apply_dismissed'] == true;
+      if (isSplitPaymentMode && autoApply && balance > 0 &&
+          cartResponse?.cart?.id != null && !isDismissed) {
+        await _applyWalletSplit();
+      }
+    } catch (e) {
+      debugPrint('Wallet load error: $e');
+    }
+  }
+
+  Future<void> _applyWalletSplit() async {
+    if (cartResponse?.cart?.id == null) return;
+    setState(() => walletToggling = true);
+    try {
+      final result = await ApiService().applyWalletSplit(context, cartResponse!.cart!.id!);
+      if (!mounted) return;
+      if (result.walletApplied) {
+        setState(() {
+          splitActive = true;
+          splitWalletAmount = result.walletAmount;
+          splitGatewayAmount = result.gatewayAmount;
+          splitFullCoverage = result.fullWalletCoverage;
+        });
+        _confettiController.play();
+      }
+    } catch (e) {
+      debugPrint('Apply wallet split error: $e');
+    } finally {
+      if (mounted) setState(() => walletToggling = false);
+    }
+  }
+
+  Future<void> _removeWalletSplit() async {
+    if (cartResponse?.cart?.id == null) return;
+    setState(() => walletToggling = true);
+    try {
+      await ApiService().removeWalletSplit(context, cartResponse!.cart!.id!);
+      if (!mounted) return;
+      setState(() {
+        splitActive = false;
+        splitWalletAmount = 0;
+        splitGatewayAmount = 0;
+        splitFullCoverage = false;
+      });
+    } catch (e) {
+      debugPrint('Remove wallet split error: $e');
+    } finally {
+      if (mounted) setState(() => walletToggling = false);
+    }
+  }
+
+  Future<void> _toggleWalletSplit() async {
+    if (splitActive) {
+      await _removeWalletSplit();
+    } else {
+      await _applyWalletSplit();
+    }
   }
 
   void getCartApi() async {
@@ -602,6 +648,8 @@ class _CartPageState extends State<CartPage> {
             '';
         apiLoading = false;
       });
+      // Load wallet info after cart is ready
+      _loadWalletInfo();
     } catch (e) {
       setState(() {
         apiLoading = false;
@@ -630,6 +678,7 @@ class _CartPageState extends State<CartPage> {
       if ((response.cart?.promotions?.firstOrNull?.code ?? '').isNotEmpty) {
         AppUtils.showToast(
             '${response.cart?.promotions?.firstOrNull?.code ?? ''} ${AppStrings.promo_code_applied_success}');
+        _confettiController.play();
       } else {
         AppUtils.showToast(AppStrings.promo_code_not_applied);
       }
@@ -663,6 +712,17 @@ class _CartPageState extends State<CartPage> {
       setState(() {
         cartLoading = false;
       });
+      print(e);
+    }
+  }
+
+  // Silent remove — no toast, used internally when replacing a coupon
+  Future<void> _removePromoCodeSilent(List<String> promoCodes) async {
+    try {
+      final ApiService apiService = ApiService();
+      final response = await apiService.removePromoCode(context, promoCodes);
+      if (mounted) setState(() => cartResponse = response);
+    } catch (e) {
       print(e);
     }
   }
@@ -703,87 +763,35 @@ class _CartPageState extends State<CartPage> {
   }
 
   void showPromoCodeBottomSheet(BuildContext context) {
-    TextEditingController promoCodeController = TextEditingController();
-
+    final cartId = cartResponse?.cart?.id;
+    if (cartId == null) return;
+    final appliedCodes = cartResponse?.cart?.promotions
+            ?.map((p) => p.code ?? '')
+            .where((c) => c.isNotEmpty)
+            .toList() ??
+        [];
     showModalBottomSheet(
-      backgroundColor: Colors.white,
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       isScrollControlled: true,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            top: 16.0,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bottom Sheet Handle
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Promo Code Input
-              Text(
-                AppStrings.enter_promo_code,
-                style: FontUtils.primaryFontStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: promoCodeController,
-                decoration: InputDecoration(
-                  hintText: AppStrings.promo_code,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.secondary),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Apply Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                onPressed: () {
-                  String promoCode = promoCodeController.text.trim();
-                  if (promoCode.isNotEmpty) {
-                    Navigator.pop(context); // Close the bottom sheet
-                    addPromoCode(promoCode); // Call API to apply promo code
-                  }
-                },
-                child: Text(
-                  (cartResponse?.cart?.promotions ?? []).isEmpty
-                      ? AppStrings.apply
-                      : AppStrings.remove,
-                  style: FontUtils.primaryFontStyle(
-                      fontSize: 16, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      backgroundColor: Colors.transparent,
+      builder: (_) => CouponBottomSheet(
+        cartId: cartId,
+        appliedCodes: appliedCodes,
+        onApply: (code) async {
+          // Silently remove existing coupon before applying new one (no toast)
+          final existing = cartResponse?.cart?.promotions
+                  ?.map((p) => p.code ?? '')
+                  .where((c) => c.isNotEmpty)
+                  .toList() ?? [];
+          if (existing.isNotEmpty) {
+            await _removePromoCodeSilent(existing);
+          }
+          await Future(() => addPromoCode(code));
+        },
+        onRemove: (codes) async {
+          await Future(() => removePromoCode(codes));
+        },
+      ),
     );
   }
 
@@ -910,6 +918,154 @@ class _CartPageState extends State<CartPage> {
       case 'pp_system_default':
         completeCart();
         break;
+      case 'pp_wallet_wallet':
+        _makeWalletPayment();
+        break;
+    }
+  }
+
+  void _makeWalletPayment() async {
+    setState(() => cartLoading = true);
+
+    try {
+      final walletData = await ApiService().getWalletBalance(context);
+      final balance = walletData.wallet?.balance ?? 0;
+      final cartTotal = cartResponse?.cart?.total ?? 0;
+
+      if (balance >= cartTotal) {
+        completeCart();
+      } else {
+        final shortfall = cartTotal - balance;
+        setState(() => cartLoading = false);
+
+        if (walletData.topupConfig?.canTopUp == true) {
+          _showWalletTopUpDialog(shortfall, walletData);
+        } else {
+          AppUtils.showToast(
+              'Insufficient wallet balance. Need ₹${shortfall.toStringAsFixed(2)} more.');
+        }
+      }
+    } catch (e) {
+      setState(() => cartLoading = false);
+      AppUtils.showToast('Failed to check wallet balance');
+      debugPrint('Wallet payment error: $e');
+    }
+  }
+
+  void _showWalletTopUpDialog(double shortfall, WalletResponse walletData) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.account_balance_wallet, color: AppColors.primary),
+            const SizedBox(width: 8),
+            const Text('Insufficient Balance', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Balance: ₹${walletData.wallet?.balance?.toStringAsFixed(2) ?? "0.00"}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Order Total: ₹${cartResponse?.cart?.total?.toStringAsFixed(2) ?? "0.00"}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'You need ₹${shortfall.toStringAsFixed(2)} more.',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.orange.shade800),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _initiateWalletTopUpFromCart(shortfall);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Add ₹${shortfall.toStringAsFixed(0)}'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _initiateWalletTopUpFromCart(double amount) async {
+    setState(() => cartLoading = true);
+
+    try {
+      final result = await ApiService().initiateWalletTopUp(context, amount);
+
+      if (result.razorpayOrderId != null && result.razorpayKey != null) {
+        final topUpRazorpay = Razorpay();
+
+        topUpRazorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
+            (PaymentSuccessResponse response) async {
+          try {
+            await ApiService().confirmWalletTopUp(context, response.paymentId!, amount);
+          } catch (e) {
+            debugPrint('Failed to confirm top-up: $e');
+          }
+          topUpRazorpay.clear();
+
+          // Re-initialize wallet payment session with updated balance, then complete
+          try {
+            await updatePaymentMethod('pp_wallet_wallet');
+            completeCart();
+          } catch (e) {
+            setState(() => cartLoading = false);
+            AppUtils.showToast('Balance added. Please tap Place Order again.');
+          }
+        });
+
+        topUpRazorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
+            (PaymentFailureResponse response) {
+          topUpRazorpay.clear();
+          setState(() => cartLoading = false);
+          AppUtils.showToast('Top-up payment failed. Please try again.');
+        });
+
+        topUpRazorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
+            (ExternalWalletResponse response) {});
+
+        var options = {
+          'key': result.razorpayKey,
+          'amount': (amount * 100).toInt(),
+          'order_id': result.razorpayOrderId,
+          'name': AppConfig.appName,
+          'description': 'Wallet Top-Up',
+          'retry': {'enabled': true, 'max_count': 1},
+          'send_sms_hash': true,
+          'prefill': {
+            'contact': customer?.phone ?? '',
+            'email': customer?.email ?? '',
+          },
+          'theme': {'color': AppUtils.colorToHex(AppColors.primary)},
+        };
+        topUpRazorpay.open(options);
+      } else {
+        setState(() => cartLoading = false);
+        AppUtils.showToast('Wallet top-up is not available');
+      }
+    } catch (e) {
+      setState(() => cartLoading = false);
+      AppUtils.showToast('Failed to initiate top-up');
+      debugPrint('Top-up error: $e');
     }
   }
 
@@ -942,9 +1098,13 @@ class _CartPageState extends State<CartPage> {
   }
 
   void makeRazorPayCall(String orderId) {
+    // Use wallet-reduced amount if split is active
+    final paymentAmount = (splitActive && splitGatewayAmount > 0)
+        ? splitGatewayAmount
+        : (cartResponse?.cart?.total ?? 1);
     var options = {
       'key': _getProviderKey(pp_id, paymentProviders),
-      'amount': ((cartResponse?.cart?.total ?? 1) * 100).round(),
+      'amount': (paymentAmount * 100).round(),
       'name': AppConfig.appName,
       'description': '${AppStrings.payment_to} ${AppConfig.appName}',
       'order_id': orderId,
@@ -1053,4 +1213,418 @@ class _CartPageState extends State<CartPage> {
   }
 
   num _numOrZero(num? value) => value ?? 0;
+
+  // ===== Payment Method Card =====
+  Widget _buildPaymentMethodCard() {
+    final providerName = _getProviderName(pp_id, paymentProviders);
+    final providers = isSplitPaymentMode
+        ? paymentProviders.where((p) => p.id != 'pp_wallet_wallet').toList()
+        : paymentProviders;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: InkWell(
+        onTap: () => showPaymentMethodsBottomSheet(context, providers),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.payment_outlined, color: AppColors.primary, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Payment Method',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      providerName,
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===== Ajio-style Bottom Bar =====
+  Widget _buildAjioBottomBar() {
+    final amount = CurrencyUtil.appendCurrency(
+      (splitActive
+          ? (cartResponse!.cart!.total! - splitWalletAmount).clamp(0, double.infinity)
+          : cartResponse!.cart!.total!)
+          .toStringAsFixed(2),
+    );
+    final providerName = _getProviderName(pp_id, paymentProviders);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            offset: Offset(0, -2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          // Left: Amount + View details
+          Expanded(
+            flex: 2,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  amount,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _scrollToPriceDetails,
+                  child: Text(
+                    'View details',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Right: Place Order button with payment method
+          Expanded(
+            flex: 3,
+            child: ElevatedButton(
+              onPressed: cartLoading
+                  ? null
+                  : () {
+                      if (cartResponse?.cart?.error == true) {
+                        AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+                        return;
+                      }
+                      if ((cartResponse?.cart?.shippingAddress?.address1 ?? '').isEmpty) {
+                        AppUtils.showToast(AppStrings.add_address_to_proceed);
+                        return;
+                      }
+                      if (!addressLoading) {
+                        placeOrder(pp_id!);
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: cartLoading
+                    ? const SizedBox(
+                        key: ValueKey('loader'),
+                        height: 36,
+                        child: Center(
+                          child: SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Column(
+                        key: const ValueKey('text'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Place Order',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            providerName,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white70,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _priceRow(String label, String value, {Color? valueColor, bool isBold = false, double fontSize = 13}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: FontUtils.primaryFontStyle(
+            fontSize: fontSize,
+            color: AppColors.textColor,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          )),
+          Text(value, style: FontUtils.primaryFontStyle(
+            fontSize: fontSize,
+            color: valueColor ?? AppColors.textColor,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          )),
+        ],
+      ),
+    );
+  }
+
+  // ===== Coupon Card =====
+  Widget _buildCouponCard() {
+    final coupon = cartResponse?.cart?.promotions?.firstOrNull;
+    final isApplied = (coupon?.code ?? '').isNotEmpty;
+    final discount = _numOrZero(cartResponse?.cart?.discountSubtotal);
+    final canUseCoupon = allowCouponWithWallet || !splitActive;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: InkWell(
+        onTap: canUseCoupon ? () => showPromoCodeBottomSheet(context) : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isApplied ? Colors.green.shade50 : Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.local_offer_outlined,
+                  color: isApplied ? Colors.green.shade600 : Colors.orange.shade700,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Coupon',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    isApplied
+                        ? Text(
+                            '${coupon!.code} · Save ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
+                            style: TextStyle(fontSize: 12, color: Colors.green.shade600),
+                          )
+                        : Text(
+                            canUseCoupon ? 'Apply coupon code' : 'Remove wallet to apply coupon',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===== Wallet Card (Myntra style) =====
+  Widget _buildWalletCard() {
+    final couponApplied = (cartResponse?.cart?.promotions ?? []).isNotEmpty;
+    final canUseWallet = allowCouponWithWallet || !couponApplied;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: splitActive ? AppColors.primary.withOpacity(0.4) : Colors.grey.shade200,
+          width: splitActive ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: canUseWallet
+                        ? AppColors.primary.withOpacity(0.1)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: canUseWallet ? AppColors.primary : Colors.grey,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Use Wallet Balance',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: canUseWallet ? AppColors.textColor : Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Available: ${CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(2))}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                      if (walletUsageLimit != null &&
+                          walletUsageLimit!.enabled &&
+                          walletUsageLimit!.displayText.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Max usable: ${walletUsageLimit!.displayText}',
+                            style: TextStyle(fontSize: 11, color: Colors.orange.shade700),
+                          ),
+                        ),
+                      if (!canUseWallet)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Remove coupon to use wallet',
+                            style: TextStyle(fontSize: 11, color: Colors.orange.shade700),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                walletToggling
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : Switch(
+                        value: splitActive,
+                        onChanged: canUseWallet ? (_) => _toggleWalletSplit() : null,
+                        activeColor: AppColors.primary,
+                        inactiveThumbColor: Colors.grey.shade400,
+                        inactiveTrackColor: Colors.grey.shade200,
+                      ),
+              ],
+            ),
+          ),
+          if (splitActive && splitWalletAmount > 0) ...[
+            Divider(height: 1, color: Colors.grey.shade100),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green.shade600, size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
+                    style: TextStyle(fontSize: 12, color: Colors.green.shade700, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
 }

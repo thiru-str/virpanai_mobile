@@ -18,6 +18,8 @@ import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
+import 'package:waioz/model/wallet_response.dart';
+import 'package:waioz/model/promotion_list_model.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -642,6 +644,18 @@ class ApiService {
     );
   }
 
+  Future<PromotionListResponse> getAvailablePromotions(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest(
+      'store/promotions',
+      null,
+      {'cart_id': cartId},
+      (json) => PromotionListResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<CartResponse> addPromoCode(
       BuildContext context, String promoCode) async {
     await addToken();
@@ -823,12 +837,7 @@ class ApiService {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/update-payment-method/$cartId',
-      paymentProviderId == 'pp_razorpay_razorpay'
-          ? {
-              "payment_provider_id": paymentProviderId,
-              "context": {"extra": cartResponse.cart}
-            }
-          : {"payment_provider_id": paymentProviderId},
+      {"payment_provider_id": paymentProviderId},
       (json) => PaymentMethodResponse.fromJson(json),
       context,
     );
@@ -1054,5 +1063,91 @@ class ApiService {
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
+  }
+
+  // ==================== WALLET ====================
+
+  Future<WalletResponse> getWalletBalance(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest(
+        "store/wallet", null, null,
+        (data) => WalletResponse.fromJson(data), context);
+  }
+
+  Future<WalletTransactionsResponse> getWalletTransactions(
+      BuildContext context,
+      {int limit = 20,
+      int offset = 0,
+      String? type,
+      String? direction}) async {
+    await addToken();
+    final params = <String, dynamic>{
+      'limit': limit,
+      'offset': offset,
+    };
+    if (type != null) params['type'] = type;
+    if (direction != null) params['direction'] = direction;
+
+    return _makeGetRequest(
+        "store/wallet/transactions", null, params,
+        (data) => WalletTransactionsResponse.fromJson(data), context);
+  }
+
+  Future<WalletTopUpResponse> initiateWalletTopUp(
+      BuildContext context, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up",
+        {
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletTopUpResponse.fromJson(data),
+        context);
+  }
+
+  Future<WalletConfirmResponse> confirmWalletTopUp(
+      BuildContext context, String razorpayPaymentId, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up/confirm",
+        {
+          "razorpay_payment_id": razorpayPaymentId,
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletConfirmResponse.fromJson(data),
+        context);
+  }
+
+  Future<WalletSplitResponse> applyWalletSplit(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/apply-split",
+        {"cart_id": cartId},
+        (data) => WalletSplitResponse.fromJson(data),
+        context);
+  }
+
+  Future<dynamic> removeWalletSplit(
+      BuildContext context, String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    try {
+      final response = await _dio.delete(
+        "store/wallet/apply-split",
+        queryParameters: {"cart_id": cartId},
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+      return response.data ?? {};
+    } catch (e) {
+      debugPrint('removeWalletSplit error: $e');
+      rethrow;
+    }
   }
 }
