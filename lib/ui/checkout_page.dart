@@ -42,7 +42,6 @@ import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 import '../model/payment_method_response.dart';
 import '../model/wallet_response.dart';
 import '../utility/stripe_service.dart';
-import 'widgets/wallet_split_widget.dart';
 
 class CheckOutPage extends StatefulWidget {
   final CartResponse? cartResponse;
