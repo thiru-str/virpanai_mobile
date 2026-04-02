@@ -44,7 +44,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   }
 
   Future<void> _applyManual() async {
-    final code = _manualController.text.trim().toUpperCase();
+    final code = _manualController.text.trim();
     if (code.isEmpty) {
       setState(() => _manualError = 'Please enter a coupon code');
       return;
@@ -162,7 +162,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                         Expanded(
                           child: TextField(
                             controller: _manualController,
-                            textCapitalization: TextCapitalization.characters,
+                            textCapitalization: TextCapitalization.none,
                             style: FontUtils.primaryFontStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
