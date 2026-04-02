@@ -837,12 +837,7 @@ class ApiService {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/update-payment-method/$cartId',
-      paymentProviderId == 'pp_razorpay_razorpay'
-          ? {
-              "payment_provider_id": paymentProviderId,
-              "context": {"extra": cartResponse.cart}
-            }
-          : {"payment_provider_id": paymentProviderId},
+      {"payment_provider_id": paymentProviderId},
       (json) => PaymentMethodResponse.fromJson(json),
       context,
     );
