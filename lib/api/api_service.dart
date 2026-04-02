@@ -19,6 +19,7 @@ import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/wallet_response.dart';
+import 'package:waioz/model/promotion_list_model.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -639,6 +640,18 @@ class ApiService {
       null,
       null,
       (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<PromotionListResponse> getAvailablePromotions(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest(
+      'store/promotions',
+      null,
+      {'cart_id': cartId},
+      (json) => PromotionListResponse.fromJson(json),
       context,
     );
   }
