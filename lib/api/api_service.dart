@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/cross_sell_products_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/payment_method_response.dart';
@@ -950,11 +951,22 @@ class ApiService {
     );
   }
 
-  Future<UpSellProductsResponse> upSellingProducts(BuildContext context) async {
+  Future<CrossSellProductsResponse> crossSellingProducts(
+      BuildContext context, String cartId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest<CrossSellProductsResponse>(
+      'store/cross-selling-product/$cartId',
+      {"region_id": regionId},
+      (json) => CrossSellProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<UpSellProductsResponse> upSellingProducts(
+      BuildContext context, String id) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<UpSellProductsResponse>(
-      'store/up-selling-product/$cartId',
+      'store/up-selling-product/$id',
       {"region_id": regionId},
       (json) => UpSellProductsResponse.fromJson(json),
       context,
@@ -1069,17 +1081,12 @@ class ApiService {
 
   Future<WalletResponse> getWalletBalance(BuildContext context) async {
     await addToken();
-    return _makeGetRequest(
-        "store/wallet", null, null,
+    return _makeGetRequest("store/wallet", null, null,
         (data) => WalletResponse.fromJson(data), context);
   }
 
-  Future<WalletTransactionsResponse> getWalletTransactions(
-      BuildContext context,
-      {int limit = 20,
-      int offset = 0,
-      String? type,
-      String? direction}) async {
+  Future<WalletTransactionsResponse> getWalletTransactions(BuildContext context,
+      {int limit = 20, int offset = 0, String? type, String? direction}) async {
     await addToken();
     final params = <String, dynamic>{
       'limit': limit,
@@ -1088,8 +1095,7 @@ class ApiService {
     if (type != null) params['type'] = type;
     if (direction != null) params['direction'] = direction;
 
-    return _makeGetRequest(
-        "store/wallet/transactions", null, params,
+    return _makeGetRequest("store/wallet/transactions", null, params,
         (data) => WalletTransactionsResponse.fromJson(data), context);
   }
 
@@ -1125,15 +1131,11 @@ class ApiService {
   Future<WalletSplitResponse> applyWalletSplit(
       BuildContext context, String cartId) async {
     await addToken();
-    return _makePostRequest(
-        "store/wallet/apply-split",
-        {"cart_id": cartId},
-        (data) => WalletSplitResponse.fromJson(data),
-        context);
+    return _makePostRequest("store/wallet/apply-split", {"cart_id": cartId},
+        (data) => WalletSplitResponse.fromJson(data), context);
   }
 
-  Future<dynamic> removeWalletSplit(
-      BuildContext context, String cartId) async {
+  Future<dynamic> removeWalletSplit(BuildContext context, String cartId) async {
     await addToken();
     await setPublishableKey();
     try {
