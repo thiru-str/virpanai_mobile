@@ -379,6 +379,10 @@ class _CartPageState extends State<CartPage>
                                     products:
                                         crossSellProductsResponse?.products ??
                                             const [],
+                                    onReturnFromProductDetail: (_) async {
+                                      if (!mounted) return;
+                                      getCartApi();
+                                    },
                                   ),
                                   ProductRecommendationSection(
                                     title: upSellProductsResponse?.label ??
@@ -386,6 +390,10 @@ class _CartPageState extends State<CartPage>
                                     products:
                                         upSellProductsResponse?.products ??
                                             const [],
+                                    onReturnFromProductDetail: (_) async {
+                                      if (!mounted) return;
+                                      getCartApi();
+                                    },
                                   ),
                                 ],
                               ),

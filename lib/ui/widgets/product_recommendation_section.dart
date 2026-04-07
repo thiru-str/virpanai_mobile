@@ -9,11 +9,13 @@ import 'package:waioz/utility/page_route_utils.dart';
 class ProductRecommendationSection extends StatelessWidget {
   final String title;
   final List<Product> products;
+  final Future<void> Function(Product product)? onReturnFromProductDetail;
 
   const ProductRecommendationSection({
     super.key,
     required this.title,
     required this.products,
+    this.onReturnFromProductDetail,
   });
 
   @override
@@ -46,11 +48,14 @@ class ProductRecommendationSection extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 10),
                   child: ProductCard4(
                     product: product,
-                    onTapCard: () {
-                      PageRouteUtils.pushWithSlide(
+                    onTapCard: () async {
+                      await PageRouteUtils.pushWithSlide(
                         context,
                         ProductDetailPage(productId: product.id ?? ''),
                       );
+                      if (onReturnFromProductDetail != null) {
+                        await onReturnFromProductDetail!(product);
+                      }
                     },
                   ),
                 );
