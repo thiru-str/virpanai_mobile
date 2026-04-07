@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
@@ -25,6 +27,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -961,6 +964,16 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    final currentCart = cartResponse;
+    if (currentCart != null) {
+      unawaited(
+        StoreesService.instance.trackCheckoutStarted(
+          currentCart,
+          paymentProviderId: paymentProviderId,
+        ),
+      );
+    }
+
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         final key = getPaymentApiKey('pp_razorpay_razorpay');

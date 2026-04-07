@@ -102,7 +102,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       return 'enter email';
                     }
 
-                    final emailRegex = RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+                    final emailRegex =
+                        RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
                     if (!emailRegex.hasMatch(value)) {
                       return AppStrings.enter_valid_email;
@@ -157,15 +158,16 @@ class _RegisterPageState extends State<RegisterPage> {
       //     widget.phoneNo,
       //     widget.token);
 
-      RefreshTokenResponse refreshTokenResponse =await apiService.refreshToken(
-        context,widget.token);
+      RefreshTokenResponse refreshTokenResponse =
+          await apiService.refreshToken(context, widget.token);
 
       setState(() {
         apiCalling = false;
       });
 
-      SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
-      SharedPreferencesUtil()
+      await SharedPreferencesUtil()
+          .saveString('token', refreshTokenResponse.token!);
+      await SharedPreferencesUtil()
           .saveMap('customer', registerResponse!.customer!.toJson());
 
       if (mounted) {
@@ -173,7 +175,7 @@ class _RegisterPageState extends State<RegisterPage> {
           setState(() {
             apiCalling = true;
           });
-          getHomePageApi();
+          await getHomePageApi();
           setState(() {
             apiCalling = false;
           });
@@ -190,14 +192,18 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void getHomePageApi() async {
+  Future<void> getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
-      final response= await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', response.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', response.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', response.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', response.global!.toJson());
+      final response = await apiService.getHomePage(context);
+      await SharedPreferencesUtil()
+          .saveString('region_id', response.global!.regionId!);
+      await SharedPreferencesUtil()
+          .saveString('cart_id', response.global!.cartId!);
+      await SharedPreferencesUtil()
+          .saveString('currency_symbol', response.global!.currencySymbol!);
+      await SharedPreferencesUtil()
+          .saveMap('global', response.global!.toJson());
     } catch (e) {
       print(e);
     }

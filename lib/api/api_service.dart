@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -43,6 +44,7 @@ import '../model/custom_page_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/pin_code_response.dart';
 import '../model/refresh_token_response.dart';
+import '../api/storees_service.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -240,6 +242,8 @@ class ApiService {
     if (message != null) {
       AppUtils.showToast(message);
     }
+
+    await StoreesService.instance.reset();
 
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
@@ -608,24 +612,28 @@ class ApiService {
       BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+    final response = await _makePostRequest(
       'store/custom-carts/$cartId/line-items',
       {"variant_id": variantId, "quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
+    return response;
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makeGetRequest(
+    final response = await _makeGetRequest(
       'store/custom-carts/$cartId?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
       null,
       null,
       (json) => CartResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
+    return response;
   }
 
   Future<CartResponse> addPromoCode(
@@ -718,12 +726,14 @@ class ApiService {
       BuildContext context, String pp_id) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+    final response = await _makePostRequest(
       'store/place-order/$cartId',
       {"payment_provider_id": pp_id},
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackOrderCompleted(response));
+    return response;
   }
 
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
@@ -836,12 +846,14 @@ class ApiService {
   Future<PlaceOrderResponse> completeCart(BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+    final response = await _makePostRequest(
       'store/custom-carts/$cartId/complete',
       null,
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackOrderCompleted(response));
+    return response;
   }
 
   Future<PublicDetailsResponse> getPublicDetails() async {

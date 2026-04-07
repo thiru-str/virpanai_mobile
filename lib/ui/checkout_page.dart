@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:lottie/lottie.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/currency_util.dart';
@@ -72,8 +74,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
     getShippingInfo();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,116 +90,116 @@ class _CheckOutPageState extends State<CheckOutPage> {
         ),
         child: apiLoading
             ? const Center(
-          child: CircularProgressIndicator(),
-        )
+                child: CircularProgressIndicator(),
+              )
             : Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CheckoutItemCard(
-                        title: AppStrings.payemnt_method,
-                        subtitle: addPaymentMethod
-                            ? pp_title!
-                            : AppStrings.add_payment_method,
-                        onTap: () async {
-                          if (!addAddress) {
-                            AppUtils.showToast(
-                                AppStrings.choose_shipping_address);
-                            return;
-                          } else if (!addShippingOption) {
-                            AppUtils.showToast(
-                                AppStrings.choose_shipping_address);
-                            return;
-                          }
-                          Global? global = await getGlobal();
-                          if (global != null) {
-                            showPaymentMethodsBottomSheet(
-                                context, global.paymentProvider!);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: Colors.white, // ✅ solid background for summary
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CartCalculation(
-                    keyText: '${AppStrings.subTotal}:',
-                    valueText: CurrencyUtil.appendCurrency(cartResponse!
-                        .cart!.itemSubtotal!
-                        .toStringAsFixed(2)),
-                  ),
-                  Visibility(
-                    visible: cartResponse!.cart!.discountSubtotal! > 0,
-                    child: CartCalculation(
-                      keyText: '${AppStrings.discount}:',
-                      valueText:
-                      '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CheckoutItemCard(
+                              title: AppStrings.payemnt_method,
+                              subtitle: addPaymentMethod
+                                  ? pp_title!
+                                  : AppStrings.add_payment_method,
+                              onTap: () async {
+                                if (!addAddress) {
+                                  AppUtils.showToast(
+                                      AppStrings.choose_shipping_address);
+                                  return;
+                                } else if (!addShippingOption) {
+                                  AppUtils.showToast(
+                                      AppStrings.choose_shipping_address);
+                                  return;
+                                }
+                                Global? global = await getGlobal();
+                                if (global != null) {
+                                  showPaymentMethodsBottomSheet(
+                                      context, global.paymentProvider!);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  Visibility(
-                    visible: cartResponse!.cart!.shippingSubtotal! > 0,
-                    child: CartCalculation(
-                      keyText: '${AppStrings.shipping}:',
-                      valueText: CurrencyUtil.appendCurrency(cartResponse!
-                          .cart!.shippingSubtotal!
-                          .toStringAsFixed(2)),
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: const BoxDecoration(
+                      color: Colors.white, // ✅ solid background for summary
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
                     ),
-                  ),
-                  CartCalculation(
-                    keyText: '${AppStrings.tax}:',
-                    valueText: CurrencyUtil.appendCurrency(
-                        cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
-                  ),
-                  CartCalculation(
-                    keyText: '${AppStrings.total}:',
-                    valueText: CurrencyUtil.appendCurrency(
-                        cartResponse!.cart!.total!.toStringAsFixed(2)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CartCalculation(
+                          keyText: '${AppStrings.subTotal}:',
+                          valueText: CurrencyUtil.appendCurrency(cartResponse!
+                              .cart!.itemSubtotal!
+                              .toStringAsFixed(2)),
+                        ),
+                        Visibility(
+                          visible: cartResponse!.cart!.discountSubtotal! > 0,
+                          child: CartCalculation(
+                            keyText: '${AppStrings.discount}:',
+                            valueText:
+                                '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
+                          ),
+                        ),
+                        Visibility(
+                          visible: cartResponse!.cart!.shippingSubtotal! > 0,
+                          child: CartCalculation(
+                            keyText: '${AppStrings.shipping}:',
+                            valueText: CurrencyUtil.appendCurrency(cartResponse!
+                                .cart!.shippingSubtotal!
+                                .toStringAsFixed(2)),
+                          ),
+                        ),
+                        CartCalculation(
+                          keyText: '${AppStrings.tax}:',
+                          valueText: CurrencyUtil.appendCurrency(
+                              cartResponse!.cart!.taxTotal!.toStringAsFixed(2)),
+                        ),
+                        CartCalculation(
+                          keyText: '${AppStrings.total}:',
+                          valueText: CurrencyUtil.appendCurrency(
+                              cartResponse!.cart!.total!.toStringAsFixed(2)),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: placeOrderApiLoading
             ? Center(
-            child: Lottie.asset(AppAssets.place_order_lottie,
-                fit: BoxFit.cover))
+                child: Lottie.asset(AppAssets.place_order_lottie,
+                    fit: BoxFit.cover))
             : CartButton(
-          amount: CurrencyUtil.appendCurrency(
-              cartResponse!.cart!.total!.toStringAsFixed(2)),
-          title: AppStrings.place_order,
-          onPressed: () {
-            if (!addAddress) {
-              AppUtils.showToast(AppStrings.add_shipping_address);
-            } else if (!addShippingOption) {
-              AppUtils.showToast(AppStrings.add_shipping_method);
-            } else if (!addPaymentMethod) {
-              AppUtils.showToast(AppStrings.add_payment_method);
-            } else {
-              updatePaymentMethod(pp_id!);
-            }
-          },
-        ),
+                amount: CurrencyUtil.appendCurrency(
+                    cartResponse!.cart!.total!.toStringAsFixed(2)),
+                title: AppStrings.place_order,
+                onPressed: () {
+                  if (!addAddress) {
+                    AppUtils.showToast(AppStrings.add_shipping_address);
+                  } else if (!addShippingOption) {
+                    AppUtils.showToast(AppStrings.add_shipping_method);
+                  } else if (!addPaymentMethod) {
+                    AppUtils.showToast(AppStrings.add_payment_method);
+                  } else {
+                    updatePaymentMethod(pp_id!);
+                  }
+                },
+              ),
       ),
     );
   }
@@ -253,17 +253,14 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
 
-
   void makeNEFTPayCall() {
     CustomPopupWidget.show(
       context,
-      title:AppStrings.neft_payment_instruct,
-      
-      description:AppStrings.neft_payment_desc,
-      
-      buttonText:AppStrings.place_your_order,
+      title: AppStrings.neft_payment_instruct,
+      description: AppStrings.neft_payment_desc,
+      buttonText: AppStrings.place_your_order,
       icon: Icons.info,
-      onConfirm: (){
+      onConfirm: () {
         setState(() {
           placeOrderApiLoading = true;
         });
@@ -271,6 +268,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
       },
     );
   }
+
   void getCartApi() async {
     try {
       final ApiService apiService = ApiService();
@@ -382,12 +380,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void placeOrder() async {
     try {
+      final currentCart = cartResponse;
+      if (currentCart != null) {
+        unawaited(
+          StoreesService.instance.trackCheckoutStarted(
+            currentCart,
+            paymentProviderId: pp_id,
+          ),
+        );
+      }
       final ApiService apiService = ApiService();
       await apiService.placeOrder(context, pp_id!);
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context,  OrderPlacedPage(orderId: '',));
+      PageRouteUtils.pushAndRemoveUntil(
+          context,
+          OrderPlacedPage(
+            orderId: '',
+          ));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
@@ -398,12 +409,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void completeCart() async {
     try {
+      final currentCart = cartResponse;
+      if (currentCart != null) {
+        unawaited(
+          StoreesService.instance.trackCheckoutStarted(
+            currentCart,
+            paymentProviderId: pp_id,
+          ),
+        );
+      }
       final ApiService apiService = ApiService();
       final response = await apiService.completeCart(context);
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
+      PageRouteUtils.pushAndRemoveUntil(
+          context,
+          OrderPlacedPage(
+            orderId: response.order?.id ?? '',
+          ));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;

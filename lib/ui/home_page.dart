@@ -38,6 +38,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/api/storees_service.dart';
 
 import '../../api/api_service.dart';
 import '../utility/app_utils.dart';
@@ -52,7 +53,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
@@ -64,7 +64,6 @@ class _HomePageState extends State<HomePage> {
   List<String>? cartItemImages;
 
   late StreamSubscription<ViewCartModel> _eventSubscription;
-
 
   @override
   void initState() {
@@ -87,93 +86,108 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription
+        .cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
   Future<void> initializePages() async {
     getHomePageApi();
-    appHeader = (await SharedPreferencesUtil().getString('app_header'))??'';
+    appHeader = (await SharedPreferencesUtil().getString('app_header')) ?? '';
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomSearchAppBar(
           hintText: 'Search "Mascara"',
-          cartCount: cartItems?? 0,
-            onCartClick:(){
-              eventBus.fire(TabSwitchEvent(2));
-            },
+          cartCount: cartItems ?? 0,
+          onCartClick: () {
+            eventBus.fire(TabSwitchEvent(2));
+          },
           onSearchTap: () {
             PageRouteUtils.pushWithFade(
                 context,
-                const ProductPage(categoryId: '',));
+                const ProductPage(
+                  categoryId: '',
+                ));
           },
         ),
-      backgroundColor: Colors.white,
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
-        child: SafeArea(
-          child: Stack(
-            children:[ apiLoading?  Center(child: CircularProgressIndicator(color: AppColors.primary,),)
-                :SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Padding(
-                      //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      //   child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
-                      //     //PageRouteUtils.pushWithSlide(context, const CartPage());
-                      //     eventBus.fire(TabSwitchEvent(2));
-                      //   },onSearchClick: (){
-                      //     PageRouteUtils.pushWithFade(
-                      //         context,
-                      //         const ProductPage(categoryId: '',));
-                      //   },addressType: addressType,),
-                      // ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 16.0),
-                        child: ListView.separated(
-                          separatorBuilder: (context, index) => const SizedBox(height: 16),
-                          scrollDirection: Axis.vertical,
-                          itemCount: homePageResponse!.content!.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            final homePageContent = homePageResponse!.content![index];
-                            return getLayoutWidget(homePageContent);
-                          },
+        backgroundColor: Colors.white,
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                apiLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            //   child: CommonHeader(headerType: appHeader,title: headerTitle,cartCount:cartItems?? 0,onCartClick:(){
+                            //     //PageRouteUtils.pushWithSlide(context, const CartPage());
+                            //     eventBus.fire(TabSwitchEvent(2));
+                            //   },onSearchClick: (){
+                            //     PageRouteUtils.pushWithFade(
+                            //         context,
+                            //         const ProductPage(categoryId: '',));
+                            //   },addressType: addressType,),
+                            // ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 16.0),
+                              child: ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 16),
+                                scrollDirection: Axis.vertical,
+                                itemCount: homePageResponse!.content!.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final homePageContent =
+                                      homePageResponse!.content![index];
+                                  return getLayoutWidget(homePageContent);
+                                },
+                              ),
+                            ),
+                            Visibility(
+                                visible: cartItems != null && cartItems != 0,
+                                child: const SizedBox(
+                                  height: 80,
+                                ))
+                          ],
                         ),
                       ),
-                      Visibility(visible: cartItems!= null && cartItems != 0,child: const SizedBox(height: 80,))
-                    ],
+                Visibility(
+                  visible: cartItems != null && cartItems != 0,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: cartItems != null
+                        ? Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                eventBus.fire(TabSwitchEvent(2));
+                                //PageRouteUtils.pushWithSlide(context, const CartPage());
+                              },
+                              child: ViewCartWidget(
+                                  totalItems: cartItems!,
+                                  itemImages: cartItemImages ?? []),
+                            ),
+                          )
+                        : const SizedBox(),
                   ),
                 ),
-              Visibility(
-                visible: cartItems!= null && cartItems != 0,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: cartItems!=null ?Padding(
-                    padding: const EdgeInsets.only(bottom: 20.0),
-                    child: GestureDetector(
-                      onTap: (){
-                        eventBus.fire(TabSwitchEvent(2));
-                        //PageRouteUtils.pushWithSlide(context, const CartPage());
-                      },
-                      child: ViewCartWidget(
-                        totalItems: cartItems!,
-                        itemImages:  cartItemImages??[]
-                      ),
-                    ),
-                  ): const SizedBox(),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      )
-    );
+        ));
   }
 
   Widget getLayoutWidget(Content homePageContent) {
@@ -222,10 +236,14 @@ class _HomePageState extends State<HomePage> {
         showPendingOrdersDialog(context);
         return;
       }
-      SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      SharedPreferencesUtil()
+          .saveString('region_id', homePageResponse!.global!.regionId!);
+      SharedPreferencesUtil()
+          .saveString('cart_id', homePageResponse!.global!.cartId!);
+      SharedPreferencesUtil().saveString(
+          'currency_symbol', homePageResponse!.global!.currencySymbol!);
+      SharedPreferencesUtil()
+          .saveMap('global', homePageResponse!.global!.toJson());
       setState(() {
         apiLoading = false;
         homePageResponse;
@@ -254,8 +272,8 @@ class _HomePageState extends State<HomePage> {
             .cast<String>()
             .toList();
       });
-      if((cartResponse?.cart?.items?.length?? 0) > 0) {
-        eventBus.fire(ViewCartModel(totalQty??0, cartItemImages??[]));
+      if ((cartResponse?.cart?.items?.length ?? 0) > 0) {
+        eventBus.fire(ViewCartModel(totalQty ?? 0, cartItemImages ?? []));
       }
     } catch (e) {
       print(e);
@@ -267,7 +285,6 @@ class _HomePageState extends State<HomePage> {
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-
         // eventBus.on<ClosePendingOrdersDialogEvent>().listen((event) {
         //   Navigator.of(context, rootNavigator: true).pop();
         //   Navigator.pop(context);
@@ -281,10 +298,10 @@ class _HomePageState extends State<HomePage> {
           child: HoldAccountDialog(
             onJoin: () async {
               // Handle sign out action
+              await StoreesService.instance.reset();
               await SharedPreferencesUtil().clear();
               if (mounted) {
-                PageRouteUtils.pushAndRemoveUntil(
-                    context, WelcomePage());
+                PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
               }
             },
           ),
@@ -292,7 +309,4 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-
-
 }

@@ -18,6 +18,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_utils.dart';
@@ -30,7 +31,8 @@ class BottomNavPage extends StatefulWidget {
   _BottomNavPageState createState() => _BottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
+class _BottomNavPageState extends State<BottomNavPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
   bool _isLoading = true;
@@ -129,132 +131,131 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   @override
   void dispose() {
     _animationController.dispose();
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription
+        .cancel(); // Cancel the subscription to prevent memory leaks
     _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        statusBarColor: _currentIndex == 0?AppColors.primary:Colors.transparent,
+        statusBarColor:
+            _currentIndex == 0 ? AppColors.primary : Colors.transparent,
       ),
     );
     return PopScope(
         canPop: false, // Disable default back behavior
         onPopInvoked: (bool didPop) async {
-      if (didPop) return;
+          if (didPop) return;
 
-      // If not on the first tab, go back to the previous tab
-      if (_currentIndex > 0) {
-        setState(() {
-          _currentIndex--; // Move to the previous tab
-        });
-        return; // Don't proceed to exit dialog
-      }
-
-      final shouldExit = await showDialog(
-        context: context,
-        builder: (context) => CommonAlertDialog(
-            title: AppStrings.exitApp,
-            content: AppStrings.exitDescription,
-            contentOk: AppStrings.yes,
-            contentCancel: AppStrings.no,
-            onTapOk: () => Navigator.of(context).pop(true)),
-      );
-      if (shouldExit == true) {
-        if (mounted) {
-          SystemNavigator.pop(); // Close the app
-        }
-      }
-    },
-    child:  Scaffold(
-      backgroundColor: Colors.white,
-      body: _isLoading
-          ?  Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
-          : _getPage(), // Dynamically build the current page
-      bottomNavigationBar: SlideTransition(
-        position: _slideAnimation,
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
+          // If not on the first tab, go back to the previous tab
+          if (_currentIndex > 0) {
             setState(() {
-              _currentIndex = index; // Update selected tab
+              _currentIndex--; // Move to the previous tab
             });
-          },
-          items: [
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-              label: AppStrings.shop,
-            ),
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-              label: AppStrings.categories,
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                  if ((cartItems?? 0) > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          cartItems!.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              label: AppStrings.cart,
-            ),
-            if(isLoggedIn)
-            const BottomNavigationBarItem(
-              icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-              label: AppStrings.favourite,
-            ),
-            if(isLoggedIn)
-              const BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-                label: AppStrings.account,
-              ),
-          ],
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.tabInActivecolor,
-          showUnselectedLabels: true,
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: FontUtils.primaryFontStyle(),
-          unselectedLabelStyle: FontUtils.primaryFontStyle(),
-        ),
-      ),)
-    );
-  }
+            return; // Don't proceed to exit dialog
+          }
 
+          final shouldExit = await showDialog(
+            context: context,
+            builder: (context) => CommonAlertDialog(
+                title: AppStrings.exitApp,
+                content: AppStrings.exitDescription,
+                contentOk: AppStrings.yes,
+                contentCancel: AppStrings.no,
+                onTapOk: () => Navigator.of(context).pop(true)),
+          );
+          if (shouldExit == true) {
+            if (mounted) {
+              SystemNavigator.pop(); // Close the app
+            }
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : _getPage(), // Dynamically build the current page
+          bottomNavigationBar: SlideTransition(
+            position: _slideAnimation,
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index; // Update selected tab
+                });
+              },
+              items: [
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                  label: AppStrings.shop,
+                ),
+                const BottomNavigationBarItem(
+                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+                  label: AppStrings.categories,
+                ),
+                BottomNavigationBarItem(
+                  icon: Stack(
+                    children: [
+                      const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                      if ((cartItems ?? 0) > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              cartItems!.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  label: AppStrings.cart,
+                ),
+                if (isLoggedIn)
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+                    label: AppStrings.favourite,
+                  ),
+                if (isLoggedIn)
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                    label: AppStrings.account,
+                  ),
+              ],
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.tabInActivecolor,
+              showUnselectedLabels: true,
+              backgroundColor: Colors.white,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: FontUtils.primaryFontStyle(),
+              unselectedLabelStyle: FontUtils.primaryFontStyle(),
+            ),
+          ),
+        ));
+  }
 
   Future<void> getCustomerApi() async {
     try {
-
-      if(!isLoggedIn) {
+      if (!isLoggedIn) {
         debugPrint('calling here');
         return;
       }
@@ -262,9 +263,34 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       Customer? customer = await getCustomerResponse();
       if (customer == null) {
         final ApiService apiService = ApiService();
-        CustomerResponse customerResponse = await apiService.getCustomer(context);
-        await SharedPreferencesUtil().saveMap('customer', customerResponse.customer!.toJson());
+        CustomerResponse customerResponse =
+            await apiService.getCustomer(context);
+        final fetchedCustomer = customerResponse.customer;
+        if (fetchedCustomer != null) {
+          await SharedPreferencesUtil()
+              .saveMap('customer', fetchedCustomer.toJson());
+          unawaited(
+            StoreesService.instance.identify(
+              fetchedCustomer.id ?? '',
+              email: fetchedCustomer.email,
+              phone: fetchedCustomer.phone,
+              name:
+                  '${fetchedCustomer.firstName ?? ''} ${fetchedCustomer.lastName ?? ''}'
+                      .trim(),
+            ),
+          );
+        }
+        return;
       }
+
+      unawaited(
+        StoreesService.instance.identify(
+          customer.id ?? '',
+          email: customer.email,
+          phone: customer.phone,
+          name: '${customer.firstName ?? ''} ${customer.lastName ?? ''}'.trim(),
+        ),
+      );
     } catch (e) {
       print("Error fetching customer: $e");
     }
@@ -282,15 +308,16 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      await SharedPreferencesUtil()
+          .saveString('region_id', homePageResponse!.global!.regionId!);
+      await SharedPreferencesUtil()
+          .saveString('cart_id', homePageResponse!.global!.cartId!);
+      await SharedPreferencesUtil().saveString(
+          'currency_symbol', homePageResponse!.global!.currencySymbol!);
+      await SharedPreferencesUtil()
+          .saveMap('global', homePageResponse!.global!.toJson());
     } catch (e) {
       print("Error fetching home page: $e");
     }
   }
 }
-
-
-
