@@ -421,6 +421,10 @@ class _CartPageState extends State<CartPage>
                                       products:
                                           crossSellProductsResponse?.products ??
                                               const [],
+                                      onReturnFromProductDetail: (_) async {
+                                        if (!mounted) return;
+                                        getCartApi();
+                                      },
                                     ),
                                 ],
                               ),
