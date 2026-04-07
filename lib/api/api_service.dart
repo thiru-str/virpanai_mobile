@@ -39,6 +39,7 @@ import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
@@ -107,6 +108,15 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'POST request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -155,6 +165,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'GET request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'GET',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -199,6 +219,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'DELETE request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'DELETE',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -244,6 +274,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'File upload failed',
+        attributes: {
+          'endpoint': apiUrl,
+          'file_path': file.path,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -256,6 +296,7 @@ class ApiService {
 
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
+    await AppErrorReporter.instance.clearUser();
 
     bool skipLogin =
         await SharedPreferencesUtil().getBool('skip_login') ?? false;
@@ -336,7 +377,7 @@ class ApiService {
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers",
         {
           "email": email,
@@ -348,6 +389,14 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'otp',
+      },
+    );
+    return response;
   }
 
   Future<EmailRegisterResponse> registerEmail(
@@ -360,7 +409,7 @@ class ApiService {
       String phone,
       String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-register",
         {
           "email": email,
@@ -373,6 +422,21 @@ class ApiService {
         },
         (data) => EmailRegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.setUser(
+      id: response.customer?.id,
+      email: response.customer?.email,
+      phone: response.customer?.phone,
+      firstName: response.customer?.firstName,
+      lastName: response.customer?.lastName,
+      companyName: response.customer?.companyName,
+    );
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'email',
+      },
+    );
+    return response;
   }
 
   Future<RefreshTokenResponse> refreshToken(
@@ -512,13 +576,15 @@ class ApiService {
 
   Future<CustomerResponse> getCustomer(BuildContext context) async {
     await addToken();
-    return _makeGetRequest<CustomerResponse>(
+    final response = await _makeGetRequest<CustomerResponse>(
       'store/customers/me',
       null,
       null,
       (json) => CustomerResponse.fromJson(json),
       context,
     );
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    return response;
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
@@ -796,7 +862,7 @@ class ApiService {
     String lastName,
   ) async {
     await addToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/me",
         {
           "phone": phone,
@@ -807,6 +873,9 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb('customer_profile_updated');
+    return response;
   }
 
   Future<ShippingResponse> getShippingInfo(BuildContext context) async {
@@ -1070,11 +1139,19 @@ class ApiService {
   Future<VerifyOtpResponse> loginWithEmail(
       BuildContext context, String email, String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-login",
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_login',
+      attributes: {
+        'auth_type': 'email',
+        'new_user': response.newUser ?? false,
+      },
+    );
+    return response;
   }
 
   // ==================== WALLET ====================

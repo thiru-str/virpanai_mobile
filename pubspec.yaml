@@ -75,6 +75,7 @@ dependencies:
   video_thumbnail: ^0.5.3
   logger: ^2.6.2
   confetti: ^0.8.0
+  newrelic_mobile: ^1.2.0
 
 
 
