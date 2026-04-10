@@ -741,7 +741,7 @@ class ApiService {
       BuildContext context, String orderId) async {
     await addToken();
     return _makeGetRequest<OrderHistoryIndividualReponse>(
-      'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
+      'store/custom-orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
       null,
       null,
       (json) => OrderHistoryIndividualReponse.fromJson(json),
