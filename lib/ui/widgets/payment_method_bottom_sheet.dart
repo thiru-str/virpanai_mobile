@@ -11,12 +11,14 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
   final List<PaymentProvider> paymentProviders;
   final String? providerId;
   final Function(PaymentProvider paymentProvider) onPaymentSelected;
+  final double? walletBalance;
 
   const PaymentMethodsBottomSheet({
     Key? key,
     required this.paymentProviders,
     required this.providerId,
     required this.onPaymentSelected,
+    this.walletBalance,
   }) : super(key: key);
 
   @override
@@ -65,9 +67,17 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
                         child: _getProviderIcon(provider.id),
                       ),
                       title: Text(
-                        provider.name ?? '',
+                        (provider.name != null && provider.name!.isNotEmpty)
+                            ? provider.name!
+                            : _getProviderDisplayName(provider.id),
                         style: FontUtils.primaryFontStyle(fontSize: 16),
                       ),
+                      subtitle: provider.id == 'pp_wallet_wallet' && walletBalance != null
+                          ? Text(
+                              'Balance: ₹${walletBalance!.toStringAsFixed(2)}',
+                              style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+                            )
+                          : null,
                       trailing: Icon(
                         isSelected
                             ? Icons.radio_button_checked
@@ -91,6 +101,23 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getProviderDisplayName(String? providerId) {
+    switch (providerId) {
+      case "pp_system_default":
+        return "Cash on Delivery";
+      case "pp_razorpay_razorpay":
+        return "Razorpay";
+      case "pp_neft_neft":
+        return "Bank Transfer (NEFT)";
+      case "pp_wallet_wallet":
+        return "Wallet";
+      case "pp_stripe_stripe":
+        return "Stripe";
+      default:
+        return "Payment";
+    }
   }
 
   Widget _getProviderIcon(String? providerId) {
