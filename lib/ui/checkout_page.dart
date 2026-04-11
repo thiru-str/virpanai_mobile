@@ -84,6 +84,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
     super.initState();
     cartResponse = widget.cartResponse;
     getShippingInfo();
+    _loadWalletBalance();
   }
 
   @override
@@ -653,6 +654,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
           providerId: pp_id,
+          walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
             setState(() {
               addPaymentMethod = true;

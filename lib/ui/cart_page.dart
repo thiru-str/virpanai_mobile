@@ -148,7 +148,22 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
       orElse: () =>
           PaymentProvider(id: providerId, name: AppStrings.cash_on_delivery),
     );
-    return match.name ?? AppStrings.cash_on_delivery;
+    final name = match.name;
+    if (name != null && name.isNotEmpty) return name;
+
+    // Fallback display names for providers with empty/null names
+    switch (providerId) {
+      case 'pp_wallet_wallet':
+        return 'Wallet';
+      case 'pp_razorpay_razorpay':
+        return 'Razorpay';
+      case 'pp_system_default':
+        return 'Cash on Delivery';
+      case 'pp_neft_neft':
+        return 'Bank Transfer (NEFT)';
+      default:
+        return AppStrings.cash_on_delivery;
+    }
   }
 
   String _getProviderKey(String? providerId, List<PaymentProvider> providers) {
@@ -570,32 +585,51 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         walletUsageLimit = walletData.walletUsageLimit;
       });
 
-      // Auto-apply if enabled, cart exists, and customer hasn't dismissed
       final isDismissed = (cartResponse?.cart?.metadata as Map?)
           ?['wallet_auto_apply_dismissed'] == true;
-      if (isSplitPaymentMode && autoApply && balance > 0 &&
-          cartResponse?.cart?.id != null && !isDismissed) {
-        await _applyWalletSplit();
+      final existingSplit = (cartResponse?.cart?.metadata as Map?)
+          ?['wallet_split'];
+      final existingWalletAmount = (existingSplit is Map)
+          ? (existingSplit['wallet_amount'] ?? 0).toDouble()
+          : 0.0;
+
+      // Restore existing wallet split from cart metadata (user already applied earlier)
+      if (isSplitPaymentMode && !isDismissed && existingWalletAmount > 0) {
+        setState(() {
+          splitActive = true;
+          splitWalletAmount = existingWalletAmount;
+          splitGatewayAmount = (existingSplit['gateway_amount'] ?? 0).toDouble();
+          splitFullCoverage = splitGatewayAmount == 0;
+        });
+      }
+      // Auto-apply if enabled, not already applied, and customer hasn't dismissed
+      else if (isSplitPaymentMode && autoApply && balance > 0 &&
+          cartResponse?.cart?.id != null && !isDismissed && !splitActive) {
+        await _applyWalletSplit(silent: true);
       }
     } catch (e) {
       debugPrint('Wallet load error: $e');
     }
   }
 
-  Future<void> _applyWalletSplit() async {
+  Future<void> _applyWalletSplit({bool silent = false}) async {
     if (cartResponse?.cart?.id == null) return;
     setState(() => walletToggling = true);
     try {
       final result = await ApiService().applyWalletSplit(context, cartResponse!.cart!.id!);
       if (!mounted) return;
       if (result.walletApplied) {
+        final wasAlreadyActive = splitActive;
         setState(() {
           splitActive = true;
           splitWalletAmount = result.walletAmount;
           splitGatewayAmount = result.gatewayAmount;
           splitFullCoverage = result.fullWalletCoverage;
         });
-        _confettiController.play();
+        // Only play confetti on first apply, not on recalculation
+        if (!wasAlreadyActive && !silent) {
+          _confettiController.play();
+        }
       }
     } catch (e) {
       debugPrint('Apply wallet split error: $e');
@@ -668,13 +702,13 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         productItems.map((item) => item.thumbnail!).toList()));
   }
 
-  void addPromoCode(String promoCode) async {
+  void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
     try {
       setState(() {
         cartLoading = true;
       });
       final ApiService apiService = ApiService();
-      final response = await apiService.addPromoCode(context, promoCode);
+      final response = await apiService.addPromoCode(context, promoCode, removeCodes: removeCodes);
       if ((response.cart?.promotions?.firstOrNull?.code ?? '').isNotEmpty) {
         AppUtils.showToast(
             '${response.cart?.promotions?.firstOrNull?.code ?? ''} ${AppStrings.promo_code_applied_success}');
@@ -690,6 +724,8 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
       setState(() {
         cartLoading = false;
       });
+      // Refresh cart to ensure UI matches backend state after failure
+      getCartApi();
       print(e);
     }
   }
@@ -708,6 +744,10 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         cartResponse = response;
         cartLoading = false;
       });
+      // Recalculate wallet split if active (cart total changed after coupon removal)
+      if (splitActive) {
+        await _applyWalletSplit(silent: true);
+      }
     } catch (e) {
       setState(() {
         cartLoading = false;
@@ -716,16 +756,7 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
     }
   }
 
-  // Silent remove — no toast, used internally when replacing a coupon
-  Future<void> _removePromoCodeSilent(List<String> promoCodes) async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.removePromoCode(context, promoCodes);
-      if (mounted) setState(() => cartResponse = response);
-    } catch (e) {
-      print(e);
-    }
-  }
+
 
   void updateCart(int qty, String cartItemId, int index) async {
     try {
@@ -739,6 +770,10 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         });
       });
       emitEvent(cartResponse!);
+      // Recalculate wallet split if active (cart total changed)
+      if (splitActive) {
+        await _applyWalletSplit(silent: true);
+      }
     } catch (e) {
       setState(() {
         cartResponse!.cart!.items![index].isUpdating = false;
@@ -752,6 +787,8 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
       final ApiService apiService = ApiService();
       await apiService.removeCart(context, cartItemId);
       getCartApi();
+      // Wallet split will be recalculated when getCartApi completes and
+      // _loadWalletData runs (triggered by getCartApi → _initCart flow)
     } catch (e) {
       setState(() {
         setState(() {
@@ -778,15 +815,12 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         cartId: cartId,
         appliedCodes: appliedCodes,
         onApply: (code) async {
-          // Silently remove existing coupon before applying new one (no toast)
+          // Atomic swap: remove old + apply new in single backend call
           final existing = cartResponse?.cart?.promotions
                   ?.map((p) => p.code ?? '')
-                  .where((c) => c.isNotEmpty)
+                  .where((c) => c.isNotEmpty && c != code)
                   .toList() ?? [];
-          if (existing.isNotEmpty) {
-            await _removePromoCodeSilent(existing);
-          }
-          await Future(() => addPromoCode(code));
+          await Future(() => addPromoCode(code, removeCodes: existing.isNotEmpty ? existing : null));
         },
         onRemove: (codes) async {
           await Future(() => removePromoCode(codes));
@@ -878,6 +912,7 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
           providerId: pp_id,
+          walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
             if (pp_id != paymentProvider.id) {
               updatePaymentMethod(paymentProvider.id!);
@@ -1300,7 +1335,7 @@ class _CartPageState extends State<CartPage> with SingleTickerProviderStateMixin
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       child: Row(
         children: [
           // Left: Amount + View details

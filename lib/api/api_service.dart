@@ -657,14 +657,18 @@ class ApiService {
   }
 
   Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode) async {
+      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = <String, dynamic>{
+      "promo_codes": [promoCode],
+    };
+    if (removeCodes != null && removeCodes.isNotEmpty) {
+      body["remove_codes"] = removeCodes;
+    }
     return _makePostRequest(
       'store/custom-carts/$cartId/promotions',
-      {
-        "promo_codes": [promoCode]
-      },
+      body,
       (json) => CartResponse.fromJson(json),
       context,
     );
