@@ -11,6 +11,7 @@ import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
+import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
@@ -20,10 +21,10 @@ import 'package:waioz/ui/widgets/add_on_product_card.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
-import 'package:waioz/ui/widgets/product_view.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
+import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_link_helper.dart';
@@ -56,6 +57,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
   RelatedProductsResponse? relatedProductsResponse;
+  UpSellProductsResponse? upSellProductsResponse;
   AddOnProductsResponse? addOnProductsResponse;
   CartResponse? cartResponse;
 
@@ -128,6 +130,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       // Load non-critical sections in background after primary PDP is visible.
       unawaited(getRelatedProductsApi());
+      unawaited(getUpSellingProductsApi());
       if (isLoggedIn) {
         unawaited(getReviewApi());
         unawaited(getCartApi());
@@ -198,7 +201,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       child: buildProductDescription()),
                                   AppReveal(
                                       index: 4, child: buildRelatedProducts()),
-                                  AppReveal(index: 5, child: buildReviews()),
+                                  AppReveal(
+                                      index: 5,
+                                      child: buildUpSellingProducts()),
+                                  AppReveal(index: 6, child: buildReviews()),
                                   const SizedBox(height: 90),
                                 ],
                               ),
@@ -296,48 +302,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildRelatedProducts() {
-    if ((relatedProductsResponse?.products?.length ?? 0) == 0) {
-      return const SizedBox();
-    }
+    return ProductRecommendationSection(
+      title: relatedProductsResponse?.label ?? AppStrings.related_products,
+      products: relatedProductsResponse?.products ?? const [],
+    );
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 20),
-        Text(
-          AppStrings.related_products,
-          style: FontUtils.secondaryFontStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
-          ),
-        ),
-        const SizedBox(height: 24),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              relatedProductsResponse?.products?.length ?? 0,
-              (index) {
-                final product = relatedProductsResponse?.products![index];
-                return Padding(
-                  padding: const EdgeInsets.only(
-                      right: 10), // spacing like separator
-                  child: ProductView(
-                    product: product!,
-                    onTapCard: () {
-                      PageRouteUtils.pushWithSlide(
-                        context,
-                        ProductDetailPage(productId: product.id ?? ''),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        )
-      ],
+  Widget buildUpSellingProducts() {
+    return ProductRecommendationSection(
+      title: upSellProductsResponse?.label ?? 'Up Selling Products',
+      products: upSellProductsResponse?.products ?? const [],
     );
   }
 
@@ -551,13 +525,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return true;
     }
 
-    // If inventory is managed and quantity > 0
-    if (variant.manageInventory == true &&
-        (variant.inventoryQuantity ?? 0) > 0) {
+    // If inventory is not managed, always in stock
+    if (variant.manageInventory != true) {
       return true;
     }
 
-    // Otherwise out of stock
+    // If inventory is managed, check quantity > 0
+    if ((variant.inventoryQuantity ?? 0) > 0) {
+      return true;
+    }
+
+    // Managed inventory with 0 quantity = out of stock
     return false;
   }
 
@@ -911,12 +889,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> getRelatedProductsApi() async {
     try {
+      if ((productInfoResponse?.relatedProductCount ?? 1) == 0) {
+        return;
+      }
       final apiService = ApiService();
       final response =
           await apiService.relatedProducts(context, widget.productId);
+      if (!mounted) return;
       setState(() => relatedProductsResponse = response);
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<void> getUpSellingProductsApi() async {
+    try {
+      if ((productInfoResponse?.upSellingProductCount ?? 1) == 0) {
+        return;
+      }
+      final apiService = ApiService();
+      final response =
+          await apiService.upSellingProducts(context, widget.productId);
+      if (!mounted) return;
+      setState(() => upSellProductsResponse = response);
+    } catch (e) {
+      debugPrint('up selling error: $e');
     }
   }
 
@@ -967,6 +964,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       if ((response.addOnProductCount ?? 0) > 0) {
         unawaited(_loadAddOnProducts(variantId));
+      }
+      if ((response.relatedProductCount ?? 0) > 0 &&
+          (relatedProductsResponse?.products?.isEmpty ?? true)) {
+        unawaited(getRelatedProductsApi());
+      }
+      if ((response.upSellingProductCount ?? 0) > 0 &&
+          (upSellProductsResponse?.products?.isEmpty ?? true)) {
+        unawaited(getUpSellingProductsApi());
       }
     } catch (e) {
       debugPrint('product info error: $e');
@@ -1210,13 +1215,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   void emitEvent(CartResponse cartResponse) {
     setState(() {
-      cartItems = cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
+      cartItems =
+          cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
       cartItemImages = cartResponse.cart?.items
           ?.where((item) => !item.isPlatformFee)
           .map((item) => item.thumbnail ?? "")
           .toList();
     });
-    if ((cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length ?? 0) > 0) {
+    if ((cartResponse.cart?.items
+                ?.where((item) => !item.isPlatformFee)
+                .length ??
+            0) >
+        0) {
       final qtyMap = <String, int>{};
       for (var item in cartResponse.cart?.items ?? []) {
         qtyMap[item.variantId] = item.quantity;

@@ -17,6 +17,7 @@ import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -307,6 +308,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
 
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
@@ -334,6 +336,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
                   context, skipLogin ? const BottomNavPage() : WelcomePage());

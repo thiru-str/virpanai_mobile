@@ -1,11 +1,16 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/newrelic_mobile.dart';
+import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
@@ -20,42 +25,82 @@ import 'api/api_service.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    AppErrorReporter.instance.installGlobalHandlers();
 
-  // Lock orientation to portrait only
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+    // Lock orientation to portrait only
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
-  // Set Stripe publishable key
-  Stripe.publishableKey = AppConfig.publishableKeyStripe;
+    // Set Stripe publishable key
+    Stripe.publishableKey = AppConfig.publishableKeyStripe;
 
-  final prefs = SharedPreferencesUtil();
-  final String currencySymbol = await prefs.getString('currency_symbol') ?? '₹';
+    final prefs = SharedPreferencesUtil();
+    final String currencySymbol =
+        await prefs.getString('currency_symbol') ?? '₹';
 
-  // Initialize the currency symbol cache
-  await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
+    // Initialize the currency symbol cache
+    await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
-  await Firebase.initializeApp();
+    await Firebase.initializeApp();
 
-  // Render immediately using cached config (if present), then refresh in background.
-  final PublicDetailsResponse? cachedPublicDetails =
-      await SharedPreferencesUtil().getPublicDetails();
-  _applyThemeFromPublicDetails(cachedPublicDetails);
-  final bool skipLogin = await prefs.getBool('skip_login') ??
-      (cachedPublicDetails?.storeDetails?.storeMetadata?.skipLogin ?? false);
+    // Render immediately using cached config (if present), then refresh in background.
+    final PublicDetailsResponse? cachedPublicDetails =
+        await SharedPreferencesUtil().getPublicDetails();
+    _applyThemeFromPublicDetails(cachedPublicDetails);
+    final bool skipLogin = await prefs.getBool('skip_login') ??
+        (cachedPublicDetails?.storeDetails?.storeMetadata?.skipLogin ?? false);
 
-  runApp(
-    HomeScreen(
+    final homeScreen = HomeScreen(
       skipLogin: skipLogin,
       publicDetailsResponse: cachedPublicDetails,
-    ),
+    );
+
+    await _runAppWithOptionalNewRelic(homeScreen);
+    await AppErrorReporter.instance.initialize();
+
+    unawaited(_bootstrapPublicDetails());
+    Future.delayed(Duration.zero, () {
+      AppLinkHelper.init();
+    });
+  }, (Object error, StackTrace stackTrace) {
+    AppErrorReporter.instance.recordFatal(
+      error,
+      stackTrace,
+      reason: 'runZonedGuarded uncaught error',
+    );
+  });
+}
+
+Future<void> _runAppWithOptionalNewRelic(HomeScreen homeScreen) async {
+  if (!AppConfig.isNewRelicEnabled) {
+    runApp(homeScreen);
+    return;
+  }
+
+  final config = Config(
+    accessToken: AppConfig.newRelicAppToken,
+    analyticsEventEnabled: true,
+    networkErrorRequestEnabled: true,
+    networkRequestEnabled: true,
+    crashReportingEnabled: true,
+    interactionTracingEnabled: true,
+    httpResponseBodyCaptureEnabled: true,
+    loggingEnabled: kDebugMode,
+    webViewInstrumentation: true,
+    printStatementAsEventsEnabled: kDebugMode,
+    httpInstrumentationEnabled: true,
+    offlineStorageEnabled: true,
+    backgroundReportingEnabled: false,
+    newEventSystemEnabled: false,
+    distributedTracingEnabled: true,
   );
 
-  unawaited(_bootstrapPublicDetails());
-  Future.delayed(Duration.zero, () {
-    AppLinkHelper.init();
+  await NewrelicMobile.instance.start(config, () {
+    runApp(homeScreen);
   });
 }
 
@@ -66,6 +111,11 @@ Future<void> _bootstrapPublicDetails() async {
     await _savePublicDetailsToPrefs(publicDetailsResponse);
     _applyThemeFromPublicDetails(publicDetailsResponse);
   } catch (e) {
+    AppErrorReporter.instance.recordHandled(
+      e,
+      StackTrace.current,
+      reason: 'public/details bootstrap failed',
+    );
     debugPrint('public/details bootstrap failed: $e');
   }
 }
@@ -117,6 +167,9 @@ class HomeScreen extends StatelessWidget {
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: theme,
+      navigatorObservers: AppConfig.isNewRelicEnabled
+          ? [NewRelicNavigationObserver()]
+          : const <NavigatorObserver>[],
       home: SplashPage(
         skipLogin: skipLogin,
         publicDetailsResponse: publicDetailsResponse,
