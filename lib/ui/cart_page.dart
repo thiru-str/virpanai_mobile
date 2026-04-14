@@ -691,19 +691,17 @@ class _CartPageState extends State<CartPage>
           ? (existingSplit['wallet_amount'] ?? 0).toDouble()
           : 0.0;
 
-      // Restore existing wallet split from cart metadata (user already applied earlier)
-      if (isSplitPaymentMode && !isDismissed && existingWalletAmount > 0) {
-        setState(() {
-          splitActive = true;
-          splitWalletAmount = existingWalletAmount;
-          splitGatewayAmount = (existingSplit['gateway_amount'] ?? 0).toDouble();
-          splitFullCoverage = splitGatewayAmount == 0;
-        });
-      }
-      // Auto-apply if enabled, not already applied, and customer hasn't dismissed
-      else if (isSplitPaymentMode && autoApply && balance > 0 &&
-          cartResponse?.cart?.id != null && !isDismissed && !splitActive) {
-        await _applyWalletSplit(silent: true);
+      if (isSplitPaymentMode && !isDismissed) {
+        if (existingWalletAmount > 0) {
+          // Wallet was previously applied — recalculate based on current cart total.
+          // This handles cases where items were added/removed or a coupon changed the
+          // total since the wallet was last applied; stale metadata values are not used.
+          await _applyWalletSplit(silent: true);
+        } else if (autoApply && balance > 0 &&
+            cartResponse?.cart?.id != null && !splitActive) {
+          // First-time auto-apply
+          await _applyWalletSplit(silent: true);
+        }
       }
     } catch (e) {
       debugPrint('Wallet load error: $e');
@@ -838,6 +836,10 @@ class _CartPageState extends State<CartPage>
         cartResponse = response;
         cartLoading = false;
       });
+      // Recalculate wallet if active — coupon may have changed the cart total
+      if (splitActive) {
+        await _applyWalletSplit(silent: true);
+      }
     } catch (e) {
       setState(() {
         cartLoading = false;
