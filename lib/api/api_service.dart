@@ -92,11 +92,9 @@ class ApiService {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
-      throw _mapRequestException(
-        endpoint: endpoint,
-        error: e,
-        stackTrace: stacktrace,
-      );
+      AppLogger.print('API Exception:', '$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
     }
   }
 
@@ -106,11 +104,13 @@ class ApiService {
       Map<String, dynamic>? queryParams,
       T Function(Map<String, dynamic>) fromJson,
       BuildContext? context) async {
-    final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
-        ? '$endpoint/$dynamicPath'
-        : endpoint;
     try {
       await setPublishableKey();
+      // Combine endpoint and dynamic path
+      final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
+          ? '$endpoint/$dynamicPath'
+          : endpoint;
+
       AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
       AppLogger.logFullJson(queryParams ?? {});
@@ -138,11 +138,9 @@ class ApiService {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
-      throw _mapRequestException(
-        endpoint: fullEndpoint,
-        error: e,
-        stackTrace: stacktrace,
-      );
+      AppLogger.print('API Exception:', '$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
     }
   }
 
@@ -154,11 +152,11 @@ class ApiService {
     T Function(Map<String, dynamic>) fromJson,
     BuildContext context,
   ) async {
-    final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
-        ? '$endpoint/$dynamicPath'
-        : endpoint;
     try {
       await setPublishableKey();
+      final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
+          ? '$endpoint/$dynamicPath' // Append dynamic path if provided
+          : endpoint;
       AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
       AppLogger.logFullJson(queryParams ?? {});
@@ -182,11 +180,9 @@ class ApiService {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
-      throw _mapRequestException(
-        endpoint: fullEndpoint,
-        error: e,
-        stackTrace: stacktrace,
-      );
+      AppLogger.print('API Exception:', '$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
     }
   }
 
@@ -227,11 +223,9 @@ class ApiService {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
-      throw _mapRequestException(
-        endpoint: apiUrl,
-        error: e,
-        stackTrace: stacktrace,
-      );
+      AppLogger.print('API Exception:', '$e');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception('An error occurred: $e');
     }
   }
 
@@ -1015,135 +1009,5 @@ class ApiService {
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
   }
 
-  Exception _mapRequestException({
-    required String endpoint,
-    required Object error,
-    required StackTrace stackTrace,
-  }) {
-    if (error is ApiRequestException) {
-      return error;
-    }
 
-    if (error is DioException) {
-      final statusCode = error.response?.statusCode;
-      final responseData = error.response?.data;
-      final category = switch (error.type) {
-        DioExceptionType.connectionTimeout ||
-        DioExceptionType.sendTimeout ||
-        DioExceptionType.receiveTimeout =>
-          'timeout',
-        DioExceptionType.badCertificate ||
-        DioExceptionType.connectionError =>
-          'network',
-        DioExceptionType.cancel => 'cancelled',
-        DioExceptionType.badResponse => 'http_${statusCode ?? 'unknown'}',
-        DioExceptionType.unknown => 'unknown',
-      };
-      final message = 'Request failed for $endpoint [$category]';
-      AppLogger.error(message, error, stackTrace);
-      if (responseData != null) {
-        AppLogger.logFullJson(responseData);
-      }
-      final exception = ApiRequestException(
-        endpoint: endpoint,
-        category: category,
-        message: message,
-        statusCode: statusCode,
-        responseBody: responseData,
-      );
-      AppUtils.showToast(exception.toString());
-      return exception;
-    }
-
-    final category = error is FormatException || error is TypeError
-        ? 'response_parsing'
-        : 'unexpected';
-    final message = 'Request failed for $endpoint [$category]';
-    AppLogger.error(message, error, stackTrace);
-    final exception = ApiRequestException(
-      endpoint: endpoint,
-      category: category,
-      message: message,
-    );
-    AppUtils.showToast(exception.toString());
-    return exception;
-  }
-}
-
-class ApiRequestException implements Exception {
-  final String endpoint;
-  final String category;
-  final String message;
-  final int? statusCode;
-  final dynamic responseBody;
-
-  ApiRequestException({
-    required this.endpoint,
-    required this.category,
-    required this.message,
-    this.statusCode,
-    this.responseBody,
-  });
-
-  String get displayMessage {
-    final responseMessage = _extractResponseMessage();
-    if (responseMessage != null && responseMessage.trim().isNotEmpty) {
-      return '$endpoint: $responseMessage';
-    }
-
-    if (statusCode != null) {
-      return '$endpoint: Request failed with status $statusCode';
-    }
-
-    return '$endpoint: $message';
-  }
-
-  @override
-  String toString() {
-    final statusSuffix = statusCode != null ? ' status=$statusCode' : '';
-    final responseSuffix = _formatResponseBody();
-    return 'ApiRequestException(endpoint: $endpoint, category: $category$statusSuffix, message: $message$responseSuffix)';
-  }
-
-  String? _extractResponseMessage() {
-    if (responseBody == null) {
-      return null;
-    }
-
-    if (responseBody is Map) {
-      final map = responseBody as Map;
-      final backendMessage = map['message'] ?? map['error'] ?? map['details'];
-      if (backendMessage != null &&
-          backendMessage.toString().trim().isNotEmpty) {
-        return backendMessage.toString();
-      }
-      return _trim(map.toString());
-    }
-
-    if (responseBody is List) {
-      return _trim(responseBody.toString());
-    }
-
-    final raw = responseBody.toString().trim();
-    if (raw.isEmpty) {
-      return null;
-    }
-    return _trim(raw);
-  }
-
-  String _formatResponseBody() {
-    final extracted = _extractResponseMessage();
-    if (extracted == null || extracted.isEmpty) {
-      return '';
-    }
-    return ', response=$extracted';
-  }
-
-  String _trim(String value) {
-    const maxLength = 220;
-    if (value.length <= maxLength) {
-      return value;
-    }
-    return '${value.substring(0, maxLength)}...';
-  }
 }
