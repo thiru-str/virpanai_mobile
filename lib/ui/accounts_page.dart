@@ -8,6 +8,7 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
+import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -202,6 +203,10 @@ class _SettingsPageState extends State<SettingsPage> {
                           PageRouteUtils.pushWithSlide(
                               context, const WalletPage());
                         }),
+                      _buildProfileItem('Loyalty Points', () {
+                        PageRouteUtils.pushWithSlide(
+                            context, const LoyaltyPage());
+                      }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {
                             if (contentItem.content?.data != null) {

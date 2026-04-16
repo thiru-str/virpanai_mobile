@@ -42,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController companyController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController referralCodeController = TextEditingController();
 
 
   bool apiCalling = false;
@@ -241,6 +242,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
 
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    hintText: 'Referral Code (optional)',
+                    controller: referralCodeController,
+                    validator: (value) => null,
+                  ),
+                  const SizedBox(height: 16),
                   apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                     onPressed:() {
                       if (_formKey.currentState!.validate()) {
@@ -310,6 +318,14 @@ class _RegisterPageState extends State<RegisterPage> {
             .saveMap('customer', emailRegisterResponse?.customer?.toJson() ?? {});
       }
 
+
+      // Apply referral code after successful registration (non-blocking)
+      final referralCode = referralCodeController.text.trim();
+      if (referralCode.isNotEmpty) {
+        try {
+          await apiService.applyReferralCode(referralCode);
+        } catch (_) {}
+      }
 
       if (mounted) {
         if (widget.redirectPage != null) {

@@ -1233,4 +1233,72 @@ class ApiService {
       rethrow;
     }
   }
+
+  // ─── Loyalty ──────────────────────────────────────────────
+
+  Future<Response> getLoyaltyAccount() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty');
+  }
+
+  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/transactions',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> getLoyaltyPreview(num orderTotal) async {
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/preview',
+        queryParameters: {'order_total': orderTotal});
+  }
+
+  Future<Response> redeemLoyaltyPoints(int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/redeem', data: {'points': points});
+  }
+
+  Future<Response> applyLoyaltyCheckout(String cartId, int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId, 'points': points});
+  }
+
+  Future<Response> getLoyaltyCheckoutStatus(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/checkout-apply',
+        queryParameters: {'cart_id': cartId});
+  }
+
+  Future<Response> removeLoyaltyCheckout(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.delete('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId});
+  }
+
+  Future<Response> getLoyaltyReferral() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral');
+  }
+
+  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/history',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> applyReferralCode(String code) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/referral/apply',
+        data: {'referral_code': code});
+  }
 }
