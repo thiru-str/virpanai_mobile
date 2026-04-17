@@ -130,19 +130,27 @@ class Metadata {
   String? invoice;
   String? type;
   num? percentage;
+  Map<String, dynamic>? walletSplit;
 
   Metadata({
     this.fulfillmentStatus,
     this.invoice,
     this.type,
     this.percentage,
+    this.walletSplit,
   });
+
+  double get walletAmount =>
+      double.tryParse(walletSplit?['wallet_amount']?.toString() ?? '0') ?? 0;
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     fulfillmentStatus: json["fulfillment_status"],
     invoice: json["invoice"],
     type: json["type"],
     percentage: json["percentage"],
+    walletSplit: json["wallet_split"] is Map<String, dynamic>
+        ? json["wallet_split"]
+        : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -150,6 +158,7 @@ class Metadata {
     "invoice": invoice,
     "type": type,
     "percentage": percentage,
+    if (walletSplit != null) "wallet_split": walletSplit,
   };
 }
 

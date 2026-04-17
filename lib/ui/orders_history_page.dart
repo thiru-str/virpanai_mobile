@@ -120,7 +120,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
             createdAt: toIST(order.createdAt ?? DateTime.now()),
             itemPrice: (order.status ?? '').toLowerCase() == 'canceled'
                 ? (order.subtotal ?? 0)
-                : (order.total ?? 0),
+                : ((order.total ?? 0) - (order.metadata?.walletAmount ?? 0)).clamp(0, double.infinity),
             onTap: () {
               PageRouteUtils.pushWithSlide(
                 context,

@@ -9,6 +9,7 @@ import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
+import 'package:waioz/ui/wallet_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
@@ -16,6 +17,7 @@ import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -34,15 +36,27 @@ class _SettingsPageState extends State<SettingsPage> {
   List<ContentData> storeContentList = [];
   bool isLoading = false;
   String? _appVersion;
+  List<String> enabledExtensions = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
     listenToEvents();
     _loadVersion();
+    _loadExtensions();
+  }
+
+  Future<void> _loadExtensions() async {
+    try {
+      final details = await ApiService().getPublicDetails();
+      if (mounted) {
+        setState(() {
+          enabledExtensions = details.enabledExtensions;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadVersion() async {
@@ -183,6 +197,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         PageRouteUtils.pushWithSlide(
                             context, OrdersHistoryPage());
                       }),
+                      if (enabledExtensions.contains('wallet'))
+                        _buildProfileItem('My Wallet', () {
+                          PageRouteUtils.pushWithSlide(
+                              context, const WalletPage());
+                        }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {
                             if (contentItem.content?.data != null) {
@@ -289,6 +308,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
 
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
@@ -316,6 +336,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
                   context, skipLogin ? const BottomNavPage() : WelcomePage());

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/cross_sell_products_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/payment_method_response.dart';
@@ -18,6 +19,8 @@ import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
+import 'package:waioz/model/wallet_response.dart';
+import 'package:waioz/model/promotion_list_model.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -36,6 +39,7 @@ import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
@@ -104,6 +108,15 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'POST request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -152,6 +165,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'GET request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'GET',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -196,6 +219,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'DELETE request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'DELETE',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -241,6 +274,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'File upload failed',
+        attributes: {
+          'endpoint': apiUrl,
+          'file_path': file.path,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -253,6 +296,7 @@ class ApiService {
 
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
+    await AppErrorReporter.instance.clearUser();
 
     bool skipLogin =
         await SharedPreferencesUtil().getBool('skip_login') ?? false;
@@ -333,7 +377,7 @@ class ApiService {
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers",
         {
           "email": email,
@@ -345,6 +389,14 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'otp',
+      },
+    );
+    return response;
   }
 
   Future<EmailRegisterResponse> registerEmail(
@@ -357,7 +409,7 @@ class ApiService {
       String phone,
       String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-register",
         {
           "email": email,
@@ -370,6 +422,21 @@ class ApiService {
         },
         (data) => EmailRegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.setUser(
+      id: response.customer?.id,
+      email: response.customer?.email,
+      phone: response.customer?.phone,
+      firstName: response.customer?.firstName,
+      lastName: response.customer?.lastName,
+      companyName: response.customer?.companyName,
+    );
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'email',
+      },
+    );
+    return response;
   }
 
   Future<RefreshTokenResponse> refreshToken(
@@ -509,13 +576,15 @@ class ApiService {
 
   Future<CustomerResponse> getCustomer(BuildContext context) async {
     await addToken();
-    return _makeGetRequest<CustomerResponse>(
+    final response = await _makeGetRequest<CustomerResponse>(
       'store/customers/me',
       null,
       null,
       (json) => CustomerResponse.fromJson(json),
       context,
     );
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    return response;
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
@@ -642,15 +711,31 @@ class ApiService {
     );
   }
 
+  Future<PromotionListResponse> getAvailablePromotions(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest(
+      'store/promotions',
+      null,
+      {'cart_id': cartId},
+      (json) => PromotionListResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode) async {
+      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = <String, dynamic>{
+      "promo_codes": [promoCode],
+    };
+    if (removeCodes != null && removeCodes.isNotEmpty) {
+      body["remove_codes"] = removeCodes;
+    }
     return _makePostRequest(
       'store/custom-carts/$cartId/promotions',
-      {
-        "promo_codes": [promoCode]
-      },
+      body,
       (json) => CartResponse.fromJson(json),
       context,
     );
@@ -781,7 +866,7 @@ class ApiService {
     String lastName,
   ) async {
     await addToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/me",
         {
           "phone": phone,
@@ -792,6 +877,9 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb('customer_profile_updated');
+    return response;
   }
 
   Future<ShippingResponse> getShippingInfo(BuildContext context) async {
@@ -823,12 +911,7 @@ class ApiService {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/update-payment-method/$cartId',
-      paymentProviderId == 'pp_razorpay_razorpay'
-          ? {
-              "payment_provider_id": paymentProviderId,
-              "context": {"extra": cartResponse.cart}
-            }
-          : {"payment_provider_id": paymentProviderId},
+      {"payment_provider_id": paymentProviderId},
       (json) => PaymentMethodResponse.fromJson(json),
       context,
     );
@@ -941,11 +1024,22 @@ class ApiService {
     );
   }
 
-  Future<UpSellProductsResponse> upSellingProducts(BuildContext context) async {
+  Future<CrossSellProductsResponse> crossSellingProducts(
+      BuildContext context, String cartId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest<CrossSellProductsResponse>(
+      'store/cross-selling-product/$cartId',
+      {"region_id": regionId},
+      (json) => CrossSellProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<UpSellProductsResponse> upSellingProducts(
+      BuildContext context, String id) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<UpSellProductsResponse>(
-      'store/up-selling-product/$cartId',
+      'store/up-selling-product/$id',
       {"region_id": regionId},
       (json) => UpSellProductsResponse.fromJson(json),
       context,
@@ -1049,10 +1143,94 @@ class ApiService {
   Future<VerifyOtpResponse> loginWithEmail(
       BuildContext context, String email, String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-login",
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_login',
+      attributes: {
+        'auth_type': 'email',
+        'new_user': response.newUser ?? false,
+      },
+    );
+    return response;
+  }
+
+  // ==================== WALLET ====================
+
+  Future<WalletResponse> getWalletBalance(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest("store/wallet", null, null,
+        (data) => WalletResponse.fromJson(data), context);
+  }
+
+  Future<WalletTransactionsResponse> getWalletTransactions(BuildContext context,
+      {int limit = 20, int offset = 0, String? type, String? direction}) async {
+    await addToken();
+    final params = <String, dynamic>{
+      'limit': limit,
+      'offset': offset,
+    };
+    if (type != null) params['type'] = type;
+    if (direction != null) params['direction'] = direction;
+
+    return _makeGetRequest("store/wallet/transactions", null, params,
+        (data) => WalletTransactionsResponse.fromJson(data), context);
+  }
+
+  Future<WalletTopUpResponse> initiateWalletTopUp(
+      BuildContext context, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up",
+        {
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletTopUpResponse.fromJson(data),
+        context);
+  }
+
+  Future<WalletConfirmResponse> confirmWalletTopUp(
+      BuildContext context, String razorpayPaymentId, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up/confirm",
+        {
+          "razorpay_payment_id": razorpayPaymentId,
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletConfirmResponse.fromJson(data),
+        context);
+  }
+
+  Future<WalletSplitResponse> applyWalletSplit(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makePostRequest("store/wallet/apply-split", {"cart_id": cartId},
+        (data) => WalletSplitResponse.fromJson(data), context);
+  }
+
+  Future<dynamic> removeWalletSplit(BuildContext context, String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    try {
+      final response = await _dio.delete(
+        "store/wallet/apply-split",
+        queryParameters: {"cart_id": cartId},
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+      return response.data ?? {};
+    } catch (e) {
+      debugPrint('removeWalletSplit error: $e');
+      rethrow;
+    }
   }
 }
