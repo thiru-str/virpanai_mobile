@@ -42,7 +42,7 @@ class _Banner2State extends State<Banner2> {
     _autoScrollTimer?.cancel();
     _autoScrollTimer = Timer.periodic(
       Duration(seconds: slideInterval.toInt()),
-          (_) {
+      (_) {
         if (!mounted || !_isVisible) return;
         final count = widget.content.layoutData?.length ?? 0;
         if (count == 0) return;
@@ -84,11 +84,15 @@ class _Banner2State extends State<Banner2> {
   Widget build(BuildContext context) {
     final content = widget.content;
     final items = content.layoutData ?? [];
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
+      decoration: backgroundDecoration,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: containerPadding,
         child: VisibilityDetector(
           key: Key('Banner2-${content.layoutTitle ?? ""}'),
           onVisibilityChanged: _onVisibilityChanged,
@@ -113,7 +117,8 @@ class _Banner2State extends State<Banner2> {
                         ),
                       ),
                       Visibility(
-                        visible: content.layoutRedirectTitle?.isNotEmpty ?? false,
+                        visible:
+                            content.layoutRedirectTitle?.isNotEmpty ?? false,
                         child: GestureDetector(
                           onTap: () {
                             RedirectUtils.handleContentRedirectViewAll(
@@ -137,11 +142,9 @@ class _Banner2State extends State<Banner2> {
 
                 const SizedBox(height: 12),
 
-
-
                 /// Carousel
                 SizedBox(
-                  height: 160,
+                  height: 260,
                   child: PageView.builder(
                     controller: _pageController,
                     padEnds: false,
@@ -164,14 +167,16 @@ class _Banner2State extends State<Banner2> {
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0,),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4.0,
+                          ),
                           child: isVideo
                               ? ItemVideoTile(
-                            key: ValueKey(mediaUrl),
-                            videoUrl: mediaUrl,
-                            title: item.title ?? '',
-                            isActive: _isVisible && index == _currentPage,
-                          )
+                                  key: ValueKey(mediaUrl),
+                                  videoUrl: mediaUrl,
+                                  title: item.title ?? '',
+                                  isActive: _isVisible && index == _currentPage,
+                                )
                               : _buildImageTile(mediaUrl, item.title ?? ''),
                         ),
                       );
@@ -196,7 +201,7 @@ class _Banner2State extends State<Banner2> {
             width: 160,
             height: 150,
             fit: BoxFit.cover,
-            errorWidget: (_, __, ___) => _imageFallback(160,150),
+            errorWidget: (_, __, ___) => _imageFallback(160, 150),
           ),
         ),
         const SizedBox(height: 6),
@@ -205,8 +210,6 @@ class _Banner2State extends State<Banner2> {
     );
   }
 }
-
-
 
 Widget _imageFallback(double w, double h) {
   return Container(

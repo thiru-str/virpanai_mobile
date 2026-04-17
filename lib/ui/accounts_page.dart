@@ -9,6 +9,7 @@ import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
+import 'package:waioz/ui/wallet_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
@@ -16,6 +17,7 @@ import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -34,15 +36,27 @@ class _SettingsPageState extends State<SettingsPage> {
   List<ContentData> storeContentList = [];
   bool isLoading = false;
   String? _appVersion;
+  List<String> enabledExtensions = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCustomerInfo();
     fetchStoreContentAPI();
     listenToEvents();
     _loadVersion();
+    _loadExtensions();
+  }
+
+  Future<void> _loadExtensions() async {
+    try {
+      final details = await ApiService().getPublicDetails();
+      if (mounted) {
+        setState(() {
+          enabledExtensions = details.enabledExtensions;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadVersion() async {
@@ -57,7 +71,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _eventSubscription = eventBus.on<ProfileEvent>().listen((event) {
       if (mounted) {
         setState(() {
-          if(event.customer!=null) {
+          if (event.customer != null) {
             customer = event.customer;
           }
         });
@@ -88,9 +102,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Container(
                     child: Center(
                       child: Text(
-                        (customer?.firstName?.isNotEmpty == true
-                            ? customer!.firstName!.substring(0, 1)
-                            : "V"),
+                          (customer?.firstName?.isNotEmpty == true
+                              ? customer!.firstName!.substring(0, 1)
+                              : "V"),
                           style: FontUtils.primaryFontStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -164,36 +178,48 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
           // Profile Items Section
           Expanded(
-            child: isLoading? Center(child: CircularProgressIndicator(color: AppColors.primary,)):ListView(
-              children: [
-                _buildProfileItem(AppStrings.address, () {
-                  PageRouteUtils.pushWithSlide(context,
-                      AddressListPage(onSelectedAddress: (address) {}));
-                }),
-                _buildProfileItem(AppStrings.favourites, () {
-                  PageRouteUtils.pushWithSlide(context, MyFavoritesPage());
-                }),
-                _buildProfileItem(AppStrings.orders, () {
-                  PageRouteUtils.pushWithSlide(context, OrdersHistoryPage());
-                }),
-                ...storeContentList.map((contentItem) =>
-                    _buildProfileItem(contentItem.name ?? "Unknown", () {
-                      if (contentItem.content?.data != null) {
+            child: isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                  ))
+                : ListView(
+                    children: [
+                      _buildProfileItem(AppStrings.address, () {
+                        PageRouteUtils.pushWithSlide(context,
+                            AddressListPage(onSelectedAddress: (address) {}));
+                      }),
+                      _buildProfileItem(AppStrings.favourites, () {
                         PageRouteUtils.pushWithSlide(
-                          context,
-                          StaticPage(
-                              pageTitle: contentItem.name ?? "",
-                              htmlData: contentItem.content!.data!),
-                        );
-                      }
-                    })),
-                _buildProfileItem(
-                  AppStrings.deleteAccount,
-                      () =>
-                      _showDeleteAccount(context), // use separate method
-                ),
-              ],
-            ),
+                            context, MyFavoritesPage());
+                      }),
+                      _buildProfileItem(AppStrings.orders, () {
+                        PageRouteUtils.pushWithSlide(
+                            context, OrdersHistoryPage());
+                      }),
+                      if (enabledExtensions.contains('wallet'))
+                        _buildProfileItem('My Wallet', () {
+                          PageRouteUtils.pushWithSlide(
+                              context, const WalletPage());
+                        }),
+                      ...storeContentList.map((contentItem) =>
+                          _buildProfileItem(contentItem.name ?? "Unknown", () {
+                            if (contentItem.content?.data != null) {
+                              PageRouteUtils.pushWithSlide(
+                                context,
+                                StaticPage(
+                                    pageTitle: contentItem.name ?? "",
+                                    htmlData: contentItem.content!.data!),
+                              );
+                            }
+                          })),
+                      _buildProfileItem(
+                        AppStrings.deleteAccount,
+                        () =>
+                            _showDeleteAccount(context), // use separate method
+                      ),
+                    ],
+                  ),
           ),
           // Sign Out Button
           Padding(
@@ -212,7 +238,11 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
-          Text('App Version: $_appVersion',style: FontUtils.secondaryFontStyle(color:Colors.grey,fontSize: 12),)
+          Text(
+            '${AppStrings.app_version}: $_appVersion',
+            style:
+                FontUtils.secondaryFontStyle(color: Colors.grey, fontSize: 12),
+          )
         ],
       )),
     );
@@ -244,8 +274,8 @@ class _SettingsPageState extends State<SettingsPage> {
       });
       final storeContent = await ApiService().getStoreContent(context);
       setState(() {
-            storeContentList = storeContent.data ?? [];
-          });
+        storeContentList = storeContent.data ?? [];
+      });
     } catch (e) {
       print(e);
     } finally {
@@ -278,6 +308,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
 
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
@@ -295,7 +326,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return CommonAlertDialog(
           title: AppStrings.deleteAccount,
-          content: "Are you sure you want to permanently delete your account?",
+          content: AppStrings.delete_account_confirmation,
           contentOk: AppStrings.yes,
           contentCancel: AppStrings.no,
           onTapOk: () async {
@@ -305,6 +336,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
             await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
             if (mounted) {
               PageRouteUtils.pushAndRemoveUntil(
                   context, skipLogin ? const BottomNavPage() : const PhoneNumberPage());
@@ -314,5 +346,4 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
-
 }

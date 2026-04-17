@@ -67,7 +67,7 @@ class Context {
 
 class RawAmount {
   String? value;
-  int? precision;
+  num? precision;
 
   RawAmount({
     this.value,

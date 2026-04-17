@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:io';
 
@@ -18,7 +16,6 @@ import '../api/push_notification_service.dart';
 import '../model/public_detail_model.dart';
 import '../utility/shared_preferences_util.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -28,13 +25,15 @@ import 'force_update_page.dart';
 class SplashPage extends StatefulWidget {
   final bool skipLogin;
   final PublicDetailsResponse? publicDetailsResponse;
-  const SplashPage({super.key,this.skipLogin = false,this.publicDetailsResponse});
+  const SplashPage(
+      {super.key, this.skipLogin = false, this.publicDetailsResponse});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -83,16 +82,17 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 
   void navToNextPage() async {
-    final versionCheckJson = widget.publicDetailsResponse
-        ?.storeDetails
-        ?.storeMetadata
-        ?.versionCheck;
+    final publicDetails = widget.publicDetailsResponse ??
+        await SharedPreferencesUtil().getPublicDetails();
+
+    final versionCheckJson =
+        publicDetails?.storeDetails?.storeMetadata?.versionCheck;
 
     debugPrint('min build calling ${versionCheckJson}');
 
-
     if (versionCheckJson != null && versionCheckJson.isNotEmpty) {
-      final versionConfig = await VersionUtils.parseVersionConfig(versionCheckJson);
+      final versionConfig =
+          await VersionUtils.parseVersionConfig(versionCheckJson);
 
       final bool forceUpdate = versionConfig['force_update'] ?? false;
       final androidConfig = versionConfig['android'];
@@ -118,13 +118,13 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         if (_isVersionLower(currentVersion, minVersion)) {
           _showForceUpdate();
           return;
-        } else if (_isVersionLower(currentVersion, latestVersion) && !forceUpdate) {
+        } else if (_isVersionLower(currentVersion, latestVersion) &&
+            !forceUpdate) {
           _showSoftUpdate();
           return;
         }
       }
-    }
-    else{
+    } else {
       debugPrint('min build calling');
     }
 
@@ -170,7 +170,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     }
   }
 
-
   bool _isVersionLower(String current, String latest) {
     final currentParts = current.split('.').map(int.parse).toList();
     final latestParts = latest.split('.').map(int.parse).toList();
@@ -186,8 +185,12 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   void _navigateToHome() async {
     String? token = await SharedPreferencesUtil().getString('token');
+    bool skipLogin =
+        await SharedPreferencesUtil().getBool('skip_login') ?? widget.skipLogin;
     Widget nextPage = token == null
-        ? widget.skipLogin ? const BottomNavPage() : WelcomePage()
+        ? skipLogin
+            ? const BottomNavPage()
+            : WelcomePage()
         : const BottomNavPage();
 
     if (mounted) {
@@ -201,6 +204,3 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     super.dispose();
   }
 }
-
-
-

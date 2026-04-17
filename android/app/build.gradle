@@ -3,6 +3,7 @@ plugins {
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
+    id "com.newrelic.agent.android"
 }
 
 def localProperties = new Properties()
@@ -22,8 +23,8 @@ def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? projec
 
 android {
     namespace "com.waioz.cartel"
-    compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    compileSdk flutterCompileSdkVersion.toInteger()
+    ndkVersion "27.0.12077973"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

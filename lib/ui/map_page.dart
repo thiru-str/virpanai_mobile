@@ -16,14 +16,19 @@ import '../utility/page_route_utils.dart';
 import 'add_address_page.dart';
 
 class MapPage extends StatefulWidget {
-
-  final latitude ;
+  final latitude;
   final longitude;
   final bool doublePop;
   final bool isEditAddress;
   final Address? selectedAddress; // Optional Address parameter
 
-  const MapPage({super.key,this.latitude = 0.0,this.longitude = 0.0,this.doublePop = false,this.isEditAddress = false,this.selectedAddress});
+  const MapPage(
+      {super.key,
+      this.latitude = 0.0,
+      this.longitude = 0.0,
+      this.doublePop = false,
+      this.isEditAddress = false,
+      this.selectedAddress});
 
   //ScreenFrom
   // 1-> Home page
@@ -36,8 +41,8 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _controller = Completer();
   LatLng? _currentPosition;
-  String _currentAddress = "Fetching address...";
-  String _mainAddress = "Fetching address...";
+  String _currentAddress = AppStrings.fetching_address;
+  String _mainAddress = AppStrings.fetching_address;
   Marker? _marker;
   Placemark? place;
 
@@ -45,22 +50,21 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     requestLocationPermission();
-    if(widget.isEditAddress)
-      {
-        print("Selected address: ${jsonEncode(widget.selectedAddress)}");
-      }
-    if(widget.latitude == 0.0 && widget.longitude == 0.0) {
-      _getCurrentLocation();
+    if (widget.isEditAddress) {
+      print("Selected address: ${jsonEncode(widget.selectedAddress)}");
     }
-    else{
-     _updateCustomLocation();
+    if (widget.latitude == 0.0 && widget.longitude == 0.0) {
+      _getCurrentLocation();
+    } else {
+      _updateCustomLocation();
     }
   }
 
   /// Get Current Location
   Future<void> _getCurrentLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       permission = await Geolocator.requestPermission();
     }
 
@@ -72,7 +76,7 @@ class _MapPageState extends State<MapPage> {
       _marker = Marker(
         markerId: MarkerId("currentLocation"),
         position: _currentPosition!,
-        infoWindow: InfoWindow(title: "Your Location"),
+        infoWindow: InfoWindow(title: AppStrings.your_location_map),
       );
     });
 
@@ -81,13 +85,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _updateCustomLocation() async {
-
     setState(() {
       _currentPosition = LatLng(widget.latitude, widget.longitude);
       _marker = Marker(
         markerId: MarkerId("currentLocation"),
         position: _currentPosition!,
-        infoWindow: InfoWindow(title: "Your Location"),
+        infoWindow: InfoWindow(title: AppStrings.your_location_map),
       );
     });
 
@@ -99,19 +102,18 @@ class _MapPageState extends State<MapPage> {
   Future<void> _moveCameraToPosition(LatLng position) async {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(target: position, zoom: 20,tilt: 45),
+      CameraPosition(target: position, zoom: 20, tilt: 45),
     ));
   }
 
   /// Get Address from LatLng
   Future<void> _getAddressFromLatLng(LatLng position) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-          position.latitude, position.longitude);
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
 
       if (placemarks.isNotEmpty) {
-         place = placemarks.first;
-
+        place = placemarks.first;
 
         List<String?> fullAddressParts = [
           place?.street,
@@ -121,10 +123,9 @@ class _MapPageState extends State<MapPage> {
           place?.country
         ].where((element) => element != null && element.isNotEmpty).toList();
 
-        List<String?> mainAddressParts = [
-          place?.name,
-          place?.thoroughfare
-        ].where((element) => element != null && element.isNotEmpty).toList();
+        List<String?> mainAddressParts = [place?.name, place?.thoroughfare]
+            .where((element) => element != null && element.isNotEmpty)
+            .toList();
 
         setState(() {
           _currentAddress = fullAddressParts.join(", ");
@@ -136,14 +137,13 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-
   /// Update Marker & Address on Map Drag
   void _onCameraMove(CameraPosition position) {
     setState(() {
       _marker = Marker(
         markerId: MarkerId("movedLocation"),
         position: position.target,
-        infoWindow: InfoWindow(title: "Selected Location"),
+        infoWindow: InfoWindow(title: AppStrings.selected_location),
       );
     });
   }
@@ -165,103 +165,106 @@ class _MapPageState extends State<MapPage> {
       ),
       backgroundColor: Colors.white,
       body: _currentPosition == null
-          ?  Center(child: CircularProgressIndicator(color: AppColors.primary,))
+          ? Center(
+              child: CircularProgressIndicator(
+              color: AppColors.primary,
+            ))
           : Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _currentPosition!,
-              zoom: 15,
-            ),
-            markers: _marker != null ? {_marker!} : {},
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-            onCameraMove: _onCameraMove,
-            onCameraIdle: _onCameraIdle,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+              children: [
+                GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: _currentPosition!,
+                    zoom: 15,
+                  ),
+                  markers: _marker != null ? {_marker!} : {},
+                  onMapCreated: (GoogleMapController controller) {
+                    _controller.complete(controller);
+                  },
+                  onCameraMove: _onCameraMove,
+                  onCameraIdle: _onCameraIdle,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _mainAddress, // Static location name or fetched dynamically
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    _currentAddress, // Dynamic address fetched from Geocoder
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600]!,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  SizedBox(height: 15),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 15),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
                       ),
-                      onPressed: () {
-                        // Handle confirmation logic
-                        PageRouteUtils.pushWithSlide(
-                            context,
-                            AddAddressPage(
-                              isFromMap: true,
-                              place: place,
-                              currentPosition: _currentPosition,
-                              doublePop: widget.doublePop,
-                              selectedAddress: widget.selectedAddress,
-                            ));
-                      },
-                      child: Text(
-                       AppStrings.confirm_continue,
-                        style: FontUtils.secondaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
                         ),
-                      ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _mainAddress, // Static location name or fetched dynamically
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          _currentAddress, // Dynamic address fetched from Geocoder
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600]!,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        SizedBox(height: 15),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 15),
+                            ),
+                            onPressed: () {
+                              // Handle confirmation logic
+                              PageRouteUtils.pushWithSlide(
+                                  context,
+                                  AddAddressPage(
+                                    isFromMap: true,
+                                    place: place,
+                                    currentPosition: _currentPosition,
+                                    doublePop: widget.doublePop,
+                                    selectedAddress: widget.selectedAddress,
+                                  ));
+                            },
+                            child: Text(
+                              AppStrings.confirm_continue,
+                              style: FontUtils.secondaryFontStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 

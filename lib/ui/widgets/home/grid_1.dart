@@ -27,105 +27,115 @@ class Grid1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundDecoration = AppUtils.buildLayoutBackground(content);
+    final containerPadding = backgroundDecoration == null
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        : const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+
     return Container(
-      decoration: AppUtils.buildLayoutBackground(content),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          // 🔹 Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    content.layoutTitle ?? '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2, // Allow up to 2 lines for the title
-                  ),
-                ),
-                const SizedBox(width: 4), // Add some spacing between title and redirect
-                Visibility(
-                  visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Handle section-level redirection if needed
-                      RedirectUtils.handleContentRedirectViewAll(
-                        context: context,
-                        redirectData: content.redirectData!,
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min, // Prevent redirect from expanding
-                      children: [
-                        Text(
-                          content.layoutRedirectTitle!,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 18),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 🔹 Banner Image
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-              child: CachedNetworkImage(
-                imageUrl: content.layoutBannerImage ?? '',
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorWidget: (context, url, error) => _fallbackWidget(),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 🔹 Horizontal Scroller (no fixed height)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+      decoration: backgroundDecoration,
+      child: Padding(
+        padding: containerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            // 🔹 Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  for (var layoutData in content.layoutData!) ...[
-                    _Grid1Card(
-                      layoutData: layoutData,
+                  Expanded(
+                    child: Text(
+                      content.layoutTitle ?? '',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2, // Allow up to 2 lines for the title
+                    ),
+                  ),
+                  const SizedBox(
+                      width: 4), // Add some spacing between title and redirect
+                  Visibility(
+                    visible: (content.layoutRedirectTitle ?? '').isNotEmpty,
+                    child: GestureDetector(
                       onTap: () {
-                        RedirectUtils.handleContentRedirect(
+                        // Handle section-level redirection if needed
+                        RedirectUtils.handleContentRedirectViewAll(
                           context: context,
-                          layoutOption: content.layoutOption!,
-                          layoutData: layoutData,
+                          redirectData: content.redirectData!,
                         );
                       },
+                      child: Row(
+                        mainAxisSize:
+                            MainAxisSize.min, // Prevent redirect from expanding
+                        children: [
+                          Text(
+                            content.layoutRedirectTitle!,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textColor,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 16),
-                  ]
+                  ),
                 ],
               ),
             ),
-          ),
+            const SizedBox(height: 16),
 
-          const SizedBox(height: 8),
-        ],
+            // 🔹 Banner Image
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+                child: CachedNetworkImage(
+                  imageUrl: content.layoutBannerImage ?? '',
+                  height: 150,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => _fallbackWidget(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 🔹 Horizontal Scroller (no fixed height)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (var layoutData in content.layoutData!) ...[
+                      _Grid1Card(
+                        layoutData: layoutData,
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption!,
+                            layoutData: layoutData,
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                    ]
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -210,11 +220,13 @@ class _Grid1Card extends StatelessWidget {
                   child: Visibility(
                     visible: layoutData.featureText?.isNotEmpty == true,
                     child: Container(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.amber.shade600,
-                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(4),bottomRight: Radius.circular(4)),
+                        borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(4),
+                            bottomRight: Radius.circular(4)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -351,5 +363,3 @@ class _Grid1Card extends StatelessWidget {
     return rating.toStringAsFixed(decimalPlaces);
   }
 }
-
-

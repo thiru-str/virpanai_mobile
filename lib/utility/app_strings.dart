@@ -206,7 +206,68 @@ class AppStrings {
   static const String password = 'Password';
   static const String confirm_password = 'Confirm Password';
   static const String password_required = 'Password Required';
-  static const String password_min_length = 'Password should be minimum 5 characters';
+  static const String password_min_length =
+      'Password should be minimum 5 characters';
   static const String confirm_password_required = 'Confirm password Required';
   static const String password_mismatch = 'Password mismatch';
+
+  static const String end_of_page = 'End of page';
+  static const String components_empty = 'Your Components is Empty';
+  static const String search_categories = 'Search categories';
+  static const String rupee_symbol = '₹';
+  static const String fetching_address = 'Fetching address...';
+  static const String your_location_map = 'Your Location';
+  static const String selected_location = 'Selected Location';
+  static const String stock_update = 'Stock Update';
+  static const String stock_update_message_prefix = 'This product now has only';
+  static const String stock_update_message_suffix =
+      'Do you want to update your cart quantity to';
+  static const String cancel = 'Cancel';
+  static const String yes_update = 'Yes, Update';
+  static const String remove = 'Remove';
+  static const String remove_unavailable_stock_items =
+      'Please remove unavailable stock items to continue';
+  static const String add_address_to_proceed = 'Please add address to proceed';
+  static const String promo_code_applied_success =
+      'Promo code applied successfully';
+  static const String promo_code_not_applied =
+      'Promo code not applied.Please double check your cart items';
+  static const String promo_code_removed_success =
+      'Promo code removed successfully';
+  static const String cash_on_delivery = 'Cash on Delivery';
+  static const String payment_to = 'Payment to';
+  static const String payment_failed = 'Payment failed';
+  static const String select = 'Select';
+  static const String select_variant = 'Select Variant';
+  static const String out_of_stock = 'Out of Stock';
+  static const String max_items_stock_reached =
+      'Max items for this stock reached';
+  static const String can_add_upto_prefix = 'You can only add up to';
+  static const String items_suffix = 'items.';
+  static const String add_ons = 'Add-ons';
+  static const String no_subcategories_found = 'No subcategories found';
+  static const String write_a_reason = 'Write a reason';
+  static const String download_invoice = 'Download Invoice';
+  static const String cancel_order = 'Cancel Order';
+  static const String cancel_order_confirmation =
+      'Are you sure you want to cancel the order?';
+  static const String no_items_found = 'No items found.';
+  static const String processing = 'Processing';
+  static const String cancelled = 'Cancelled';
+  static const String order_processing = 'Order Processing';
+  static const String ready_for_dispatch = 'Ready For Dispatch';
+  static const String app_version = 'App Version';
+  static const String delete_account_confirmation =
+      'Are you sure you want to permanently delete your account?';
+  static const String new_tag = 'NEW';
+  static const String from = 'From';
+  static const String high_low = 'Highest - Lowest Price';
+  static const String min = 'Min';
+  static const String max = 'Max';
+  static const String return_order = 'Return Order';
+  static const String reason = 'Reason';
+  static const String confirm_return = 'Confirm Return';
+  static const String current_orders = 'Current Orders';
+  static const String return_orders = 'Return Orders';
+  static const String platform_fee = 'Platform Fee';
 }

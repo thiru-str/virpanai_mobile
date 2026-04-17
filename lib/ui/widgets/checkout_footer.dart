@@ -56,14 +56,13 @@ class CheckoutFooter extends StatelessWidget {
                     ),
                     child: SvgPicture.asset(
                       svgPath,
-                      colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                      colorFilter:
+                          ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                       height: 24,
                       width: 24,
                     ),
                   ),
                   const SizedBox(width: 8),
-
-                  // Texts + Info
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,9 +95,7 @@ class CheckoutFooter extends StatelessWidget {
                                 color: Colors.black,
                               ),
                             ),
-                            SizedBox(
-                              width: 2,
-                            ),
+                            const SizedBox(width: 2),
                             GestureDetector(
                               onTap: onInfoTap,
                               child: const Icon(
@@ -116,16 +113,14 @@ class CheckoutFooter extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(width: 12),
-
           Expanded(
             child: ElevatedButton(
               onPressed: isLoading ? null : onPlaceOrder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -134,31 +129,31 @@ class CheckoutFooter extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 child: isLoading
                     ? const SizedBox(
-                  key: ValueKey("loader"),
-                  height: 32,
-                  child: Center(
-                    child: SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                  ),
-                )
+                        key: ValueKey("loader"),
+                        height: 32,
+                        child: Center(
+                          child: SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        ),
+                      )
                     : Text(
-                  "$amount\nPlace Order",
-                  key: const ValueKey("text"),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    height: 1.3,
-                  ),
-                ),
+                        "$amount\nPlace Order",
+                        key: const ValueKey("text"),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.3,
+                        ),
+                      ),
               ),
             ),
           )

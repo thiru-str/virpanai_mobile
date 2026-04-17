@@ -602,7 +602,7 @@ class Price {
 
 class RawAmount {
   String? value;
-  int? precision;
+  num? precision;
 
   RawAmount({
     this.value,

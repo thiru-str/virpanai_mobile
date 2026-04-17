@@ -582,7 +582,7 @@ class Detail {
 
 class Raw {
   String? value;
-  int? precision;
+  num? precision;
 
   Raw({
     this.value,

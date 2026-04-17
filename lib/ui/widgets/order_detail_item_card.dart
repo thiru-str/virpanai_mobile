@@ -1,11 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-
+import 'package:waioz/utility/app_strings.dart';
 
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-
-
 
 class OrderDetailItemCard extends StatelessWidget {
   final String imageUrl;
@@ -128,40 +126,42 @@ class OrderDetailItemCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                         showRating? Column(
-                          children: [
-                            RatingBar.builder(
-                              initialRating: initialRating,
-                              minRating: 1,
-                              direction: Axis.horizontal,
-                              allowHalfRating: false,
-                              itemCount: 5,
-                              itemSize: 24,
-                              unratedColor: Colors.grey.shade300,
-                              itemPadding:
-                                  const EdgeInsets.symmetric(horizontal: 2.0),
-                              itemBuilder: (context, _) =>  Icon(
-                                  Icons.star,
-                                  color: AppColors.primary),
-                              onRatingUpdate: (rating) {
-                                if (onRatingChanged != null) {
-                                  onRatingChanged!(rating);
-                                }
-                              },
-                            ),
-                            SizedBox(
-                              height: 4,
-                            ),
-                            const Text(
-                              "Please rate the product",
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ):const SizedBox(),
+                        showRating
+                            ? Column(
+                                children: [
+                                  RatingBar.builder(
+                                    initialRating: initialRating,
+                                    minRating: 1,
+                                    direction: Axis.horizontal,
+                                    allowHalfRating: false,
+                                    itemCount: 5,
+                                    itemSize: 24,
+                                    unratedColor: Colors.grey.shade300,
+                                    itemPadding: const EdgeInsets.symmetric(
+                                        horizontal: 2.0),
+                                    itemBuilder: (context, _) => Icon(
+                                        Icons.star,
+                                        color: AppColors.primary),
+                                    onRatingUpdate: (rating) {
+                                      if (onRatingChanged != null) {
+                                        onRatingChanged!(rating);
+                                      }
+                                    },
+                                  ),
+                                  SizedBox(
+                                    height: 4,
+                                  ),
+                                  const Text(
+                                    "Please rate the product",
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox(),
                         if (showReturnButton)
                           ElevatedButton(
                             onPressed: onReturnTap,
@@ -174,7 +174,7 @@ class OrderDetailItemCard extends StatelessWidget {
                               ),
                             ),
                             child: const Text(
-                              "Return Order",
+                              AppStrings.return_order,
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
@@ -207,11 +207,13 @@ class OrderDetailItemCard extends StatelessWidget {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children:  [
+              children: [
                 Icon(Icons.circle, size: 8, color: getStatusColor(status)),
                 SizedBox(width: 6),
                 Text(
-                  status.isNotEmpty ? status[0].toUpperCase() + status.substring(1) : '',
+                  status.isNotEmpty
+                      ? status[0].toUpperCase() + status.substring(1)
+                      : '',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,

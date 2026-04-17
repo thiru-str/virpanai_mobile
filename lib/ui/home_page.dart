@@ -1,32 +1,34 @@
 import 'dart:async';
 
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
-import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
-import 'package:waioz/ui/map_page.dart';
 import 'package:waioz/ui/product_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
-import 'package:waioz/ui/widgets/common_header.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
+import 'package:waioz/ui/widgets/home/banner_3_4.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
+import 'package:waioz/ui/widgets/home/grid_3.dart';
+import 'package:waioz/ui/widgets/home/grid_5.dart';
+import 'package:waioz/ui/widgets/home/grid_6.dart';
+import 'package:waioz/ui/widgets/home/grid_7.dart';
+import 'package:waioz/ui/widgets/home/grid_8.dart';
+import 'package:waioz/ui/widgets/home/grid_10.dart';
+import 'package:waioz/ui/widgets/home/grid_11.dart';
 import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_12.dart';
 import 'package:waioz/ui/widgets/home/item_13.dart';
 import 'package:waioz/ui/widgets/home/item_14.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
+import 'package:waioz/ui/widgets/home/slider_6.dart';
+import 'package:waioz/ui/widgets/home/slider_7.dart';
+import 'package:waioz/ui/widgets/home/slider_9.dart';
 import 'package:waioz/ui/widgets/home/grid_1.dart';
 import 'package:waioz/ui/widgets/home/item_8.dart';
-import 'package:waioz/ui/widgets/no_orders_widget.dart';
-import 'package:waioz/ui/widgets/product_quick_view_sheet.dart';
-import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/home/item_1.dart';
 import 'package:waioz/ui/widgets/home/item_2.dart';
 import 'package:waioz/ui/widgets/home/item_3.dart';
@@ -35,17 +37,15 @@ import 'package:waioz/ui/widgets/home/item_5.dart';
 import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
-import 'package:waioz/ui/widgets/view_cart.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../api/api_service.dart';
-import '../utility/app_assets.dart';
 import '../utility/app_utils.dart';
-import 'widgets/common_header_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
   bool apiLoading = true;
   String headerTitle = "";
   String addressType = "";
-  String appHeader = "header-1";
+  String appHeader = "";
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -131,29 +131,42 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> initializePages() async {
+    final savedHeader =
+        await SharedPreferencesUtil().getString('app_header') ?? "";
+    if (mounted && savedHeader.isNotEmpty) {
+      setState(() {
+        appHeader = savedHeader;
+      });
+    }
     getHomePageApi(limit: _limit, offset: _offset);
-    appHeader = (await SharedPreferencesUtil().getString('app_header') ?? "");
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: CombinedHeaderAppBar(
-          headerType: appHeader,
-          title: headerTitle,
-          cartCount: cartItems ?? 0,
-          onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-          onSearchClick: () => PageRouteUtils.pushWithFade(
-            context,
-            const ProductPage(),
-          ),
+    late final PreferredSizeWidget homeAppBar;
+    if (apiLoading) {
+      homeAppBar = HomeHeaderSkeleton(
+        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+      );
+    } else {
+      homeAppBar = CombinedHeaderAppBar(
+        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+        title: headerTitle,
+        cartCount: cartItems ?? 0,
+        onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+        onSearchClick: () => PageRouteUtils.pushWithFade(
+          context,
+          const ProductPage(),
         ),
+      );
+    }
+
+    return Scaffold(
+        appBar: homeAppBar,
         backgroundColor: Colors.white,
         body: SafeArea(
           child: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
+              ? const HomePageSkeleton()
               : RefreshIndicator(
                   onRefresh: () async {
                     _offset = 0;
@@ -196,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                             const Padding(
                               padding: EdgeInsets.all(16.0),
                               child: Text(
-                                "End of page",
+                                AppStrings.end_of_page,
                                 style: TextStyle(color: Colors.grey),
                               ),
                             ),
@@ -223,7 +236,10 @@ class _HomePageState extends State<HomePage> {
         final content = homePageResponse?.content ?? [];
         if (index < content.length) {
           final homePageContent = content[index];
-          return getLayoutWidget(homePageContent);
+          return AppReveal(
+            index: index,
+            child: getLayoutWidget(homePageContent),
+          );
         }
 
         return _isLoadingMore
@@ -311,6 +327,34 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Grid2(content: homePageContent!);
+      case "Grid3":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid3(content: homePageContent!);
+      case "Grid5":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid5(content: homePageContent!);
+      case "Grid6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid6(content: homePageContent!);
+      case "Grid7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid7(content: homePageContent!);
+      case "Grid8":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid8(content: homePageContent!);
+      case "Grid10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid10(content: homePageContent!);
+      case "Grid11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Grid11(content: homePageContent!);
       case "Banner2": // video
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -319,10 +363,35 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Slider1(content: homePageContent!);
+      case "Slider6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider6(content: homePageContent!);
+      case "Slider7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider7(content: homePageContent!);
+      case "Slider9":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider9(
+                content: homePageContent!,
+                onCartQtyChanged: (deltaQty, variantId) async {
+                  await addCart(deltaQty, variantId);
+                },
+              );
       case "Banner1":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Banner1(content: homePageContent!);
+      case "Banner3":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner3(content: homePageContent!);
+      case "Banner4":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner4(content: homePageContent!);
       case "item9":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -434,16 +503,17 @@ class _HomePageState extends State<HomePage> {
       }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
+      final productItems = cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).toList() ?? [];
       setState(() {
-        cartItems = cartResponse?.cart?.items?.length;
-        cartItemImages = cartResponse?.cart?.items
-            ?.map((item) => item.thumbnail ?? "")
+        cartItems = productItems.length;
+        cartItemImages = productItems
+            .map((item) => item.thumbnail ?? "")
             .toList();
       });
-      if ((cartResponse?.cart?.items?.length ?? 0) > 0) {
+      if (productItems.isNotEmpty) {
         final qtyMap = <String, int>{};
-        for (var item in cartResponse?.cart?.items ?? []) {
-          qtyMap[item.variantId] = item.quantity;
+        for (var item in productItems) {
+          if (item.variantId != null) qtyMap[item.variantId!] = item.quantity ?? 0;
         }
 
         eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));

@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -13,23 +11,23 @@ import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
+import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/add_on_product_card.dart';
-import 'package:waioz/ui/widgets/cart_button.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
-import 'package:waioz/ui/widgets/product_view.dart';
-import 'package:waioz/ui/widgets/quantity_selector.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
 import 'package:waioz/ui/widgets/review_card.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
+import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
@@ -41,7 +39,6 @@ import '../api/api_service.dart';
 import '../model/product_response.dart' hide Image;
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
-import '../utility/shared_preferences_util.dart';
 import 'bottom_nav_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -55,12 +52,12 @@ class ProductDetailPage extends StatefulWidget {
   State<ProductDetailPage> createState() => _ProductDetailPageState();
 }
 
-class _ProductDetailPageState extends State<ProductDetailPage>
-    with SingleTickerProviderStateMixin {
+class _ProductDetailPageState extends State<ProductDetailPage> {
   ProductResponse.Product? product;
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
   RelatedProductsResponse? relatedProductsResponse;
+  UpSellProductsResponse? upSellProductsResponse;
   AddOnProductsResponse? addOnProductsResponse;
   CartResponse? cartResponse;
 
@@ -71,9 +68,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   bool isFavorite = false;
   String? wishlistId = '';
   int? addOnProductsCount = 0;
-
-  late AnimationController _animationController;
-  late Animation<Offset> _animation;
 
   //ProductResponse.Value? selectedColor;
   //ProductResponse.Value? selectedSize;
@@ -103,24 +97,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         isLoggedIn = value;
       });
       fetchInitialData();
-
-      // Initialize the animation controller
-      _animationController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1000),
-      );
-
-      // Define the animation's starting and ending positions
-      _animation = Tween<Offset>(
-        begin: const Offset(0, 1), // Start just below the screen
-        end: Offset.zero, // End at its natural position
-      ).animate(CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ));
-
-      // Start the animation when the widget is built
-      _animationController.forward();
       listenToEvents();
     });
   }
@@ -140,7 +116,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   void dispose() {
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -149,10 +124,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     try {
       await getProductsApi();
-      await getReviewApi();
+      if (mounted) {
+        setState(() => apiLoading = false);
+      }
+
+      // Load non-critical sections in background after primary PDP is visible.
+      unawaited(getRelatedProductsApi());
+      unawaited(getUpSellingProductsApi());
+      if (isLoggedIn) {
+        unawaited(getReviewApi());
+        unawaited(getCartApi());
+      }
+      unawaited(getProductsInfoApi());
     } catch (e) {
       print("Error fetching initial data: $e");
-    } finally {
       if (mounted) {
         setState(() => apiLoading = false);
       }
@@ -173,24 +158,26 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         }
       },
       child: GestureDetector(
-        onTap: ()=> FocusScope.of(context).unfocus(),
+        onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           appBar: CommonHeaderAppBar(
             onBackTap: () {
               if (!widget.isFromLogin) {
                 Navigator.pop(context);
               } else {
-                PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+                PageRouteUtils.pushAndRemoveUntil(
+                    context, const BottomNavPage());
               }
             },
             onFavTap: addFavourite,
+            onShareTap: () {
+              AppLinkHelper.shareProductInvite(widget.productId);
+            },
             isFavorite: isFavorite, // Pass the updated favorite status here
           ),
           backgroundColor: Colors.white,
           body: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
+              ? const ProductDetailSkeleton()
               : SafeArea(
                   child: Stack(children: [
                     Column(
@@ -202,14 +189,22 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  buildProductImages(),
+                                  AppReveal(child: buildProductImages()),
                                   const SizedBox(height: 25),
-                                  buildProductDetails(),
-                                  buildCartSection(),
+                                  AppReveal(
+                                      index: 1, child: buildProductDetails()),
+                                  AppReveal(
+                                      index: 2, child: buildCartSection()),
                                   const SizedBox(height: 15),
-                                  buildProductDescription(),
-                                  buildRelatedProducts(),
-                                  buildReviews(),
+                                  AppReveal(
+                                      index: 3,
+                                      child: buildProductDescription()),
+                                  AppReveal(
+                                      index: 4, child: buildRelatedProducts()),
+                                  AppReveal(
+                                      index: 5,
+                                      child: buildUpSellingProducts()),
+                                  AppReveal(index: 6, child: buildReviews()),
                                   const SizedBox(height: 90),
                                 ],
                               ),
@@ -271,34 +266,34 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               decoration: BoxDecoration(color: AppColors.secondary),
               child: isVideo
                   ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (videoThumbnails?[url] != null)
-                    Image.file(
-                      videoThumbnails![url]!,
-                      width: 180,
+                      alignment: Alignment.center,
+                      children: [
+                        if (videoThumbnails?[url] != null)
+                          Image.file(
+                            videoThumbnails![url]!,
+                            width: 180,
+                            height: 250,
+                            fit: BoxFit.cover,
+                          )
+                        else
+                          Container(
+                            width: 180,
+                            height: 250,
+                            color: Colors.black12,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(),
+                          ),
+                        const Icon(Icons.play_circle_fill,
+                            size: 50, color: Colors.white),
+                      ],
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: url,
                       height: 250,
                       fit: BoxFit.cover,
-                    )
-                  else
-                    Container(
-                      width: 180,
-                      height: 250,
-                      color: Colors.black12,
-                      alignment: Alignment.center,
-                      child: const CircularProgressIndicator(),
+                      errorWidget: (_, __, ___) =>
+                          const ImageFallbackWidget(h: 250),
                     ),
-                  const Icon(Icons.play_circle_fill,
-                      size: 50, color: Colors.white),
-                ],
-              )
-                  : CachedNetworkImage(
-                imageUrl: url,
-                height: 250,
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) =>
-                const ImageFallbackWidget(h: 250),
-              ),
             ),
           );
         },
@@ -306,52 +301,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
-
-
-
   Widget buildRelatedProducts() {
-    if ((relatedProductsResponse?.products?.length ?? 0) == 0) {
-      return const SizedBox();
-    }
+    return ProductRecommendationSection(
+      title: relatedProductsResponse?.label ?? AppStrings.related_products,
+      products: relatedProductsResponse?.products ?? const [],
+    );
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 20),
-        Text(
-          AppStrings.related_products,
-          style: FontUtils.secondaryFontStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
-          ),
-        ),
-        const SizedBox(height: 24),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              relatedProductsResponse?.products?.length ?? 0,
-                  (index) {
-                final product = relatedProductsResponse?.products![index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 10), // spacing like separator
-                  child: ProductView(
-                    product: product!,
-                    onTapCard: () {
-                      PageRouteUtils.pushWithSlide(
-                        context,
-                        ProductDetailPage(productId: product.id ?? ''),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        )
-
-      ],
+  Widget buildUpSellingProducts() {
+    return ProductRecommendationSection(
+      title: upSellProductsResponse?.label ?? 'Up Selling Products',
+      products: upSellProductsResponse?.products ?? const [],
     );
   }
 
@@ -422,7 +382,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
       if (prices.isNotEmpty) {
         final lowest = prices.reduce((a, b) => a < b ? a : b);
-        return "From ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
+        return "${AppStrings.from} ${CurrencyUtil.appendCurrency(lowest.toStringAsFixed(0))}";
       }
     }
 
@@ -481,7 +441,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$title: ${selectedOptions[option.id!]?.value ?? 'Select'}",
+            "$title: ${selectedOptions[option.id!]?.value ?? AppStrings.select}",
             style: FontUtils.secondaryFontStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -565,13 +525,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       return true;
     }
 
-    // If inventory is managed and quantity > 0
-    if (variant.manageInventory == true &&
-        (variant.inventoryQuantity ?? 0) > 0) {
+    // If inventory is not managed, always in stock
+    if (variant.manageInventory != true) {
       return true;
     }
 
-    // Otherwise out of stock
+    // If inventory is managed, check quantity > 0
+    if ((variant.inventoryQuantity ?? 0) > 0) {
+      return true;
+    }
+
+    // Managed inventory with 0 quantity = out of stock
     return false;
   }
 
@@ -597,11 +561,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Widget buildProductDescription() {
     final variantDesc = selectedVariant?.metadata?.description ?? '';
-    final productDesc = product?.metadata?.additionalDescription ?? product?.description ?? '';
+    final productDesc =
+        product?.metadata?.additionalDescription ?? product?.description ?? '';
 
-    final descriptionToShow = (variantDesc?.isNotEmpty == true)
-        ? variantDesc
-        : productDesc;
+    final descriptionToShow =
+        (variantDesc?.isNotEmpty == true) ? variantDesc : productDesc;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,7 +584,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
-
   Widget buildRatingSection() {
     return RatingWidget(
       onRatingChanged: (rating) => print('Rating: $rating'),
@@ -629,7 +592,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget buildReviews() {
-    if (reviewResponse == null || (reviewResponse?.data?.productReviews??[]).isEmpty)
+    if (reviewResponse == null ||
+        (reviewResponse?.data?.productReviews ?? []).isEmpty)
       return const SizedBox();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,25 +710,24 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
+                    final enteredQty = selectedQuantity;
+                    final maxQty = getMaxQuantity(
+                        selectedVariant, cartResponse?.cart?.items ?? []);
 
-              final enteredQty = selectedQuantity;
-              final maxQty = getMaxQuantity(selectedVariant, cartResponse?.cart?.items??[]);
+                    if (maxQty <= 0) {
+                      AppUtils.showToast(AppStrings.max_items_stock_reached);
+                      return;
+                    }
 
-              if (maxQty <= 0) {
-                AppUtils.showToast('Max items for this stock reached');
-                return;
-              }
+                    final safeQty = (enteredQty.clamp(1, maxQty)).toInt();
 
-              final safeQty = (enteredQty.clamp(1, maxQty)).toInt();
+                    if (safeQty < enteredQty) {
+                      AppUtils.showToast(
+                          '${AppStrings.can_add_upto_prefix} $maxQty ${AppStrings.items_suffix}');
+                      return;
+                    }
 
-
-              if (safeQty < enteredQty) {
-                AppUtils.showToast('You can only add up to $maxQty items.');
-                return;
-              }
-
-
-              if (!isLoggedIn) {
+                    if (!isLoggedIn) {
                       showDialog(
                         context: context,
                         builder: (_) => Dialog(
@@ -774,7 +737,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                           ),
                           child: LoginPrompt(
                             showClose: true,
-                            onClosePressed: (){
+                            onClosePressed: () {
                               Navigator.pop(context);
                             },
                             onButtonPressed: () {
@@ -818,10 +781,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ? CircularProgressIndicator(color: Colors.white)
                 : Text(
                     selectedVariantId == null
-                        ? 'Select Variant'
+                        ? AppStrings.select_variant
                         : stockNotAvailable
-                            ? 'Out of Stock'
-                            : 'Add to Cart',
+                            ? AppStrings.out_of_stock
+                            : AppStrings.add_to_cart,
                     style: FontUtils.primaryFontStyle(
                         fontSize: 18, color: Colors.white),
                   ),
@@ -835,15 +798,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     try {
       final apiService = ApiService();
       final response =
-      await apiService.productDetail(context, widget.productId);
+          await apiService.productDetail(context, widget.productId);
+      if (!mounted) return;
       setState(() {
         product = response.product;
-        apiLoading = false;
       });
-      if (product != null && product!.variants != null && product!.variants!.isNotEmpty) {
+      if (product != null &&
+          product!.variants != null &&
+          product!.variants!.isNotEmpty) {
         // Case 1: Single "default variant"
         if (product!.variants!.length == 1 &&
-            product!.variants!.first.title!.toLowerCase() == "default variant") {
+            product!.variants!.first.title!.toLowerCase() ==
+                "default variant") {
           setState(() {
             selectedVariantId = product!.variants!.first.id;
             selectedVariant = product!.variants!.first;
@@ -882,7 +848,6 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               showVariantSelection = true;
             });
           }
-
         }
       } else {
         setState(() {
@@ -890,27 +855,26 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           showVariantSelection = false;
         });
       }
-
-
-      // Call cart API only after product API succeeds
-      await getRelatedProductsApi();
-      await getCartApi();
-      await getProductsInfoApi();
-
     } catch (e) {
-      setState(() => apiLoading = false);
+      rethrow;
     }
   }
 
-  ProductResponse.Variant? getCheapestAvailableVariant(ProductResponse.Product product) {
+  ProductResponse.Variant? getCheapestAvailableVariant(
+      ProductResponse.Product product) {
     if (product.variants == null || product.variants!.isEmpty) return null;
 
     // sort variants by price ascending
-    final sortedVariants = product.variants!..sort((a, b) {
-      final priceA = double.tryParse(a.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ?? double.infinity;
-      final priceB = double.tryParse(b.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ?? double.infinity;
-      return priceA.compareTo(priceB);
-    });
+    final sortedVariants = product.variants!
+      ..sort((a, b) {
+        final priceA = double.tryParse(
+                a.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ??
+            double.infinity;
+        final priceB = double.tryParse(
+                b.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ??
+            double.infinity;
+        return priceA.compareTo(priceB);
+      });
 
     // return first variant that has stock
     for (final variant in sortedVariants) {
@@ -925,12 +889,31 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getRelatedProductsApi() async {
     try {
+      if ((productInfoResponse?.relatedProductCount ?? 1) == 0) {
+        return;
+      }
       final apiService = ApiService();
       final response =
           await apiService.relatedProducts(context, widget.productId);
+      if (!mounted) return;
       setState(() => relatedProductsResponse = response);
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<void> getUpSellingProductsApi() async {
+    try {
+      if ((productInfoResponse?.upSellingProductCount ?? 1) == 0) {
+        return;
+      }
+      final apiService = ApiService();
+      final response =
+          await apiService.upSellingProducts(context, widget.productId);
+      if (!mounted) return;
+      setState(() => upSellProductsResponse = response);
+    } catch (e) {
+      debugPrint('up selling error: $e');
     }
   }
 
@@ -950,39 +933,74 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Future<void> getProductsInfoApi() async {
     try {
-      if (selectedVariantId != null) {
-        final apiService = ApiService();
-        final response = await apiService.getProductInfo(
-            context, widget.productId, selectedVariantId);
+      final variantId = selectedVariantId;
+      if (variantId == null) return;
 
-        setState(() {
-          productInfoResponse = response;
-          isFavorite = productInfoResponse?.productOnWishlist ?? false;
-          wishlistId = productInfoResponse?.productWishlistId ?? '';
-          addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
-          apiLoading = false;
-        });
+      final apiService = ApiService();
+      final response =
+          await apiService.getProductInfo(context, widget.productId, variantId);
 
-        if ((productInfoResponse?.productVideo?.isNotEmpty ?? false)) {
-          final videoUrls = productInfoResponse!.productVideo!
-              .map((v) => v.url ?? '')
-              .where((url) => url.toLowerCase().endsWith('.mp4'))
-              .toList();
-          videoThumbnails = await generateVideoThumbnails(videoUrls);
+      // Ignore stale responses when selected variant changed during request.
+      if (!mounted || variantId != selectedVariantId) return;
+
+      setState(() {
+        productInfoResponse = response;
+        isFavorite = productInfoResponse?.productOnWishlist ?? false;
+        wishlistId = productInfoResponse?.productWishlistId ?? '';
+        addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
+      });
+
+      // Load non-critical media/add-ons after essential UI is painted.
+      final productVideos = response.productVideo ?? [];
+      if (productVideos.isNotEmpty) {
+        final videoUrls = productVideos
+            .map((v) => v.url ?? '')
+            .where((url) => url.toLowerCase().endsWith('.mp4'))
+            .toList();
+        if (videoUrls.isNotEmpty) {
+          unawaited(_loadVideoThumbnails(videoUrls, variantId));
         }
+      }
 
-        if ((addOnProductsCount ?? 0) > 0) {
-          addOnProductsResponse =
-          await apiService.addOnProducts(context, widget.productId);
-        }
-
-        getCartApi();
+      if ((response.addOnProductCount ?? 0) > 0) {
+        unawaited(_loadAddOnProducts(variantId));
+      }
+      if ((response.relatedProductCount ?? 0) > 0 &&
+          (relatedProductsResponse?.products?.isEmpty ?? true)) {
+        unawaited(getRelatedProductsApi());
+      }
+      if ((response.upSellingProductCount ?? 0) > 0 &&
+          (upSellProductsResponse?.products?.isEmpty ?? true)) {
+        unawaited(getUpSellingProductsApi());
       }
     } catch (e) {
-      setState(() => apiLoading = false);
+      debugPrint('product info error: $e');
     }
   }
 
+  Future<void> _loadVideoThumbnails(
+      List<String> videoUrls, String requestVariantId) async {
+    final thumbnails = await generateVideoThumbnails(videoUrls);
+    if (!mounted || selectedVariantId != requestVariantId) return;
+
+    setState(() {
+      videoThumbnails = thumbnails;
+    });
+  }
+
+  Future<void> _loadAddOnProducts(String requestVariantId) async {
+    try {
+      final apiService = ApiService();
+      final response =
+          await apiService.addOnProducts(context, widget.productId);
+      if (!mounted || selectedVariantId != requestVariantId) return;
+      setState(() {
+        addOnProductsResponse = response;
+      });
+    } catch (e) {
+      // Add-on load is non-blocking for primary PDP render.
+    }
+  }
 
   Future<void> addCart(int qty, String variantId) async {
     try {
@@ -1120,7 +1138,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                           Expanded(
                             child: Center(
                               child: Text(
-                                'Add-ons',
+                                AppStrings.add_ons,
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -1176,7 +1194,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               borderRadius: BorderRadius.circular(8)),
                         ),
                         child: Text(
-                          'Add to Cart',
+                          AppStrings.add_to_cart,
                           style: FontUtils.primaryFontStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1197,12 +1215,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   void emitEvent(CartResponse cartResponse) {
     setState(() {
-      cartItems = cartResponse.cart?.items?.length;
+      cartItems =
+          cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
       cartItemImages = cartResponse.cart?.items
-          ?.map((item) => item.thumbnail ?? "")
+          ?.where((item) => !item.isPlatformFee)
+          .map((item) => item.thumbnail ?? "")
           .toList();
     });
-    if ((cartResponse.cart?.items?.length ?? 0) > 0) {
+    if ((cartResponse.cart?.items
+                ?.where((item) => !item.isPlatformFee)
+                .length ??
+            0) >
+        0) {
       final qtyMap = <String, int>{};
       for (var item in cartResponse.cart?.items ?? []) {
         qtyMap[item.variantId] = item.quantity;
@@ -1211,12 +1235,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     }
   }
 
-  Future<Map<String, File?>> generateVideoThumbnails(List<String> videoUrls) async {
+  Future<Map<String, File?>> generateVideoThumbnails(
+      List<String> videoUrls) async {
     final cacheDir = await getTemporaryDirectory();
     final Map<String, File?> thumbnailMap = {};
 
     for (final url in videoUrls) {
-      final fileName = Uri.parse(url).pathSegments.last.replaceAll('.mp4', '.jpg');
+      final fileName =
+          Uri.parse(url).pathSegments.last.replaceAll('.mp4', '.jpg');
       final cachedFile = File('${cacheDir.path}/$fileName');
 
       if (await cachedFile.exists()) {
@@ -1244,6 +1270,4 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     return thumbnailMap;
   }
-
-
 }

@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/email_register_response.dart';
 import 'package:waioz/model/refresh_token_response.dart';
 import 'package:waioz/model/register_response.dart';
@@ -47,11 +48,15 @@ class _RegisterPageState extends State<RegisterPage> {
   RegisterResponse? registerResponse;
   EmailRegisterResponse? emailRegisterResponse;
   bool isEmailLogin = false;
+  String? _phoneNo;
+  String? _countryCode;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _phoneNo = widget.phoneNo;
+    _countryCode = widget.countryCode;
     getLoginType();
   }
 
@@ -95,32 +100,41 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  CustomTextField(
-                    hintText: AppStrings.firstname,
-                    controller: firstNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppStrings.firstname_required;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: AppStrings.lastname,
-                    controller: lastNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppStrings.lastname_required;
-                      }
-                      return null;
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          hintText: AppStrings.firstname,
+                          controller: firstNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.firstname_required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: CustomTextField(
+                          hintText: AppStrings.lastname,
+                          controller: lastNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.lastname_required;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
                     hintText: AppStrings.email,
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textCapitalization: TextCapitalization.none,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return AppStrings.email_required;
@@ -133,6 +147,48 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                   if (isEmailLogin) ...[
+                    const SizedBox(height: 16),
+
+                    IntlPhoneField(
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        fillColor: AppColors.secondary,
+                        filled: true,
+                        contentPadding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                          BorderSide(color: AppColors.secondary, width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                          BorderSide(color: AppColors.secondary, width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                          BorderSide(color: AppColors.secondary, width: 1.5),
+                        ),
+                      ),
+                      initialCountryCode: AppStrings.country_code,
+                      onChanged: (phone) {
+                        _phoneNo = phone.number;
+                        _countryCode = phone.countryCode;
+                      },
+                      validator: (value) {
+                        if (value == null || value.number.isEmpty) {
+                          return AppStrings.enter_valid_mob_no;
+                        }
+                        if (value.number.length < 10 ||
+                            value.number.length > 15) {
+                          return AppStrings.digit_range;
+                        }
+                        return null;
+                      },
+                    ),
+
                     const SizedBox(height: 16),
 
                     CustomTextField(
@@ -174,10 +230,15 @@ class _RegisterPageState extends State<RegisterPage> {
                         return null;
                       },
                     ),
+
+                    const SizedBox(height: 16),
+
                     newToAppRegisterText(onRegisterTap: () {
                       Navigator.pop(context);
                     }),
                   ],
+
+
 
 
                   apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
@@ -224,8 +285,8 @@ class _RegisterPageState extends State<RegisterPage> {
             companyController.text,
             firstNameController.text,
             lastNameController.text,
-            widget.countryCode,
-            widget.phoneNo,
+            _countryCode??'',
+            _phoneNo??'',
             widget.token);
 
         RefreshTokenResponse refreshTokenResponse =
@@ -241,8 +302,8 @@ class _RegisterPageState extends State<RegisterPage> {
             companyController.text,
             firstNameController.text,
             lastNameController.text,
-            widget.countryCode,
-            widget.phoneNo,
+            _countryCode??'',
+            _phoneNo??'',
             passwordController.text);
         SharedPreferencesUtil().saveString('token', emailRegisterResponse?.token??'');
         SharedPreferencesUtil()

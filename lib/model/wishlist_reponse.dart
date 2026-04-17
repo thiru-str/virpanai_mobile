@@ -318,11 +318,11 @@ class CalculatedPrice {
   String? id;
   bool? isCalculatedPricePriceList;
   bool? isCalculatedPriceTaxInclusive;
-  int? calculatedAmount;
+  num? calculatedAmount;
   RawAmount? rawCalculatedAmount;
   bool? isOriginalPricePriceList;
   bool? isOriginalPriceTaxInclusive;
-  int? originalAmount;
+  num? originalAmount;
   RawAmount? rawOriginalAmount;
   String? currencyCode;
   Price? calculatedPrice;
@@ -408,7 +408,7 @@ class Price {
 
 class RawAmount {
   String? value;
-  int? precision;
+  num? precision;
 
   RawAmount({
     this.value,

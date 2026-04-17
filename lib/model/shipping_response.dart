@@ -38,7 +38,7 @@ class ShippingOption {
   List<Rule>? rules;
   CalculatedPrice? calculatedPrice;
   List<PriceElement>? prices;
-  int? amount;
+  num? amount;
   bool? isTaxInclusive;
 
   ShippingOption({
@@ -100,11 +100,11 @@ class CalculatedPrice {
   String? id;
   bool? isCalculatedPricePriceList;
   bool? isCalculatedPriceTaxInclusive;
-  int? calculatedAmount;
+  num? calculatedAmount;
   RawAmount? rawCalculatedAmount;
   bool? isOriginalPricePriceList;
   bool? isOriginalPriceTaxInclusive;
-  int? originalAmount;
+  num? originalAmount;
   RawAmount? rawOriginalAmount;
   String? currencyCode;
   Price? calculatedPrice;
@@ -190,7 +190,7 @@ class Price {
 
 class RawAmount {
   String? value;
-  int? precision;
+  num? precision;
 
   RawAmount({
     this.value,
@@ -243,7 +243,7 @@ class PriceElement {
   DateTime? updatedAt;
   dynamic deletedAt;
   List<PriceRule>? priceRules;
-  int? amount;
+  num? amount;
 
   PriceElement({
     this.id,

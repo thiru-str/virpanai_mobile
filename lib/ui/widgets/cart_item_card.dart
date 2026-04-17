@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
-import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 
 class CartItemCard extends StatelessWidget {
@@ -57,13 +56,25 @@ class CartItemCard extends StatelessWidget {
                   // Product Image
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
-                    child: imageUrl.isNotEmpty?CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      width: 60,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, _, __) => const ImageFallbackWidget(w: 60,h: 80),
-                    ):const ImageFallbackWidget(w: 60,h:80),
+                    child: imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            width: 60,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 250),
+                            placeholder: (context, url) => const AppShimmer(
+                              child: ShimmerBox(
+                                width: 60,
+                                height: 80,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8)),
+                              ),
+                            ),
+                            errorWidget: (context, _, __) =>
+                                const ImageFallbackWidget(w: 60, h: 80),
+                          )
+                        : const ImageFallbackWidget(w: 60, h: 80),
                   ),
                   const SizedBox(width: 12.0),
                   // Product Details
@@ -155,7 +166,7 @@ class CartItemCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Visibility(
-                        visible: quantity>1,
+                        visible: quantity > 1,
                         child: GestureDetector(
                           onTap: onRemoveAll,
                           child: const Text(
@@ -173,12 +184,18 @@ class CartItemCard extends StatelessWidget {
                   ),
                 ],
               ),
-               Visibility(
-                 visible: error.isNotEmpty,
-                 child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0,right: 8.0,top: 8.0),
-                  child: Text(error,style: FontUtils.secondaryFontStyle(color: Colors.red),maxLines: 2,),),
-               )
+              Visibility(
+                visible: error.isNotEmpty,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
+                  child: Text(
+                    error,
+                    style: FontUtils.secondaryFontStyle(color: Colors.red),
+                    maxLines: 2,
+                  ),
+                ),
+              )
             ],
           ),
         ),
@@ -187,19 +204,20 @@ class CartItemCard extends StatelessWidget {
           Container(
             height: 100,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.white.withOpacity(0.72),
               borderRadius: BorderRadius.circular(12.0),
             ),
             child: const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
+              child: AppShimmer(
+                child: ShimmerBox(
+                  width: 120,
+                  height: 16,
+                  borderRadius: BorderRadius.all(Radius.circular(999)),
+                ),
               ),
             ),
           ),
       ],
     );
   }
-
-
 }
-

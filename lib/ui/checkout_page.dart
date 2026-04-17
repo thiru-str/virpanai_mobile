@@ -39,6 +39,8 @@ import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
+import '../model/payment_method_response.dart';
+import '../model/wallet_response.dart';
 import '../utility/stripe_service.dart';
 
 class CheckOutPage extends StatefulWidget {
@@ -65,12 +67,24 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   Razorpay razorpay = Razorpay();
 
+  // Split payment state
+  bool splitActive = false;
+  double splitWalletAmount = 0;
+  double splitGatewayAmount = 0;
+  bool splitFullCoverage = false;
+  bool isSplitPaymentMode = false; // true when wallet extension is enabled with split_payment mode
+
+  // Wallet state
+  double walletBalance = 0;
+  bool walletLoading = false;
+  TopUpConfig? walletTopupConfig;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     cartResponse = widget.cartResponse;
     getShippingInfo();
+    _loadWalletBalance();
   }
 
   @override
@@ -134,77 +148,45 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               //       showShippingBottomSheet(context,
                               //           shippingResponse!.shippingOptions!);
                               //     }),
-                              CheckoutItemCard(
-                                  title: AppStrings.payemnt_method,
-                                  subtitle: addPaymentMethod
-                                      ? pp_title!
-                                      : AppStrings.add_payment_method,
-                                  onTap: () async {
-                                    if (!addAddress) {
-                                      AppUtils.showToast(
-                                          AppStrings.choose_shipping_address);
-                                      return;
-                                    } else if (!addShippingOption) {
-                                      AppUtils.showToast(
-                                          AppStrings.choose_shipping_address);
-                                      return;
-                                    }
-                                    Global? global = await getGlobal();
-                                    if (global != null) {
-                                      print(jsonEncode(global
-                                          .toJson())); // Convert and print JSON
-                                      showPaymentMethodsBottomSheet(
-                                          context, global.paymentProvider!);
-                                    }
-                                  }),
+                              // Wallet Split Banner — shown in split_payment mode
+                              // Payment method selection — hide if wallet covers full amount in split mode
+                              if (!(splitActive && splitFullCoverage))
+                                CheckoutItemCard(
+                                    title: splitActive
+                                        ? 'Pay Remaining'
+                                        : AppStrings.payemnt_method,
+                                    subtitle: addPaymentMethod
+                                        ? pp_title!
+                                        : AppStrings.add_payment_method,
+                                    onTap: () async {
+                                      if (!addAddress) {
+                                        AppUtils.showToast(
+                                            AppStrings.choose_shipping_address);
+                                        return;
+                                      } else if (!addShippingOption) {
+                                        AppUtils.showToast(
+                                            AppStrings.choose_shipping_address);
+                                        return;
+                                      }
+                                      Global? global = await getGlobal();
+                                      if (global != null) {
+                                        // Filter out wallet from payment methods in split mode
+                                        final providers = isSplitPaymentMode
+                                            ? global.paymentProvider!
+                                                .where((p) => p.id != 'pp_wallet_wallet')
+                                                .toList()
+                                            : global.paymentProvider!;
+                                        showPaymentMethodsBottomSheet(
+                                            context, providers);
+                                      }
+                                    }),
+
+                              // Wallet Balance Info (shows when wallet is selected in full_payment mode)
+                              if (pp_id == 'pp_wallet_wallet' && !splitActive)
+                                _buildWalletInfoWidget(),
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CartCalculation(
-                            keyText: '${AppStrings.subTotal}:',
-                            valueText: CurrencyUtil.appendCurrency(cartResponse!
-                                .cart!.itemSubtotal!
-                                .toStringAsFixed(2)),
-                          ),
-                          Visibility(
-                              visible:
-                                  cartResponse!.cart!.discountSubtotal! > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.discount}:',
-                                valueText:
-                                    '- ${CurrencyUtil.appendCurrency(cartResponse!.cart!.discountSubtotal!.toStringAsFixed(2))}',
-                              )),
-                          Visibility(
-                              visible:
-                                  cartResponse!.cart!.shippingSubtotal! > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.shipping}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    cartResponse!.cart!.shippingSubtotal!
-                                        .toStringAsFixed(2)),
-                              )),
-                          CartCalculation(
-                            keyText: '${AppStrings.tax}:',
-                            valueText: CurrencyUtil.appendCurrency(cartResponse!
-                                .cart!.taxTotal!
-                                .toStringAsFixed(2)),
-                          ),
-                          CartCalculation(
-                            keyText: '${AppStrings.total}:',
-                            valueText: CurrencyUtil.appendCurrency(
-                                cartResponse!.cart!.total!.toStringAsFixed(2)),
-                          ),
-                        ],
                       ),
                     ),
                   ],
@@ -217,13 +199,23 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         fit: BoxFit.cover))
                 : CartButton(
                     amount: CurrencyUtil.appendCurrency(
-                        (cartResponse?.cart?.total ?? 0).toStringAsFixed(2)),
-                    title: AppStrings.place_order,
+                        (splitActive
+                            ? splitGatewayAmount
+                            : (cartResponse?.cart?.total ?? 0))
+                            .toStringAsFixed(2)),
+                    title: splitActive && splitFullCoverage
+                        ? 'Pay from Wallet'
+                        : AppStrings.place_order,
                     onPressed: () {
                       if (!addAddress) {
                         AppUtils.showToast(AppStrings.add_shipping_address);
                       } else if (!addShippingOption) {
                         AppUtils.showToast(AppStrings.add_shipping_method);
+                      } else if (splitActive && splitFullCoverage) {
+                        // Split mode: wallet covers full amount — complete directly
+                        setState(() => placeOrderApiLoading = true);
+                        // Set wallet as payment method then complete
+                        updatePaymentMethod('pp_wallet_wallet');
                       } else if (!addPaymentMethod) {
                         AppUtils.showToast(AppStrings.add_payment_method);
                       } else {
@@ -236,11 +228,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void makeRazorPayCall(String orderId) {
+    // Use wallet-reduced amount if split is active, otherwise full cart total
+    final paymentAmount = (splitActive && splitGatewayAmount > 0)
+        ? splitGatewayAmount
+        : cartResponse!.cart!.total!;
     var options = {
       'key': AppConfig.razorPayKey,
-      'amount': cartResponse!.cart!.total!.toStringAsFixed(2),
+      'amount': paymentAmount.toStringAsFixed(2),
       'name': AppConfig.appName,
-      'description': 'Payment to ${AppConfig.appName}',
+      'description': '${AppStrings.payment_to} ${AppConfig.appName}',
       'order_id': orderId,
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
@@ -332,6 +328,277 @@ class _CheckOutPageState extends State<CheckOutPage> {
     );
   }
 
+  Future<void> _loadWalletBalance() async {
+    setState(() => walletLoading = true);
+    try {
+      final walletData = await ApiService().getWalletBalance(context);
+      if (mounted) {
+        setState(() {
+          walletBalance = walletData.wallet?.balance ?? 0;
+          walletTopupConfig = walletData.topupConfig;
+          walletLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => walletLoading = false);
+      debugPrint('Error loading wallet balance: $e');
+    }
+  }
+
+  Widget _buildWalletInfoWidget() {
+    if (walletLoading) {
+      return Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 20, height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    final cartTotal = cartResponse?.cart?.total ?? 0;
+    final hasSufficientBalance = walletBalance >= cartTotal;
+    final shortfall = cartTotal - walletBalance;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: hasSufficientBalance ? Colors.green.shade200 : Colors.orange.shade200,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        color: hasSufficientBalance ? Colors.green.shade50 : Colors.orange.shade50,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Available Balance', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          '₹${walletBalance.toStringAsFixed(2)}',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text('Order Total', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          '₹${cartTotal.toStringAsFixed(2)}',
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (hasSufficientBalance)
+            Text(
+              'Your wallet balance covers the full order amount.',
+              style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+            )
+          else ...[
+            Text(
+              'Insufficient balance. You need ₹${shortfall.toStringAsFixed(2)} more.',
+              style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
+            ),
+            if (walletTopupConfig?.canTopUp == true) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _initiateWalletTopUp(shortfall),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  child: Text('Add ₹${shortfall.toStringAsFixed(0)} to Wallet'),
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  void makeWalletPayCall() async {
+    setState(() => placeOrderApiLoading = true);
+
+    try {
+      // Re-check wallet balance before placing order
+      final walletData = await ApiService().getWalletBalance(context);
+      final balance = walletData.wallet?.balance ?? 0;
+      final cartTotal = cartResponse?.cart?.total ?? 0;
+
+      if (balance >= cartTotal) {
+        // Sufficient balance — place order directly
+        completeCart();
+      } else {
+        final shortfall = cartTotal - balance;
+        setState(() {
+          placeOrderApiLoading = false;
+          walletBalance = balance;
+          walletTopupConfig = walletData.topupConfig;
+        });
+
+        if (walletData.topupConfig?.canTopUp == true) {
+          _showWalletTopUpDialog(shortfall, walletData);
+        } else {
+          AppUtils.showToast(
+              'Insufficient wallet balance. Need ₹${shortfall.toStringAsFixed(2)} more.');
+        }
+      }
+    } catch (e) {
+      setState(() => placeOrderApiLoading = false);
+      AppUtils.showToast('Failed to check wallet balance');
+      debugPrint('Wallet payment error: $e');
+    }
+  }
+
+  void _showWalletTopUpDialog(double shortfall, WalletResponse walletData) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.account_balance_wallet, color: AppColors.primary),
+            const SizedBox(width: 8),
+            const Text('Insufficient Balance'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Wallet Balance: ₹${walletData.wallet?.balance?.toStringAsFixed(2) ?? "0.00"}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Order Total: ₹${cartResponse?.cart?.total?.toStringAsFixed(2) ?? "0.00"}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'You need ₹${shortfall.toStringAsFixed(2)} more.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.orange.shade800,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _initiateWalletTopUp(shortfall);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Add ₹${shortfall.toStringAsFixed(0)}'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _initiateWalletTopUp(double amount) async {
+    setState(() => placeOrderApiLoading = true);
+
+    try {
+      final result = await ApiService().initiateWalletTopUp(context, amount);
+
+      if (result.razorpayOrderId != null && result.razorpayKey != null) {
+        // Open Razorpay for top-up
+        final topUpRazorpay = Razorpay();
+        topUpRazorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
+            (PaymentSuccessResponse response) async {
+          // Confirm top-up on backend
+          try {
+            await ApiService().confirmWalletTopUp(
+              context,
+              response.paymentId!,
+              amount,
+            );
+          } catch (e) {
+            debugPrint('Failed to confirm top-up: $e');
+          }
+
+          topUpRazorpay.clear();
+
+          // Refresh wallet balance to show updated info
+          setState(() => placeOrderApiLoading = false);
+          _loadWalletBalance();
+          AppUtils.showToast('Balance added successfully');
+        });
+
+        topUpRazorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
+            (PaymentFailureResponse response) {
+          topUpRazorpay.clear();
+          setState(() => placeOrderApiLoading = false);
+          AppUtils.showToast('Top-up payment failed. Please try again.');
+        });
+
+        topUpRazorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
+            (ExternalWalletResponse response) {});
+
+        var options = {
+          'key': result.razorpayKey,
+          'amount': (amount * 100).toInt(),
+          'order_id': result.razorpayOrderId,
+          'name': AppConfig.appName,
+          'description': 'Wallet Top-Up',
+          'retry': {'enabled': true, 'max_count': 1},
+          'send_sms_hash': true,
+          'theme': {'color': AppUtils.colorToHex(AppColors.primary)},
+        };
+        topUpRazorpay.open(options);
+      } else {
+        setState(() => placeOrderApiLoading = false);
+        AppUtils.showToast('Wallet top-up is not available');
+      }
+    } catch (e) {
+      setState(() => placeOrderApiLoading = false);
+      AppUtils.showToast('Failed to initiate top-up');
+      debugPrint('Top-up error: $e');
+    }
+  }
+
   void getCartApi() async {
     try {
       final ApiService apiService = ApiService();
@@ -387,12 +654,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
           providerId: pp_id,
+          walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
             setState(() {
               addPaymentMethod = true;
               pp_id = paymentProvider.id;
               pp_title = paymentProvider.name;
             });
+            // Load wallet balance when wallet is selected
+            if (paymentProvider.id == 'pp_wallet_wallet') {
+              _loadWalletBalance();
+            }
           },
         );
       },
@@ -448,7 +720,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context,  OrderPlacedPage(orderId: '',));
+      PageRouteUtils.pushAndRemoveUntil(
+          context,
+          OrderPlacedPage(
+            orderId: '',
+          ));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
@@ -464,7 +740,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() {
         placeOrderApiLoading = false;
       });
-      PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: response.order?.id??'',));
+      PageRouteUtils.pushAndRemoveUntil(
+          context,
+          OrderPlacedPage(
+            orderId: response.order?.id ?? '',
+          ));
     } catch (e) {
       setState(() {
         placeOrderApiLoading = false;
@@ -534,11 +814,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
       case 'pp_neft_neft':
         makeNEFTPayCall();
         break;
+      case 'pp_wallet_wallet':
+        makeWalletPayCall();
+        break;
     }
   }
 
   String? extractOrderId(dynamic response) {
     try {
+      if (response is PaymentMethodResponse) {
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
+      }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["id"];
     } catch (e) {
@@ -549,10 +835,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   String? extractClientSecret(dynamic response) {
     try {
+      if (response is PaymentMethodResponse) {
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret;
+      }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["client_secret"];
     } catch (e) {
-      print("Error extracting order ID: $e");
+      debugPrint("Error extracting client secret: $e");
       return null;
     }
   }

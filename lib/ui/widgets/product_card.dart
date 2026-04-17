@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -14,12 +15,12 @@ class ProductCard extends StatelessWidget {
   final bool isFavorite;
 
   const ProductCard({
-    Key? key,
+    super.key,
     required this.product,
     required this.onTapCard,
     this.onTapFavorite,
     this.isFavorite = false,
-  }) : super(key: key);
+  });
 
   // ---- Helpers -------------------------------------------------------------
 
@@ -27,7 +28,7 @@ class ProductCard extends StatelessWidget {
     if (p.variants?.isEmpty ?? true) return null;
     final vals = p.variants!
         .map((v) => double.tryParse(
-              v.calculatedPrice?.rawCalculatedAmount?.value ?? '',
+              v.calculatedPrice?.calculatedAmount?.toString() ?? '',
             ))
         .whereType<double>()
         .toList();
@@ -39,7 +40,7 @@ class ProductCard extends StatelessWidget {
     if (p.variants?.isEmpty ?? true) return null;
     final vals = p.variants!
         .map((v) => double.tryParse(
-              v.calculatedPrice?.rawOriginalAmount?.value ?? '',
+              v.calculatedPrice?.originalAmount?.toString() ?? '',
             ))
         .whereType<double>()
         .toList();
@@ -67,7 +68,7 @@ class ProductCard extends StatelessWidget {
     final orig = _highestOriginal(product);
     final hasDiscount = _hasDiscount(orig, calc);
     final percentOff = (hasDiscount && orig != null && calc != null)
-        ? _discountPercent(orig!, calc!)
+        ? _discountPercent(orig, calc)
         : null;
 
     return GestureDetector(
@@ -75,8 +76,18 @@ class ProductCard extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFFF8F8FB),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: Colors.black.withOpacity(0.03),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,13 +97,22 @@ class ProductCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
+                    top: Radius.circular(18),
                   ),
                   child: CachedNetworkImage(
                     imageUrl: product.thumbnail ?? '',
                     height: 225,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 350),
+                    placeholderFadeInDuration:
+                        const Duration(milliseconds: 150),
+                    placeholder: (context, url) => const AppShimmer(
+                      child: ShimmerBox(
+                        height: 225,
+                        borderRadius: BorderRadius.zero,
+                      ),
+                    ),
                     errorWidget: (context, url, error) =>
                         const ImageFallbackWidget(w: 60, h: 60),
                   ),
@@ -123,7 +143,7 @@ class ProductCard extends StatelessWidget {
                       decoration: const BoxDecoration(
                         color: Colors.pink,
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12),
+                          topLeft: Radius.circular(18),
                         ),
                       ),
                       child: RotatedBox(
@@ -146,9 +166,9 @@ class ProductCard extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Text(
-                product.title??'',
+                product.title ?? '',
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
@@ -161,7 +181,7 @@ class ProductCard extends StatelessWidget {
 
             // Price row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Row(
                 children: [
                   Text(

@@ -157,8 +157,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                         PageRouteUtils.pushWithSlide(
                             context,
                             RegisterPage(
-                              phoneNo: _phoneNumber!,
-                              countryCode: _countryCode!,
+                              phoneNo: '',
+                              countryCode: '',
                               token: '',
                               redirectPage: widget.redirectPage,
                             ));
