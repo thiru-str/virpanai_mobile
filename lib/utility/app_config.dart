@@ -2,6 +2,7 @@
 
 class AppConfig {
   static const String appName = 'GoWelMart';
+  //static const String baseUrl = 'https://dev.api.ecommerce.gowelmart.com/';
   static const String baseUrl = 'https://api.ecommerce.gowelmart.com/';
   //static const String baseUrl = 'https://api.host.getvirpanai.in/';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
