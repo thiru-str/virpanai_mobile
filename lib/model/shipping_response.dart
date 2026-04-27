@@ -395,20 +395,50 @@ class Rule {
 class ServiceZone {
   String? fulfillmentSetId;
   String? id;
+  FulfillmentSet? fulfillmentSet;
 
   ServiceZone({
     this.fulfillmentSetId,
     this.id,
+    this.fulfillmentSet,
   });
 
   factory ServiceZone.fromJson(Map<String, dynamic> json) => ServiceZone(
     fulfillmentSetId: json["fulfillment_set_id"],
     id: json["id"],
+    fulfillmentSet: json["fulfillment_set"] == null
+        ? null
+        : FulfillmentSet.fromJson(json["fulfillment_set"]),
   );
 
   Map<String, dynamic> toJson() => {
     "fulfillment_set_id": fulfillmentSetId,
     "id": id,
+    "fulfillment_set": fulfillmentSet?.toJson(),
+  };
+}
+
+class FulfillmentSet {
+  String? id;
+  String? type;
+  String? name;
+
+  FulfillmentSet({
+    this.id,
+    this.type,
+    this.name,
+  });
+
+  factory FulfillmentSet.fromJson(Map<String, dynamic> json) => FulfillmentSet(
+    id: json["id"],
+    type: json["type"],
+    name: json["name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "type": type,
+    "name": name,
   };
 }
 
