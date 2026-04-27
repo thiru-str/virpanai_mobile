@@ -22,7 +22,7 @@ class CalculationBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      decoration: const BoxDecoration(gradient: AppColors.linearGradient),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,

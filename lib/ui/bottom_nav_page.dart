@@ -96,7 +96,6 @@ class _BottomNavPageState extends State<BottomNavPage>
     try {
       await Future.wait([
         getCustomerApi(), // Wait for customer API
-        getReturnsApi()
       ]);
       setState(() {
         _isLoading = false;
@@ -296,14 +295,4 @@ class _BottomNavPageState extends State<BottomNavPage>
     }
   }
 
-  Future<void> getReturnsApi() async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.getReturnReasons(context);
-      await SharedPreferencesUtil()
-          .saveJson('return_reasons', response.returnReasons ?? []);
-    } catch (e) {
-      print("Error fetching home page: $e");
-    }
-  }
 }

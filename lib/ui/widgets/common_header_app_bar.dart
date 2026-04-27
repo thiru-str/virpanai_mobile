@@ -14,6 +14,7 @@ class CommonHeaderAppBar extends StatelessWidget
   final bool leading;
   final bool? isFavorite;
   final bool? showCart;
+  final List<Widget>? trailingActions;
 
   const CommonHeaderAppBar({
     Key? key,
@@ -25,12 +26,13 @@ class CommonHeaderAppBar extends StatelessWidget
     this.leading = true,
     this.isFavorite = false,
     this.showCart = false,
+    this.trailingActions,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5FEF2),
       elevation: 0,
       centerTitle: true,
       scrolledUnderElevation: 0,
@@ -111,6 +113,7 @@ class CommonHeaderAppBar extends StatelessWidget
               ),
             ),
           ),
+        if (trailingActions != null) ...trailingActions!,
       ],
     );
   }

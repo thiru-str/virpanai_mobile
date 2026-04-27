@@ -89,7 +89,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+        child: SafeArea(
           child: Column(
         children: [
           Padding(
@@ -244,7 +246,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 FontUtils.secondaryFontStyle(color: Colors.grey, fontSize: 12),
           )
         ],
-      )),
+      ))),
     );
   }
 

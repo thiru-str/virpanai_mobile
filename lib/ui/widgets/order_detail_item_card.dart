@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_strings.dart';
 
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -12,10 +11,8 @@ class OrderDetailItemCard extends StatelessWidget {
   final String price;
   final String status;
   final double initialRating;
-  final bool showReturnButton;
   final bool showRating;
   final Function(double)? onRatingChanged;
-  final VoidCallback? onReturnTap;
 
   const OrderDetailItemCard({
     Key? key,
@@ -25,10 +22,8 @@ class OrderDetailItemCard extends StatelessWidget {
     required this.price,
     required this.status,
     this.initialRating = 0.0,
-    this.showReturnButton = true,
     this.showRating = true,
     this.onRatingChanged,
-    this.onReturnTap,
   }) : super(key: key);
 
   @override
@@ -112,73 +107,43 @@ class OrderDetailItemCard extends StatelessWidget {
               ),
 
               // Divider
-              if (showRating || showReturnButton) ...[
+              if (showRating) ...[
                 const SizedBox(height: 8),
                 Divider(color: Colors.grey.shade300, thickness: 1),
               ],
 
-              // 🔹 Rating & Return Button Section
-              if (showRating || showReturnButton) ...[
+              // 🔹 Rating Section
+              if (showRating) ...[
                 const SizedBox(height: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        showRating
-                            ? Column(
-                                children: [
-                                  RatingBar.builder(
-                                    initialRating: initialRating,
-                                    minRating: 1,
-                                    direction: Axis.horizontal,
-                                    allowHalfRating: false,
-                                    itemCount: 5,
-                                    itemSize: 24,
-                                    unratedColor: Colors.grey.shade300,
-                                    itemPadding: const EdgeInsets.symmetric(
-                                        horizontal: 2.0),
-                                    itemBuilder: (context, _) => Icon(
-                                        Icons.star,
-                                        color: AppColors.primary),
-                                    onRatingUpdate: (rating) {
-                                      if (onRatingChanged != null) {
-                                        onRatingChanged!(rating);
-                                      }
-                                    },
-                                  ),
-                                  SizedBox(
-                                    height: 4,
-                                  ),
-                                  const Text(
-                                    "Please rate the product",
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox(),
-                        if (showReturnButton)
-                          ElevatedButton(
-                            onPressed: onReturnTap,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              AppStrings.return_order,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                      ],
+                    RatingBar.builder(
+                      initialRating: initialRating,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: false,
+                      itemCount: 5,
+                      itemSize: 24,
+                      unratedColor: Colors.grey.shade300,
+                      itemPadding:
+                          const EdgeInsets.symmetric(horizontal: 2.0),
+                      itemBuilder: (context, _) =>
+                          Icon(Icons.star, color: AppColors.primary),
+                      onRatingUpdate: (rating) {
+                        if (onRatingChanged != null) {
+                          onRatingChanged!(rating);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Please rate the product",
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
                     ),
                   ],
                 ),

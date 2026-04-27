@@ -4,8 +4,7 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
-import 'package:waioz/ui/widgets/product_view.dart';
+import 'package:waioz/ui/widgets/product_card_4.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
@@ -56,7 +55,9 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                 Navigator.of(context).pop();
               },
             ),
-      body: apiLoading
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+        child: apiLoading
           ?  Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
@@ -79,7 +80,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                         final product = wishListResponse!.products?[index];
                         return GestureDetector(
                           onTap: () {},
-                          child: ProductView(
+                          child: ProductCard4(
                               product: product!,
                               onTapFavorite: () {
                                 String currentCustomerId = customer?.id ?? "";
@@ -124,6 +125,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                     eventBus.fire(TabSwitchEvent(1));
                   },
                 ),
+      ),
     );
   }
 

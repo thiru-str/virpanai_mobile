@@ -35,7 +35,9 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
           },
         ),
         backgroundColor: Colors.white,
-        body: Padding(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,6 +84,6 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
               ),
             ],
           ),
-        ));
+        )));
   }
 }

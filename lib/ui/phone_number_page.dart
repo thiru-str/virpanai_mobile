@@ -1,23 +1,20 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:waioz/model/send_otp_response.dart';
+import 'package:waioz/ui/UserDetailsPage.dart';
 import 'package:waioz/ui/otp_verification_page.dart';
-import 'package:waioz/ui/register_page.dart';
-import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
 import '../utility/app_utils.dart';
-import '../utility/shared_preferences_util.dart';
-import 'bottom_nav_page.dart';
 
 class PhoneNumberPage extends StatefulWidget {
   final Widget? redirectPage;
@@ -33,35 +30,18 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
   String? _countryCode;
 
   SendOtpResponse? sendOtpResponse;
-  bool apiCalling = false;
-
-  bool isEmailLogin = false;
-
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    getLoginType();
-  }
-
-  Future<void> getLoginType() async {
-    final loginType =
-        await SharedPreferencesUtil().getBool('email_login') ?? false;
-    setState(() {
-      isEmailLogin = loginType;
-    });
-  }
+  bool apiCalling = true;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFF5FEF2),
+        extendBodyBehindAppBar: true,
+        resizeToAvoidBottomInset: false, // Prevents Stack from resizing on keyboard open
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
             icon: SvgPicture.asset(
@@ -69,211 +49,167 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
               height: 16,
               width: 16,
             ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         body: Container(
-          color: Colors.white, // Full page background color
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              const SizedBox(height: 16),
-              // Title
-              Text(
-                isEmailLogin?AppStrings.login:AppStrings.enter_mob_no,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+
+              Positioned(top: 0, right: 0, child: SvgPicture.asset(AppAssets.bg_top)),
+              Positioned(bottom: 0, left: 0, child: SvgPicture.asset(AppAssets.bg_bottom)),
+
+              Positioned.fill(
+                child: Container(color: Colors.white.withOpacity(0.7)),
               ),
-              const SizedBox(height: 16),
-              // Form for phone input
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
 
-                    if (isEmailLogin) ...[
-                      Text(
-                        AppStrings.email,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[700]!,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: SafeArea(
+                        top: true,
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title
+                                Text(
+                                  AppStrings.enter_mob_no,
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
 
-                      CustomTextField(
-                        hintText: AppStrings.email,
-                        controller: emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (!isEmailLogin) return null;
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.email_required;
-                          }
-                          if (!RegExp(
-                            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                          ).hasMatch(value)) {
-                            return AppStrings.enter_valid_email;
-                          }
-                          return null;
-                        },
-                      ),
+                                // Form
+                                Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppStrings.mobile_number,
+                                        style: FontUtils.primaryFontStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[700]!,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      IntlPhoneField(
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                        ],
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.transparent,
+                                          contentPadding: const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 12),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary, width: 1.5),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary, width: 1.5),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary, width: 1.5),
+                                          ),
+                                        ),
+                                        initialCountryCode: AppStrings.country_code,
+                                        showDropdownIcon: true,
+                                        onChanged: (phone) {
+                                          setState(() {
+                                            _phoneNumber = phone.number;
+                                            _countryCode = phone.countryCode;
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null || value.number.isEmpty) {
+                                            return AppStrings.enter_valid_mob_no;
+                                          } else if (value.number.length < 10 ||
+                                              value.number.length > 15) {
+                                            return AppStrings.digit_range;
+                                          }
+                                          return null;
+                                        },
+                                        dropdownTextStyle: FontUtils.primaryFontStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
+                                  ),
+                                ),
 
-                      const SizedBox(height: 16),
-
-                      CustomTextField(
-                        hintText: AppStrings.password,
-                        controller: passwordController,
-                        textCapitalization: TextCapitalization.none,
-                        isPassword: true,
-                        keyboardType: TextInputType.visiblePassword,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(
-                                r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
+                                const Spacer(),
+                                const SizedBox(height: 20),
+                              ],
                             ),
                           ),
-                        ],
-                        validator: (value) {
-                          if (!isEmailLogin) return null;
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.password_required;
-                          }
-                          if (value.length < 5) {
-                            return AppStrings.password_min_length;
-                          }
-                          return null;
-                        },
-                      ),
-                      newToAppRegisterText(onRegisterTap: () {
-                        PageRouteUtils.pushWithSlide(
-                            context,
-                            RegisterPage(
-                              phoneNo: '',
-                              countryCode: '',
-                              token: '',
-                              redirectPage: widget.redirectPage,
-                            ));
-                      })
-
-                    ] else ...[
-                      Text(
-                        AppStrings.mobile_number,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[700]!,
                         ),
                       ),
-                      const SizedBox(height: 8),
-
-                      IntlPhoneField(
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        decoration: InputDecoration(
-                          filled: true,
-                          contentPadding:
-                          const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            BorderSide(color: AppColors.primary, width: 1.5),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            BorderSide(color: AppColors.primary, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            BorderSide(color: AppColors.primary, width: 1.5),
-                          ),
-                        ),
-                        initialCountryCode: AppStrings.country_code,
-                        onChanged: (phone) {
-                          _phoneNumber = phone.number;
-                          _countryCode = phone.countryCode;
-                        },
-                        validator: (value) {
-                          if (value == null || value.number.isEmpty) {
-                            return AppStrings.enter_valid_mob_no;
-                          }
-                          if (value.number.length < 10 ||
-                              value.number.length > 15) {
-                            return AppStrings.digit_range;
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ],
-                ),
+                    ),
+                  );
+                },
               ),
 
-              const Spacer(),
-              // Submit button
-              Align(
-                alignment: Alignment.bottomRight,
+              Positioned(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 60,
+                right: 24,
                 child: FloatingActionButton(
                   elevation: 0,
                   shape: const CircleBorder(),
+                  backgroundColor: AppColors.primary,
                   onPressed: () {
-                    if(apiCalling)
-                      {
-                        return;
-                      }
+                    AppLogger.print('pressed', 'message');
                     if (_formKey.currentState!.validate()) {
-                      if (isEmailLogin) {
-                        loginWithEmail();
+                      if (_phoneNumber != null) {
+                        sendOtp();
                       } else {
-                        if (_phoneNumber != null) {
-                          sendOtp();
-                        } else {
-                          AppUtils.showToast(AppStrings.enter_mob_no);
-                        }
+                        AppUtils.showToast(AppStrings.enter_mob_no);
                       }
                     }
                   },
-
-                  backgroundColor: AppColors.primary,
-                  child: apiCalling
-                      ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0,
-                      color: Colors.white,
-                    ),
-                  ):const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                  child: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
     );
+
+
   }
 
   void sendOtp() async {
     try {
-      setState(() {
-        apiCalling = false;
-      });
       final ApiService apiService = ApiService();
       sendOtpResponse =
           await apiService.sendOtp(context, _countryCode!, _phoneNumber!);
-      /*if (kDebugMode) {
-        AppUtils.showToast(sendOtpResponse!.otp!);
-      }*/
+      setState(() {
+        apiCalling = false;
+      });
 
       PageRouteUtils.pushWithSlide(
           context,
@@ -283,103 +219,13 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             otp: sendOtpResponse!.otp!,
             redirectPage:widget.redirectPage,
           ));
+
     } catch (e) {
       setState(() {
         apiCalling = false;
       });
-      debugPrint(e.toString());
-    }
-  }
-
-  void loginWithEmail() async {
-    try {
-      setState(() {
-        apiCalling = true;
-      });
-      final apiService = ApiService();
-
-      final response = await apiService.loginWithEmail(
-        context,
-        emailController.text.trim(),
-        passwordController.text,
-      );
-
-      if (!response.newUser!) {
-        SharedPreferencesUtil().saveString('token', response.token!);
-      }
-      // SharedPreferencesUtil()
-      //     .saveMap('customer', response.customer!.toJson());
-
-      if (mounted) {
-        if (widget.redirectPage != null) {
-          getHomePageApi();
-          setState(() {
-            apiCalling = false;
-          });
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
-        } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-        }
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-      setState(() {
-        apiCalling = false;
-      });
-    }
-  }
-
-  void getHomePageApi() async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.getHomePage(context);
-      await SharedPreferencesUtil()
-          .saveString('region_id', response.global?.regionId ?? "");
-      await SharedPreferencesUtil()
-          .saveString('cart_id', response.global?.cartId ?? "");
-      await SharedPreferencesUtil()
-          .saveString('currency_symbol', response.global?.currencySymbol ?? "");
-      await SharedPreferencesUtil()
-          .saveMap('global', response.global?.toJson() ?? {});
-    } catch (e) {
       print(e);
     }
   }
-
-  Widget newToAppRegisterText({
-    required VoidCallback onRegisterTap,
-  }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: RichText(
-          text: TextSpan(
-            style: FontUtils.primaryFontStyle(
-              fontSize: 14,
-              color: Colors.grey[700]!,
-            ),
-            children: [
-              const TextSpan(
-                text: 'Don’t have an account? ',
-              ),
-              TextSpan(
-                text: 'Register',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = onRegisterTap,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-
-
 
 }

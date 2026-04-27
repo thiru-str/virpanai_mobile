@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -182,6 +183,7 @@ class AppUtils {
     return null; // No background
   }
 
-
-
+  static String appOs() {
+    return Platform.isAndroid ? 'Play' : 'App';
+  }
 }

@@ -76,6 +76,9 @@ dependencies:
   logger: ^2.6.2
   confetti: ^0.8.0
   newrelic_mobile: ^1.2.0
+  dotted_border: ^2.0.0+3
+  flutter_image_compress: ^2.3.0
+  path: ^1.9.0
 
 
 
@@ -131,12 +134,14 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: CircularStd
+    - family: MyCustomFont
       fonts:
-        - asset: fonts/circular_std_book_regular.ttf
-    - family: Gabarito
-      fonts:
-        - asset: fonts/gabarito_regular.ttf
+        - asset: fonts/font_regular.ttf
+          weight: 400
+        - asset: fonts/font_medium.ttf
+          weight: 500
+        - asset: fonts/font_bold.ttf
+          weight: 700
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

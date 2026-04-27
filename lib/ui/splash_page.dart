@@ -1,21 +1,25 @@
+
+
 import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
-import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/ui/widgets/soft_update_bottom_sheet.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/push_notification_service.dart';
-import '../model/public_detail_model.dart';
+import '../utility/app_strings.dart';
+import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
-import 'package:flutter/material.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utility/version_utils.dart';
@@ -24,22 +28,19 @@ import 'force_update_page.dart';
 class SplashPage extends StatefulWidget {
   final bool skipLogin;
   final PublicDetailsResponse? publicDetailsResponse;
-  const SplashPage(
-      {super.key, this.skipLogin = false, this.publicDetailsResponse});
+  const SplashPage({super.key,this.skipLogin = false,this.publicDetailsResponse});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-
     Future.microtask(() async {
       await PushNotificationService().initialize(context);
     });
@@ -65,33 +66,34 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+      ),
+    );
+
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Center(
-        child: ScaleTransition(
-          scale: _animation,
-          child: SvgPicture.asset(
-            AppAssets.app_logo,
-            height: 120,
-            width: 158,
-          ),
+      body: Container(
+        color: Colors.white,
+        child: Center(
+          child: SvgPicture.asset(AppAssets.app_logo,height: 250,),
         ),
       ),
     );
   }
 
   void navToNextPage() async {
-    final publicDetails = widget.publicDetailsResponse ??
-        await SharedPreferencesUtil().getPublicDetails();
-
-    final versionCheckJson =
-        publicDetails?.storeDetails?.storeMetadata?.versionCheck;
+    final versionCheckJson = widget.publicDetailsResponse
+        ?.storeDetails
+        ?.storeMetadata
+        ?.versionCheck;
 
     debugPrint('min build calling ${versionCheckJson}');
 
+
     if (versionCheckJson != null && versionCheckJson.isNotEmpty) {
-      final versionConfig =
-          await VersionUtils.parseVersionConfig(versionCheckJson);
+      final versionConfig = await VersionUtils.parseVersionConfig(versionCheckJson);
 
       final bool forceUpdate = versionConfig['force_update'] ?? false;
       final androidConfig = versionConfig['android'];
@@ -117,13 +119,13 @@ class _SplashPageState extends State<SplashPage>
         if (_isVersionLower(currentVersion, minVersion)) {
           _showForceUpdate();
           return;
-        } else if (_isVersionLower(currentVersion, latestVersion) &&
-            !forceUpdate) {
+        } else if (_isVersionLower(currentVersion, latestVersion) && !forceUpdate) {
           _showSoftUpdate();
           return;
         }
       }
-    } else {
+    }
+    else{
       debugPrint('min build calling');
     }
 
@@ -169,6 +171,7 @@ class _SplashPageState extends State<SplashPage>
     }
   }
 
+
   bool _isVersionLower(String current, String latest) {
     final currentParts = current.split('.').map(int.parse).toList();
     final latestParts = latest.split('.').map(int.parse).toList();
@@ -184,12 +187,8 @@ class _SplashPageState extends State<SplashPage>
 
   void _navigateToHome() async {
     String? token = await SharedPreferencesUtil().getString('token');
-    bool skipLogin =
-        await SharedPreferencesUtil().getBool('skip_login') ?? widget.skipLogin;
     Widget nextPage = token == null
-        ? skipLogin
-            ? const BottomNavPage()
-            : WelcomePage()
+        ? widget.skipLogin ? const BottomNavPage() : WelcomePage()
         : const BottomNavPage();
 
     if (mounted) {
@@ -197,9 +196,15 @@ class _SplashPageState extends State<SplashPage>
     }
   }
 
+
+
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 }
+
+
+

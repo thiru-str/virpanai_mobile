@@ -54,7 +54,9 @@ class _AddressListPageState extends State<AddressListPage> {
           Navigator.of(context).pop();
         },
       ),
-      body: apiLoading
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+        child: apiLoading
           ? Center(
               child: CircularProgressIndicator(
                 color: AppColors.primary,
@@ -107,32 +109,37 @@ class _AddressListPageState extends State<AddressListPage> {
                         ),
                       ),
                       SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
-                              final result = await PageRouteUtils.pushWithSlide(
-                                  context,
-                                  isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
-                              if (result == true) {
-                                getAddressListApi();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
+                        child: Visibility(
+                          visible:
+                              (addressListResponse?.addresses?.length ?? 0) < 1,
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16.0),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
+                                final result = await PageRouteUtils.pushWithSlide(
+                                    context,
+                                    isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
+                                if (result == true) {
+                                  getAddressListApi();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                                minimumSize: const Size(
+                                    double.infinity, 52), // Full-width button
                               ),
-                              minimumSize: const Size(
-                                  double.infinity, 52), // Full-width button
-                            ),
-                            child: Text(
-                              AppStrings.add_address,
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
+                              child: Text(
+                                AppStrings.add_address,
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -155,6 +162,7 @@ class _AddressListPageState extends State<AddressListPage> {
                     }
                   },
                 ),
+      ),
     );
   }
 

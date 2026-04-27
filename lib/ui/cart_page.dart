@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
+import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -51,6 +52,7 @@ class _CartPageState extends State<CartPage>
     with SingleTickerProviderStateMixin {
   CartResponse? cartResponse;
   CrossSellProductsResponse? crossSellProductsResponse;
+  UpSellProductsResponse? upSellProductsResponse;
   bool apiLoading = true;
   bool cartLoading = false;
   bool addressLoading = false;
@@ -223,13 +225,15 @@ class _CartPageState extends State<CartPage>
         },
       ),
       backgroundColor: Colors.white,
-      body: Stack(
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+        child: Stack(
         children: [
           apiLoading
               ? const CartPageSkeleton()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.transparent,
                       body: SingleChildScrollView(
                         child: Column(
                           children: [
@@ -319,108 +323,129 @@ class _CartPageState extends State<CartPage>
                                             removeCart(
                                                 cartItem.id!, originalIndex);
                                           },
-                                          onIncrease: () {
-                                            setState(() {
-                                              cartResponse!
-                                                  .cart!
-                                                  .items![originalIndex]
-                                                  .isUpdating = true;
-                                            });
-                                            updateCart(cartItem.quantity! + 1,
-                                                cartItem.id!, originalIndex);
-                                          },
-                                          onDecrease: () async {
+                                          onUpdateQuantity: (newQty) async {
                                             final item = cartResponse!
                                                 .cart!.items![originalIndex];
-                                            final currentQty =
-                                                item.quantity ?? 0;
                                             final stockQty =
                                                 item.inventoryQuantity ?? 0;
 
                                             setState(
                                                 () => item.isUpdating = true);
 
-                                            if (currentQty <= 1) {
+                                            if (newQty <= 0) {
                                               removeCart(
                                                   item.id!, originalIndex);
                                               return;
                                             }
 
-                                            if (!(item.inStock ?? false)) {
-                                              if (stockQty == 0) {
-                                                removeCart(
-                                                    item.id!, originalIndex);
-                                                return;
-                                              }
-
-                                              if (currentQty > stockQty) {
-                                                final confirmed =
-                                                    await showDialog<bool>(
-                                                  context: context,
-                                                  builder: (_) => AlertDialog(
-                                                    title: Text(
-                                                      AppStrings.stock_update,
-                                                      style: FontUtils
-                                                          .primaryFontStyle(
-                                                              color: AppColors
-                                                                  .primary,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
+                                            if (stockQty == 0) {
+                                              await showDialog(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                  title: Text(
+                                                    AppStrings.out_of_stock,
+                                                    style: FontUtils
+                                                        .primaryFontStyle(
+                                                      color: AppColors.primary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
-                                                    content: Text(
-                                                      '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
-                                                      '${AppStrings.stock_update_message_suffix} $stockQty?',
-                                                      style: FontUtils
-                                                          .secondaryFontStyle(),
-                                                    ),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                context, false),
-                                                        child: Text(
-                                                          AppStrings.cancel,
-                                                          style: FontUtils
-                                                              .primaryFontStyle(
-                                                                  color: AppColors
-                                                                      .primary,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        ),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                context, true),
-                                                        child: Text(
-                                                          AppStrings.yes_update,
-                                                          style: FontUtils
-                                                              .primaryFontStyle(
-                                                                  color: AppColors
-                                                                      .primary,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        ),
-                                                      ),
-                                                    ],
                                                   ),
-                                                );
-
-                                                if (confirmed == true) {
-                                                  updateCart(stockQty, item.id!,
-                                                      originalIndex);
-                                                } else {
-                                                  setState(() =>
-                                                      item.isUpdating = false);
-                                                }
-                                                return;
-                                              }
+                                                  content: Text(
+                                                    AppStrings
+                                                        .product_currently_unavailable,
+                                                    style: FontUtils
+                                                        .secondaryFontStyle(),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(context),
+                                                      child: Text(
+                                                        AppStrings.ok,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                          color: AppColors
+                                                              .primary,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                              setState(() =>
+                                                  item.isUpdating = false);
+                                              return;
                                             }
 
-                                            updateCart(currentQty - 1, item.id!,
+                                            if (newQty > stockQty) {
+                                              final confirmed =
+                                                  await showDialog<bool>(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                  title: Text(
+                                                    AppStrings.stock_update,
+                                                    style: FontUtils
+                                                        .primaryFontStyle(
+                                                      color: AppColors.primary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  content: Text(
+                                                    '${AppStrings.only_items_in_stock_prefix} $stockQty ${AppStrings.only_items_in_stock_suffix}\n'
+                                                    '${AppStrings.do_you_want_update_to_prefix} $stockQty?',
+                                                    style: FontUtils
+                                                        .secondaryFontStyle(),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      child: Text(
+                                                        AppStrings.cancel,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                          color: AppColors
+                                                              .primary,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      child: Text(
+                                                        AppStrings.update,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                          color: AppColors
+                                                              .primary,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirmed == true) {
+                                                updateCart(stockQty, item.id!,
+                                                    originalIndex);
+                                              } else {
+                                                setState(() =>
+                                                    item.isUpdating = false);
+                                              }
+                                              return;
+                                            }
+
+                                            updateCart(newQty, item.id!,
                                                 originalIndex);
                                           },
                                         ),
@@ -435,6 +460,20 @@ class _CartPageState extends State<CartPage>
                                           'Cross Selling Products',
                                       products:
                                           crossSellProductsResponse?.products ??
+                                              const [],
+                                      onReturnFromProductDetail: (_) async {
+                                        if (!mounted) return;
+                                        getCartApi();
+                                      },
+                                    ),
+                                  if ((upSellProductsResponse
+                                          ?.products?.isNotEmpty ??
+                                      false))
+                                    ProductRecommendationSection(
+                                      title: upSellProductsResponse?.label ??
+                                          'Up Selling Products',
+                                      products:
+                                          upSellProductsResponse?.products ??
                                               const [],
                                       onReturnFromProductDetail: (_) async {
                                         if (!mounted) return;
@@ -652,6 +691,7 @@ class _CartPageState extends State<CartPage>
           ),
         ],
       ),
+      ),
       bottomNavigationBar: apiLoading
           ? const SafeArea(
               child: SizedBox(
@@ -772,8 +812,10 @@ class _CartPageState extends State<CartPage>
       emitEvent(cartResponse!);
       if (cartId != null && cartId.isNotEmpty) {
         unawaited(getCrossSellingProductsApi(cartId));
+        unawaited(getUpSellingProductsApi(cartId));
       } else {
         crossSellProductsResponse = null;
+        upSellProductsResponse = null;
       }
       setState(() {
         pp_id = cartResponse?.cart?.paymentCollection?.paymentSessions
@@ -806,6 +848,18 @@ class _CartPageState extends State<CartPage>
       });
     } catch (e) {
       debugPrint('cross selling error: $e');
+    }
+  }
+
+  Future<void> getUpSellingProductsApi(String cartId) async {
+    try {
+      final response = await ApiService().upSellingProducts(context, cartId);
+      if (!mounted) return;
+      setState(() {
+        upSellProductsResponse = response;
+      });
+    } catch (e) {
+      debugPrint('up selling error: $e');
     }
   }
 

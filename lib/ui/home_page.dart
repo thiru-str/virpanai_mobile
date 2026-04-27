@@ -6,6 +6,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
+import 'package:waioz/ui/widgets/custom_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
@@ -143,28 +144,22 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    late final PreferredSizeWidget homeAppBar;
-    if (apiLoading) {
-      homeAppBar = HomeHeaderSkeleton(
-        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
-      );
-    } else {
-      homeAppBar = CombinedHeaderAppBar(
-        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
-        title: headerTitle,
-        cartCount: cartItems ?? 0,
-        onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-        onSearchClick: () => PageRouteUtils.pushWithFade(
-          context,
-          const ProductPage(),
-        ),
-      );
-    }
+    final PreferredSizeWidget homeAppBar = CustomSearchAppBar(
+      hintText: 'Search "Mascara"',
+      cartCount: cartItems ?? 0,
+      onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+      onSearchTap: () => PageRouteUtils.pushWithFade(
+        context,
+        const ProductPage(),
+      ),
+    );
 
     return Scaffold(
         appBar: homeAppBar,
         backgroundColor: Colors.white,
-        body: SafeArea(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: SafeArea(
           child: apiLoading
               ? const HomePageSkeleton()
               : RefreshIndicator(
@@ -223,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-        ));
+        )));
   }
 
   ListView buildComponentList() {
@@ -397,12 +392,7 @@ class _HomePageState extends State<HomePage> {
             ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Item9(
-                  content: homePageContent!,
-                  onCartQtyChanged: (deltaQty, variantId) async {
-                    await addCart(deltaQty, variantId);
-                  },
-                ),
+                child: Item9(content: homePageContent!),
               );
       case "item11":
         return homePageContent?.layoutData?.isEmpty == true

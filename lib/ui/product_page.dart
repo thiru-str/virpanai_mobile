@@ -7,6 +7,7 @@ import 'package:waioz/ui/filter_page.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
+import 'package:waioz/ui/widgets/product_card_4.dart';
 import 'package:waioz/ui/widgets/product_view.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -177,7 +178,9 @@ class _ProductPageState extends State<ProductPage> {
             Navigator.of(context).pop();
           },
         ),
-        body: Padding(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,9 +350,8 @@ class _ProductPageState extends State<ProductPage> {
                           final product = filteredProducts[index];
                           return AppReveal(
                             index: index % 10,
-                            child: ProductView(
+                            child: ProductCard4(
                               product: product,
-                              type: productViewType,
                               onTapCard: () {
                                 PageRouteUtils.pushWithSlide(
                                   context,
@@ -366,6 +368,7 @@ class _ProductPageState extends State<ProductPage> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

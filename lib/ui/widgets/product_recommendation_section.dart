@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/ui/product_detail_page.dart';
-import 'package:waioz/ui/widgets/product_view.dart';
+import 'package:waioz/ui/widgets/product_card_4.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -46,17 +46,20 @@ class ProductRecommendationSection extends StatelessWidget {
                 final product = products[index];
                 return Padding(
                   padding: const EdgeInsets.only(right: 10),
-                  child: ProductView(
-                    product: product,
-                    onTapCard: () async {
-                      await PageRouteUtils.pushWithSlide(
-                        context,
-                        ProductDetailPage(productId: product.id ?? ''),
-                      );
-                      if (onReturnFromProductDetail != null) {
-                        await onReturnFromProductDetail!(product);
-                      }
-                    },
+                  child: SizedBox(
+                    width: 180,
+                    child: ProductCard4(
+                      product: product,
+                      onTapCard: () async {
+                        await PageRouteUtils.pushWithSlide(
+                          context,
+                          ProductDetailPage(productId: product.id ?? ''),
+                        );
+                        if (onReturnFromProductDetail != null) {
+                          await onReturnFromProductDetail!(product);
+                        }
+                      },
+                    ),
                   ),
                 );
               },

@@ -175,20 +175,48 @@ class Product {
 class Metadata {
   ReviewSummary? reviewSummary;
   String? additionalDescription;
+  WarrantyDetails? warrantyDetails;
 
   Metadata({
     this.reviewSummary,
     this.additionalDescription,
+    this.warrantyDetails,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     reviewSummary: json["review_summary"] == null ? null : ReviewSummary.fromJson(json["review_summary"]),
     additionalDescription: json["additional_description"],
+    warrantyDetails: json["warranty_details"] == null ? null : WarrantyDetails.fromJson(json["warranty_details"]),
   );
 
   Map<String, dynamic> toJson() => {
     "review_summary": reviewSummary?.toJson(),
     "additional_description": additionalDescription,
+    "warranty_details": warrantyDetails?.toJson(),
+  };
+}
+
+class WarrantyDetails {
+  String? warranty;
+  bool? isGwmWarranty;
+  bool? isWarrantyAvailable;
+
+  WarrantyDetails({
+    this.warranty,
+    this.isGwmWarranty,
+    this.isWarrantyAvailable,
+  });
+
+  factory WarrantyDetails.fromJson(Map<String, dynamic> json) => WarrantyDetails(
+    warranty: json["warranty"],
+    isGwmWarranty: json["is_gowelmart_warranty"],
+    isWarrantyAvailable: json["is_warranty_available"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "warranty": warranty,
+    "is_gowelmart_warranty": isGwmWarranty,
+    "is_warranty_available": isWarrantyAvailable,
   };
 }
 

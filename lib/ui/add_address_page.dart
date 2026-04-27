@@ -107,7 +107,9 @@ class _AddAddressPage extends State<AddAddressPage> {
             Navigator.of(context).pop();
           },
         ),
-        body: Padding(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
@@ -298,6 +300,7 @@ class _AddAddressPage extends State<AddAddressPage> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:waioz/model/add_on_products_response.dart';
@@ -11,7 +12,6 @@ import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
-import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
@@ -26,6 +26,7 @@ import 'package:waioz/ui/widgets/review_card.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
+import 'package:waioz/ui/widgets/warranty_info_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -57,7 +58,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   ReviewResponse? reviewResponse;
   ProductInfoResponse? productInfoResponse;
   RelatedProductsResponse? relatedProductsResponse;
-  UpSellProductsResponse? upSellProductsResponse;
   AddOnProductsResponse? addOnProductsResponse;
   CartResponse? cartResponse;
 
@@ -76,6 +76,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   ProductResponse.Variant? selectedVariant;
   String? selectedVariantId;
   int selectedQuantity = 1;
+  final TextEditingController quantityController = TextEditingController();
   bool stockNotAvailable = false;
 
   bool showVariantSelection = false;
@@ -91,6 +92,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   void initState() {
     super.initState();
+
+    quantityController.text = selectedQuantity.toString();
 
     AppUtils.isLoggedIn().then((value) {
       setState(() {
@@ -116,6 +119,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   void dispose() {
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
+    quantityController.dispose();
     super.dispose();
   }
 
@@ -130,7 +134,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       // Load non-critical sections in background after primary PDP is visible.
       unawaited(getRelatedProductsApi());
-      unawaited(getUpSellingProductsApi());
       if (isLoggedIn) {
         unawaited(getReviewApi());
         unawaited(getCartApi());
@@ -176,7 +179,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             isFavorite: isFavorite, // Pass the updated favorite status here
           ),
           backgroundColor: Colors.white,
-          body: apiLoading
+          body: Container(
+            decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+            child: apiLoading
               ? const ProductDetailSkeleton()
               : SafeArea(
                   child: Stack(children: [
@@ -201,10 +206,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       child: buildProductDescription()),
                                   AppReveal(
                                       index: 4, child: buildRelatedProducts()),
-                                  AppReveal(
-                                      index: 5,
-                                      child: buildUpSellingProducts()),
-                                  AppReveal(index: 6, child: buildReviews()),
+                                  AppReveal(index: 5, child: buildReviews()),
                                   const SizedBox(height: 90),
                                 ],
                               ),
@@ -216,6 +218,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     buildBottomButton()
                   ]),
                 ),
+          ),
         ),
       ),
     );
@@ -308,25 +311,32 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget buildUpSellingProducts() {
-    return ProductRecommendationSection(
-      title: upSellProductsResponse?.label ?? 'Up Selling Products',
-      products: upSellProductsResponse?.products ?? const [],
-    );
-  }
-
   Widget buildProductDetails() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           product?.title ?? '',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: FontUtils.secondaryFontStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
             color: AppColors.textColor,
           ),
         ),
+        if ((product?.subtitle ?? '').isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            product!.subtitle!,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: FontUtils.secondaryFontStyle(
+              fontSize: 13,
+              color: AppColors.textColor50,
+            ),
+          ),
+        ],
         const SizedBox(height: 15),
         Row(
           children: [
@@ -469,10 +479,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: isSelected ? Colors.black : Colors.grey,
+                        color: isSelected ? AppColors.primary : Colors.grey,
                       ),
                       borderRadius: BorderRadius.circular(5),
-                      color: isSelected ? Colors.black : Colors.white,
+                      color: isSelected ? AppColors.primary : Colors.white,
                     ),
                     child: Text(
                       optionValue.value ?? '',
@@ -580,6 +590,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         const SizedBox(height: 10),
         CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
+        Visibility(
+          visible: product?.metadata?.warrantyDetails?.isWarrantyAvailable ?? false,
+          child: WarrantyInfoCard(
+            isGwmWarranty: product?.metadata?.warrantyDetails?.isGwmWarranty ?? false,
+            description: product?.metadata?.warrantyDetails?.warranty ?? '',
+          ),
+        ),
       ],
     );
   }
@@ -666,35 +683,36 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget buildQuantitySelector() {
     return Row(
       children: [
-        // Quantity Dropdown with a fixed width
+        // Quantity Input Field with fixed width
         Container(
-          width: 80, // Adjust the width as needed
+          width: 60,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: DropdownButton<int>(
-            value: selectedQuantity,
-            isExpanded: true,
-            underline: Container(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedQuantity = newValue!;
-              });
+          child: TextField(
+            controller: quantityController,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(3),
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Qty',
+            ),
+            style: FontUtils.secondaryFontStyle(fontSize: 16),
+            onChanged: (value) {
+              final parsed = int.tryParse(value);
+              if (parsed != null && parsed > 0) {
+                setState(() => selectedQuantity = parsed);
+              }
             },
-            items: List.generate(10, (index) => index + 1)
-                .map((qty) => DropdownMenuItem(
-                      value: qty,
-                      child: Text(
-                        qty.toString(),
-                        style: FontUtils.secondaryFontStyle(fontSize: 16),
-                      ),
-                    ))
-                .toList(),
           ),
         ),
-        const SizedBox(width: 10), // Adds spacing between dropdown and button
+        const SizedBox(width: 10), // Adds spacing between input and button
         // "Add to Cart" button takes more space
         Expanded(
           child: ElevatedButton(
@@ -710,7 +728,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
-                    final enteredQty = selectedQuantity;
+                    if (quantityController.text.isEmpty) {
+                      AppUtils.showToast(AppStrings.please_enter_quantity);
+                      return;
+                    }
+
+                    final parsedQty = int.tryParse(quantityController.text);
+                    if (parsedQty == null || parsedQty <= 0) {
+                      AppUtils.showToast(AppStrings.please_enter_valid_quantity);
+                      return;
+                    }
+
+                    final enteredQty = parsedQty;
+                    selectedQuantity = enteredQty;
                     final maxQty = getMaxQuantity(
                         selectedVariant, cartResponse?.cart?.items ?? []);
 
@@ -902,21 +932,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  Future<void> getUpSellingProductsApi() async {
-    try {
-      if ((productInfoResponse?.upSellingProductCount ?? 1) == 0) {
-        return;
-      }
-      final apiService = ApiService();
-      final response =
-          await apiService.upSellingProducts(context, widget.productId);
-      if (!mounted) return;
-      setState(() => upSellProductsResponse = response);
-    } catch (e) {
-      debugPrint('up selling error: $e');
-    }
-  }
-
   Future<void> getReviewApi() async {
     try {
       if (!isLoggedIn) {
@@ -968,10 +983,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       if ((response.relatedProductCount ?? 0) > 0 &&
           (relatedProductsResponse?.products?.isEmpty ?? true)) {
         unawaited(getRelatedProductsApi());
-      }
-      if ((response.upSellingProductCount ?? 0) > 0 &&
-          (upSellProductsResponse?.products?.isEmpty ?? true)) {
-        unawaited(getUpSellingProductsApi());
       }
     } catch (e) {
       debugPrint('product info error: $e');

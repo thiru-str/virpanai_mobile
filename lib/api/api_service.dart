@@ -8,12 +8,12 @@ import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
+import 'package:waioz/model/duplicate_response_model.dart';
+import 'package:waioz/model/pin_code_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/payment_method_response.dart';
 import 'package:waioz/model/related_products_response.dart';
-import 'package:waioz/model/return_response.dart';
-import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
@@ -44,7 +44,6 @@ import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
-import '../model/email_register_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../model/tags_response.dart';
@@ -374,18 +373,42 @@ class ApiService {
       String lastName,
       String countryCode,
       String phone,
-      String token) async {
+      String token,
+      String shopName,
+      String state,
+      String city,
+      String postalCode,
+      bool isGST,
+      String gstNo,
+      String gstImage,
+      String shopNameBoardImage,
+      String shopInteriorImage,
+      String shopCounterImage) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await _updateToken();
     final response = await _makePostRequest(
         "store/customers",
         {
           "email": email,
-          "company_name": companyName,
+          "company_name": shopName,
           "first_name": firstName,
           "last_name": lastName,
           "phone": phone,
-          "metadata": {"country_code": countryCode, "device_id": deviceId}
+          "metadata": {
+            "country_code": countryCode,
+            "device_id": deviceId,
+            "shop_name": shopName,
+            "country": "IN",
+            "city": city,
+            "state": state,
+            "postal_code": postalCode,
+            "is_gst": isGST,
+            "gst_number": gstNo,
+            "gst_image": gstImage,
+            "shop_name_board_image": shopNameBoardImage,
+            "shop_interior_image": shopInteriorImage,
+            "shop_counter_image": shopCounterImage
+          }
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -394,46 +417,6 @@ class ApiService {
       'customer_registered',
       attributes: {
         'auth_type': 'otp',
-      },
-    );
-    return response;
-  }
-
-  Future<EmailRegisterResponse> registerEmail(
-      BuildContext context,
-      String email,
-      String companyName,
-      String firstName,
-      String lastName,
-      String countryCode,
-      String phone,
-      String password) async {
-    String? deviceId = await _updateToken();
-    final response = await _makePostRequest(
-        "store/customers/email-register",
-        {
-          "email": email,
-          "company_name": companyName,
-          "first_name": firstName,
-          "last_name": lastName,
-          "phone": phone,
-          "password": password,
-          "metadata": {"country_code": countryCode, "device_id": deviceId}
-        },
-        (data) => EmailRegisterResponse.fromJson(data),
-        context);
-    await AppErrorReporter.instance.setUser(
-      id: response.customer?.id,
-      email: response.customer?.email,
-      phone: response.customer?.phone,
-      firstName: response.customer?.firstName,
-      lastName: response.customer?.lastName,
-      companyName: response.customer?.companyName,
-    );
-    await AppErrorReporter.instance.addBreadcrumb(
-      'customer_registered',
-      attributes: {
-        'auth_type': 'email',
       },
     );
     return response;
@@ -1075,6 +1058,32 @@ class ApiService {
         (data) => RegisterResponse.fromJson(data), context);
   }
 
+  Future<DuplicateResponse> checkDuplicate(
+      BuildContext context, String email, String phone) async {
+    return _makePostRequest(
+        'store/customers/check-duplicate',
+        {"email": email, "phone": phone},
+        (data) => DuplicateResponse.fromJson(data),
+        context);
+  }
+
+  Future<PinCodeResponse> pinCodeCheck(
+      BuildContext context, String pinCode) async {
+    return _makePostRequest('public/pincode-list', {"pincode": pinCode},
+        (data) => PinCodeResponse.fromJson(data), context);
+  }
+
+  Future<dynamic> uploadDocImages(
+      BuildContext context, String token, File file) async {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+    return _uploadFile(
+      file: file,
+      apiUrl: 'store/uploads',
+      fromJson: (json) => json,
+      context: context,
+    );
+  }
+
   Future<CancelOrderResponse> cancelOrder(
       BuildContext context, String orderId) async {
     await addToken();
@@ -1086,47 +1095,12 @@ class ApiService {
       BuildContext context, String orderId) async {
     await addToken();
     return _makeGetRequest<OrderDetailResponse>(
-      'store/order/details/$orderId',
+      'store/custom-orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
       null,
       null,
       (json) => OrderDetailResponse.fromJson(json),
       context,
     );
-  }
-
-  Future<ReturnResponse> getReturnReasons(BuildContext context) async {
-    return _makeGetRequest<ReturnResponse>(
-      'store/return-reasons',
-      null,
-      null,
-      (json) => ReturnResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<ReturnSuccessResponse> processReturn(
-      BuildContext context,
-      String orderId,
-      String cartId,
-      String id,
-      int quantity,
-      String reasonId,
-      String note,
-      String fullFillId) async {
-    return _makePostRequest(
-        "store/order/return/$orderId",
-        {
-          "return_item": {
-            "id": id,
-            "quantity": quantity,
-            "reason_id": reasonId,
-            "note": note
-          },
-          "fulfillment_id": fullFillId,
-          "cart_id": cartId
-        },
-        (data) => ReturnSuccessResponse.fromJson(data),
-        context);
   }
 
   Future<void> addToken() async {
@@ -1138,24 +1112,6 @@ class ApiService {
     String? publishableKey =
         await SharedPreferencesUtil().getString('publishable_key');
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
-  }
-
-  Future<VerifyOtpResponse> loginWithEmail(
-      BuildContext context, String email, String password) async {
-    String? deviceId = await _updateToken();
-    final response = await _makePostRequest(
-        "store/customers/email-login",
-        {"device_id": deviceId, "email": email, "password": password},
-        (data) => VerifyOtpResponse.fromJson(data),
-        context);
-    await AppErrorReporter.instance.addBreadcrumb(
-      'customer_login',
-      attributes: {
-        'auth_type': 'email',
-        'new_user': response.newUser ?? false,
-      },
-    );
-    return response;
   }
 
   // ==================== WALLET ====================

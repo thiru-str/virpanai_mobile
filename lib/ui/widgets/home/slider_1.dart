@@ -26,8 +26,10 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
 
   static const _slideDuration = Duration(seconds: 5);
   static const _swipeVelocityThreshold = 300; // px/s
-  static const _bannerAspectRatio = 16 / 9;
-  static const _minimumBannerHeight = 500.0;
+  /// Width ÷ height ratio for the banner container.
+  /// 3:4 portrait ratio keeps banners tall and impactful on mobile,
+  /// and scales proportionally across all screen sizes.
+  static const _bannerAspectRatio = 3 / 4;
 
   @override
   void initState() {
@@ -133,24 +135,15 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                       if (!_controller.isAnimating) _controller.forward();
                     },
     
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final bannerWidth = constraints.maxWidth.isFinite
-                            ? constraints.maxWidth
-                            : MediaQuery.of(context).size.width;
-                        final bannerHeight = (bannerWidth / _bannerAspectRatio) < _minimumBannerHeight
-                            ? _minimumBannerHeight
-                            : (bannerWidth / _bannerAspectRatio);
-
-                        return SizedBox(
-                          width: double.infinity,
-                          height: bannerHeight,
-                          child: Stack(
-                            children: [
+                    child: AspectRatio(
+                      aspectRatio: _bannerAspectRatio,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
                               CachedNetworkImage(
                                 imageUrl: currentData.image ?? '',
                                 width: double.infinity,
-                                height: bannerHeight,
+                                height: double.infinity,
                                 fit: BoxFit.cover,
                                 errorWidget: (context, _, __) => _fallbackWidget(),
                               ),
@@ -232,10 +225,8 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                                   },
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -250,7 +241,6 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
 
 Widget _fallbackWidget() {
   return Container(
-    height: _Slider1State._minimumBannerHeight,
     color: AppColors.secondary,
     alignment: Alignment.center,
     child: SvgPicture.asset(

@@ -75,7 +75,9 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           Navigator.of(context).pop();
         },
       ),
-      body:  apiLoading
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+        child: apiLoading
           ?  Center(
         child: CircularProgressIndicator(
           color: AppColors.primary,
@@ -101,6 +103,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           //   getAddressListApi();
           // }
         },
+      ),
       ),
     );
   }

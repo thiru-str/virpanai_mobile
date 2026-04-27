@@ -2,6 +2,8 @@
 
 class AppAssets {
   static const String app_logo = 'images/app_logo.svg';
+  static const String bg_top = 'images/bg_top.svg';
+  static const String bg_bottom = 'images/bg_bottom.svg';
   static const String ic_google = 'images/ic_google.png';
   static const String ic_menu_account = 'images/ic_menu_account.png';
   static const String ic_menu_cart = 'images/ic_menu_cart.png';
@@ -19,6 +21,9 @@ class AppAssets {
   static const String ic_discount = 'images/ic_discount.png';
   static const String ic_no_transaction = 'images/ic_no_transaction.png';
   static const String app_icon = 'images/app_icon.png';
+  static const String app_icon_svg = 'images/app_icon_svg.svg';
+  static const String ic_warranty = 'images/ic_warranty.svg';
+  static const String ic_gwm_warranty = 'images/ic_gwm_warranty.svg';
   static const String ic_no_image = 'images/ic_no_image.svg';
   static const String order_shipped = 'images/order_shipped.svg';
   static const String order_processing = 'images/order_processing.svg';

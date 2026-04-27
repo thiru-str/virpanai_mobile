@@ -132,28 +132,11 @@ Future<void> _savePublicDetailsToPrefs(PublicDetailsResponse details) async {
   final bool skipLogin =
       details.storeDetails?.storeMetadata?.skipLogin ?? false;
   await prefs.saveBool('skip_login', skipLogin);
-  await prefs.saveBool(
-      'email_login', ((details.storeDetails?.loginType ?? '') == 'email'));
 }
 
 void _applyThemeFromPublicDetails(PublicDetailsResponse? details) {
-  if (details == null) return;
-
-  FontUtils.updateFonts(
-    primaryFont: details.theme?.titleFont ?? FontUtils.defaultCircularStd,
-    secondaryFont: details.theme?.contentFont ?? FontUtils.defaultGabarito,
-  );
-
-  final Color apiPrimaryColor =
-      AppUtils.parseHexColor(details.theme?.primaryColor) ?? AppColors.primary;
-  final Color apiSecondaryColor =
-      AppUtils.parseHexColor(details.theme?.secondaryColor) ??
-          AppColors.secondary;
-
-  AppColors.updateColors(
-    newPrimary: apiPrimaryColor,
-    newSecondary: apiSecondaryColor,
-  );
+  // Gwm uses a static brand palette; ignore backend primary/secondary color overrides.
+  return;
 }
 
 class HomeScreen extends StatelessWidget {
@@ -178,6 +161,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   final ThemeData theme = ThemeData(
+    fontFamily: FontUtils.defaultFont,
     scaffoldBackgroundColor: Colors.white,
     splashFactory: InkRipple.splashFactory,
     pageTransitionsTheme: const PageTransitionsTheme(
@@ -186,13 +170,6 @@ class HomeScreen extends StatelessWidget {
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
     ),
-    textTheme: TextTheme(
-      displayLarge: FontUtils.primaryFontStyle(
-          fontWeight: FontWeight.w800, fontSize: 14.0),
-      displayMedium: FontUtils.secondaryFontStyle(
-          fontWeight: FontWeight.w500, fontSize: 14.0),
-      displaySmall: FontUtils.primaryFontStyle(
-          fontWeight: FontWeight.w400, fontSize: 24.0),
-    ),
+    textTheme: const TextTheme(),
   );
 }

@@ -410,12 +410,7 @@ class _CustomPageState extends State<CustomPage> {
             ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Item9(
-                  content: homePageContent!,
-                  onCartQtyChanged: (deltaQty, variantId) async {
-                    await addCart(deltaQty, variantId);
-                  },
-                ),
+                child: Item9(content: homePageContent!),
               );
       case "item11":
         return homePageContent?.layoutData?.isEmpty == true

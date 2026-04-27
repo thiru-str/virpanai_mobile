@@ -1,8 +1,8 @@
 // lib/assets.dart
 
 class AppStrings {
-  static const String welcome_to_store = 'Welcome to \n our store';
-  static const String get_your_product = 'Get your product as fast as one hour';
+  static const String welcome_to_store = 'GoWelMart';
+  static const String get_your_product = 'All branded Mobiles & Accessories under one umbrella';
 
   static const String transation_details = 'Transaction details';
   static const String get_started = 'Get Started';
@@ -242,6 +242,17 @@ class AppStrings {
       'Max items for this stock reached';
   static const String can_add_upto_prefix = 'You can only add up to';
   static const String items_suffix = 'items.';
+  static const String please_enter_quantity = 'Please enter quantity';
+  static const String please_enter_valid_quantity = 'Please enter valid quantity';
+  static const String enter_quantity = 'Enter Quantity';
+  static const String quantity_hint = 'Quantity';
+  static const String product_currently_unavailable =
+      'This product is currently not available.';
+  static const String only_items_in_stock_prefix = 'Only';
+  static const String only_items_in_stock_suffix = 'items available in stock.';
+  static const String do_you_want_update_to_prefix =
+      'Do you want to update quantity to';
+  static const String update = 'Update';
   static const String add_ons = 'Add-ons';
   static const String no_subcategories_found = 'No subcategories found';
   static const String write_a_reason = 'Write a reason';

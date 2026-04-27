@@ -100,7 +100,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
         /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
         body: Scaffold(
           backgroundColor: Colors.white,
-          body: apiLoading
+          body: Container(
+            decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+            child: apiLoading
               ? Center(
                   child: CircularProgressIndicator(),
                 )
@@ -191,6 +193,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     ),
                   ],
                 ),
+          ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16.0),
             child: placeOrderApiLoading

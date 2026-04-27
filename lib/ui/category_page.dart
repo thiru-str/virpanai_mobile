@@ -43,7 +43,9 @@ class _CategoryPageState extends State<CategoryPage> {
           },
         ),
         backgroundColor: Colors.white,
-        body: apiLoading
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: apiLoading
             ? const CategoryPageSkeleton()
             : Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -95,7 +97,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     )
                   ],
                 ),
-              ));
+              )));
   }
 
   void getCategoriesApi() async {

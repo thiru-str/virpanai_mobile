@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/wallet_response.dart';
 import 'package:waioz/ui/wallet_top_up_page.dart';
+import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -140,11 +141,12 @@ class _WalletPageState extends State<WalletPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Wallet'),
-        actions: [
+      appBar: CommonHeaderAppBar(
+        title: 'My Wallet',
+        onBackTap: () => Navigator.of(context).pop(),
+        trailingActions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: AppColors.primary),
             onPressed: () {
               _loadWallet();
               _loadTransactions();
@@ -152,11 +154,13 @@ class _WalletPageState extends State<WalletPage> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadWallet();
-          await _loadTransactions();
-        },
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await _loadWallet();
+            await _loadTransactions();
+          },
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
@@ -325,6 +329,7 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               ),
           ],
+        ),
         ),
       ),
     );

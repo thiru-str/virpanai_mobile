@@ -26,11 +26,11 @@ class AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: AppColors.primary)
+        border: Border.all(color: AppColors.primary.withAlpha(20), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

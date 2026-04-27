@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/order_detail_response.dart';
-import 'package:waioz/model/return_response.dart';
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/order_status_widget.dart';
-import 'package:waioz/ui/widgets/order_tab_switcher.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
-import 'package:waioz/ui/widgets/return_order_bottom_sheet.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -51,15 +48,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;
-  int _currentTab = 0;
-  List<ReturnReason>? returnReasons;
   String invoiceUrl = "";
   String token = "";
 
   @override
   void initState() {
     super.initState();
-    initReturn();
     initializePages();
   }
 
@@ -67,30 +61,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     getOrderHistoryAPI();
     invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url')) ?? '';
     token = (await SharedPreferencesUtil().getString('token')) ?? '';
-  }
-
-  Future<void> initReturn() async {
-    var response = await getReturnReasons();
-
-    if (response?.isNotEmpty == true) {
-      setState(() {
-        returnReasons = response;
-      });
-    }
-  }
-
-  Future<List<ReturnReason>?> getReturnReasons() async {
-    dynamic global = await SharedPreferencesUtil().getJson('return_reasons');
-    if (global != null && global is List) {
-      try {
-        return global
-            .map((e) => ReturnReason.fromJson(e as Map<String, dynamic>))
-            .toList();
-      } catch (e) {
-        print('Error parsing return reasons: $e');
-      }
-    }
-    return null;
   }
 
   void getOrderHistoryAPI() async {
@@ -143,7 +113,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               }
             },
           ),
-          body: apiLoading
+          body: Container(
+            decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+            child: apiLoading
               ? Center(
                   child: CircularProgressIndicator(
                     color: AppColors.primary,
@@ -280,7 +252,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                     ],
                   ),
                 ),
-        ));
+        )));
   }
 
   void _launchURL(String url) async {
@@ -340,26 +312,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   }
 
   Widget _buildOrdersList() {
-    final List<Item> allItems = (order?.items ?? []).where((item) => !item.isPlatformFee).toList();
-
-    // Split items by status
-    final List<Item> returnedItems = allItems
-        .where((item) => (item.status ?? '').toLowerCase().contains('returned'))
-        .toList();
-
-    final List<Item> deliveredItems = allItems
-        .where(
-            (item) => !(item.status ?? '').toLowerCase().contains('returned'))
-        .toList();
-
-    final bool hasReturned = returnedItems.isNotEmpty;
-    final bool hasDelivered = deliveredItems.isNotEmpty;
-
-    final List<Item> visibleItems = !hasReturned
-        ? deliveredItems
-        : !hasDelivered
-            ? returnedItems
-            : (_currentTab == 0 ? deliveredItems : returnedItems);
+    final List<Item> visibleItems =
+        (order?.items ?? []).where((item) => !item.isPlatformFee).toList();
 
     if (visibleItems.isEmpty) {
       return const Padding(
@@ -373,63 +327,30 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (hasDelivered && hasReturned) ...[
-          OrderTabSwitcher(
-            initialIndex: _currentTab,
-            onTabChanged: (index) {
-              setState(() => _currentTab = index);
-            },
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: visibleItems.length,
+      itemBuilder: (context, index) {
+        final itemDetail = visibleItems[index];
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: (index == visibleItems.length - 1) ? 0 : 16.0,
           ),
-          const SizedBox(height: 16),
-        ],
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: visibleItems.length,
-          itemBuilder: (context, index) {
-            final itemDetail = visibleItems[index];
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: (index == visibleItems.length - 1) ? 0 : 16.0,
-              ),
-              child: OrderDetailItemCard(
-                showReturnButton: itemDetail.isReturnable ?? false,
-                showRating: itemDetail.status == 'delivered',
-                imageUrl: itemDetail.thumbnail ?? '',
-                variant: itemDetail.variantTitle ?? '',
-                productName:
-                    '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
-                status: itemDetail.status ?? '',
-                price: CurrencyUtil.appendCurrency(
-                  ((itemDetail.unitPrice ?? 0) * (itemDetail.quantity ?? 0))
-                      .toString(),
-                ),
-                onReturnTap: () async {
-                  final response = await showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) {
-                      return ReturnOrderBottomSheet(
-                        orderId: widget.orderId ?? '',
-                        cartId: order?.cartId ?? '',
-                        orderItem: itemDetail,
-                        reasons: returnReasons ?? [],
-                      );
-                    },
-                  );
-                  if (response == true) {
-                    getOrderHistoryAPI();
-                  }
-                },
-              ),
-            );
-          },
-        ),
-      ],
+          child: OrderDetailItemCard(
+            showRating: itemDetail.status == 'delivered',
+            imageUrl: itemDetail.thumbnail ?? '',
+            variant: itemDetail.variantTitle ?? '',
+            productName:
+                '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
+            status: itemDetail.status ?? '',
+            price: CurrencyUtil.appendCurrency(
+              ((itemDetail.unitPrice ?? 0) * (itemDetail.quantity ?? 0))
+                  .toString(),
+            ),
+          ),
+        );
+      },
     );
   }
 

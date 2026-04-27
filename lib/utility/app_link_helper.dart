@@ -61,7 +61,7 @@ class AppLinkHelper {
       ) async {
     try {
 
-      final Uri link = Uri.parse('${AppConfig.baseUrl}details?id=${productId}');
+      final Uri link = Uri.parse('https://link.gowelmart.com/details?id=${productId}');
 
       final String message = '''
 Check out this product on ${AppConfig.appName}! 🛍️
