@@ -75,24 +75,13 @@ class AddressCard extends StatelessWidget {
                 children: [
                   TextButton(
                     style: TextButton.styleFrom(
-                      padding:  EdgeInsets.zero, // Removes the default padding
-                      minimumSize: const Size(0, 0), // Ensures no extra size is added
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Shrinks the tap area
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: onDelete,
-                    child:  Text(
-                     AppStrings.delete,
-                      style: FontUtils.primaryFontStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  TextButton(
-                    onPressed: onEdit,
-                    child:  Text(
-                      AppStrings.edit,
+                    child: Text(
+                      AppStrings.delete,
                       style: FontUtils.primaryFontStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -103,8 +92,28 @@ class AddressCard extends StatelessWidget {
               ),
             ),
           ),
-          Visibility(visible: !isFromEdit,child:
-          const SizedBox(height: 10),)
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: RichText(
+              text: TextSpan(
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 12,
+                  color: Colors.black,
+                ),
+                children: const [
+                  TextSpan(
+                    text: 'Note: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text:
+                        'To change/edit address, please contact GoWelMart support',
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

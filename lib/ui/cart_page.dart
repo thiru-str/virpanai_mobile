@@ -15,7 +15,9 @@ import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
+import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
+import 'package:waioz/ui/widgets/delivery_toggle.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
@@ -59,6 +61,10 @@ class _CartPageState extends State<CartPage>
   bool isAnimating = false;
 
   bool isLoggedIn = false;
+  bool isDelivery = true;
+  String? deliveryOption;
+  String? pickupOption;
+  ShippingResponse? shippingResponse;
 
   Global? global;
   List<PaymentProvider> paymentProviders = [];
@@ -280,6 +286,22 @@ class _CartPageState extends State<CartPage>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 10),
+                                  if (deliveryOption != null ||
+                                      pickupOption != null)
+                                    DeliveryToggle(
+                                      isDelivery: isDelivery,
+                                      onChanged: (value) {
+                                        final selectedId = value
+                                            ? deliveryOption
+                                            : pickupOption;
+                                        if (selectedId != null) {
+                                          updateShippingMethod(selectedId);
+                                        }
+                                      },
+                                    ),
+                                  if (deliveryOption != null ||
+                                      pickupOption != null)
+                                    const SizedBox(height: 10),
                                   ListView.builder(
                                     physics:
                                         const NeverScrollableScrollPhysics(),
@@ -827,10 +849,15 @@ class _CartPageState extends State<CartPage>
         clientSecret = cartResponse?.cart?.paymentCollection?.paymentSessions
                 ?.firstOrNull?.data?.clientSecret ??
             '';
+        isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull
+                    ?.shippingOption?.serviceZone?.fulfillmentSet?.type ??
+                '') ==
+            'shipping';
         apiLoading = false;
       });
       // Load wallet info after cart is ready
       _loadWalletInfo();
+      getShippingInfo();
     } catch (e) {
       setState(() {
         apiLoading = false;
@@ -860,6 +887,49 @@ class _CartPageState extends State<CartPage>
       });
     } catch (e) {
       debugPrint('up selling error: $e');
+    }
+  }
+
+  void getShippingInfo() async {
+    try {
+      final response = await ApiService().getShippingInfo(context);
+      if (!mounted) return;
+      setState(() {
+        shippingResponse = response;
+        final delivery = shippingResponse?.shippingOptions
+            ?.where((opt) =>
+                opt.serviceZone?.fulfillmentSet?.type == 'shipping')
+            .toList();
+        deliveryOption = delivery != null && delivery.isNotEmpty
+            ? delivery.first.id
+            : null;
+
+        final pickup = shippingResponse?.shippingOptions
+            ?.where(
+                (opt) => opt.serviceZone?.fulfillmentSet?.type == 'pickup')
+            .toList();
+        pickupOption =
+            pickup != null && pickup.isNotEmpty ? pickup.first.id : null;
+      });
+    } catch (e) {
+      debugPrint('shipping info error: $e');
+    }
+  }
+
+  void updateShippingMethod(String shippingId) async {
+    try {
+      final response =
+          await ApiService().updateShippingMethod(context, shippingId);
+      if (!mounted) return;
+      setState(() {
+        cartResponse = response;
+        isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull
+                    ?.shippingOption?.serviceZone?.fulfillmentSet?.type ??
+                '') ==
+            'shipping';
+      });
+    } catch (e) {
+      debugPrint('update shipping method error: $e');
     }
   }
 

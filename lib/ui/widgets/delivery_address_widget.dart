@@ -8,7 +8,7 @@ class DeliveryAddressWidget extends StatelessWidget {
   final String? address; // null means no address
   final String? label;   // e.g. "Home", "Office"
   final VoidCallback onAddAddress;
-  final VoidCallback onChangeAddress;
+  final VoidCallback? onChangeAddress;
   final bool isLoading;
 
   const DeliveryAddressWidget({
@@ -16,7 +16,7 @@ class DeliveryAddressWidget extends StatelessWidget {
     this.address,
     this.label,
     required this.onAddAddress,
-    required this.onChangeAddress,
+    this.onChangeAddress,
     this.isLoading = false,
   });
 
@@ -96,7 +96,7 @@ class DeliveryAddressWidget extends StatelessWidget {
                 RichText(
                   text: TextSpan(
                     style: FontUtils.primaryFontStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 14, fontWeight: FontWeight.bold),
                     children: [
                       const TextSpan(text: "Delivery Address "),
                       if (label != null) TextSpan(text: "($label)"),
@@ -106,48 +106,21 @@ class DeliveryAddressWidget extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   address!,
-                  style: FontUtils.primaryFontStyle(fontSize: 14),
+                  style: FontUtils.primaryFontStyle(fontSize: 12),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
-          isLoading
-              ? ElevatedButton(
-            onPressed: null, // disable tap while loading
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: const SizedBox(
+          if (isLoading) ...[
+            const SizedBox(width: 10),
+            const SizedBox(
               height: 20,
               width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2),
             ),
-          )
-              : ElevatedButton(
-            onPressed: onChangeAddress,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: const Text(
-              "Change",
-              style: TextStyle(color: Colors.white),
-            ),
-          )
-
+          ],
         ],
       ),
     );

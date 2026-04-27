@@ -463,7 +463,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: option.values!.map((optionValue) {
+              children: option.values!.where((optionValue) {
+                return product?.variants?.any((v) {
+                      final hasOption = v.options
+                              ?.any((o) => o.id == optionValue.id) ??
+                          false;
+                      final inStock = v.inventoryQuantity == null ||
+                          (v.inventoryQuantity ?? 0) > 0;
+                      return hasOption && inStock;
+                    }) ??
+                    false;
+              }).map((optionValue) {
                 final isSelected =
                     selectedOptions[option.id!]?.id == optionValue.id;
 

@@ -540,7 +540,7 @@ class ApiService {
     return _makeGetRequest<ProductCategoriesResponse>(
       'store/product-custom-categories',
       null,
-      null,
+      {"limit": 1000},
       (json) => ProductCategoriesResponse.fromJson(json),
       context,
     );
@@ -1095,7 +1095,7 @@ class ApiService {
       BuildContext context, String orderId) async {
     await addToken();
     return _makeGetRequest<OrderDetailResponse>(
-      'store/custom-orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
+      'store/order/details/$orderId',
       null,
       null,
       (json) => OrderDetailResponse.fromJson(json),
