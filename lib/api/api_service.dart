@@ -1249,10 +1249,12 @@ class ApiService {
         queryParameters: {'limit': limit, 'offset': offset});
   }
 
-  Future<Response> getLoyaltyPreview(num orderTotal) async {
+  Future<Response> getLoyaltyPreview(num orderTotal, {String? orderId}) async {
     await setPublishableKey();
-    return _dio.get('/store/loyalty/preview',
-        queryParameters: {'order_total': orderTotal});
+    final params = <String, dynamic>{};
+    if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    if (orderTotal > 0) params['order_total'] = orderTotal;
+    return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
 
   Future<Response> redeemLoyaltyPoints(int points) async {

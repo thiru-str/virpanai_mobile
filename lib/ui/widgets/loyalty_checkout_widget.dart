@@ -3,6 +3,7 @@ import '../../api/api_service.dart';
 import '../../model/loyalty_response.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/currency_util.dart';
+import '../../utility/extensions_util.dart';
 import '../../utility/font_utils.dart';
 
 /// Checkbox-style loyalty apply — deferred debit architecture.
@@ -47,6 +48,10 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
   }
 
   Future<void> _loadAll() async {
+    if (!ExtensionsUtil.has('loyalty')) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
     try {
       final results = await Future.wait([
         _api.getLoyaltyAccount(),
@@ -112,6 +117,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_loading) return const SizedBox.shrink();
     if (_account == null || _account!.checkoutApplyEnabled != true) return const SizedBox.shrink();
     final balance = _account!.pointsBalance ?? 0;

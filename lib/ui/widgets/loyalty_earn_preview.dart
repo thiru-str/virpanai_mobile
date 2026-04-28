@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../api/api_service.dart';
 import '../../utility/app_colors.dart';
+import '../../utility/extensions_util.dart';
 import '../../utility/font_utils.dart';
 
 /// Slim earn preview: "Earn X points on this order"
@@ -33,7 +34,7 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   }
 
   Future<void> _load() async {
-    if (widget.orderTotal <= 0) {
+    if (!ExtensionsUtil.has('loyalty') || widget.orderTotal <= 0) {
       if (mounted) setState(() => _loading = false);
       return;
     }
@@ -62,6 +63,7 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
 
   @override
   Widget build(BuildContext context) {
+    if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_loading || !_earnEnabled || _points <= 0) return const SizedBox.shrink();
 
     return Container(

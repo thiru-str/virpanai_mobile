@@ -203,10 +203,11 @@ class _SettingsPageState extends State<SettingsPage> {
                           PageRouteUtils.pushWithSlide(
                               context, const WalletPage());
                         }),
-                      _buildProfileItem('Loyalty Points', () {
-                        PageRouteUtils.pushWithSlide(
-                            context, const LoyaltyPage());
-                      }),
+                      if (enabledExtensions.contains('loyalty'))
+                        _buildProfileItem('Loyalty Points', () {
+                          PageRouteUtils.pushWithSlide(
+                              context, const LoyaltyPage());
+                        }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {
                             if (contentItem.content?.data != null) {

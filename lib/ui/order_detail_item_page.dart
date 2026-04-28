@@ -281,6 +281,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                           orderTotal: (order!.prices!.itemSubtotal ?? order!.prices!.total!) - _loyaltyDiscount,
                           orderStatus: order?.status ?? '',
                           paymentStatus: order?.paymentStatus ?? '',
+                          orderId: order?.id,
                         ),
                       _buildSectionTitle(AppStrings.shipping_details),
                       const SizedBox(height: 20), // List of order items

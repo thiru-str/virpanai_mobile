@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../api/api_service.dart';
+import '../../utility/extensions_util.dart';
 import '../../utility/font_utils.dart';
 
 /// Shows loyalty points context on the order detail page.
-/// - Active orders (pending/processing/shipped): "You'll earn X pts on delivery"
-/// - Delivered orders: "You earned X pts on this order"
-/// - Cancelled: renders nothing
+/// Three states, driven by server response:
+///   - earned      → "You earned X loyalty points" (green, from stored transaction)
+///   - will_earn   → "You'll earn X pts on delivery" (amber)
+///   - not_eligible → "Not eligible for loyalty points" (grey, for orders placed before loyalty was enabled)
+/// Cancelled orders render nothing.
 class OrderLoyaltyBadge extends StatefulWidget {
   final num orderTotal;
   final String orderStatus; // e.g. 'pending', 'completed', 'canceled'
   final String paymentStatus; // e.g. 'captured', 'pending', 'not_paid'
+  final String? orderId;
 
   const OrderLoyaltyBadge({
     super.key,
     required this.orderTotal,
     required this.orderStatus,
     required this.paymentStatus,
+    this.orderId,
   });
 
   @override
@@ -24,11 +29,11 @@ class OrderLoyaltyBadge extends StatefulWidget {
 
 class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
     with SingleTickerProviderStateMixin {
+  String _status = '';
   int _points = 0;
   int _basePoints = 0;
   double _multiplier = 1.0;
   bool _ruleApplied = false;
-  bool _earnEnabled = false;
   bool _loading = true;
 
   late AnimationController _pulseController;
@@ -36,10 +41,6 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
 
   bool get _isCancelled =>
       widget.orderStatus == 'canceled' || widget.orderStatus == 'cancelled';
-
-  bool get _isDelivered =>
-      widget.paymentStatus == 'captured' ||
-      widget.orderStatus == 'completed';
 
   @override
   void initState() {
@@ -55,18 +56,19 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
   }
 
   Future<void> _load() async {
-    if (_isCancelled || widget.orderTotal <= 0) {
+    if (_isCancelled) {
       if (mounted) setState(() => _loading = false);
       return;
     }
     try {
-      final resp = await ApiService().getLoyaltyPreview(widget.orderTotal);
+      final resp = await ApiService()
+          .getLoyaltyPreview(widget.orderTotal, orderId: widget.orderId);
       final data = resp.data;
       if (data['status'] == true && data['data'] != null) {
         final d = data['data'] as Map<String, dynamic>;
         if (mounted) {
           setState(() {
-            _earnEnabled = d['earn_enabled'] == true;
+            _status = (d['status'] ?? '').toString();
             _points = d['points_to_earn'] ?? 0;
             _basePoints = d['base_points'] ?? _points;
             _multiplier =
@@ -91,9 +93,9 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
 
   @override
   Widget build(BuildContext context) {
+    if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_isCancelled) return const SizedBox.shrink();
 
-    // Loading shimmer
     if (_loading) {
       return AnimatedBuilder(
         animation: _pulseAnimation,
@@ -127,15 +129,67 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
       );
     }
 
-    if (!_earnEnabled || _points <= 0) return const SizedBox.shrink();
+    // Order placed before loyalty was enabled — muted chip.
+    if (_status == 'not_eligible') {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.do_not_disturb_alt_rounded,
+                    color: Colors.grey.shade600, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Not eligible for loyalty points',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    Text(
+                      'This order was placed before loyalty rewards were enabled',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_points <= 0) return const SizedBox.shrink();
 
     final bool hasMultiplier = _ruleApplied && _multiplier > 1.01;
     final String multiplierDisplay = _multiplier == _multiplier.toInt()
         ? '${_multiplier.toInt()}'
         : _multiplier.toStringAsFixed(1);
 
-    // Delivered: green confirmed badge
-    if (_isDelivered) {
+    // Already earned — green confirmed badge.
+    if (_status == 'earned') {
       return Container(
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
@@ -170,22 +224,13 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                         color: Colors.green.shade800,
                       ),
                     ),
-                    if (hasMultiplier)
-                      Text(
-                        '$_basePoints pts × ${multiplierDisplay}× bonus applied',
-                        style: FontUtils.secondaryFontStyle(
-                          fontSize: 11,
-                          color: Colors.green.shade600,
-                        ),
-                      )
-                    else
-                      Text(
-                        'Credited to your loyalty wallet',
-                        style: FontUtils.secondaryFontStyle(
-                          fontSize: 11,
-                          color: Colors.green.shade600,
-                        ),
+                    Text(
+                      'Credited to your loyalty wallet',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 11,
+                        color: Colors.green.shade600,
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -211,7 +256,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
       );
     }
 
-    // Pending / Processing / Shipped: amber "will earn" badge
+    // Eligible, pending delivery — amber "will earn" badge.
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
