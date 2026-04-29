@@ -238,7 +238,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     }),
                   ],
 
-
+                  const SizedBox(height: 16),
 
 
                   apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
