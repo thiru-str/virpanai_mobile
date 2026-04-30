@@ -1,6 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/order_detail_response.dart';
+import 'package:waioz/model/order_history_reponse.dart'
+    as legacy_order_models;
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/order_status_widget.dart';
@@ -31,6 +34,7 @@ class OrderDetailItemPage extends StatefulWidget {
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   String paymentType = "Unknown"; // Default value
   Data? order;
+  legacy_order_models.Order? legacyOrder;
 
   double get _walletAmount {
     final meta = order?.metadata;
@@ -66,13 +70,26 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   void getOrderHistoryAPI() async {
     try {
       final ApiService apiService = ApiService();
-      var response =
+      final response =
           await apiService.getOrderDetails(context, widget.orderId ?? '');
+      legacy_order_models.Order? legacy;
+      try {
+        final legacyResponse = await apiService.getIndividualOrderHistory(
+          context,
+          widget.orderId ?? '',
+        );
+        legacy = legacyResponse.order;
+      } catch (_) {}
+
+      final paymentId = response.data?.paymentMethod ??
+          legacy?.paymentCollections?.firstOrNull?.payments?.firstOrNull
+              ?.providerId ??
+          '';
+
       setState(() {
         order = response.data;
+        legacyOrder = legacy;
         debugPrint('order details called');
-        String? paymentId = order?.paymentMethod ?? '';
-        print(paymentId);
         paymentType = paymentTypeMap[paymentId] ?? "Unknown";
         apiLoading = false;
       });
@@ -129,6 +146,22 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                     // Use a Column to arrange the widgets vertically
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Center(
+                        child: OrderStatusWidget(
+                          currentStep: getCurrentStep(
+                            legacyOrder?.status ?? order?.status,
+                            _fulfillmentStatus,
+                          ),
+                          steps: buildOrderSteps(
+                            legacyOrder?.status ?? order?.status,
+                            _fulfillmentStatus,
+                          ),
+                          isCanceled:
+                              (legacyOrder?.status ?? order?.status) ==
+                                  'canceled',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       _buildOrdersList(),
                       const SizedBox(height: 10), // List of order items
                       _buildSectionTitle(AppStrings.billing_details),
@@ -149,9 +182,19 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                     context,
                                     TransactionDetailsScreen(
                                       orderID: order?.id ?? "",
-                                    ));
+                                ));
                               },
                             ),
+                            if (_deliveryMethodName.isNotEmpty)
+                              CartCalculation(
+                                keyText: 'Delivery Method:',
+                                valueText: _deliveryMethodName,
+                                valueStyle: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             const SizedBox(
                               height: 10,
                             ),
@@ -240,7 +283,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         ),
                       ),
                       Visibility(
-                        visible: (order?.paymentStatus ?? '') == 'delivered',
+                        visible: _fulfillmentStatus == 'delivered',
                         child: ProfileItemWidget(
                           title: AppStrings.download_invoice,
                           onTap: () {
@@ -355,6 +398,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   }
 
   Widget _buildShippingDetailsCard() {
+    final dynamic shippingAddress =
+        order?.shippingAddress ?? legacyOrder?.cart?.shippingAddress;
+    final shippingLines = [
+      shippingAddress?.address1,
+      shippingAddress?.city,
+      shippingAddress?.postalCode,
+      shippingAddress?.province,
+    ].where((value) => value != null && value.isNotEmpty).join(', ');
+
     return Container(
         padding: const EdgeInsets.all(20),
         width: double.infinity, // Full width
@@ -366,18 +418,27 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //
-            Text(
-              '${order?.shippingAddress?.address1}, '
-              '${order?.shippingAddress?.city}, '
-              '${order?.shippingAddress?.postalCode}, '
-              '${order?.shippingAddress?.province ?? ''}.',
-            ),
+            Text(shippingLines),
             const SizedBox(height: 8),
-            Text('${order?.shippingAddress?.phone ?? ''}'),
+            Text('${shippingAddress?.phone ?? ''}'),
           ],
         ));
   }
+
+  String get _fulfillmentStatus =>
+      legacyOrder?.metadata?.fulfillmentStatus ??
+      legacyOrder?.fulfillmentStatus ??
+      order?.orderStatus ??
+      '';
+
+  String get _deliveryMethodName =>
+      legacyOrder?.cart?.shippingAddress == null
+          ? ''
+          : (legacyOrder?.metadata?.type == 'pickup'
+              ? 'Self Pickup'
+              : (legacyOrder?.cart?.shippingAddress?.address1?.isNotEmpty ?? false)
+                  ? 'Delivery'
+                  : '');
 
   List<OrderStatusStep> buildOrderSteps(
       String? orderStatus, String? fulfillmentStatus) {

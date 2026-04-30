@@ -87,6 +87,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final fullName = [
+      customer?.firstName?.toString().trim(),
+      customer?.lastName?.toString().trim(),
+    ].where((value) => value != null && value.isNotEmpty).join(' ');
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
@@ -158,9 +163,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              customer != null
-                                  ? '${customer?.firstName} ${customer?.lastName}'
-                                  : '',
+                              fullName,
                               overflow: TextOverflow.ellipsis,
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 16,

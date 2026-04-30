@@ -176,9 +176,7 @@ class OrderDetailItemCard extends StatelessWidget {
                 Icon(Icons.circle, size: 8, color: getStatusColor(status)),
                 SizedBox(width: 6),
                 Text(
-                  status.isNotEmpty
-                      ? status[0].toUpperCase() + status.substring(1)
-                      : '',
+                  _statusLabel(status),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -206,9 +204,11 @@ class OrderDetailItemCard extends StatelessWidget {
   Color getStatusColor(String status) {
     switch (status.toLowerCase().trim()) {
       case 'pending':
+      case 'not_fulfilled':
         return Colors.orange;
 
       case 'packed':
+      case 'fulfilled':
         return Colors.blue;
 
       case 'shipped':
@@ -222,6 +222,29 @@ class OrderDetailItemCard extends StatelessWidget {
 
       default:
         return Colors.grey;
+    }
+  }
+
+  String _statusLabel(String status) {
+    switch (status.toLowerCase().trim()) {
+      case 'pending':
+      case 'not_fulfilled':
+        return 'Order Processing';
+      case 'packed':
+      case 'fulfilled':
+        return 'Ready for Dispatch';
+      case 'shipped':
+        return 'Shipped';
+      case 'delivered':
+        return 'Delivered';
+      case 'returned':
+        return 'Returned';
+      case 'canceled':
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        if (status.isEmpty) return '';
+        return status[0].toUpperCase() + status.substring(1);
     }
   }
 }

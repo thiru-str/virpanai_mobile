@@ -58,6 +58,7 @@ class _CartPageState extends State<CartPage>
   bool apiLoading = true;
   bool cartLoading = false;
   bool addressLoading = false;
+  bool shippingMethodLoading = false;
   bool isAnimating = false;
 
   bool isLoggedIn = false;
@@ -286,22 +287,6 @@ class _CartPageState extends State<CartPage>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 10),
-                                  if (deliveryOption != null ||
-                                      pickupOption != null)
-                                    DeliveryToggle(
-                                      isDelivery: isDelivery,
-                                      onChanged: (value) {
-                                        final selectedId = value
-                                            ? deliveryOption
-                                            : pickupOption;
-                                        if (selectedId != null) {
-                                          updateShippingMethod(selectedId);
-                                        }
-                                      },
-                                    ),
-                                  if (deliveryOption != null ||
-                                      pickupOption != null)
-                                    const SizedBox(height: 10),
                                   ListView.builder(
                                     physics:
                                         const NeverScrollableScrollPhysics(),
@@ -517,6 +502,9 @@ class _CartPageState extends State<CartPage>
                             // Payment Method Card
                             _buildPaymentMethodCard(),
 
+                            // Delivery Method Card
+                            _buildDeliveryMethodCard(),
+
                             // Price Details (view only)
                             AppReveal(
                               index: 3,
@@ -577,16 +565,15 @@ class _CartPageState extends State<CartPage>
                                                                   (item.total ??
                                                                       0))))
                                                   .toStringAsFixed(2))),
-                                      _priceRow(
-                                          AppStrings.shipping,
-                                          _numOrZero(cartResponse?.cart
-                                                      ?.shippingSubtotal) >
-                                                  0
-                                              ? CurrencyUtil.appendCurrency(
-                                                  _numOrZero(cartResponse?.cart
-                                                          ?.shippingSubtotal)
-                                                      .toStringAsFixed(2))
-                                              : 'FREE'),
+                                      if (_numOrZero(cartResponse?.cart
+                                              ?.shippingSubtotal) >
+                                          0)
+                                        _priceRow(
+                                            AppStrings.shipping,
+                                            CurrencyUtil.appendCurrency(
+                                                _numOrZero(cartResponse
+                                                        ?.cart?.shippingSubtotal)
+                                                    .toStringAsFixed(2))),
                                       if ((cartResponse?.cart?.items?.any(
                                                   (item) =>
                                                       item.isPlatformFee) ??
@@ -917,19 +904,26 @@ class _CartPageState extends State<CartPage>
   }
 
   void updateShippingMethod(String shippingId) async {
+    if (shippingMethodLoading) return;
+    final currentMethodId =
+        cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOptionId;
+    if (currentMethodId == shippingId) return;
+
     try {
-      final response =
-          await ApiService().updateShippingMethod(context, shippingId);
-      if (!mounted) return;
       setState(() {
-        cartResponse = response;
-        isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull
-                    ?.shippingOption?.serviceZone?.fulfillmentSet?.type ??
-                '') ==
-            'shipping';
+        shippingMethodLoading = true;
       });
+      await ApiService().updateShippingMethod(context, shippingId);
+      if (!mounted) return;
+      getCartApi();
     } catch (e) {
       debugPrint('update shipping method error: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          shippingMethodLoading = false;
+        });
+      }
     }
   }
 
@@ -1500,9 +1494,6 @@ class _CartPageState extends State<CartPage>
   // ===== Payment Method Card =====
   Widget _buildPaymentMethodCard() {
     final providerName = _getProviderName(pp_id, paymentProviders);
-    final providers = isSplitPaymentMode
-        ? paymentProviders.where((p) => p.id != 'pp_wallet_wallet').toList()
-        : paymentProviders;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -1519,7 +1510,7 @@ class _CartPageState extends State<CartPage>
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: InkWell(
-        onTap: () => showPaymentMethodsBottomSheet(context, providers),
+        onTap: () => showPaymentMethodsBottomSheet(context, paymentProviders),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -1560,6 +1551,39 @@ class _CartPageState extends State<CartPage>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDeliveryMethodCard() {
+    if (deliveryOption == null && pickupOption == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: DeliveryToggle(
+        isDelivery: isDelivery,
+        isLoading: shippingMethodLoading,
+        onChanged: (value) {
+          final selectedId = value ? deliveryOption : pickupOption;
+          if (selectedId != null) {
+            updateShippingMethod(selectedId);
+          }
+        },
       ),
     );
   }
@@ -1624,6 +1648,7 @@ class _CartPageState extends State<CartPage>
             flex: 3,
             child: ElevatedButton(
               onPressed: cartLoading
+                  || shippingMethodLoading
                   ? null
                   : () {
                       if (cartResponse?.cart?.error == true) {

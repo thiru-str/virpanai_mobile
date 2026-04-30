@@ -503,7 +503,7 @@ class ApiService {
     queryParams['limit'] = limit.toString();
 
     return _makeGetRequest<ProductsResponse>(
-      'store/list-products',
+      'store/list-products/v1',
       null,
       queryParams,
       (json) => ProductsResponse.fromJson(json),
@@ -526,8 +526,9 @@ class ApiService {
   Future<ProductDetailReponse> productDetail(
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
+    await addToken();
     return _makeGetRequest<ProductDetailReponse>(
-      'store/products',
+      'store/custom-product-detail',
       '$productId?fields=+variants.inventory_quantity,+metadata',
       {"region_id": regionId},
       (json) => ProductDetailReponse.fromJson(json),
@@ -686,7 +687,7 @@ class ApiService {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest(
-      'store/custom-carts/$cartId',
+      'store/custom-carts/$cartId?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
       null,
       null,
       (json) => CartResponse.fromJson(json),

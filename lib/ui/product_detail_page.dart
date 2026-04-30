@@ -371,6 +371,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             )
           ],
         ),
+        Visibility(
+          visible:
+              product?.metadata?.warrantyDetails?.isWarrantyAvailable ?? false,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: WarrantyInfoCard(
+              isGwmWarranty:
+                  product?.metadata?.warrantyDetails?.isGwmWarranty ?? false,
+              description:
+                  product?.metadata?.warrantyDetails?.warranty ?? '',
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -600,13 +613,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         const SizedBox(height: 10),
         CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
-        Visibility(
-          visible: product?.metadata?.warrantyDetails?.isWarrantyAvailable ?? false,
-          child: WarrantyInfoCard(
-            isGwmWarranty: product?.metadata?.warrantyDetails?.isGwmWarranty ?? false,
-            description: product?.metadata?.warrantyDetails?.warranty ?? '',
-          ),
-        ),
       ],
     );
   }
