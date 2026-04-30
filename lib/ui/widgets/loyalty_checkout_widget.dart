@@ -126,7 +126,10 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     final ratio = _ratio();
     final worth = ratio > 0 ? (balance / ratio).floor() : 0;
 
-    return GestureDetector(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
       onTap: _busy ? null : _toggle,
       behavior: HitTestBehavior.opaque,
       child: Opacity(
@@ -190,6 +193,16 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
           ),
         ),
       ),
+    ),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              _error!,
+              style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.red.shade600),
+            ),
+          ),
+      ],
     );
   }
 }
