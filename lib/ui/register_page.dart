@@ -286,6 +286,51 @@ class _RegisterPageState extends State<RegisterPage> {
         apiCalling = true;
       });
       final ApiService apiService = ApiService();
+
+      // Validate referral code BEFORE creating account — block if invalid
+      final referralCode = referralCodeController.text.trim();
+      if (referralCode.isNotEmpty) {
+        try {
+          final validateResp = await apiService.validateReferralCode(referralCode);
+          final validateData = validateResp.data as Map<String, dynamic>?;
+          if (validateData?['valid'] != true) {
+            final msg = validateData?['message'] as String? ?? 'Invalid referral code. Please check and try again.';
+            if (mounted) {
+              setState(() => apiCalling = false);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(msg),
+                backgroundColor: Colors.red.shade700,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ));
+            }
+            return;
+          }
+        } catch (e) {
+          // If validate endpoint fails (e.g. loyalty extension not installed), skip and proceed
+          final isNotFound = e.toString().contains('404') || e.toString().contains('DioExceptionType');
+          if (!isNotFound) {
+            // For 400 errors — code is invalid
+            String errMsg = 'Invalid referral code. Please check and try again.';
+            try {
+              final dioErr = e as dynamic;
+              final data = dioErr.response?.data as Map<String, dynamic>?;
+              if (data?['message'] != null) errMsg = data!['message'] as String;
+            } catch (_) {}
+            if (mounted) {
+              setState(() => apiCalling = false);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(errMsg),
+                backgroundColor: Colors.red.shade700,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ));
+            }
+            return;
+          }
+        }
+      }
+
       if(!isEmailLogin) {
         registerResponse = await apiService.register(
             context,
@@ -319,47 +364,20 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
 
-      // Apply referral code after successful registration
-      final referralCode = referralCodeController.text.trim();
+      // Apply referral code — already validated above, should always succeed
       if (referralCode.isNotEmpty) {
         try {
           final refResp = await apiService.applyReferralCode(referralCode);
           final refData = refResp.data as Map<String, dynamic>?;
-          if (mounted) {
-            if (refData?['status'] == true) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: const Text('Referral code applied! Welcome bonus points added.'),
-                backgroundColor: Colors.green.shade700,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ));
-            } else {
-              final msg = refData?['message'] as String? ?? 'Invalid referral code. Your account was created but the referral was not applied.';
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(msg),
-                backgroundColor: Colors.red.shade700,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ));
-            }
-          }
-        } catch (e) {
-          // Dio throws on 4xx — extract message from error response
-          String errMsg = 'Invalid referral code. Your account was created but the referral was not applied.';
-          try {
-            final dioErr = e as dynamic;
-            final data = dioErr.response?.data as Map<String, dynamic>?;
-            if (data?['message'] != null) errMsg = data!['message'] as String;
-          } catch (_) {}
-          if (mounted) {
+          if (mounted && refData?['status'] == true) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(errMsg),
-              backgroundColor: Colors.red.shade700,
+              content: const Text('Referral code applied! Welcome bonus points added.'),
+              backgroundColor: Colors.green.shade700,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ));
           }
-        }
+        } catch (_) {}
       }
 
       if (mounted) {

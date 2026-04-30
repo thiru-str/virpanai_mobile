@@ -55,7 +55,8 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   String _numFmt(num? val) {
     if (val == null) return '0';
     final d = val.toDouble();
-    return d == d.toInt() ? '${d.toInt()}' : val.toString();
+    if (d == d.toInt()) return '${d.toInt()}';
+    return d.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
   }
 
   Future<void> _loadData() async {

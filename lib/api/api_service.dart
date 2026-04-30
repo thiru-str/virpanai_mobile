@@ -825,6 +825,19 @@ class ApiService {
     );
   }
 
+  Future<String?> initiateIciciPayment(BuildContext context) async {
+    await setPublishableKey();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final response = await _dio.post(
+      'store/place-order/$cartId',
+      data: {"payment_provider_id": "pp_icici_icici"},
+    );
+    if (response.statusCode == 200) {
+      return response.data?['icici_redirect_url'] as String?;
+    }
+    throw Exception('Failed to initiate ICICI payment');
+  }
+
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
   //   await addToken();
   //   return _makeGetRequest<WishlistResponse>(
@@ -1302,5 +1315,12 @@ class ApiService {
     await setPublishableKey();
     return _dio.post('/store/loyalty/referral/apply',
         data: {'referral_code': code});
+  }
+
+  /// Public endpoint — no auth required. Validates a referral code before signup.
+  Future<Response> validateReferralCode(String code) async {
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/validate',
+        queryParameters: {'code': code.trim().toUpperCase()});
   }
 }
