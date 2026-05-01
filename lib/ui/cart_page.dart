@@ -505,16 +505,7 @@ class _CartPageState extends State<CartPage>
                                           CurrencyUtil.appendCurrency(
                                               (_numOrZero(cartResponse?.cart
                                                           ?.itemSubtotal) -
-                                                      _numOrZero(cartResponse
-                                                          ?.cart?.items
-                                                          ?.where((item) => item
-                                                              .isPlatformFee)
-                                                          .fold<num>(
-                                                              0,
-                                                              (sum, item) =>
-                                                                  sum +
-                                                                  (item.total ??
-                                                                      0))))
+                                                      _platformFeeTotal())
                                                   .toStringAsFixed(2))),
                                       _priceRow(
                                           AppStrings.shipping,
@@ -530,21 +521,11 @@ class _CartPageState extends State<CartPage>
                                                   (item) =>
                                                       item.isPlatformFee) ??
                                               false) &&
-                                          (cartResponse!.cart!.items!
-                                                      .firstWhere((item) =>
-                                                          item.isPlatformFee)
-                                                      .total ??
-                                                  0) >
-                                              0)
+                                          _platformFeeTotal() > 0)
                                         _priceRow(
                                             AppStrings.platform_fee,
                                             CurrencyUtil.appendCurrency(
-                                                (cartResponse!.cart!.items!
-                                                            .firstWhere(
-                                                                (item) => item
-                                                                    .isPlatformFee)
-                                                            .total ??
-                                                        0)
+                                                _platformFeeTotal()
                                                     .toStringAsFixed(2))),
                                       if (_numOrZero(
                                               cartResponse?.cart?.taxTotal) >
@@ -571,6 +552,13 @@ class _CartPageState extends State<CartPage>
                                           '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
                                           valueColor: Colors.blue.shade700,
                                         ),
+                                      if (_loyaltyDiscountAmount() > 0)
+                                        _priceRow(
+                                          'Loyalty',
+                                          '- ${CurrencyUtil.appendCurrency(_loyaltyDiscountAmount().toStringAsFixed(2))}',
+                                          valueColor:
+                                              Colors.deepPurple.shade700,
+                                        ),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 6),
@@ -581,15 +569,7 @@ class _CartPageState extends State<CartPage>
                                       _priceRow(
                                           'Total Amount',
                                           CurrencyUtil.appendCurrency(
-                                              (splitActive
-                                                      ? (_numOrZero(cartResponse
-                                                                  ?.cart
-                                                                  ?.total) -
-                                                              splitWalletAmount)
-                                                          .clamp(0,
-                                                              double.infinity)
-                                                      : _numOrZero(cartResponse
-                                                          ?.cart?.total))
+                                              _displayTotalAmount()
                                                   .toStringAsFixed(2)),
                                           isBold: true,
                                           fontSize: 13),
@@ -683,22 +663,22 @@ class _CartPageState extends State<CartPage>
         walletUsageLimit = walletData.walletUsageLimit;
       });
 
-      final isDismissed = (cartResponse?.cart?.metadata as Map?)
-          ?['wallet_auto_apply_dismissed'] == true;
-      final existingSplit = (cartResponse?.cart?.metadata as Map?)
-          ?['wallet_split'];
+      final isDismissed = (cartResponse?.cart?.metadata
+              as Map?)?['wallet_auto_apply_dismissed'] ==
+          true;
+      final existingSplit =
+          (cartResponse?.cart?.metadata as Map?)?['wallet_split'];
       final existingWalletAmount = (existingSplit is Map)
           ? (existingSplit['wallet_amount'] ?? 0).toDouble()
           : 0.0;
 
       if (isSplitPaymentMode && !isDismissed) {
         if (existingWalletAmount > 0) {
-          // Wallet was previously applied — recalculate based on current cart total.
-          // This handles cases where items were added/removed or a coupon changed the
-          // total since the wallet was last applied; stale metadata values are not used.
-          await _applyWalletSplit(silent: true);
-        } else if (autoApply && balance > 0 &&
-            cartResponse?.cart?.id != null && !splitActive) {
+          _syncPricingStateFromCart();
+        } else if (autoApply &&
+            balance > 0 &&
+            cartResponse?.cart?.id != null &&
+            !splitActive) {
           // First-time auto-apply
           await _applyWalletSplit(silent: true);
         }
@@ -712,17 +692,12 @@ class _CartPageState extends State<CartPage>
     if (cartResponse?.cart?.id == null) return;
     setState(() => walletToggling = true);
     try {
+      final wasAlreadyActive = splitActive;
       final result =
           await ApiService().applyWalletSplit(context, cartResponse!.cart!.id!);
       if (!mounted) return;
       if (result.walletApplied) {
-        final wasAlreadyActive = splitActive;
-        setState(() {
-          splitActive = true;
-          splitWalletAmount = result.walletAmount;
-          splitGatewayAmount = result.gatewayAmount;
-          splitFullCoverage = result.fullWalletCoverage;
-        });
+        await getCartApi();
         // Only play confetti on first apply, not on recalculation
         if (!wasAlreadyActive && !silent) {
           _confettiController.play();
@@ -741,12 +716,7 @@ class _CartPageState extends State<CartPage>
     try {
       await ApiService().removeWalletSplit(context, cartResponse!.cart!.id!);
       if (!mounted) return;
-      setState(() {
-        splitActive = false;
-        splitWalletAmount = 0;
-        splitGatewayAmount = 0;
-        splitFullCoverage = false;
-      });
+      await getCartApi();
     } catch (e) {
       debugPrint('Remove wallet split error: $e');
     } finally {
@@ -762,7 +732,7 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void getCartApi() async {
+  Future<void> getCartApi() async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
@@ -785,8 +755,9 @@ class _CartPageState extends State<CartPage>
             '';
         apiLoading = false;
       });
+      _syncPricingStateFromCart();
       // Load wallet info after cart is ready
-      _loadWalletInfo();
+      await _loadWalletInfo();
     } catch (e) {
       setState(() {
         apiLoading = false;
@@ -824,7 +795,8 @@ class _CartPageState extends State<CartPage>
         cartLoading = true;
       });
       final ApiService apiService = ApiService();
-      final response = await apiService.addPromoCode(context, promoCode, removeCodes: removeCodes);
+      final response = await apiService.addPromoCode(context, promoCode,
+          removeCodes: removeCodes);
       if ((response.cart?.promotions?.firstOrNull?.code ?? '').isNotEmpty) {
         AppUtils.showToast(
             '${response.cart?.promotions?.firstOrNull?.code ?? ''} ${AppStrings.promo_code_applied_success}');
@@ -832,14 +804,11 @@ class _CartPageState extends State<CartPage>
       } else {
         AppUtils.showToast(AppStrings.promo_code_not_applied);
       }
+      await getCartApi();
+      if (!mounted) return;
       setState(() {
-        cartResponse = response;
         cartLoading = false;
       });
-      // Recalculate wallet if active — coupon may have changed the cart total
-      if (splitActive) {
-        await _applyWalletSplit(silent: true);
-      }
     } catch (e) {
       setState(() {
         cartLoading = false;
@@ -860,14 +829,11 @@ class _CartPageState extends State<CartPage>
       if ((response.cart?.promotions?.firstOrNull?.code ?? '').isEmpty) {
         AppUtils.showToast(AppStrings.promo_code_removed_success);
       }
+      await getCartApi();
+      if (!mounted) return;
       setState(() {
-        cartResponse = response;
         cartLoading = false;
       });
-      // Recalculate wallet split if active (cart total changed after coupon removal)
-      if (splitActive) {
-        await _applyWalletSplit(silent: true);
-      }
     } catch (e) {
       setState(() {
         cartLoading = false;
@@ -876,24 +842,19 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-
-
   void updateCart(int qty, String cartItemId, int index) async {
     try {
       debugPrint('calling update');
       final ApiService apiService = ApiService();
-      cartResponse = await apiService.updateCart(context, qty, cartItemId);
+      await apiService.updateCart(context, qty, cartItemId);
+      await getCartApi();
+      if (!mounted) return;
       setState(() {
-        cartResponse;
-        setState(() {
+        if (cartResponse?.cart?.items != null &&
+            index < cartResponse!.cart!.items!.length) {
           cartResponse!.cart!.items![index].isUpdating = false;
-        });
+        }
       });
-      emitEvent(cartResponse!);
-      // Recalculate wallet split if active (cart total changed)
-      if (splitActive) {
-        await _applyWalletSplit(silent: true);
-      }
     } catch (e) {
       setState(() {
         cartResponse!.cart!.items![index].isUpdating = false;
@@ -906,9 +867,7 @@ class _CartPageState extends State<CartPage>
     try {
       final ApiService apiService = ApiService();
       await apiService.removeCart(context, cartItemId);
-      getCartApi();
-      // Wallet split will be recalculated when getCartApi completes and
-      // _loadWalletData runs (triggered by getCartApi → _initCart flow)
+      await getCartApi();
     } catch (e) {
       setState(() {
         setState(() {
@@ -939,8 +898,10 @@ class _CartPageState extends State<CartPage>
           final existing = cartResponse?.cart?.promotions
                   ?.map((p) => p.code ?? '')
                   .where((c) => c.isNotEmpty && c != code)
-                  .toList() ?? [];
-          await Future(() => addPromoCode(code, removeCodes: existing.isNotEmpty ? existing : null));
+                  .toList() ??
+              [];
+          await Future(() => addPromoCode(code,
+              removeCodes: existing.isNotEmpty ? existing : null));
         },
         onRemove: (codes) async {
           await Future(() => removePromoCode(codes));
@@ -1375,6 +1336,76 @@ class _CartPageState extends State<CartPage>
 
   num _numOrZero(num? value) => value ?? 0;
 
+  Map<String, dynamic> _cartMetadataMap() {
+    final metadata = cartResponse?.cart?.metadata;
+    if (metadata is Map<String, dynamic>) {
+      return metadata;
+    }
+    if (metadata is Map) {
+      return Map<String, dynamic>.from(metadata);
+    }
+    return const {};
+  }
+
+  double _doubleFromDynamic(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '0') ?? 0;
+  }
+
+  double _platformFeeTotal() {
+    return (cartResponse?.cart?.items ?? [])
+        .where((item) => item.isPlatformFee)
+        .fold<double>(0, (sum, item) => sum + _doubleFromDynamic(item.total));
+  }
+
+  double _loyaltyDiscountAmount() {
+    final loyaltyMeta = _cartMetadataMap()['loyalty_checkout_apply'];
+    if (loyaltyMeta is Map) {
+      return _doubleFromDynamic(loyaltyMeta['discount_amount']);
+    }
+    return 0;
+  }
+
+  double _walletAmountFromMetadata() {
+    final metadata = _cartMetadataMap();
+    if (metadata['wallet_auto_apply_dismissed'] == true) {
+      return 0;
+    }
+    final walletSplit = metadata['wallet_split'];
+    if (walletSplit is Map) {
+      return _doubleFromDynamic(walletSplit['wallet_amount']);
+    }
+    return 0;
+  }
+
+  double _displayTotalAmount() {
+    final total = _doubleFromDynamic(cartResponse?.cart?.total);
+    final walletAmount =
+        splitActive ? splitWalletAmount : _walletAmountFromMetadata();
+    final loyaltyAmount = _loyaltyDiscountAmount();
+    return (total - walletAmount - loyaltyAmount).clamp(0, double.infinity);
+  }
+
+  void _syncPricingStateFromCart() {
+    final metadata = _cartMetadataMap();
+    final walletSplit = metadata['wallet_split'];
+    final isDismissed = metadata['wallet_auto_apply_dismissed'] == true;
+    final walletAmount = walletSplit is Map
+        ? _doubleFromDynamic(walletSplit['wallet_amount'])
+        : 0.0;
+    final gatewayAmount = walletSplit is Map
+        ? _doubleFromDynamic(walletSplit['gateway_amount'])
+        : 0.0;
+
+    if (!mounted) return;
+    setState(() {
+      splitActive = !isDismissed && walletAmount > 0;
+      splitWalletAmount = splitActive ? walletAmount : 0;
+      splitGatewayAmount = splitActive ? gatewayAmount : 0;
+      splitFullCoverage = splitActive && gatewayAmount <= 0;
+    });
+  }
+
   // ===== Payment Method Card =====
   Widget _buildPaymentMethodCard() {
     final providerName = _getProviderName(pp_id, paymentProviders);
@@ -1445,11 +1476,7 @@ class _CartPageState extends State<CartPage>
   // ===== Ajio-style Bottom Bar =====
   Widget _buildAjioBottomBar() {
     final amount = CurrencyUtil.appendCurrency(
-      (splitActive
-              ? (cartResponse!.cart!.total! - splitWalletAmount)
-                  .clamp(0, double.infinity)
-              : cartResponse!.cart!.total!)
-          .toStringAsFixed(2),
+      _displayTotalAmount().toStringAsFixed(2),
     );
     final providerName = _getProviderName(pp_id, paymentProviders);
 
