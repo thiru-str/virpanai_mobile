@@ -40,6 +40,7 @@ import '../model/product_response.dart' hide Image;
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
+import 'widgets/loyalty_earn_preview.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -361,6 +362,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             )
           ],
         ),
+        // Loyalty earn preview — points this product earns
+        if ((num.tryParse(selectedVariant
+                    ?.calculatedPrice?.rawCalculatedAmount?.value ??
+                '') ??
+            0) >
+            0)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: LoyaltyEarnPreview(
+              orderTotal: num.tryParse(
+                      selectedVariant!.calculatedPrice!.rawCalculatedAmount!.value!) ??
+                  0,
+            ),
+          ),
       ],
     );
   }

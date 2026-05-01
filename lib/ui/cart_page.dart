@@ -16,6 +16,8 @@ import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
+import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
+import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
@@ -281,12 +283,12 @@ class _CartPageState extends State<CartPage>
                                         const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     itemCount: cartResponse!.cart!.items!
-                                        .where((item) => !item.isPlatformFee)
+                                        .where((item) => !item.isVirtualItem)
                                         .length,
                                     itemBuilder: (context, index) {
                                       final productItems = cartResponse!
                                           .cart!.items!
-                                          .where((item) => !item.isPlatformFee)
+                                          .where((item) => !item.isVirtualItem)
                                           .toList();
                                       final cartItem = productItems[index];
                                       final originalIndex = cartResponse!
@@ -505,7 +507,16 @@ class _CartPageState extends State<CartPage>
                                           CurrencyUtil.appendCurrency(
                                               (_numOrZero(cartResponse?.cart
                                                           ?.itemSubtotal) -
-                                                      _platformFeeTotal())
+                                                      _numOrZero(cartResponse
+                                                          ?.cart?.items
+                                                          ?.where((item) => item
+                                                              .isVirtualItem)
+                                                          .fold<num>(
+                                                              0,
+                                                              (sum, item) =>
+                                                                  sum +
+                                                                  (item.total ??
+                                                                      0))))
                                                   .toStringAsFixed(2))),
                                       _priceRow(
                                           AppStrings.shipping,
@@ -546,6 +557,30 @@ class _CartPageState extends State<CartPage>
                                           '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
                                           valueColor: Colors.green.shade700,
                                         ),
+                                      // Loyalty points discount (negative line item added by API)
+                                      if ((cartResponse?.cart?.items?.any(
+                                              (item) =>
+                                                  item.isLoyaltyDiscount) ??
+                                          false))
+                                        Builder(builder: (_) {
+                                          final li = cartResponse!.cart!.items!
+                                              .firstWhere((item) =>
+                                                  item.isLoyaltyDiscount);
+                                          final amt = (li.total ?? 0).abs();
+                                          final pts =
+                                              li.metadata?.pointsApplied ?? 0;
+                                          return _priceRow(
+                                            'Loyalty Points ($pts pts)',
+                                            '- ${CurrencyUtil.appendCurrency(amt.toStringAsFixed(2))}',
+                                            valueColor: AppColors.primary,
+                                          );
+                                        }),
+                                      if (_loyaltyDiscount > 0)
+                                        _priceRow(
+                                          'Loyalty Points ($_loyaltyPointsApplied pts)',
+                                          '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                          valueColor: AppColors.primary,
+                                        ),
                                       if (splitActive && splitWalletAmount > 0)
                                         _priceRow(
                                           'Wallet',
@@ -579,6 +614,27 @@ class _CartPageState extends State<CartPage>
                                 ),
                               ),
                             ),
+                            // Loyalty earn preview — based on actual paid amount (item subtotal minus loyalty discount)
+                            if ((cartResponse?.cart?.itemSubtotal ??
+                                    cartResponse?.cart?.total ??
+                                    0) >
+                                0)
+                              LoyaltyEarnPreview(
+                                orderTotal: (cartResponse!.cart!.itemSubtotal ??
+                                        cartResponse!.cart!.total!) -
+                                    _loyaltyDiscount,
+                              ),
+                            // Apply loyalty points at checkout
+                            if (cartResponse?.cart?.id != null)
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                onApplied: () {
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  getCartApi();
+                                },
+                              ),
                             const SizedBox(height: 80),
                           ],
                         ),
@@ -737,7 +793,7 @@ class _CartPageState extends State<CartPage>
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       final cartId = cartResponse?.cart?.id;
-      emitEvent(cartResponse!);
+      if (cartResponse != null) emitEvent(cartResponse!);
       if (cartId != null && cartId.isNotEmpty) {
         unawaited(getCrossSellingProductsApi(cartId));
       } else {
@@ -779,14 +835,15 @@ class _CartPageState extends State<CartPage>
   }
 
   void emitEvent(CartResponse cartResponse) {
-    final productItems =
-        cartResponse.cart!.items!.where((item) => !item.isPlatformFee).toList();
+    final productItems = (cartResponse.cart?.items ?? [])
+        .where((item) => !item.isVirtualItem)
+        .toList();
     final totalQty = productItems
         .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
     print('total qty ${totalQty}');
     eventBus.fire(ViewCartModel(
-        totalQty, productItems.map((item) => item.thumbnail!).toList()));
+        totalQty, productItems.map((item) => item.thumbnail ?? '').toList()));
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
@@ -1359,9 +1416,17 @@ class _CartPageState extends State<CartPage>
   }
 
   double _loyaltyDiscountAmount() {
-    final loyaltyMeta = _cartMetadataMap()['loyalty_checkout_apply'];
-    if (loyaltyMeta is Map) {
-      return _doubleFromDynamic(loyaltyMeta['discount_amount']);
+    return _loyaltyDiscount.toDouble();
+  }
+
+  /// Loyalty discount from cart metadata (same pattern as wallet_split)
+  num get _loyaltyDiscount {
+    final meta = cartResponse?.cart?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      // Field is "points_to_apply" (deferred debit) or "points_applied" (legacy)
+      final pts = apply['points_to_apply'] ?? apply['points_applied'] ?? 0;
+      if ((pts as num) > 0) return (apply['discount_amount'] ?? 0) as num;
     }
     return 0;
   }
@@ -1374,6 +1439,16 @@ class _CartPageState extends State<CartPage>
     final walletSplit = metadata['wallet_split'];
     if (walletSplit is Map) {
       return _doubleFromDynamic(walletSplit['wallet_amount']);
+    }
+    return 0;
+  }
+
+  int get _loyaltyPointsApplied {
+    final meta = cartResponse?.cart?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      final pts = apply['points_to_apply'] ?? apply['points_applied'] ?? 0;
+      if ((pts as num) > 0) return pts.toInt();
     }
     return 0;
   }
@@ -1542,7 +1617,7 @@ class _CartPageState extends State<CartPage>
                         return;
                       }
                       if (!addressLoading) {
-                        placeOrder(pp_id!);
+                        placeOrder(pp_id ?? 'pp_system_default');
                       }
                     },
               style: ElevatedButton.styleFrom(

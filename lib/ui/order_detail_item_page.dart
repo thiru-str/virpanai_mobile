@@ -21,6 +21,7 @@ import 'bottom_nav_page.dart';
 import 'widgets/cart_calculation.dart';
 import 'widgets/common_header_app_bar.dart';
 import 'widgets/order_detail_item_card.dart';
+import 'widgets/order_loyalty_badge.dart';
 
 class OrderDetailItemPage extends StatefulWidget {
   final String? orderId;
@@ -39,6 +40,27 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     final meta = order?.metadata;
     if (meta is Map && meta['wallet_split'] is Map) {
       return double.tryParse(meta['wallet_split']['wallet_amount']?.toString() ?? '0') ?? 0;
+    }
+    return 0;
+  }
+
+  num get _loyaltyDiscount {
+    final meta = order?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      final amt = apply['discount_amount'];
+      final pts = apply['points_to_apply'] ?? apply['points_applied'];
+      if (amt != null && pts != null && (pts as num) > 0) return amt as num;
+    }
+    return 0;
+  }
+
+  int get _loyaltyPointsApplied {
+    final meta = order?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      final pts = apply['points_to_apply'] ?? apply['points_applied'];
+      if (pts != null && (pts as num) > 0) return pts.toInt();
     }
     return 0;
   }
@@ -229,6 +251,13 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                     (order?.prices?.taxTotal ?? 0).toString()),
                               ),
                             ),
+                            if (_loyaltyDiscount > 0)
+                              CartCalculation(
+                                keyText: 'Loyalty ($_loyaltyPointsApplied pts):',
+                                valueText: '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                keyStyle: TextStyle(fontSize: 16, color: AppColors.primary),
+                                valueStyle: TextStyle(fontSize: 16, color: AppColors.primary),
+                              ),
                             if (_walletAmount > 0)
                               CartCalculation(
                                 keyText: 'Wallet:',
@@ -241,12 +270,19 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                               child: CartCalculation(
                                   keyText: '${AppStrings.total}:',
                                   valueText: CurrencyUtil.appendCurrency(
-                                      (((order?.prices?.total ?? 0) - _walletAmount).clamp(0, double.infinity)).toStringAsFixed(2))),
+                                      (((order?.prices?.total ?? 0) - _walletAmount - _loyaltyDiscount).clamp(0, double.infinity)).toStringAsFixed(2))),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 20),
+                      if ((order?.prices?.itemSubtotal ?? order?.prices?.total ?? 0) > 0)
+                        OrderLoyaltyBadge(
+                          orderTotal: (order!.prices!.itemSubtotal ?? order!.prices!.total!) - _loyaltyDiscount,
+                          orderStatus: order?.status ?? '',
+                          paymentStatus: order?.paymentStatus ?? '',
+                          orderId: order?.id,
+                        ),
                       _buildSectionTitle(AppStrings.shipping_details),
                       const SizedBox(height: 20), // List of order items
                       _buildShippingDetailsCard(), // Shipping details card

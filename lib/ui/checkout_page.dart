@@ -13,6 +13,8 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
+import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
+import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -97,7 +99,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
           },
         ),
         backgroundColor: Colors.white,
-        /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
         body: Scaffold(
           backgroundColor: Colors.white,
           body: apiLoading
@@ -184,6 +185,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
                                 _buildWalletInfoWidget(),
+
+                              const SizedBox(height: 12),
+
+                              // Loyalty earn preview — based on actual paid amount
+                              Builder(builder: (_) {
+                                final meta = cartResponse?.cart?.metadata;
+                                final loyaltyOff = (meta is Map && meta['loyalty_checkout_apply'] is Map &&
+                                    ((meta['loyalty_checkout_apply']['points_to_apply'] ?? 0) as num) > 0)
+                                    ? (meta['loyalty_checkout_apply']['discount_amount'] ?? 0) as num : 0;
+                                return LoyaltyEarnPreview(
+                                  orderTotal: (cartResponse!.cart!.itemSubtotal ?? cartResponse!.cart!.total ?? 0) - loyaltyOff,
+                                );
+                              }),
+
+                              const SizedBox(height: 4),
+
+                              // Loyalty checkout apply widget
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                onApplied: () {
+                                  // Refresh cart to reflect updated total after points applied
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  // Refresh cart to reflect updated total after points removed
+                                  getCartApi();
+                                },
+                              ),
                             ],
                           ),
                         ),
