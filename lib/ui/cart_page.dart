@@ -163,16 +163,38 @@ class _CartPageState extends State<CartPage>
 
     // Fallback display names for providers with empty/null names
     switch (providerId) {
-      case 'pp_wallet_wallet':
-        return 'Wallet';
-      case 'pp_razorpay_razorpay':
-        return 'Razorpay';
-      case 'pp_system_default':
-        return 'Cash on Delivery';
-      case 'pp_neft_neft':
-        return 'Bank Transfer (NEFT)';
-      default:
-        return AppStrings.cash_on_delivery;
+      case 'pp_wallet_wallet':      return 'Wallet';
+      case 'pp_razorpay_razorpay':  return 'Razorpay';
+      case 'pp_payu_payu':          return 'PayU';
+      case 'pp_icici_icici':        return 'ICICI Bank';
+      case 'pp_system_default':     return 'Cash on Delivery';
+      case 'pp_neft_neft':          return 'Bank Transfer (NEFT)';
+      case 'pp_stripe_stripe':      return 'Credit / Debit Card';
+      default:                      return AppStrings.cash_on_delivery;
+    }
+  }
+
+  IconData _providerIcon(String? id) {
+    switch (id) {
+      case 'pp_razorpay_razorpay': return Icons.bolt_rounded;
+      case 'pp_payu_payu':         return Icons.credit_card_rounded;
+      case 'pp_icici_icici':       return Icons.account_balance_rounded;
+      case 'pp_neft_neft':         return Icons.swap_horiz_rounded;
+      case 'pp_wallet_wallet':     return Icons.account_balance_wallet_rounded;
+      case 'pp_stripe_stripe':     return Icons.credit_card_rounded;
+      default:                     return Icons.local_shipping_rounded;
+    }
+  }
+
+  Color _providerColor(String? id) {
+    switch (id) {
+      case 'pp_razorpay_razorpay': return const Color(0xFF2D81F7);
+      case 'pp_payu_payu':         return const Color(0xFF6CB33F);
+      case 'pp_icici_icici':       return const Color(0xFFE87722);
+      case 'pp_neft_neft':         return const Color(0xFF1565C0);
+      case 'pp_wallet_wallet':     return const Color(0xFF2E7D32);
+      case 'pp_stripe_stripe':     return const Color(0xFF635BFF);
+      default:                     return const Color(0xFF795548);
     }
   }
 
@@ -1056,9 +1078,7 @@ class _CartPageState extends State<CartPage>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
@@ -1458,11 +1478,11 @@ class _CartPageState extends State<CartPage>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
+                  color: _providerColor(pp_id).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.payment_outlined,
-                    color: AppColors.primary, size: 18),
+                child: Icon(_providerIcon(pp_id),
+                    color: _providerColor(pp_id), size: 18),
               ),
               const SizedBox(width: 12),
               Expanded(
