@@ -11,6 +11,7 @@ import 'package:waioz/ui/widgets/product_card_9.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../model/product_response.dart';
+import '../../model/wishlist_reponse.dart';
 
 class ProductView extends StatefulWidget {
   final Product product;
@@ -19,6 +20,8 @@ class ProductView extends StatefulWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
+  final bool isLoggedIn;
+  final FavouriteListConfig? favConfig;
 
   const ProductView({
     super.key,
@@ -28,6 +31,8 @@ class ProductView extends StatefulWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
+    this.isLoggedIn = false,
+    this.favConfig,
   });
 
   @override
@@ -100,6 +105,8 @@ class _ProductViewState extends State<ProductView> {
           onTapCard: widget.onTapCard,
           onTapFavorite: widget.onTapFavorite,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          favConfig: widget.favConfig,
         );
 
       case ProductCardType.productView2:
@@ -109,6 +116,8 @@ class _ProductViewState extends State<ProductView> {
           onTapFavorite: widget.onTapFavorite,
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          favConfig: widget.favConfig,
         );
 
       case ProductCardType.productView3:
@@ -125,6 +134,8 @@ class _ProductViewState extends State<ProductView> {
           onTapFavorite: widget.onTapFavorite,
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          favConfig: widget.favConfig,
         );
 
       case ProductCardType.productView7:
