@@ -1,186 +1,652 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/api/api_service.dart';
-import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
-import 'package:waioz/ui/widgets/common_header_app_bar.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
-import 'package:waioz/ui/widgets/product_view.dart';
-import 'package:waioz/utility/app_assets.dart';
-import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/ui/favourite_list_detail_page.dart';
+import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/model/register_response.dart';
 
-import '../model/view_cart_model.dart';
-import '../utility/app_colors.dart';
-import '../utility/app_strings.dart';
-import '../utility/currency_util.dart';
-import 'product_detail_page.dart';
-import 'widgets/no_orders_widget.dart';
+Future<Customer?> getCustomerResponse() async {
+  final dynamic userData = await SharedPreferencesUtil().getMap('customer');
+  if (userData != null) return Customer.fromJson(userData);
+  return null;
+}
 
 class MyFavoritesPage extends StatefulWidget {
-  final bool? isFromBottomNav; // Optional Address parameter
-
+  final bool? isFromBottomNav;
   const MyFavoritesPage({super.key, this.isFromBottomNav});
 
   @override
   State<MyFavoritesPage> createState() => _MyFavoritesPageState();
 }
 
-class _MyFavoritesPageState extends State<MyFavoritesPage> {
-  WishlistResponse? wishListResponse;
-  bool apiLoading = true;
-  Customer? customer;
+class _MyFavoritesPageState extends State<MyFavoritesPage>
+    with SingleTickerProviderStateMixin {
+  FavouriteListConfig config = FavouriteListConfig();
+  List<CustomerWishlistGroup> groups = [];
+  bool loading = true;
+  bool loggedIn = false;
+  String? _simpleListId; // set in simple mode — renders detail page inline
+  final _api = ApiService();
+  late final AnimationController _fadeCtrl;
 
+  @override
   void initState() {
     super.initState();
-    _initializeData();
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 480),
+    );
+    _load();
   }
 
-  Future<void> _initializeData() async {
-    // Wait for the customer data to be fetched
-    customer = await getCustomerResponse();
+  @override
+  void dispose() {
+    _fadeCtrl.dispose();
+    super.dispose();
+  }
 
-    if (customer != null) {
-      getWishListApi(customer?.id);
+  Future<void> _load() async {
+    final customer = await getCustomerResponse();
+    if (!mounted) return;
+    setState(() => loggedIn = customer != null);
+    if (customer == null) {
+      setState(() => loading = false);
+      return;
+    }
+    try {
+      final cfg = await _api.getFavouriteListConfig(context);
+      final listsRes = await _api.getFavouriteLists(context);
+      if (!mounted) return;
+      setState(() {
+        config = cfg;
+        groups = listsRes.customerWishlistGroup ?? [];
+        loading = false;
+      });
+      _fadeCtrl.forward();
+
+      // Simple mode: render the list detail inline so the bottom tab bar stays visible.
+      if (!config.enabled && groups.isNotEmpty && mounted) {
+        setState(() => _simpleListId = groups.first.id!);
+      }
+    } catch (_) {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _createList() async {
+    final controller = TextEditingController();
+    final name = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _CreateListSheet(
+        controller: controller,
+        displayName: config.displayName,
+      ),
+    );
+    if (name == null || name.isEmpty) return;
+    try {
+      final res = await _api.createFavouriteList(context, name);
+      if (res.success == true && res.createdWishlistGroup != null && mounted) {
+        setState(() => groups.add(res.createdWishlistGroup!));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _deleteList(CustomerWishlistGroup group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 22),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Delete list?',
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF272727),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '"${group.wishlistGroupName}" and all its saved products will be removed.',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                      ),
+                      child: Text('Cancel',
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade400,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                      ),
+                      child: Text('Delete',
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _api.deleteFavouriteList(context, group.id!);
+      if (mounted) setState(() => groups.removeWhere((g) => g.id == group.id));
+    } catch (_) {}
+  }
+
+  IconData _configIcon() {
+    switch (config.icon) {
+      case 'bookmark':   return Icons.bookmark_border_rounded;
+      case 'star':       return Icons.star_border_rounded;
+      case 'sparkles':   return Icons.auto_awesome_outlined;
+      case 'trophy':     return Icons.emoji_events_outlined;
+      case 'bag':        return Icons.shopping_bag_outlined;
+      case 'gift':       return Icons.card_giftcard_outlined;
+      case 'list':       return Icons.playlist_add_check_rounded;
+      case 'bullets':    return Icons.format_list_bulleted;
+      case 'collection': return Icons.collections_bookmark_outlined;
+      case 'package':    return Icons.inventory_2_outlined;
+      case 'tag':        return Icons.sell_outlined;
+      default:           return Icons.favorite_border_rounded;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar:CommonHeaderAppBar(
-              title: AppStrings.my_favorites,
-              leading: widget.isFromBottomNav ?? false ? false : true,
-              onBackTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-      body: apiLoading
-          ?  Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
-          : wishListResponse?.products?.isNotEmpty ?? false
-              ? SafeArea(
-                  child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: MasonryGridView.count(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16, // Space between columns
-                      mainAxisSpacing: 16, // Space between rows
-                      scrollDirection: Axis.vertical,
-                      itemCount: wishListResponse?.products?.length ?? 0,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final product = wishListResponse!.products?[index];
-                        return GestureDetector(
-                          onTap: () {},
-                          child: ProductView(
-                              product: product!,
-                              onTapFavorite: () {
-                                String currentCustomerId = customer?.id ?? "";
-                                var currentWishlistEntry;
+    // Simple mode with a list — embed FavouriteListDetailPage directly so the
+    // bottom tab bar (owned by the outer Scaffold) remains visible.
+    if (_simpleListId != null) {
+      return FavouriteListDetailPage(
+        listId: _simpleListId!,
+        listName: config.displayName,
+        config: config,
+      );
+    }
 
-                                // Check if productWishlist is not null and is a list
-                                if (product?.productWishlist is List) {
-                                  // Check if the list contains the current customer's wishlist entry
-                                  currentWishlistEntry = (product?.productWishlist as List).firstWhere(
-                                        (item) => item['customer_id'] == currentCustomerId,
-                                    orElse: () => null, // Return null if no match is found
-                                  );
-                                } else if (product?.productWishlist is Map) {
-                                  // Check if the productWishlist is a map and matches the current customer ID
-                                  currentWishlistEntry = (product?.productWishlist as Map)['customer_id'] == currentCustomerId
-                                      ? product?.productWishlist
-                                      : null;
-                                }
-                                if (currentWishlistEntry != null) {
-                                  // If the wishlist entry is found, delete it
-                                  print('Wishlist entry found: ${currentWishlistEntry['id']}');
-                                  deleteWishList(product?.id, currentWishlistEntry['id']);
-                                } else {
-                                  print('No wishlist entry for this customer.');
-                                }
-                              },
-                              isFavorite: true,
-                              onTapCard: () {
-                                PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: product?.id ?? "0"));
-                              }),
-                        );
-                      },
-                    ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F7FC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        automaticallyImplyLeading: widget.isFromBottomNav != true,
+        title: Text(
+          config.displayName,
+          style: FontUtils.secondaryFontStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF272727),
+          ),
+        ),
+        actions: [
+          if (!loading && loggedIn && config.enabled)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: _createList,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ))
-              : NoOrdersWidget(
-                  message: AppStrings.no_wishlist_yet,
-                  buttonText: AppStrings.explore_categories,
-                  iconPath: AppAssets.ic_cart_empty,
-                  showExplore: (widget.isFromBottomNav ?? false),
-                  onButtonTap: () {
-                    eventBus.fire(TabSwitchEvent(1));
-                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.add, color: Colors.white, size: 16),
+                      const SizedBox(width: 4),
+                      Text('New',
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white)),
+                    ],
+                  ),
                 ),
+              ),
+            ),
+        ],
+      ),
+      body: loading
+          ? _buildSkeleton()
+          : !loggedIn
+              ? _buildLoginPrompt()
+              : !config.enabled
+                  ? _buildSimpleModeEmpty()
+                  : _buildGroupList(),
     );
   }
 
-  Future<void> getCustomerInfo() async {
-    customer = await getCustomerResponse();
-    if (customer != null) {
-      setState(() {
-        customer;
-      });
-    }
+  Widget _buildSkeleton() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 4,
+      itemBuilder: (_, __) => Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        height: 76,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
   }
 
-  Future<Customer?> getCustomerResponse() async {
-    dynamic userData = await SharedPreferencesUtil().getMap('customer');
-    if (userData != null) {
-      return Customer.fromJson(userData);
-    }
-    return null;
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.15),
+                    AppColors.primary.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Icon(_configIcon(), size: 36, color: AppColors.primary),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Sign in to save favourites',
+              style: FontUtils.secondaryFontStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Create wishlists and never lose track of the products you love.',
+              style: FontUtils.primaryFontStyle(
+                  fontSize: 13, color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  void getWishListApi(String? customerID) async {
-    try {
-      final ApiService apiService = ApiService();
-      var response = await apiService.getWishList(context, customerID);
-      if (mounted) {
-        setState(() {
-          wishListResponse = response;
-          apiLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          apiLoading = false;
-        });
-      }
-      print(e);
-    }
+  Widget _buildSimpleModeEmpty() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.18),
+                    AppColors.primary.withOpacity(0.06),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Icon(_configIcon(), size: 40, color: AppColors.primary),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Nothing saved yet',
+              style: FontUtils.secondaryFontStyle(
+                  fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Tap the ${config.icon} on any product to save it to your ${config.displayName.toLowerCase()}.',
+              style: FontUtils.primaryFontStyle(
+                  fontSize: 13, color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  void deleteWishList(String? productId, String? wishlistId) async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.deleteFavourite(context, productId, wishlistId);
-      if (mounted) {
-        setState(() {
-          apiLoading = false;
-          getWishListApi(customer?.id);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          apiLoading = false;
-        });
-      }
-      print(e);
+  Widget _buildGroupList() {
+    if (groups.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.18),
+                      AppColors.primary.withOpacity(0.06),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Icon(_configIcon(), size: 40, color: AppColors.primary),
+              ),
+              const SizedBox(height: 24),
+              Text('No lists yet',
+                  style: FontUtils.secondaryFontStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Text(
+                'Tap New to create your first ${config.displayName.toLowerCase()}.',
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 13, color: Colors.grey.shade500),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
     }
+
+    return FadeTransition(
+      opacity: _fadeCtrl,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        itemCount: groups.length,
+        itemBuilder: (_, i) {
+          final group = groups[i];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _GroupCard(
+              group: group,
+              icon: _configIcon(),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FavouriteListDetailPage(
+                    listId: group.id!,
+                    listName: group.wishlistGroupName ?? config.displayName,
+                    config: config,
+                  ),
+                ),
+              ),
+              onDelete: () => _deleteList(group),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _GroupCard extends StatefulWidget {
+  final CustomerWishlistGroup group;
+  final IconData icon;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  const _GroupCard({
+    required this.group,
+    required this.icon,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  @override
+  State<_GroupCard> createState() => _GroupCardState();
+}
+
+class _GroupCardState extends State<_GroupCard> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.18),
+                      AppColors.primary.withOpacity(0.07),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(widget.icon, color: AppColors.primary, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  widget.group.wishlistGroupName ?? '',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF272727),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: widget.onDelete,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.delete_outline,
+                      size: 20, color: Colors.grey.shade400),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right,
+                  size: 20, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateListSheet extends StatefulWidget {
+  final TextEditingController controller;
+  final String displayName;
+
+  const _CreateListSheet({
+    required this.controller,
+    required this.displayName,
+  });
+
+  @override
+  State<_CreateListSheet> createState() => _CreateListSheetState();
+}
+
+class _CreateListSheetState extends State<_CreateListSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottom),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'New ${widget.displayName}',
+            style: FontUtils.secondaryFontStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF272727),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Give your list a name to find it easily.',
+            style: FontUtils.primaryFontStyle(
+                fontSize: 13, color: Colors.grey.shade500),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: widget.controller,
+            autofocus: true,
+            onSubmitted: (v) =>
+                Navigator.pop(context, widget.controller.text.trim()),
+            style: FontUtils.primaryFontStyle(
+                fontSize: 15, color: const Color(0xFF272727)),
+            decoration: InputDecoration(
+              hintText: 'e.g. Weekend Groceries',
+              hintStyle: FontUtils.primaryFontStyle(
+                  fontSize: 14, color: Colors.grey.shade400),
+              filled: true,
+              fillColor: const Color(0xFFF8F7FC),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide:
+                    BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey.shade300),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text('Cancel',
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 14, fontWeight: FontWeight.w500)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () =>
+                      Navigator.pop(context, widget.controller.text.trim()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text('Create',
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
