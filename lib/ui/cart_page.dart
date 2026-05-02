@@ -20,6 +20,7 @@ import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
+import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -1127,6 +1128,48 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
+      case 'pp_icici_icici':
+        _makeIciciPayment();
+        break;
+    }
+  }
+
+  Future<void> _makeIciciPayment() async {
+    setState(() => cartLoading = true);
+    try {
+      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      if (!mounted) return;
+      setState(() => cartLoading = false);
+
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IciciPaymentPage(
+            redirectUrl: redirectUrl,
+            onSuccess: (orderId) {
+              Navigator.pop(context);
+              PageRouteUtils.pushAndRemoveUntil(
+                context,
+                OrderPlacedPage(orderId: orderId),
+              );
+            },
+            onFailure: () {
+              Navigator.pop(context);
+              AppUtils.showToast('ICICI payment failed or was cancelled.');
+              getCartApi();
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() => cartLoading = false);
+      AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+      debugPrint('ICICI payment error: $e');
     }
   }
 
