@@ -67,6 +67,10 @@ class Product {
   List<ProductWishlistElement>? productReview;
   ProductWishlistElement? productWishlist;
   bool isSelected;
+  // Wishlist metadata — set when product is fetched via /store/wishlist_group_products
+  String? wishlistItemId;
+  String? savedVariantId;
+  String? wishlistQty;
 
   Product({
     this.id,
@@ -99,6 +103,9 @@ class Product {
     this.productReview,
     this.productWishlist,
     this.isSelected = false,
+    this.wishlistItemId,
+    this.savedVariantId,
+    this.wishlistQty,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -134,7 +141,9 @@ class Product {
     variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
     productReview: json["product_review"] == null ? [] : List<ProductWishlistElement>.from(json["product_review"]!.map((x) => ProductWishlistElement.fromJson(x))),
     productWishlist: json["product_wishlist"] == null ? null : ProductWishlistElement.fromJson(json["product_wishlist"]),
-
+    wishlistItemId: json["wishlist_item_id"],
+    savedVariantId: json["saved_variant_id"],
+    wishlistQty: json["quantity"]?.toString(),
   );
 
   Map<String, dynamic> toJson() => {

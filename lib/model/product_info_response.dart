@@ -12,6 +12,8 @@ class ProductInfoResponse {
   Cart? cart;
   bool? productOnWishlist;
   String? productWishlistId;
+  bool? favouriteListEnabled;
+  String? displayName;
   int? addOnProductCount;
   int? relatedProductCount;
   int? crossSellingProductCount;
@@ -22,6 +24,8 @@ class ProductInfoResponse {
     this.cart,
     this.productOnWishlist,
     this.productWishlistId,
+    this.favouriteListEnabled,
+    this.displayName,
     this.addOnProductCount,
     this.relatedProductCount,
     this.crossSellingProductCount,
@@ -34,6 +38,8 @@ class ProductInfoResponse {
         cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
         productOnWishlist: json["product_on_wishlist"],
         productWishlistId: json["product_wishlist_id"],
+        favouriteListEnabled: json["favourite_list_enabled"],
+        displayName: json["display_name"],
         addOnProductCount: json["addon_product_count"],
         relatedProductCount: json["related_product_count"],
         crossSellingProductCount: json["cross_selling_product_count"],
@@ -48,6 +54,8 @@ class ProductInfoResponse {
         "cart": cart?.toJson(),
         "product_on_wishlist": productOnWishlist,
         "product_wishlist_id": productWishlistId,
+        "favourite_list_enabled": favouriteListEnabled,
+        "display_name": displayName,
         "addon_product_count": addOnProductCount,
         "related_product_count": relatedProductCount,
         "cross_selling_product_count": crossSellingProductCount,
