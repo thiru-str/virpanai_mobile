@@ -589,13 +589,6 @@ class _CartPageState extends State<CartPage>
                                           '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
                                           valueColor: Colors.blue.shade700,
                                         ),
-                                      if (_loyaltyDiscountAmount() > 0)
-                                        _priceRow(
-                                          'Loyalty',
-                                          '- ${CurrencyUtil.appendCurrency(_loyaltyDiscountAmount().toStringAsFixed(2))}',
-                                          valueColor:
-                                              Colors.deepPurple.shade700,
-                                        ),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 6),
