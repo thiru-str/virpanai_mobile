@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
 
 /// Opens ICICI's hosted payment page in a WebView.
 ///
@@ -65,19 +67,49 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pay with ICICI Bank'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            widget.onFailure();
-          },
+          icon: const Icon(Icons.close, size: 22),
+          color: const Color(0xFF272727),
+          onPressed: () => widget.onFailure(),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE87722).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.account_balance_rounded,
+                  color: Color(0xFFE87722), size: 16),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'ICICI Bank Payment',
+              style: FontUtils.primaryFontStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF272727),
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.grey.shade200),
         ),
       ),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
           if (_loading)
-            const Center(child: CircularProgressIndicator()),
+            Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
         ],
       ),
     );

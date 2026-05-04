@@ -40,6 +40,7 @@ import '../model/product_response.dart' hide Image;
 import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
+import 'widgets/favourite_heart_button.dart';
 import 'widgets/loyalty_earn_preview.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -68,6 +69,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool? productPresentInCart; // Changed to nullable to handle loading state
   bool isFavorite = false;
   String? wishlistId = '';
+  bool favouriteListEnabled = false;
+  String favouriteListName = 'Favourite List';
   int? addOnProductsCount = 0;
 
   //ProductResponse.Value? selectedColor;
@@ -87,6 +90,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   bool isLoggedIn = false;
 
+  FavouriteListConfig _favConfig = FavouriteListConfig();
+
   Map<String, File?>? videoThumbnails;
 
   @override
@@ -99,6 +104,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       });
       fetchInitialData();
       listenToEvents();
+      if (value) _loadFavouriteState();
     });
   }
 
@@ -118,6 +124,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
+  }
+
+  Future<void> _loadFavouriteState() async {
+    try {
+      final api = ApiService();
+      final results = await Future.wait([
+        api.getFavouriteListConfig(context),
+        api.getSavedItems(context),
+      ]);
+      final config = results[0] as FavouriteListConfig;
+      final saved = results[1] as SavedItemsResponse;
+      if (!mounted) return;
+      final productId = product?.id ?? widget.productId;
+      setState(() {
+        _favConfig = config;
+        isFavorite = saved.items.any((i) => i.productId == productId);
+      });
+    } catch (_) {}
   }
 
   Future<void> fetchInitialData() async {
@@ -170,11 +194,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     context, const BottomNavPage());
               }
             },
-            onFavTap: addFavourite,
             onShareTap: () {
               AppLinkHelper.shareProductInvite(widget.productId);
             },
-            isFavorite: isFavorite, // Pass the updated favorite status here
+            favWidget: FavouriteHeartButton(
+              productId: product?.id ?? widget.productId,
+              productHandle: product?.handle ?? '',
+              selectedVariantId: selectedVariantId,
+              variants: product?.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
+              isLoggedIn: isLoggedIn,
+              config: _favConfig,
+              initialSaved: isFavorite,
+              size: 22,
+            ),
           ),
           backgroundColor: Colors.white,
           body: apiLoading
@@ -364,15 +396,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         // Loyalty earn preview — points this product earns
         if ((num.tryParse(selectedVariant
-                    ?.calculatedPrice?.rawCalculatedAmount?.value ??
-                '') ??
-            0) >
+                        ?.calculatedPrice?.rawCalculatedAmount?.value ??
+                    '') ??
+                0) >
             0)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: LoyaltyEarnPreview(
-              orderTotal: num.tryParse(
-                      selectedVariant!.calculatedPrice!.rawCalculatedAmount!.value!) ??
+              orderTotal: num.tryParse(selectedVariant!
+                      .calculatedPrice!.rawCalculatedAmount!.value!) ??
                   0,
             ),
           ),
@@ -960,9 +992,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       setState(() {
         productInfoResponse = response;
-        isFavorite = productInfoResponse?.productOnWishlist ?? false;
         wishlistId = productInfoResponse?.productWishlistId ?? '';
+        favouriteListEnabled =
+            productInfoResponse?.favouriteListEnabled ?? false;
+        favouriteListName = productInfoResponse?.displayName?.isNotEmpty == true
+            ? productInfoResponse!.displayName!
+            : 'Favourite List';
         addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
+        // isFavorite and _favConfig are set by _loadFavouriteState() which uses
+        // the real config API + saved-items. Only fall back to productInfo if
+        // _loadFavouriteState hasn't completed yet.
+        if (!_favConfig.enabled && (productInfoResponse?.favouriteListEnabled ?? false)) {
+          _favConfig = FavouriteListConfig(
+            enabled: productInfoResponse?.favouriteListEnabled ?? false,
+            displayName: productInfoResponse?.displayName?.isNotEmpty == true
+                ? productInfoResponse!.displayName!
+                : 'Favourite List',
+          );
+        }
       });
 
       // Load non-critical media/add-ons after essential UI is painted.
@@ -1068,6 +1115,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
 
     if (!isFavorite) {
+      if (favouriteListEnabled) {
+        showFavouriteListPicker();
+        return;
+      }
       try {
         final apiService = ApiService();
         WishlistResponse wishlistResponse =
@@ -1080,7 +1131,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         print(e);
       }
     } else {
-      if (wishlistId != null && wishlistId!.isNotEmpty) {
+      if (favouriteListEnabled) {
+        removeFavourite(widget.productId, null);
+      } else if (wishlistId != null && wishlistId!.isNotEmpty) {
         removeFavourite(widget.productId, wishlistId);
       }
     }
@@ -1089,12 +1142,145 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   void removeFavourite(String? productId, String? wishlistId) async {
     try {
       final ApiService apiService = ApiService();
-      await apiService.deleteFavourite(context, productId, wishlistId);
+      if (favouriteListEnabled) {
+        await apiService.deleteProductFromFavouriteList(
+          context,
+          productId: productId ?? '',
+          variantId: selectedVariantId,
+        );
+      } else {
+        await apiService.deleteFavourite(context, productId, wishlistId);
+      }
       if (mounted) {
         setState(() {
           isFavorite = false;
         });
       }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void showFavouriteListPicker() {
+    final controller = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 20,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+          ),
+          child: FutureBuilder<WishlistResponse>(
+            future: ApiService().getFavouriteLists(context),
+            builder: (context, snapshot) {
+              final lists = snapshot.data?.customerWishlistGroup ?? [];
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Add to $favouriteListName',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          decoration: const InputDecoration(
+                            hintText: 'New list name',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final name = controller.text.trim();
+                          if (name.isEmpty) {
+                            AppUtils.showToast('Please enter a list name');
+                            return;
+                          }
+                          await addProductToFavouriteList(listName: name);
+                          if (mounted) Navigator.pop(sheetContext);
+                        },
+                        child: const Text('Create'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (snapshot.connectionState == ConnectionState.waiting)
+                    Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
+                  else if (lists.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text('No ${favouriteListName.toLowerCase()} yet'),
+                    )
+                  else
+                    Flexible(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: lists.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final list = lists[index];
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.favorite_border,
+                                color: AppColors.primary),
+                            title: Text(
+                                list.wishlistGroupName ?? favouriteListName),
+                            onTap: () async {
+                              await addProductToFavouriteList(listId: list.id);
+                              if (mounted) Navigator.pop(sheetContext);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> addProductToFavouriteList({
+    String? listId,
+    String? listName,
+  }) async {
+    try {
+      await ApiService().addProductToFavouriteList(
+        context,
+        productId: widget.productId,
+        listId: listId,
+        listName: listName,
+        variantId: selectedVariantId,
+        quantity: selectedQuantity,
+      );
+      if (mounted) {
+        setState(() {
+          isFavorite = true;
+        });
+      }
+      AppUtils.showToast('Added to $favouriteListName');
     } catch (e) {
       print(e);
     }
