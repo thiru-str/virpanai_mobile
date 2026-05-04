@@ -14,11 +14,20 @@ class LoyaltyCheckoutWidget extends StatefulWidget {
   final VoidCallback onApplied;
   final VoidCallback onRemoved;
 
+  /// Latest loyalty_checkout_apply metadata from the cart response.
+  /// When the backend recalculates loyalty (e.g. wallet now covers the cart
+  /// in full and loyalty drops to 0), the parent rebuilds with the fresh
+  /// values. didUpdateWidget syncs _applied / _appliedPoints / _discountAmount
+  /// from this — without it the checkbox stays "applied" with stale points
+  /// even though the price summary already shows ₹0 off.
+  final Map<String, dynamic>? loyaltyApply;
+
   const LoyaltyCheckoutWidget({
     super.key,
     required this.cartId,
     required this.onApplied,
     required this.onRemoved,
+    this.loyaltyApply,
   });
 
   @override
@@ -39,6 +48,28 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
   void initState() {
     super.initState();
     _loadAll();
+  }
+
+  @override
+  void didUpdateWidget(covariant LoyaltyCheckoutWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Pick up backend recalcs (wallet apply zeroed loyalty, qty change
+    // shrunk it, etc.) without waiting for the next refetch cycle.
+    final next = widget.loyaltyApply;
+    if (!_busy && next != null) {
+      final discount = (next['discount_amount'] as num?)?.toInt() ?? 0;
+      final pts = (next['points_to_apply'] as num?)?.toInt() ?? 0;
+      final newApplied = discount > 0 && pts > 0;
+      if (newApplied != _applied ||
+          discount != _discountAmount ||
+          pts != _appliedPoints) {
+        setState(() {
+          _applied = newApplied;
+          _discountAmount = discount;
+          _appliedPoints = pts;
+        });
+      }
+    }
   }
 
   double _ratio() {

@@ -623,6 +623,7 @@ class _CartPageState extends State<CartPage>
                             if (cartResponse?.cart?.id != null)
                               LoyaltyCheckoutWidget(
                                 cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: _loyaltyApplyMetadata(),
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -1420,6 +1421,16 @@ class _CartPageState extends State<CartPage>
 
   double _loyaltyDiscountAmount() {
     return _loyaltyDiscount.toDouble();
+  }
+
+  /// Pass-through of cart.metadata.loyalty_checkout_apply for the
+  /// LoyaltyCheckoutWidget so it stays in sync with backend recalcs.
+  Map<String, dynamic>? _loyaltyApplyMetadata() {
+    final meta = cartResponse?.cart?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      return Map<String, dynamic>.from(meta['loyalty_checkout_apply'] as Map);
+    }
+    return null;
   }
 
   /// Loyalty discount from cart metadata (same pattern as wallet_split)
