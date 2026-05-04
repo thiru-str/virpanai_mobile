@@ -167,6 +167,8 @@ class _CartPageState extends State<CartPage>
         return 'Wallet';
       case 'pp_razorpay_razorpay':
         return 'Razorpay';
+      case 'pp_icici_icici':
+        return 'ICICI';
       case 'pp_system_default':
         return 'Cash on Delivery';
       case 'pp_neft_neft':
@@ -982,11 +984,16 @@ class _CartPageState extends State<CartPage>
   void updateAddress(RegisterResponse.Address address) async {
     try {
       final ApiService apiService = ApiService();
-      cartResponse = await apiService.updateAddress(
+      await apiService.updateAddress(
           context, convertToShippingAddress(address));
+      // Pull fresh cart from /store/custom-carts/{id} so the platform fee,
+      // qty_tiered adjustments and wallet split land on the response.
+      // Medusa's native POST /store/carts/{id} (used by updateAddress) does
+      // NOT trigger our recompute pipeline — using its response directly
+      // would leave the price summary stale until the next page load.
+      await getCartApi();
       setState(() {
         addressLoading = false;
-        cartResponse;
       });
     } catch (e) {
       setState(() {
@@ -1082,6 +1089,9 @@ class _CartPageState extends State<CartPage>
   void placeOrder(String paymentProviderId) async {
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
+        makeRazorPayCall(orderId!);
+        break;
+      case 'pp_icici_icici':
         makeRazorPayCall(orderId!);
         break;
       case 'pp_stripe_stripe':
