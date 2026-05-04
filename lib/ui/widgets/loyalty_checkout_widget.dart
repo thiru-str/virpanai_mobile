@@ -190,92 +190,132 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
         ? (worthFromBalance < remaining ? worthFromBalance : remaining)
         : 0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-      onTap: _busy ? null : _toggle,
-      behavior: HitTestBehavior.opaque,
-      child: Opacity(
-        opacity: _busy ? 0.6 : 1.0,
-        child: Container(
-          margin: const EdgeInsets.only(top: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: _applied ? AppColors.primary.withOpacity(0.05) : Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: _applied ? AppColors.primary.withOpacity(0.3) : Colors.grey.shade200,
-            ),
+    final canUsePoints = remaining > 0 || _applied;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _busy
-                  ? SizedBox(
-                      width: 20, height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                    )
-                  : Container(
-                      width: 20, height: 20,
-                      decoration: BoxDecoration(
-                        color: _applied ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: _applied ? AppColors.primary : Colors.grey.shade400,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: _applied
-                          ? const Icon(Icons.check, size: 14, color: Colors.white)
-                          : null,
-                    ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _applied
-                    ? Text.rich(
-                        TextSpan(children: [
-                          TextSpan(
-                            text: '${CurrencyUtil.appendCurrency(_discountAmount.toStringAsFixed(0))} off ',
-                            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
-                          ),
-                          TextSpan(
-                            text: '· $_appliedPoints pts applied',
-                            style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade600),
-                          ),
-                        ]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )
-                    : Text.rich(
-                        TextSpan(children: [
-                          TextSpan(
-                            text: 'Use $balance points ',
-                            style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.black87),
-                          ),
-                          TextSpan(
-                            text: '(${CurrencyUtil.appendCurrency(displayOff.toString())} off)',
-                            style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade500),
-                          ),
-                        ]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-              ),
-            ],
-          ),
+        ],
+        border: Border.all(
+          color: _applied
+              ? AppColors.primary.withOpacity(0.4)
+              : Colors.grey.shade200,
+          width: _applied ? 1.5 : 1,
         ),
       ),
-    ),
-        if (_error != null)
+      child: Column(
+        children: [
           Padding(
-            padding: const EdgeInsets.only(top: 6, left: 4),
-            child: Text(
-              _error!,
-              style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.red.shade600),
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: canUsePoints
+                        ? AppColors.primary.withOpacity(0.1)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.stars_outlined,
+                    color: canUsePoints ? AppColors.primary : Colors.grey,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Use $balance points',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: canUsePoints
+                              ? AppColors.textColor
+                              : Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        remaining > 0
+                            ? '${CurrencyUtil.appendCurrency(displayOff.toString())} off'
+                            : 'Nothing left to redeem',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                      if (_error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            _error!,
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.red.shade600),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                _busy
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : Switch(
+                        value: _applied,
+                        onChanged: canUsePoints ? (_) => _toggle() : null,
+                        activeColor: AppColors.primary,
+                        inactiveThumbColor: Colors.grey.shade400,
+                        inactiveTrackColor: Colors.grey.shade200,
+                      ),
+              ],
             ),
           ),
-      ],
+          if (_applied && _discountAmount > 0) ...[
+            Divider(height: 1, color: Colors.grey.shade100),
+            Container(
+              width: double.infinity,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_outline,
+                      color: Colors.green.shade600, size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '${CurrencyUtil.appendCurrency(_discountAmount.toStringAsFixed(2))} off · $_appliedPoints pts applied',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green.shade700,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
