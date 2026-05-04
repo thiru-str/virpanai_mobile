@@ -83,12 +83,6 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     }
   }
 
-  double _ratio() {
-    final r = _account?.redeemRatio;
-    if (r == null) return 1.0;
-    return double.tryParse(r.toString()) ?? 1.0;
-  }
-
   Future<void> _loadAll() async {
     if (!ExtensionsUtil.has('loyalty')) {
       if (mounted) setState(() => _loading = false);
@@ -165,13 +159,6 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     final balance = _account!.pointsBalance ?? 0;
     if (balance <= 0 && !_applied) return const SizedBox.shrink();
 
-    final ratio = _ratio();
-    // Full conversion of balance to currency (e.g. 1000 pts × ratio 1 = ₹1000).
-    // Always show this as "Use N points" so the customer sees their full
-    // available redemption value, not a number that shifts as they move
-    // wallet around.
-    final worthFromBalance = ratio > 0 ? (balance / ratio).floor() : 0;
-
     // Effective remaining the gateway would charge if loyalty weren't applied.
     // Priority is coupon → wallet → loyalty, so this is the redeemable cap for
     // points: cart.total (post-coupon) − wallet_amount. When this hits 0
@@ -183,12 +170,6 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     final remaining = (cartTotal - walletAmount).clamp(0, double.infinity).toInt();
 
     if (remaining <= 0 && !_applied) return const SizedBox.shrink();
-
-    // The "off" the redemption can actually deliver right now: capped by
-    // both balance value and remaining cart amount.
-    final displayOff = remaining > 0
-        ? (worthFromBalance < remaining ? worthFromBalance : remaining)
-        : 0;
 
     final canUsePoints = remaining > 0 || _applied;
 
@@ -237,7 +218,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Use $balance points',
+                        'Use Loyalty Points',
                         style: FontUtils.primaryFontStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -248,9 +229,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        remaining > 0
-                            ? '${CurrencyUtil.appendCurrency(displayOff.toString())} off'
-                            : 'Nothing left to redeem',
+                        'Available: $balance points',
                         style: TextStyle(
                             fontSize: 12, color: Colors.grey.shade600),
                       ),

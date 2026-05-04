@@ -475,6 +475,23 @@ class _CartPageState extends State<CartPage>
                                 walletBalance > 0)
                               _buildWalletCard(),
 
+                            // Loyalty Points Card (matches wallet card design,
+                            // sits right under it so wallet + loyalty are visually
+                            // grouped in the same "balance to redeem" section).
+                            if (cartResponse?.cart?.id != null)
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: _loyaltyApplyMetadata(),
+                                cartTotal: cartResponse?.cart?.total ?? 0,
+                                walletAmount: _walletAmountFromMetadata(),
+                                onApplied: () {
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  getCartApi();
+                                },
+                              ),
+
                             // Coupon Card (Ajio style)
                             _buildCouponCard(),
 
@@ -639,20 +656,6 @@ class _CartPageState extends State<CartPage>
                                 orderTotal: (cartResponse!.cart!.itemSubtotal ??
                                         cartResponse!.cart!.total!) -
                                     _loyaltyDiscount,
-                              ),
-                            // Apply loyalty points at checkout
-                            if (cartResponse?.cart?.id != null)
-                              LoyaltyCheckoutWidget(
-                                cartId: cartResponse!.cart!.id!,
-                                loyaltyApply: _loyaltyApplyMetadata(),
-                                cartTotal: cartResponse?.cart?.total ?? 0,
-                                walletAmount: _walletAmountFromMetadata(),
-                                onApplied: () {
-                                  getCartApi();
-                                },
-                                onRemoved: () {
-                                  getCartApi();
-                                },
                               ),
                             const SizedBox(height: 80),
                           ],
