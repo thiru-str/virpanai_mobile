@@ -53,7 +53,8 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
                 return Column(
                   children: [
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                       onTap: () {
                         onPaymentSelected(provider);
                         Navigator.pop(context); // Close the bottom sheet
@@ -72,17 +73,21 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
                             : _getProviderDisplayName(provider.id),
                         style: FontUtils.primaryFontStyle(fontSize: 16),
                       ),
-                      subtitle: provider.id == 'pp_wallet_wallet' && walletBalance != null
+                      subtitle: provider.id == 'pp_wallet_wallet' &&
+                              walletBalance != null
                           ? Text(
                               'Balance: ₹${walletBalance!.toStringAsFixed(2)}',
-                              style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.green.shade700),
                             )
                           : null,
                       trailing: Icon(
                         isSelected
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
-                        color: isSelected ? AppColors.primary : AppColors.primary.withAlpha(50),
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.primary.withAlpha(50),
                       ),
                     ),
 
@@ -109,6 +114,8 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         return "Cash on Delivery";
       case "pp_razorpay_razorpay":
         return "Razorpay";
+      case "pp_icici_icici":
+        return "ICICI";
       case "pp_neft_neft":
         return "Bank Transfer (NEFT)";
       case "pp_wallet_wallet":
@@ -123,21 +130,41 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
   Widget _getProviderIcon(String? providerId) {
     switch (providerId) {
       case "pp_system_default":
-        return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
+        return SvgPicture.asset(
+          AppAssets.ic_payment_cash,
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+        );
 
       case "pp_razorpay_razorpay":
-        return SvgPicture.asset(AppAssets.ic_online, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
+      case "pp_icici_icici":
+        return SvgPicture.asset(
+          AppAssets.ic_online,
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+        );
 
       case "pp_neft_neft":
-        return SvgPicture.asset(AppAssets.ic_bank_transfer, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
+        return SvgPicture.asset(
+          AppAssets.ic_bank_transfer,
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+        );
 
       case "pp_wallet_wallet":
-        return Icon(Icons.account_balance_wallet, size: 24, color: AppColors.primary);
+        return Icon(Icons.account_balance_wallet,
+            size: 24, color: AppColors.primary);
 
       default:
-        return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);
+        return SvgPicture.asset(
+          AppAssets.ic_payment_cash,
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+        );
     }
   }
-
-
 }
