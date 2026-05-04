@@ -22,12 +22,23 @@ class LoyaltyCheckoutWidget extends StatefulWidget {
   /// even though the price summary already shows ₹0 off.
   final Map<String, dynamic>? loyaltyApply;
 
+  /// Cart total *after* coupon (Medusa-tracked) but before wallet/loyalty.
+  /// Used together with walletAmount to compute what's actually redeemable.
+  final num? cartTotal;
+
+  /// Wallet amount currently applied (from cart.metadata.wallet_split).
+  /// Priority order is coupon → wallet → loyalty, so the redeemable cap
+  /// for points is `cartTotal - walletAmount`.
+  final num? walletAmount;
+
   const LoyaltyCheckoutWidget({
     super.key,
     required this.cartId,
     required this.onApplied,
     required this.onRemoved,
     this.loyaltyApply,
+    this.cartTotal,
+    this.walletAmount,
   });
 
   @override
@@ -155,7 +166,29 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     if (balance <= 0 && !_applied) return const SizedBox.shrink();
 
     final ratio = _ratio();
-    final worth = ratio > 0 ? (balance / ratio).floor() : 0;
+    // Full conversion of balance to currency (e.g. 1000 pts × ratio 1 = ₹1000).
+    // Always show this as "Use N points" so the customer sees their full
+    // available redemption value, not a number that shifts as they move
+    // wallet around.
+    final worthFromBalance = ratio > 0 ? (balance / ratio).floor() : 0;
+
+    // Effective remaining the gateway would charge if loyalty weren't applied.
+    // Priority is coupon → wallet → loyalty, so this is the redeemable cap for
+    // points: cart.total (post-coupon) − wallet_amount. When this hits 0
+    // (wallet already covers the cart) there's nothing left for points to
+    // bite into — hide the section entirely so the customer doesn't see a
+    // useless redemption row.
+    final cartTotal = (widget.cartTotal ?? 0).toDouble();
+    final walletAmount = (widget.walletAmount ?? 0).toDouble();
+    final remaining = (cartTotal - walletAmount).clamp(0, double.infinity).toInt();
+
+    if (remaining <= 0 && !_applied) return const SizedBox.shrink();
+
+    // The "off" the redemption can actually deliver right now: capped by
+    // both balance value and remaining cart amount.
+    final displayOff = remaining > 0
+        ? (worthFromBalance < remaining ? worthFromBalance : remaining)
+        : 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,6 +209,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _busy
                   ? SizedBox(
@@ -199,26 +233,34 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
               const SizedBox(width: 12),
               Expanded(
                 child: _applied
-                    ? Text.rich(TextSpan(children: [
-                        TextSpan(
-                          text: '${CurrencyUtil.appendCurrency(_discountAmount.toStringAsFixed(0))} off ',
-                          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
-                        ),
-                        TextSpan(
-                          text: '· $_appliedPoints pts applied',
-                          style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade600),
-                        ),
-                      ]))
-                    : Text.rich(TextSpan(children: [
-                        TextSpan(
-                          text: 'Use $balance points ',
-                          style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.black87),
-                        ),
-                        TextSpan(
-                          text: '(${CurrencyUtil.appendCurrency(worth.toString())} off)',
-                          style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade500),
-                        ),
-                      ])),
+                    ? Text.rich(
+                        TextSpan(children: [
+                          TextSpan(
+                            text: '${CurrencyUtil.appendCurrency(_discountAmount.toStringAsFixed(0))} off ',
+                            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
+                          ),
+                          TextSpan(
+                            text: '· $_appliedPoints pts applied',
+                            style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        ]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : Text.rich(
+                        TextSpan(children: [
+                          TextSpan(
+                            text: 'Use $balance points ',
+                            style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.black87),
+                          ),
+                          TextSpan(
+                            text: '(${CurrencyUtil.appendCurrency(displayOff.toString())} off)',
+                            style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade500),
+                          ),
+                        ]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
               ),
             ],
           ),

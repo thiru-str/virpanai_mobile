@@ -645,6 +645,8 @@ class _CartPageState extends State<CartPage>
                               LoyaltyCheckoutWidget(
                                 cartId: cartResponse!.cart!.id!,
                                 loyaltyApply: _loyaltyApplyMetadata(),
+                                cartTotal: cartResponse?.cart?.total ?? 0,
+                                walletAmount: _walletAmountFromMetadata(),
                                 onApplied: () {
                                   getCartApi();
                                 },
