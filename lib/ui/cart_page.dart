@@ -117,7 +117,7 @@ class _CartPageState extends State<CartPage>
     });
 
     initGlobal();
-    getCartApi();
+    getShippingInfo(refreshCart: true);
   }
 
   Future<void> initGlobal() async {
@@ -199,6 +199,58 @@ class _CartPageState extends State<CartPage>
     _confettiController.dispose();
     _shakeController.dispose();
     super.dispose();
+  }
+
+  bool _resolveIsDelivery(CartResponse? response, {String? preferredOptionId}) {
+    final methods = response?.cart?.shippingMethods ?? const <ShippingMethod>[];
+
+    ShippingMethod? matchedMethod;
+    if (preferredOptionId != null && preferredOptionId.isNotEmpty) {
+      for (final method in methods) {
+        if (method.shippingOptionId == preferredOptionId ||
+            method.shippingOption?.id == preferredOptionId) {
+          matchedMethod = method;
+          break;
+        }
+      }
+    }
+
+    final matchedType =
+        matchedMethod?.shippingOption?.serviceZone?.fulfillmentSet?.type;
+    if (matchedType == 'pickup') return false;
+    if (matchedType == 'shipping') return true;
+
+    final hasPickup = methods.any(
+      (method) =>
+          method.shippingOption?.serviceZone?.fulfillmentSet?.type == 'pickup',
+    );
+    final hasShipping = methods.any(
+      (method) =>
+          method.shippingOption?.serviceZone?.fulfillmentSet?.type == 'shipping',
+    );
+
+    if (hasPickup && !hasShipping) return false;
+    if (hasShipping && !hasPickup) return true;
+
+    for (final method in methods) {
+      if (pickupOption != null &&
+          (method.shippingOptionId == pickupOption ||
+              method.shippingOption?.id == pickupOption)) {
+        return false;
+      }
+      if (deliveryOption != null &&
+          (method.shippingOptionId == deliveryOption ||
+              method.shippingOption?.id == deliveryOption)) {
+        return true;
+      }
+    }
+
+    if (preferredOptionId != null) {
+      if (preferredOptionId == pickupOption) return false;
+      if (preferredOptionId == deliveryOption) return true;
+    }
+
+    return isDelivery;
   }
 
   void _scrollToPriceDetails() {
@@ -813,7 +865,7 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void getCartApi() async {
+  void getCartApi({bool refreshShippingInfo = true}) async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
@@ -836,15 +888,14 @@ class _CartPageState extends State<CartPage>
         clientSecret = cartResponse?.cart?.paymentCollection?.paymentSessions
                 ?.firstOrNull?.data?.clientSecret ??
             '';
-        isDelivery = (cartResponse?.cart?.shippingMethods?.firstOrNull
-                    ?.shippingOption?.serviceZone?.fulfillmentSet?.type ??
-                '') ==
-            'shipping';
+        isDelivery = _resolveIsDelivery(cartResponse);
         apiLoading = false;
       });
       // Load wallet info after cart is ready
       _loadWalletInfo();
-      getShippingInfo();
+      if (refreshShippingInfo) {
+        getShippingInfo();
+      }
     } catch (e) {
       setState(() {
         apiLoading = false;
@@ -877,7 +928,7 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void getShippingInfo() async {
+  void getShippingInfo({bool refreshCart = false}) async {
     try {
       final response = await ApiService().getShippingInfo(context);
       if (!mounted) return;
@@ -897,7 +948,11 @@ class _CartPageState extends State<CartPage>
             .toList();
         pickupOption =
             pickup != null && pickup.isNotEmpty ? pickup.first.id : null;
+        isDelivery = _resolveIsDelivery(cartResponse);
       });
+      if (refreshCart) {
+        getCartApi(refreshShippingInfo: false);
+      }
     } catch (e) {
       debugPrint('shipping info error: $e');
     }
@@ -905,17 +960,35 @@ class _CartPageState extends State<CartPage>
 
   void updateShippingMethod(String shippingId) async {
     if (shippingMethodLoading) return;
-    final currentMethodId =
-        cartResponse?.cart?.shippingMethods?.firstOrNull?.shippingOptionId;
-    if (currentMethodId == shippingId) return;
+    final currentMethodExists =
+        cartResponse?.cart?.shippingMethods?.any((method) =>
+            method.shippingOptionId == shippingId ||
+            method.shippingOption?.id == shippingId) ??
+        false;
+    if (currentMethodExists) return;
 
     try {
       setState(() {
         shippingMethodLoading = true;
       });
-      await ApiService().updateShippingMethod(context, shippingId);
+      final response =
+          await ApiService().updateShippingMethod(context, shippingId);
       if (!mounted) return;
-      getCartApi();
+      emitEvent(response);
+      setState(() {
+        cartResponse = response;
+        pp_id = response.cart?.paymentCollection?.paymentSessions?.firstOrNull
+                ?.providerId ??
+            pp_id;
+        orderId =
+            response.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data
+                    ?.id ??
+                orderId;
+        clientSecret = response.cart?.paymentCollection?.paymentSessions
+                ?.firstOrNull?.data?.clientSecret ??
+            clientSecret;
+        isDelivery = _resolveIsDelivery(response, preferredOptionId: shippingId);
+      });
     } catch (e) {
       debugPrint('update shipping method error: $e');
     } finally {
