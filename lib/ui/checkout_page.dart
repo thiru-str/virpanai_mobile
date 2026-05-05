@@ -13,6 +13,8 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
+import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
+import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -72,7 +74,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   double splitWalletAmount = 0;
   double splitGatewayAmount = 0;
   bool splitFullCoverage = false;
-  bool isSplitPaymentMode = false; // true when wallet extension is enabled with split_payment mode
+  bool isSplitPaymentMode =
+      false; // true when wallet extension is enabled with split_payment mode
 
   // Wallet state
   double walletBalance = 0;
@@ -97,7 +100,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
           },
         ),
         backgroundColor: Colors.white,
-        /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
         body: Scaffold(
           backgroundColor: Colors.white,
           body: Container(
@@ -175,7 +177,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                         // Filter out wallet from payment methods in split mode
                                         final providers = isSplitPaymentMode
                                             ? global.paymentProvider!
-                                                .where((p) => p.id != 'pp_wallet_wallet')
+                                                .where((p) =>
+                                                    p.id != 'pp_wallet_wallet')
                                                 .toList()
                                             : global.paymentProvider!;
                                         showPaymentMethodsBottomSheet(
@@ -186,6 +189,45 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
                                 _buildWalletInfoWidget(),
+
+                              const SizedBox(height: 12),
+
+                              // Loyalty earn preview — based on actual paid amount
+                              Builder(builder: (_) {
+                                final meta = cartResponse?.cart?.metadata;
+                                final loyaltyOff = (meta is Map &&
+                                        meta['loyalty_checkout_apply'] is Map &&
+                                        ((meta['loyalty_checkout_apply']
+                                                    ['points_to_apply'] ??
+                                                0) as num) >
+                                            0)
+                                    ? (meta['loyalty_checkout_apply']
+                                            ['discount_amount'] ??
+                                        0) as num
+                                    : 0;
+                                return LoyaltyEarnPreview(
+                                  orderTotal:
+                                      (cartResponse!.cart!.itemSubtotal ??
+                                              cartResponse!.cart!.total ??
+                                              0) -
+                                          loyaltyOff,
+                                );
+                              }),
+
+                              const SizedBox(height: 4),
+
+                              // Loyalty checkout apply widget
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                onApplied: () {
+                                  // Refresh cart to reflect updated total after points applied
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  // Refresh cart to reflect updated total after points removed
+                                  getCartApi();
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -201,11 +243,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     child: Lottie.asset(AppAssets.place_order_lottie,
                         fit: BoxFit.cover))
                 : CartButton(
-                    amount: CurrencyUtil.appendCurrency(
-                        (splitActive
+                    amount: CurrencyUtil.appendCurrency((splitActive
                             ? splitGatewayAmount
                             : (cartResponse?.cart?.total ?? 0))
-                            .toStringAsFixed(2)),
+                        .toStringAsFixed(2)),
                     title: splitActive && splitFullCoverage
                         ? 'Pay from Wallet'
                         : AppStrings.place_order,
@@ -359,7 +400,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
         ),
         child: const Center(
           child: SizedBox(
-            width: 20, height: 20,
+            width: 20,
+            height: 20,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
@@ -375,17 +417,21 @@ class _CheckOutPageState extends State<CheckOutPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: hasSufficientBalance ? Colors.green.shade200 : Colors.orange.shade200,
+          color: hasSufficientBalance
+              ? Colors.green.shade200
+              : Colors.orange.shade200,
         ),
         borderRadius: BorderRadius.circular(12),
-        color: hasSufficientBalance ? Colors.green.shade50 : Colors.orange.shade50,
+        color:
+            hasSufficientBalance ? Colors.green.shade50 : Colors.orange.shade50,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+              Icon(Icons.account_balance_wallet,
+                  color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Row(
@@ -394,20 +440,24 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Available Balance', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const Text('Available Balance',
+                            style: TextStyle(fontSize: 11, color: Colors.grey)),
                         Text(
                           '₹${walletBalance.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text('Order Total', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const Text('Order Total',
+                            style: TextStyle(fontSize: 11, color: Colors.grey)),
                         Text(
                           '₹${cartTotal.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -436,7 +486,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                   child: Text('Add ₹${shortfall.toStringAsFixed(0)} to Wallet'),
@@ -797,6 +848,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
+      case 'pp_icici_icici':
         String? orderId = extractOrderId(apiResponse);
         if (orderId != null) {
           makeRazorPayCall(orderId);
@@ -826,7 +878,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   String? extractOrderId(dynamic response) {
     try {
       if (response is PaymentMethodResponse) {
-        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
+        return response
+            .paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
       }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["id"];
@@ -839,7 +892,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   String? extractClientSecret(dynamic response) {
     try {
       if (response is PaymentMethodResponse) {
-        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret;
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            ?.clientSecret;
       }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["client_secret"];

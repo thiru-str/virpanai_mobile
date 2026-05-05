@@ -14,7 +14,8 @@ class CommonHeaderAppBar extends StatelessWidget
   final bool leading;
   final bool? isFavorite;
   final bool? showCart;
-  final List<Widget>? trailingActions;
+  /// When provided, replaces the default onFavTap icon with this widget.
+  final Widget? favWidget;
 
   const CommonHeaderAppBar({
     Key? key,
@@ -26,13 +27,13 @@ class CommonHeaderAppBar extends StatelessWidget
     this.leading = true,
     this.isFavorite = false,
     this.showCart = false,
-    this.trailingActions,
+    this.favWidget,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFFF5FEF2),
+      backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
       scrolledUnderElevation: 0,
@@ -83,7 +84,12 @@ class CommonHeaderAppBar extends StatelessWidget
                       color: AppColors.primary, size: 24)),
             ),
           ),
-        if (onFavTap != null)
+        if (favWidget != null)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: favWidget!,
+          )
+        else if (onFavTap != null)
           GestureDetector(
             onTap: onFavTap,
             child: Padding(
@@ -113,7 +119,6 @@ class CommonHeaderAppBar extends StatelessWidget
               ),
             ),
           ),
-        if (trailingActions != null) ...trailingActions!,
       ],
     );
   }

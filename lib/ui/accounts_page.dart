@@ -8,6 +8,7 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
+import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -37,6 +38,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool isLoading = false;
   String? _appVersion;
   List<String> enabledExtensions = [];
+  bool favouriteListEnabled = false;
+  String favouriteListName = AppStrings.favourites;
 
   @override
   void initState() {
@@ -51,9 +54,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadExtensions() async {
     try {
       final details = await ApiService().getPublicDetails();
+      final favouriteConfig =
+          await ApiService().getFavouriteListConfig(context);
       if (mounted) {
         setState(() {
           enabledExtensions = details.enabledExtensions;
+          // Show the wishlist entry in both simple mode (enabled=false) and
+          // full mode (enabled=true). The enabled flag controls UI mode, not
+          // whether the feature exists.
+          favouriteListEnabled = true;
+          favouriteListName = favouriteConfig.displayName;
         });
       }
     } catch (_) {}
@@ -222,10 +232,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         PageRouteUtils.pushWithSlide(context,
                             AddressListPage(onSelectedAddress: (address) {}));
                       }),
-                      _buildProfileItem(AppStrings.favourites, () {
-                        PageRouteUtils.pushWithSlide(
-                            context, MyFavoritesPage());
-                      }),
+                      if (favouriteListEnabled)
+                        _buildProfileItem(favouriteListName, () {
+                          PageRouteUtils.pushWithSlide(
+                              context, MyFavoritesPage());
+                        }),
                       _buildProfileItem(AppStrings.orders, () {
                         PageRouteUtils.pushWithSlide(
                             context, OrdersHistoryPage());
@@ -234,6 +245,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         _buildProfileItem('My Wallet', () {
                           PageRouteUtils.pushWithSlide(
                               context, const WalletPage());
+                        }),
+                      if (enabledExtensions.contains('loyalty'))
+                        _buildProfileItem('Loyalty Points', () {
+                          PageRouteUtils.pushWithSlide(
+                              context, const LoyaltyPage());
                         }),
                       ...storeContentList.map((contentItem) =>
                           _buildProfileItem(contentItem.name ?? "Unknown", () {

@@ -72,6 +72,26 @@ class ApiService {
     );
   }
 
+  // Pull a human-readable error message from response.data without assuming
+  // it's a Map. Some upstreams return plain text or HTML, in which case
+  // response.data['message'] threw "type 'String' is not a subtype of type
+  // 'int' of 'index'" and masked the real failure.
+  String _extractErrorMessage(dynamic data) {
+    if (data is Map) {
+      final m = data['message'];
+      if (m is String && m.isNotEmpty) return m;
+      final err = data['error'];
+      if (err is Map) {
+        final em = err['message'];
+        if (em is String && em.isNotEmpty) return em;
+      }
+      if (err is String && err.isNotEmpty) return err;
+    } else if (data is String && data.isNotEmpty) {
+      return data;
+    }
+    return 'An error occurred';
+  }
+
   Future<T> _makePostRequest<T>(
     String endpoint,
     Map<String, dynamic>? data,
@@ -92,16 +112,15 @@ class ApiService {
           return status != null && status < 500;
         },
       ));
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -151,13 +170,12 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context!, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context!, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
@@ -208,9 +226,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -263,9 +279,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -671,6 +685,158 @@ class ApiService {
     );
   }
 
+  Future<FavouriteListConfig> getFavouriteListConfig(
+      BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<FavouriteListConfig>(
+      'store/favourite-list/config',
+      null,
+      null,
+      (json) => FavouriteListConfig.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> getFavouriteLists(BuildContext context) async {
+    await addToken();
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makeGetRequest<WishlistResponse>(
+      'store/customer-wishlist-group',
+      null,
+      {"region_id": regionId},
+      (json) => WishlistResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> getFavouriteListProducts(
+      BuildContext context, String listId) async {
+    await addToken();
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makeGetRequest<WishlistResponse>(
+      'store/wishlist_group_products',
+      null,
+      {"region_id": regionId, "customer_wishlist_group_id": listId},
+      (json) => WishlistResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> createFavouriteList(
+      BuildContext context, String name) async {
+    await addToken();
+    return _makePostRequest(
+      'store/customer-wishlist-group',
+      {"wishlist_group_name": name},
+      (json) => WishlistResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> addProductToFavouriteList(
+    BuildContext context, {
+    required String productId,
+    String? listId,
+    String? listName,
+    String? variantId,
+    int quantity = 1,
+  }) async {
+    await addToken();
+    final body = <String, dynamic>{
+      "product_id": productId,
+      "quantity": quantity,
+    };
+    if (listId?.isNotEmpty == true) {
+      body["customer_wishlist_group_id"] = listId;
+    }
+    if (listName?.trim().isNotEmpty == true) {
+      body["wishlist_group_name"] = listName!.trim();
+    }
+    if (variantId?.isNotEmpty == true) {
+      body["variant_id"] = variantId;
+    }
+    return _makePostRequest(
+      'store/favourite-list/add',
+      body,
+      (json) => WishlistResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> deleteFavouriteList(
+      BuildContext context, String listId) async {
+    await addToken();
+    return _makeDeleteRequest(
+      'store/customer-wishlist-group',
+      listId,
+      null,
+      (data) => WishlistResponse.fromJson(data),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> deleteProductFromFavouriteList(
+    BuildContext context, {
+    required String productId,
+    String? listId,
+    String? variantId,
+  }) async {
+    await addToken();
+    final body = <String, dynamic>{
+      "product_id": productId,
+    };
+    if (listId?.isNotEmpty == true) {
+      body["customer_wishlist_group_id"] = listId;
+    }
+    if (variantId?.isNotEmpty == true) {
+      body["variant_id"] = variantId;
+    }
+    return _makeDeleteRequest(
+      'store/wishlist_group_products',
+      null,
+      body,
+      (data) => WishlistResponse.fromJson(data),
+      context,
+    );
+  }
+
+  Future<MoveFavouriteListToCartResponse> moveFavouriteListToCart(
+    BuildContext context,
+    String listId, {
+    bool clearExistingCart = false,
+  }) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/favourite-list/$listId/move-to-cart',
+      {"cart_id": cartId, "clear_existing_cart": clearExistingCart},
+      (json) => MoveFavouriteListToCartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<SavedItemsResponse> getSavedItems(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<SavedItemsResponse>(
+      'store/favourite-list/saved-items',
+      null,
+      null,
+      (json) => SavedItemsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<WishlistResponse> updateFavouriteListItemQty(
+      BuildContext context, String itemId, int quantity) async {
+    await addToken();
+    return _makePostRequest<WishlistResponse>(
+      'store/wishlist_group_products/$itemId/qty',
+      {'quantity': quantity},
+      (json) => WishlistResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<CartResponse> addCart(
       BuildContext context, int qty, String variantId) async {
     await addToken();
@@ -707,8 +873,8 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
+  Future<CartResponse> addPromoCode(BuildContext context, String promoCode,
+      {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final body = <String, dynamic>{
@@ -807,6 +973,19 @@ class ApiService {
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
+  }
+
+  Future<String?> initiateIciciPayment(BuildContext context) async {
+    await setPublishableKey();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final response = await _dio.post(
+      'store/place-order/$cartId',
+      data: {"payment_provider_id": "pp_icici_icici"},
+    );
+    if (response.statusCode == 200) {
+      return response.data?['icici_redirect_url'] as String?;
+    }
+    throw Exception('Failed to initiate ICICI payment');
   }
 
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
@@ -1189,5 +1368,84 @@ class ApiService {
       debugPrint('removeWalletSplit error: $e');
       rethrow;
     }
+  }
+
+  // ─── Loyalty ──────────────────────────────────────────────
+
+  Future<Response> getLoyaltyAccount() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty');
+  }
+
+  Future<Response> getLoyaltyTransactions(
+      {int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/transactions',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> getLoyaltyPreview(num orderTotal, {String? orderId}) async {
+    await setPublishableKey();
+    final params = <String, dynamic>{};
+    if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    if (orderTotal > 0) params['order_total'] = orderTotal;
+    return _dio.get('/store/loyalty/preview', queryParameters: params);
+  }
+
+  Future<Response> redeemLoyaltyPoints(int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/redeem', data: {'points': points});
+  }
+
+  Future<Response> applyLoyaltyCheckout(String cartId, int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId, 'points': points});
+  }
+
+  Future<Response> getLoyaltyCheckoutStatus(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/checkout-apply',
+        queryParameters: {'cart_id': cartId});
+  }
+
+  Future<Response> removeLoyaltyCheckout(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio
+        .delete('/store/loyalty/checkout-apply', data: {'cart_id': cartId});
+  }
+
+  Future<Response> getLoyaltyReferral() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral');
+  }
+
+  Future<Response> getLoyaltyReferralHistory(
+      {int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/history',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> applyReferralCode(String code) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio
+        .post('/store/loyalty/referral/apply', data: {'referral_code': code});
+  }
+
+  /// Public endpoint — no auth required. Validates a referral code before signup.
+  Future<Response> validateReferralCode(String code) async {
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/validate',
+        queryParameters: {'code': code.trim().toUpperCase()});
   }
 }
