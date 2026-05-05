@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:waioz/model/add_on_products_response.dart';
@@ -85,12 +86,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late StreamSubscription<ViewCartModel> _eventSubscription;
 
   bool isLoggedIn = false;
+  final TextEditingController quantityController = TextEditingController();
 
   Map<String, File?>? videoThumbnails;
 
   @override
   void initState() {
     super.initState();
+    quantityController.text = selectedQuantity.toString();
 
     AppUtils.isLoggedIn().then((value) {
       setState(() {
@@ -116,6 +119,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   void dispose() {
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
+    quantityController.dispose();
     super.dispose();
   }
 
@@ -666,35 +670,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget buildQuantitySelector() {
     return Row(
       children: [
-        // Quantity Dropdown with a fixed width
+        // Quantity input with a fixed width
         Container(
-          width: 80, // Adjust the width as needed
+          width: 60,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: DropdownButton<int>(
-            value: selectedQuantity,
-            isExpanded: true,
-            underline: Container(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedQuantity = newValue!;
-              });
+          child: TextField(
+            controller: quantityController,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(3),
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Qty',
+            ),
+            style: FontUtils.secondaryFontStyle(fontSize: 16),
+            onChanged: (value) {
+              final parsed = int.tryParse(value);
+              if (parsed != null && parsed > 0) {
+                setState(() {
+                  selectedQuantity = parsed;
+                });
+              }
             },
-            items: List.generate(10, (index) => index + 1)
-                .map((qty) => DropdownMenuItem(
-                      value: qty,
-                      child: Text(
-                        qty.toString(),
-                        style: FontUtils.secondaryFontStyle(fontSize: 16),
-                      ),
-                    ))
-                .toList(),
           ),
         ),
-        const SizedBox(width: 10), // Adds spacing between dropdown and button
+        const SizedBox(width: 10),
         // "Add to Cart" button takes more space
         Expanded(
           child: ElevatedButton(
@@ -710,7 +717,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
-                    final enteredQty = selectedQuantity;
+                    if (quantityController.text.isEmpty) {
+                      AppUtils.showToast('Please enter quantity');
+                      return;
+                    }
+
+                    final quantity = double.tryParse(quantityController.text);
+                    if (quantity == null || quantity <= 0) {
+                      AppUtils.showToast('Please enter valid quantity');
+                      return;
+                    }
+
+                    final enteredQty =
+                        int.tryParse(quantityController.text) ?? 1;
                     final maxQty = getMaxQuantity(
                         selectedVariant, cartResponse?.cart?.items ?? []);
 
@@ -726,6 +745,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           '${AppStrings.can_add_upto_prefix} $maxQty ${AppStrings.items_suffix}');
                       return;
                     }
+
+                    setState(() {
+                      selectedQuantity = safeQty;
+                    });
+                    quantityController.text = safeQty.toString();
 
                     if (!isLoggedIn) {
                       showDialog(
