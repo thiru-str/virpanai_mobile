@@ -14,6 +14,7 @@ class CommonHeaderAppBar extends StatelessWidget
   final bool leading;
   final bool? isFavorite;
   final bool? showCart;
+  final List<Widget>? trailingActions;
   /// When provided, replaces the default onFavTap icon with this widget.
   final Widget? favWidget;
 
@@ -27,32 +28,31 @@ class CommonHeaderAppBar extends StatelessWidget
     this.leading = true,
     this.isFavorite = false,
     this.showCart = false,
+    this.trailingActions,
     this.favWidget,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5FEF2),
       elevation: 0,
-      centerTitle: true,
       scrolledUnderElevation: 0,
+      centerTitle: true,
       automaticallyImplyLeading: false,
       leading: leading
           ? GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: onBackTap,
               child: Container(
-                margin: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.secondary, // Background color
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
                 child: Center(
                   child: SvgPicture.asset(
                     AppAssets.ic_arrow_svg,
-                    height: 19,
+                    height: 16,
                     width: 16,
-                    color: Colors.black87,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -61,9 +61,9 @@ class CommonHeaderAppBar extends StatelessWidget
       title: Text(
         title,
         style: FontUtils.primaryFontStyle(
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: AppColors.primary,
         ),
       ),
       actions: [
@@ -93,32 +93,26 @@ class CommonHeaderAppBar extends StatelessWidget
           GestureDetector(
             onTap: onFavTap,
             child: Padding(
-              padding: const EdgeInsets.all(8.0), // Ensure consistent padding
+              padding: const EdgeInsets.all(8.0),
               child: Container(
                 height: 50,
                 width: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary, // Background color
+                  color: Colors.transparent,
                 ),
                 child: Center(
                     child: Icon(
                   isFavorite ?? false
-                      ? Icons.favorite // Filled icon if favorite
-                      : Icons.favorite_border, // Outline icon if not favorite
-                  color: isFavorite ?? false ? Colors.red : Colors.grey[600],
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: AppColors.primary,
                 )
-
-                    // SvgPicture.asset(
-                    //   AppAssets.ic_fav,
-                    //   height: 16,
-                    //   width: 16,
-                    //   color: Colors.black87,
-                    // ),
                     ),
               ),
             ),
           ),
+        if (trailingActions != null) ...trailingActions!,
       ],
     );
   }

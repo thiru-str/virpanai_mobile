@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -23,40 +24,47 @@ class CustomSearchAppBar extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Container(
-        color: AppColors.primary,
-        padding:
-            const EdgeInsets.only(top: 40, left: 12, right: 12, bottom: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildIcon(null, svgPath: AppAssets.app_icon_svg, size: 50),
-                Text(
-                  AppConfig.appName,
-                  style: FontUtils.primaryFontStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: AppColors.primary,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: IntrinsicHeight(
+        child: Container(
+          color: AppColors.primary,
+          padding:
+              const EdgeInsets.only(top: 40, left: 12, right: 12, bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildIcon(null, svgPath: AppAssets.app_icon_svg, size: 50),
+                  Text(
+                    AppConfig.appName,
+                    style: FontUtils.primaryFontStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                _buildIcon(
-                  Icons.shopping_cart,
-                  color: Colors.white,
-                  onPressed: onCartClick,
-                  cartCount: cartCount,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 48,
-              child: SearchBarWithRollingHint(onTap: onSearchTap),
-            ),
-          ],
+                  _buildIcon(
+                    Icons.shopping_cart,
+                    color: Colors.white,
+                    onPressed: onCartClick,
+                    cartCount: cartCount,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 48,
+                child: SearchBarWithRollingHint(onTap: onSearchTap),
+              ),
+            ],
+          ),
         ),
       ),
     );
