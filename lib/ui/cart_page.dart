@@ -1270,6 +1270,17 @@ class _CartPageState extends State<CartPage>
           providerId: pp_id,
           walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
+            // When wallet + loyalty already cover the full order, the gateway
+            // payable is 0. Real gateways reject 0-amount sessions, so the
+            // customer's selection would silently flip back to COD. Tell them
+            // why instead of letting the UI pretend the change took.
+            if (_displayTotalAmount() <= 0 &&
+                paymentProvider.id != 'pp_system_default') {
+              AppUtils.showToast(
+                'Your order is fully covered. Free orders can be placed only via Cash on Delivery.',
+              );
+              return;
+            }
             if (pp_id != paymentProvider.id) {
               updatePaymentMethod(paymentProvider.id!);
             }
