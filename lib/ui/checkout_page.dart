@@ -11,6 +11,7 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
+import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
@@ -217,12 +218,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Loyalty checkout apply widget
                               LoyaltyCheckoutWidget(
                                 cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
+                                cartTotal: cartResponse?.cart?.total,
+                                walletAmount: splitActive ? splitWalletAmount : 0,
+                                walletApplied: splitActive && splitWalletAmount > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
                                 onApplied: () {
-                                  // Refresh cart to reflect updated total after points applied
                                   getCartApi();
                                 },
                                 onRemoved: () {
-                                  // Refresh cart to reflect updated total after points removed
                                   getCartApi();
                                 },
                               ),
@@ -869,6 +873,47 @@ class _CheckOutPageState extends State<CheckOutPage> {
       case 'pp_wallet_wallet':
         makeWalletPayCall();
         break;
+      case 'pp_icici_icici':
+        _makeIciciPayment();
+        break;
+    }
+  }
+
+  Future<void> _makeIciciPayment() async {
+    setState(() => placeOrderApiLoading = true);
+    try {
+      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      if (!mounted) return;
+      setState(() => placeOrderApiLoading = false);
+
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IciciPaymentPage(
+            redirectUrl: redirectUrl,
+            onSuccess: (orderId) {
+              Navigator.pop(context);
+              PageRouteUtils.pushAndRemoveUntil(
+                context,
+                OrderPlacedPage(orderId: orderId),
+              );
+            },
+            onFailure: () {
+              Navigator.pop(context);
+              AppUtils.showToast('ICICI payment failed or was cancelled.');
+              getCartApi();
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() => placeOrderApiLoading = false);
+      AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
     }
   }
 

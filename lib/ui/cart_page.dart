@@ -484,6 +484,8 @@ class _CartPageState extends State<CartPage>
                                 loyaltyApply: _loyaltyApplyMetadata(),
                                 cartTotal: cartResponse?.cart?.total ?? 0,
                                 walletAmount: _walletAmountFromMetadata(),
+                                walletApplied: _walletAmountFromMetadata() > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
