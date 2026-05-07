@@ -1043,6 +1043,11 @@ class _CartPageState extends State<CartPage>
   }
 
   Future<void> updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — session created at place-order time, not here.
+    if (paymentProviderId == 'pp_icici_icici') {
+      setState(() => pp_id = 'pp_icici_icici');
+      return;
+    }
     try {
       setState(() {
         cartLoading = true;
@@ -1107,11 +1112,12 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
-        makeRazorPayCall(orderId!);
-        break;
-      case 'pp_icici_icici':
         makeRazorPayCall(orderId!);
         break;
       case 'pp_stripe_stripe':
@@ -1126,9 +1132,6 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
-      case 'pp_icici_icici':
-        _makeIciciPayment();
-        break;
     }
   }
 
@@ -1136,6 +1139,7 @@ class _CartPageState extends State<CartPage>
     setState(() => cartLoading = true);
     try {
       final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
       if (!mounted) return;
       setState(() => cartLoading = false);
 

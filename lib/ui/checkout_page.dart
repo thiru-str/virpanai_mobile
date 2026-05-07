@@ -843,13 +843,19 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — place-order handles the full session creation.
+    // Skip update-payment-method to avoid duplicate payment sessions.
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
+
     final ApiService apiService = ApiService();
     dynamic apiResponse = await apiService.updatePaymentMethod(
         context, paymentProviderId, cartResponse!);
 
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
-      case 'pp_icici_icici':
         String? orderId = extractOrderId(apiResponse);
         if (orderId != null) {
           makeRazorPayCall(orderId);
@@ -873,9 +879,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
       case 'pp_wallet_wallet':
         makeWalletPayCall();
         break;
-      case 'pp_icici_icici':
-        _makeIciciPayment();
-        break;
     }
   }
 
@@ -883,6 +886,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
     setState(() => placeOrderApiLoading = true);
     try {
       final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
       if (!mounted) return;
       setState(() => placeOrderApiLoading = false);
 

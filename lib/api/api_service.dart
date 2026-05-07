@@ -993,6 +993,7 @@ class ApiService {
 
   Future<String?> initiateIciciPayment(BuildContext context) async {
     await setPublishableKey();
+    await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final response = await _dio.post(
       'store/place-order/$cartId',
