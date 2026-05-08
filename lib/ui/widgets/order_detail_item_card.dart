@@ -72,7 +72,7 @@ class OrderDetailItemCard extends StatelessWidget {
                       children: [
                         // Product Name + Price in same row
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Text(
@@ -87,12 +87,17 @@ class OrderDetailItemCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              price,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                            Flexible(
+                              child: Text(
+                                price,
+                                maxLines: 2,
+                                textAlign: TextAlign.right,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
                               ),
                             ),
                           ],
@@ -123,45 +128,48 @@ class OrderDetailItemCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        showRating
-                            ? Column(
-                                children: [
-                                  RatingBar.builder(
-                                    initialRating: initialRating,
-                                    minRating: 1,
-                                    direction: Axis.horizontal,
-                                    allowHalfRating: false,
-                                    itemCount: 5,
-                                    itemSize: 24,
-                                    unratedColor: Colors.grey.shade300,
-                                    itemPadding: const EdgeInsets.symmetric(
-                                        horizontal: 2.0),
-                                    itemBuilder: (context, _) => Icon(
-                                        Icons.star,
-                                        color: AppColors.primary),
-                                    onRatingUpdate: (rating) {
-                                      if (onRatingChanged != null) {
-                                        onRatingChanged!(rating);
-                                      }
-                                    },
-                                  ),
-                                  SizedBox(
-                                    height: 4,
-                                  ),
-                                  const Text(
-                                    "Please rate the product",
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox(),
+                        if (showRating)
+                          Column(
+                            children: [
+                              RatingBar.builder(
+                                initialRating: initialRating,
+                                minRating: 1,
+                                direction: Axis.horizontal,
+                                allowHalfRating: false,
+                                itemCount: 5,
+                                itemSize: 24,
+                                unratedColor: Colors.grey.shade300,
+                                itemPadding:
+                                    const EdgeInsets.symmetric(horizontal: 2.0),
+                                itemBuilder: (context, _) =>
+                                    Icon(Icons.star, color: AppColors.primary),
+                                onRatingUpdate: (rating) {
+                                  if (onRatingChanged != null) {
+                                    onRatingChanged!(rating);
+                                  }
+                                },
+                              ),
+                              SizedBox(
+                                height: 4,
+                              ),
+                              const Text(
+                                "Please rate the product",
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          const SizedBox(),
                         if (showReturnButton)
                           ElevatedButton(
                             onPressed: onReturnTap,
@@ -210,14 +218,18 @@ class OrderDetailItemCard extends StatelessWidget {
               children: [
                 Icon(Icons.circle, size: 8, color: getStatusColor(status)),
                 SizedBox(width: 6),
-                Text(
-                  status.isNotEmpty
-                      ? status[0].toUpperCase() + status.substring(1)
-                      : '',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                Flexible(
+                  child: Text(
+                    status.isNotEmpty
+                        ? status[0].toUpperCase() + status.substring(1)
+                        : '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
                   ),
                 )
               ],

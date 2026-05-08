@@ -70,18 +70,30 @@ class _FavouriteHeartButtonState extends State<FavouriteHeartButton>
 
   Color _accentColor() {
     switch (_config.icon) {
-      case 'bookmark':   return Colors.blue.shade500;
-      case 'star':       return Colors.amber.shade600;
-      case 'sparkles':   return Colors.amber.shade500;
-      case 'trophy':     return Colors.amber.shade700;
-      case 'bag':        return Colors.indigo.shade500;
-      case 'gift':       return Colors.pink.shade400;
-      case 'list':       return Colors.green.shade600;
-      case 'bullets':    return Colors.green.shade600;
-      case 'collection': return Colors.teal.shade500;
-      case 'package':    return Colors.orange.shade500;
-      case 'tag':        return Colors.purple.shade500;
-      default:           return Colors.red.shade500;
+      case 'bookmark':
+        return Colors.blue.shade500;
+      case 'star':
+        return Colors.amber.shade600;
+      case 'sparkles':
+        return Colors.amber.shade500;
+      case 'trophy':
+        return Colors.amber.shade700;
+      case 'bag':
+        return Colors.indigo.shade500;
+      case 'gift':
+        return Colors.pink.shade400;
+      case 'list':
+        return Colors.green.shade600;
+      case 'bullets':
+        return Colors.green.shade600;
+      case 'collection':
+        return Colors.teal.shade500;
+      case 'package':
+        return Colors.orange.shade500;
+      case 'tag':
+        return Colors.purple.shade500;
+      default:
+        return Colors.red.shade500;
     }
   }
 
@@ -90,8 +102,10 @@ class _FavouriteHeartButtonState extends State<FavouriteHeartButton>
     final size = widget.size;
     switch (_config.icon) {
       case 'bookmark':
-        return Icon(filled ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-            color: color, size: size);
+        return Icon(
+            filled ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            color: color,
+            size: size);
       case 'star':
         return Icon(filled ? Icons.star_rounded : Icons.star_border_rounded,
             color: color, size: size);
@@ -108,14 +122,22 @@ class _FavouriteHeartButtonState extends State<FavouriteHeartButton>
         return Icon(filled ? Icons.card_giftcard : Icons.card_giftcard_outlined,
             color: color, size: size);
       case 'list':
-        return Icon(filled ? Icons.checklist_rounded : Icons.playlist_add_rounded,
-            color: color, size: size);
+        return Icon(
+            filled ? Icons.checklist_rounded : Icons.playlist_add_rounded,
+            color: color,
+            size: size);
       case 'bullets':
-        return Icon(filled ? Icons.format_list_bulleted : Icons.format_list_bulleted,
-            color: color, size: size);
+        return Icon(
+            filled ? Icons.format_list_bulleted : Icons.format_list_bulleted,
+            color: color,
+            size: size);
       case 'collection':
-        return Icon(filled ? Icons.collections_bookmark : Icons.collections_bookmark_outlined,
-            color: color, size: size);
+        return Icon(
+            filled
+                ? Icons.collections_bookmark
+                : Icons.collections_bookmark_outlined,
+            color: color,
+            size: size);
       case 'package':
         return Icon(filled ? Icons.inventory_2 : Icons.inventory_2_outlined,
             color: color, size: size);
@@ -123,8 +145,10 @@ class _FavouriteHeartButtonState extends State<FavouriteHeartButton>
         return Icon(filled ? Icons.sell : Icons.sell_outlined,
             color: color, size: size);
       default:
-        return Icon(filled ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-            color: color, size: size);
+        return Icon(
+            filled ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            color: color,
+            size: size);
     }
   }
 
@@ -371,8 +395,8 @@ class _AddToListSheetState extends State<_AddToListSheet> {
         backgroundColor: const Color(0xFF272727),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Text(msg,
-            style: FontUtils.primaryFontStyle(
-                fontSize: 13, color: Colors.white)),
+            style:
+                FontUtils.primaryFontStyle(fontSize: 13, color: Colors.white)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -381,286 +405,300 @@ class _AddToListSheetState extends State<_AddToListSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Container(
-      padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottom),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-
-          // Title
-          Text(
-            'Save to ${widget.config.displayName}',
-            style: FontUtils.secondaryFontStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF272727),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Variant picker
-          if (widget.variants.length > 1) ...[
-            _sectionLabel('Variant'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: widget.variants.map((v) {
-                final id = v['id'] as String? ?? '';
-                final title = v['title'] as String? ?? id;
-                final sel = _selectedVariantId == id;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedVariantId = id),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 9),
-                    decoration: BoxDecoration(
-                      color: sel ? AppColors.primary : Colors.white,
-                      border: Border.all(
-                        color: sel
-                            ? AppColors.primary
-                            : Colors.grey.shade200,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      title,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight:
-                            sel ? FontWeight.w600 : FontWeight.normal,
-                        color: sel ? Colors.white : const Color(0xFF272727),
-                      ),
-                    ),
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottom),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 18),
-          ],
+                ),
+              ),
 
-          // List picker
-          if (widget.lists.isNotEmpty) ...[
-            _sectionLabel('Choose list'),
-            const SizedBox(height: 8),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 176),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const ClampingScrollPhysics(),
-                itemCount: widget.lists.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 6),
-                itemBuilder: (_, i) {
-                  final list = widget.lists[i];
-                  final sel = _selectedListId == list.id &&
-                      _newListCtrl.text.isEmpty;
-                  return GestureDetector(
-                    onTap: () => setState(() {
-                      _selectedListId = list.id;
-                      _newListCtrl.clear();
-                    }),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: sel
-                            ? AppColors.primary.withOpacity(0.06)
-                            : const Color(0xFFF8F7FC),
-                        border: Border.all(
-                          color: sel
-                              ? AppColors.primary.withOpacity(0.5)
-                              : Colors.transparent,
-                          width: 1.5,
+              // Title
+              Text(
+                'Save to ${widget.config.displayName}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF272727),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Variant picker
+              if (widget.variants.length > 1) ...[
+                _sectionLabel('Variant'),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.variants.map((v) {
+                    final id = v['id'] as String? ?? '';
+                    final title = v['title'] as String? ?? id;
+                    final sel = _selectedVariantId == id;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedVariantId = id),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: sel ? AppColors.primary : Colors.white,
+                          border: Border.all(
+                            color:
+                                sel ? AppColors.primary : Colors.grey.shade200,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: sel ? AppColors.primary : Colors.transparent,
-                              border: Border.all(
-                                color: sel
-                                    ? AppColors.primary
-                                    : Colors.grey.shade400,
-                                width: 1.5,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: sel
-                                ? const Icon(Icons.check,
-                                    size: 12, color: Colors.white)
-                                : null,
+                        child: Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 13,
+                            fontWeight:
+                                sel ? FontWeight.w600 : FontWeight.normal,
+                            color: sel ? Colors.white : const Color(0xFF272727),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              list.wishlistGroupName ?? '',
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                fontWeight: sel
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                color: const Color(0xFF272727),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+              ],
 
-          // Qty picker
-          if (widget.config.qtyEnabled) ...[
-            _sectionLabel('Quantity'),
-            const SizedBox(height: 8),
-            Container(
-              height: 44,
-              width: 120,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F4F4),
-                borderRadius: BorderRadius.circular(12),
+              // List picker
+              if (widget.lists.isNotEmpty) ...[
+                _sectionLabel('Choose list'),
+                const SizedBox(height: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 176),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: widget.lists.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                    itemBuilder: (_, i) {
+                      final list = widget.lists[i];
+                      final sel = _selectedListId == list.id &&
+                          _newListCtrl.text.isEmpty;
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          _selectedListId = list.id;
+                          _newListCtrl.clear();
+                        }),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: sel
+                                ? AppColors.primary.withOpacity(0.06)
+                                : const Color(0xFFF8F7FC),
+                            border: Border.all(
+                              color: sel
+                                  ? AppColors.primary.withOpacity(0.5)
+                                  : Colors.transparent,
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: sel
+                                      ? AppColors.primary
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: sel
+                                        ? AppColors.primary
+                                        : Colors.grey.shade400,
+                                    width: 1.5,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: sel
+                                    ? const Icon(Icons.check,
+                                        size: 12, color: Colors.white)
+                                    : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  list.wishlistGroupName ?? '',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    fontWeight: sel
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: const Color(0xFF272727),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Qty picker
+              if (widget.config.qtyEnabled) ...[
+                _sectionLabel('Quantity'),
+                const SizedBox(height: 8),
+                Container(
+                  height: 44,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F4F4),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      _SheetQtyBtn(
+                        icon: Icons.remove,
+                        enabled: _qty > 1,
+                        onTap: () =>
+                            setState(() => _qty = (_qty - 1).clamp(1, 999)),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            '$_qty',
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF272727),
+                            ),
+                          ),
+                        ),
+                      ),
+                      _SheetQtyBtn(
+                        icon: Icons.add,
+                        enabled: _qty < 999,
+                        onTap: () =>
+                            setState(() => _qty = (_qty + 1).clamp(1, 999)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // New list input
+              _sectionLabel(widget.lists.isNotEmpty
+                  ? 'Or create new list'
+                  : 'Create a list'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _newListCtrl,
+                onChanged: (_) => setState(() {
+                  if (_newListCtrl.text.isNotEmpty) _selectedListId = null;
+                }),
+                onSubmitted: (_) => _save(),
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 14, color: const Color(0xFF272727)),
+                decoration: InputDecoration(
+                  hintText:
+                      'New ${widget.config.displayName.toLowerCase()} name',
+                  hintStyle: FontUtils.primaryFontStyle(
+                      fontSize: 14, color: Colors.grey.shade400),
+                  filled: true,
+                  fillColor: const Color(0xFFF8F7FC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: AppColors.primary, width: 1.5),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                ),
               ),
-              child: Row(
+              const SizedBox(height: 20),
+
+              // Actions
+              Row(
                 children: [
-                  _SheetQtyBtn(
-                    icon: Icons.remove,
-                    enabled: _qty > 1,
-                    onTap: () =>
-                        setState(() => _qty = (_qty - 1).clamp(1, 999)),
-                  ),
                   Expanded(
-                    child: Center(
-                      child: Text(
-                        '$_qty',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF272727),
-                        ),
+                    child: OutlinedButton(
+                      onPressed:
+                          _saving ? null : () => Navigator.pop(context, false),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade200),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
+                      child: Text('Cancel',
+                          style: FontUtils.primaryFontStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
                     ),
                   ),
-                  _SheetQtyBtn(
-                    icon: Icons.add,
-                    enabled: _qty < 999,
-                    onTap: () =>
-                        setState(() => _qty = (_qty + 1).clamp(1, 999)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _saving ? null : _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        disabledBackgroundColor:
+                            AppColors.primary.withOpacity(0.5),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: _saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text('Save',
+                              style: FontUtils.primaryFontStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white)),
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // New list input
-          _sectionLabel(
-              widget.lists.isNotEmpty ? 'Or create new list' : 'Create a list'),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _newListCtrl,
-            onChanged: (_) => setState(() {
-              if (_newListCtrl.text.isNotEmpty) _selectedListId = null;
-            }),
-            onSubmitted: (_) => _save(),
-            style: FontUtils.primaryFontStyle(
-                fontSize: 14, color: const Color(0xFF272727)),
-            decoration: InputDecoration(
-              hintText:
-                  'New ${widget.config.displayName.toLowerCase()} name',
-              hintStyle: FontUtils.primaryFontStyle(
-                  fontSize: 14, color: Colors.grey.shade400),
-              filled: true,
-              fillColor: const Color(0xFFF8F7FC),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Actions
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _saving ? null : () => Navigator.pop(context, false),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade200),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  child: Text('Cancel',
-                      style: FontUtils.primaryFontStyle(
-                          fontSize: 14, fontWeight: FontWeight.w500)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _saving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    disabledBackgroundColor:
-                        AppColors.primary.withOpacity(0.5),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  child: _saving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : Text('Save',
-                          style: FontUtils.primaryFontStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
-                ),
-              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

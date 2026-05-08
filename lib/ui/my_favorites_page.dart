@@ -113,7 +113,8 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
                   color: Colors.red.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 22),
+                child: Icon(Icons.delete_outline,
+                    color: Colors.red.shade400, size: 22),
               ),
               const SizedBox(height: 16),
               Text(
@@ -183,18 +184,30 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
 
   IconData _configIcon() {
     switch (config.icon) {
-      case 'bookmark':   return Icons.bookmark_border_rounded;
-      case 'star':       return Icons.star_border_rounded;
-      case 'sparkles':   return Icons.auto_awesome_outlined;
-      case 'trophy':     return Icons.emoji_events_outlined;
-      case 'bag':        return Icons.shopping_bag_outlined;
-      case 'gift':       return Icons.card_giftcard_outlined;
-      case 'list':       return Icons.playlist_add_check_rounded;
-      case 'bullets':    return Icons.format_list_bulleted;
-      case 'collection': return Icons.collections_bookmark_outlined;
-      case 'package':    return Icons.inventory_2_outlined;
-      case 'tag':        return Icons.sell_outlined;
-      default:           return Icons.favorite_border_rounded;
+      case 'bookmark':
+        return Icons.bookmark_border_rounded;
+      case 'star':
+        return Icons.star_border_rounded;
+      case 'sparkles':
+        return Icons.auto_awesome_outlined;
+      case 'trophy':
+        return Icons.emoji_events_outlined;
+      case 'bag':
+        return Icons.shopping_bag_outlined;
+      case 'gift':
+        return Icons.card_giftcard_outlined;
+      case 'list':
+        return Icons.playlist_add_check_rounded;
+      case 'bullets':
+        return Icons.format_list_bulleted;
+      case 'collection':
+        return Icons.collections_bookmark_outlined;
+      case 'package':
+        return Icons.inventory_2_outlined;
+      case 'tag':
+        return Icons.sell_outlined;
+      default:
+        return Icons.favorite_border_rounded;
     }
   }
 
@@ -224,6 +237,8 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
             fontWeight: FontWeight.bold,
             color: const Color(0xFF272727),
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         actions: [
           if (!loading && loggedIn && config.enabled)
@@ -232,7 +247,8 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
               child: GestureDetector(
                 onTap: _createList,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(20),
@@ -507,6 +523,8 @@ class _GroupCardState extends State<_GroupCard> {
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF272727),
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               GestureDetector(
@@ -518,8 +536,7 @@ class _GroupCardState extends State<_GroupCard> {
                 ),
               ),
               const SizedBox(width: 4),
-              Icon(Icons.chevron_right,
-                  size: 20, color: Colors.grey.shade400),
+              Icon(Icons.chevron_right, size: 20, color: Colors.grey.shade400),
             ],
           ),
         ),
@@ -600,8 +617,7 @@ class _CreateListSheetState extends State<_CreateListSheet> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide:
-                    BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
               ),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import '../../utility/ui_typography.dart';
 
 class ProductCard8 extends StatelessWidget {
   final Product product;
@@ -118,10 +118,11 @@ class ProductCard8 extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(
                       '',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w600,
+                      style: UiTypography.cardMeta(
                         color: Colors.black,
+                      ).copyWith(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -141,10 +142,11 @@ class ProductCard8 extends StatelessWidget {
                             product.description ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w600,
+                            style: UiTypography.cardMeta(
                               color: Colors.black,
+                            ).copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -158,10 +160,11 @@ class ProductCard8 extends StatelessWidget {
                           alignment: Alignment.center,
                           child: Text(
                             '4.2',
-                            style: FontUtils.secondaryFontStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700,
+                            style: UiTypography.cardMeta(
                               color: const Color(0xFF6D758F),
+                            ).copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -177,9 +180,7 @@ class ProductCard8 extends StatelessWidget {
                 product.title ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                style: UiTypography.cardTitle(
                   color: const Color(0xFF272727),
                 ),
               ),
@@ -193,11 +194,7 @@ class ProductCard8 extends StatelessWidget {
                       _fmt(calc ?? orig ?? 0),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                      ),
+                      style: UiTypography.cardPrice(),
                     ),
                   ),
                   const _SwatchDot(),
@@ -205,10 +202,9 @@ class ProductCard8 extends StatelessWidget {
                   const SizedBox(width: 2),
                   Text(
                     '+2',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 9,
+                    style: UiTypography.cardMeta(
                       color: Colors.black.withOpacity(0.8),
-                    ),
+                    ).copyWith(fontSize: 11),
                   ),
                 ],
               ),
@@ -221,17 +217,18 @@ class ProductCard8 extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(orig ?? calc ?? 0),
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 10,
+                    style: UiTypography.cardMeta(
                       color: const Color(0xFFB1B5B8),
+                    ).copyWith(
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
                   Text(
                     percentOff != null ? '$percentOff% OFF' : '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 10,
+                    style: UiTypography.cardMeta(
                       color: Colors.black.withOpacity(0.8),
+                    ).copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

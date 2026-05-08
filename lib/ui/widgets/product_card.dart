@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 
 import '../../model/product_response.dart';
@@ -169,12 +169,8 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Text(
                 product.title ?? '',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textColor,
-                ),
-                maxLines: 1,
+                style: UiTypography.cardTitle(color: AppColors.textColor),
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -186,20 +182,13 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0), // show calc, else original
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   const SizedBox(width: 8),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: FontUtils.secondaryFontStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: Colors.grey,
+                      style: UiTypography.cardMeta().copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),

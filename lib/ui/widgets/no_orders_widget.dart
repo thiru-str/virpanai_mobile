@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
@@ -24,48 +25,69 @@ class NoOrdersWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Icon Section
-          Image.asset(
-            iconPath,height: 100,width: 100,
-          ),
-          const SizedBox(height: 16),
-          // Message Section
-          Text(
-            message,
-            style: FontUtils.primaryFontStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
-          ),
-          const SizedBox(height: 24),
-          // Button Section
-          Visibility(
-            visible: showExplore,
-            child: ElevatedButton(
-              onPressed: onButtonTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary, // Background color
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: Text(
-                buttonText,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Icon Section
+            Image.asset(
+              iconPath,
+              height: 100,
+              width: 100,
+            ),
+            const SizedBox(height: 16),
+            // Message Section
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: UiTypography.cardTitle(
+                color: Colors.black87,
+              ).copyWith(
+                fontSize: 18,
+                color: Colors.black87,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            // Button Section
+            Visibility(
+              visible: showExplore,
+              child: ElevatedButton(
+                onPressed: onButtonTap,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary, // Background color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: Text(
+                  buttonText,
+                  style: UiTypography.cardAction(
+                    color: Colors.white,
+                  ).copyWith(
+                    fontSize: 15,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

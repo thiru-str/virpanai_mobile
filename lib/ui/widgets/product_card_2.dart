@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -134,11 +134,8 @@ class _ProductCard2State extends State<ProductCard2> {
                       child: Text(
                         "$percentOff%\nOFF",
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: UiTypography.cardMeta(color: Colors.white)
+                            .copyWith(fontSize: 9, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -168,12 +165,8 @@ class _ProductCard2State extends State<ProductCard2> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? "Write A Title Here",
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
-                maxLines: 1,
+                style: UiTypography.cardTitle(),
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -184,10 +177,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
               child: Text(
                 product.description ?? "Add a short section",
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black54,
-                ),
+                style: UiTypography.cardSubtitle(color: Colors.black54),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -199,11 +189,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
               child: Text(
                 _fmt(calc ?? orig ?? 0),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
+                style: UiTypography.cardPrice(),
               ),
             ),
 
@@ -238,13 +224,9 @@ class _ProductCard2State extends State<ProductCard2> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Add To Cart",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
+                    style: UiTypography.cardAction(),
                   ),
                 ),
               ),
@@ -257,4 +239,3 @@ class _ProductCard2State extends State<ProductCard2> {
     );
   }
 }
-

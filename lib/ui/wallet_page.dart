@@ -194,7 +194,7 @@ class _WalletPageState extends State<WalletPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () async {
-                            final result = await PageRouteUtils.pushWithSlide(
+                            await PageRouteUtils.pushWithSlide(
                               context,
                               const WalletTopUpPage(),
                             );
@@ -280,7 +280,8 @@ class _WalletPageState extends State<WalletPage> {
                           ? const Padding(
                               padding: EdgeInsets.all(16),
                               child: Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                             )
                           : null;
@@ -292,8 +293,9 @@ class _WalletPageState extends State<WalletPage> {
                     return ListTile(
                       onTap: () => _showTransactionDetail(txn),
                       leading: CircleAvatar(
-                        backgroundColor:
-                            isCredit ? Colors.green.shade50 : Colors.red.shade50,
+                        backgroundColor: isCredit
+                            ? Colors.green.shade50
+                            : Colors.red.shade50,
                         child: Icon(
                           isCredit ? Icons.arrow_downward : Icons.arrow_upward,
                           color: isCredit ? Colors.green : Colors.red,
@@ -306,17 +308,28 @@ class _WalletPageState extends State<WalletPage> {
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
                         _formatDate(txn.createdAt),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      trailing: Text(
-                        '${isCredit ? '+' : '-'}₹${txn.amount?.toStringAsFixed(2) ?? '0.00'}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isCredit ? Colors.green : Colors.red,
+                      trailing: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 92),
+                        child: Text(
+                          '${isCredit ? '+' : '-'}₹${txn.amount?.toStringAsFixed(2) ?? '0.00'}',
+                          textAlign: TextAlign.right,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isCredit ? Colors.green : Colors.red,
+                          ),
                         ),
                       ),
                     );
@@ -379,70 +392,76 @@ class _TransactionDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCredit = transaction.direction == 'credit';
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Center(
-            child: Text(
-              '${isCredit ? '+' : '-'}₹${transaction.amount?.toStringAsFixed(2) ?? '0.00'}',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: isCredit ? Colors.green : Colors.red,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: isCredit ? Colors.green.shade50 : Colors.red.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                transaction.typeLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isCredit ? Colors.green.shade700 : Colors.red.shade700,
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          _DetailRow('Date', _formatDate(transaction.createdAt)),
-          _DetailRow('Direction', transaction.direction ?? '—'),
-          _DetailRow('Transaction ID', transaction.id ?? '—'),
-          if (transaction.reason != null && transaction.reason!.isNotEmpty)
-            _DetailRow('Reason', transaction.reason!),
-          if (transaction.referenceType != null)
-            _DetailRow('Reference', '${transaction.referenceType}: ${transaction.referenceId ?? '—'}'),
-          if (transaction.expiresAt != null)
-            _DetailRow(
-              'Expires',
-              transaction.expired
-                  ? 'Expired'
-                  : _formatDate(transaction.expiresAt),
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                '${isCredit ? '+' : '-'}₹${transaction.amount?.toStringAsFixed(2) ?? '0.00'}',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: isCredit ? Colors.green : Colors.red,
+                ),
+              ),
             ),
-          if (transaction.createdBy != null)
-            _DetailRow('Created By', transaction.createdBy!),
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 8),
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isCredit ? Colors.green.shade50 : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  transaction.typeLabel,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        isCredit ? Colors.green.shade700 : Colors.red.shade700,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _DetailRow('Date', _formatDate(transaction.createdAt)),
+            _DetailRow('Direction', transaction.direction ?? '—'),
+            _DetailRow('Transaction ID', transaction.id ?? '—'),
+            if (transaction.reason != null && transaction.reason!.isNotEmpty)
+              _DetailRow('Reason', transaction.reason!),
+            if (transaction.referenceType != null)
+              _DetailRow('Reference',
+                  '${transaction.referenceType}: ${transaction.referenceId ?? '—'}'),
+            if (transaction.expiresAt != null)
+              _DetailRow(
+                'Expires',
+                transaction.expired
+                    ? 'Expired'
+                    : _formatDate(transaction.expiresAt),
+              ),
+            if (transaction.createdBy != null)
+              _DetailRow('Created By', transaction.createdBy!),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -462,7 +481,7 @@ class _DetailRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 104,
             child: Text(
               label,
               style: const TextStyle(fontSize: 13, color: Colors.grey),
@@ -472,6 +491,7 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               value,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              softWrap: true,
             ),
           ),
         ],

@@ -8,7 +8,6 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
-import '../api/api_service.dart';
 import 'widgets/common_header_app_bar.dart';
 
 class SubCategoryPage extends StatefulWidget {
@@ -42,13 +41,14 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                child: Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
                   children: [
-                    Text('${AppStrings.all_category} > ',
+                    Text('${AppStrings.all_category} >',
                         style: FontUtils.primaryFontStyle(
                             fontSize: 16, color: AppColors.textColor)),
-                    Text('${widget.categoryTitle}',
+                    Text(widget.categoryTitle,
                         style: FontUtils.primaryFontStyle(
                             fontSize: 16, color: AppColors.primary)),
                   ],

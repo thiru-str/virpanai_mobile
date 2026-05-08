@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
-import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -107,6 +106,13 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   }
 
   Widget _buildTransactionInfoCard() {
+    final infoItems = [
+      _InfoItem('${AppStrings.name}:', bankDetails?.accountHolderName ?? ""),
+      _InfoItem('${AppStrings.bank_name}:', bankDetails?.bankName ?? ""),
+      _InfoItem('${AppStrings.account_no}:', bankDetails?.accountNumber ?? ""),
+      _InfoItem('${AppStrings.IFSC_code}:', bankDetails?.ifscCode ?? ""),
+    ];
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25.0, horizontal: 20.0),
       decoration: BoxDecoration(
@@ -126,28 +132,19 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                  child: _buildInfoRow('${AppStrings.name}:',
-                      bankDetails?.accountHolderName ?? "")),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: _buildInfoRow(
-                      '${AppStrings.bank_name}:', bankDetails?.bankName ?? "")),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                  child: _buildInfoRow('${AppStrings.account_no}:',
-                      bankDetails?.accountNumber ?? "")),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: _buildInfoRow(
-                      '${AppStrings.IFSC_code}:', bankDetails?.ifscCode ?? "")),
-            ],
+          Wrap(
+            spacing: 10,
+            runSpacing: 14,
+            children: infoItems
+                .map(
+                  (item) => SizedBox(
+                    width: MediaQuery.sizeOf(context).width > 420
+                        ? (MediaQuery.sizeOf(context).width - 62) / 2
+                        : double.infinity,
+                    child: _buildInfoRow(item.label, item.value),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
@@ -172,7 +169,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           style:
               FontUtils.primaryFontStyle(color: Colors.white, fontSize: 14.0),
           softWrap: true,
-          overflow: TextOverflow.visible,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -208,7 +206,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                                 imageUrl: neftPayment!.image!,
                                 fit: BoxFit.contain,
                                 errorWidget: (context, url, error) =>
-                                   const ImageFallbackWidget(h: 120, w: 120),
+                                    const ImageFallbackWidget(h: 120, w: 120),
                               ),
                       ),
                     ),
@@ -217,13 +215,14 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               },
               child: (neftPayment?.image == null ||
                       (neftPayment?.image?.isEmpty ?? false))
-                  ?const ImageFallbackWidget(h: 120, w: 120)
+                  ? const ImageFallbackWidget(h: 120, w: 120)
                   : CachedNetworkImage(
                       imageUrl: neftPayment!.image!,
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,
-                      errorWidget: (context, url, error) =>const ImageFallbackWidget(
+                      errorWidget: (context, url, error) =>
+                          const ImageFallbackWidget(
                         h: 120,
                         w: 120,
                       ),
@@ -239,11 +238,15 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                   AppStrings.customer_summery,
                   style:
                       FontUtils.primaryFontStyle(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   neftPayment?.description ?? "",
                   style: FontUtils.primaryFontStyle(color: AppColors.textColor),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 )
               ],
             ),
@@ -276,4 +279,11 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       ),
     );
   }
+}
+
+class _InfoItem {
+  final String label;
+  final String value;
+
+  const _InfoItem(this.label, this.value);
 }

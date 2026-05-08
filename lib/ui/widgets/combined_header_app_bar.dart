@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
 import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
-import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
+import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -307,13 +306,14 @@ class CombinedHeaderAppBar extends StatelessWidget
     return AppBar(
       scrolledUnderElevation: 0,
       backgroundColor: bgColor ?? Colors.white,
-      elevation: 0,
+      elevation: 0.5,
+      shadowColor: Colors.black.withOpacity(0.05),
       automaticallyImplyLeading: false,
       toolbarHeight: _getHeaderHeight(), // 🔹 dynamic height here
       titleSpacing: 0,
       flexibleSpace: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: child,
         ),
       ),
@@ -335,11 +335,12 @@ class CombinedHeaderAppBar extends StatelessWidget
     return GestureDetector(
       onTap: onSearchClick,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        height: 48,
         decoration: BoxDecoration(
           color: AppColors.searchBarColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
         child: Row(
           children: [
@@ -348,7 +349,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             Expanded(
               child: Text(
                 AppStrings.search,
-                style: FontUtils.secondaryFontStyle(
+                style: UiTypography.searchHint().copyWith(
                   color: AppColors.textColor.withOpacity(0.7),
                 ),
               ),
@@ -411,10 +412,17 @@ class CombinedHeaderAppBar extends StatelessWidget
     return SizedBox(
       width: width ?? 48,
       height: height ?? 48,
-      child: IconButton(
-        icon: iconWidget,
-        onPressed: onPressed,
-        splashRadius: 24,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.92),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.black.withOpacity(0.05)),
+        ),
+        child: IconButton(
+          icon: iconWidget,
+          onPressed: onPressed,
+          splashRadius: 24,
+        ),
       ),
     );
   }

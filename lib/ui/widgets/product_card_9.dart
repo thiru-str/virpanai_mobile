@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import '../../utility/ui_typography.dart';
 
 class ProductCard9 extends StatelessWidget {
   final Product product;
@@ -116,10 +116,10 @@ class ProductCard9 extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       '',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                      style: UiTypography.cardMeta(
                         color: Colors.black,
+                      ).copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -132,10 +132,10 @@ class ProductCard9 extends StatelessWidget {
                 product.title ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                style: UiTypography.cardTitle(
                   color: const Color(0xFF272727),
+                ).copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -147,26 +147,25 @@ class ProductCard9 extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black.withOpacity(0.8),
+                    style: UiTypography.cardPrice(
+                      color: Colors.black.withOpacity(0.85),
                     ),
                   ),
                   Text(
                     _fmt(orig ?? calc ?? 0),
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 13,
+                    style: UiTypography.cardMeta(
                       color: const Color(0xFF7E7D7D),
+                    ).copyWith(
+                      fontSize: 13,
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
                   Text(
                     percentOff != null ? '$percentOff% off' : '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                    style: UiTypography.cardMeta(
                       color: Colors.black.withOpacity(0.8),
+                    ).copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -186,10 +185,11 @@ class ProductCard9 extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       (rating != null ? rating.toStringAsFixed(1) : '4.2'),
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                      style: UiTypography.cardMeta(
                         color: const Color(0xFF6D758F),
+                      ).copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -199,10 +199,10 @@ class ProductCard9 extends StatelessWidget {
                       totalReviews.isNotEmpty ? '$totalReviews Ratings' : '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+                      style: UiTypography.cardMeta(
                         color: Colors.black,
+                      ).copyWith(
+                        fontSize: 11,
                       ),
                     ),
                   ),
@@ -213,10 +213,10 @@ class ProductCard9 extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
               child: Text(
                 '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                style: UiTypography.cardMeta(
                   color: Colors.black.withOpacity(0.8),
+                ).copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -241,11 +241,7 @@ class ProductCard9 extends StatelessWidget {
                               'Add to Cart',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                              ),
+                              style: UiTypography.cardAction(),
                             ),
                           ),
                         ),

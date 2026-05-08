@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import '../../utility/ui_typography.dart';
 
 class ProductCard7 extends StatelessWidget {
   final Product product;
@@ -92,11 +92,7 @@ class ProductCard7 extends StatelessWidget {
                 product.title ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+                style: UiTypography.cardTitle(),
               ),
             ),
             const SizedBox(height: 2),
@@ -109,11 +105,7 @@ class ProductCard7 extends StatelessWidget {
                       _fmt(calc ?? orig ?? 0),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
+                      style: UiTypography.cardPrice(),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -123,10 +115,10 @@ class ProductCard7 extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.right,
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
+                      style: UiTypography.cardMeta(
+                        color: Colors.black54,
+                      ).copyWith(
+                        decoration: TextDecoration.lineThrough,
                       ),
                     ),
                   ),

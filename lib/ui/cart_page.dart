@@ -164,38 +164,60 @@ class _CartPageState extends State<CartPage>
 
     // Fallback display names for providers with empty/null names
     switch (providerId) {
-      case 'pp_wallet_wallet':      return 'Wallet';
-      case 'pp_razorpay_razorpay':  return 'Razorpay';
-      case 'pp_payu_payu':          return 'PayU';
-      case 'pp_icici_icici':        return 'ICICI Bank';
-      case 'pp_system_default':     return 'Cash on Delivery';
-      case 'pp_neft_neft':          return 'Bank Transfer (NEFT)';
-      case 'pp_stripe_stripe':      return 'Credit / Debit Card';
-      default:                      return AppStrings.cash_on_delivery;
+      case 'pp_wallet_wallet':
+        return 'Wallet';
+      case 'pp_razorpay_razorpay':
+        return 'Razorpay';
+      case 'pp_payu_payu':
+        return 'PayU';
+      case 'pp_icici_icici':
+        return 'ICICI Bank';
+      case 'pp_system_default':
+        return 'Cash on Delivery';
+      case 'pp_neft_neft':
+        return 'Bank Transfer (NEFT)';
+      case 'pp_stripe_stripe':
+        return 'Credit / Debit Card';
+      default:
+        return AppStrings.cash_on_delivery;
     }
   }
 
   IconData _providerIcon(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return Icons.bolt_rounded;
-      case 'pp_payu_payu':         return Icons.credit_card_rounded;
-      case 'pp_icici_icici':       return Icons.account_balance_rounded;
-      case 'pp_neft_neft':         return Icons.swap_horiz_rounded;
-      case 'pp_wallet_wallet':     return Icons.account_balance_wallet_rounded;
-      case 'pp_stripe_stripe':     return Icons.credit_card_rounded;
-      default:                     return Icons.local_shipping_rounded;
+      case 'pp_razorpay_razorpay':
+        return Icons.bolt_rounded;
+      case 'pp_payu_payu':
+        return Icons.credit_card_rounded;
+      case 'pp_icici_icici':
+        return Icons.account_balance_rounded;
+      case 'pp_neft_neft':
+        return Icons.swap_horiz_rounded;
+      case 'pp_wallet_wallet':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_stripe_stripe':
+        return Icons.credit_card_rounded;
+      default:
+        return Icons.local_shipping_rounded;
     }
   }
 
   Color _providerColor(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return const Color(0xFF2D81F7);
-      case 'pp_payu_payu':         return const Color(0xFF6CB33F);
-      case 'pp_icici_icici':       return const Color(0xFFE87722);
-      case 'pp_neft_neft':         return const Color(0xFF1565C0);
-      case 'pp_wallet_wallet':     return const Color(0xFF2E7D32);
-      case 'pp_stripe_stripe':     return const Color(0xFF635BFF);
-      default:                     return const Color(0xFF795548);
+      case 'pp_razorpay_razorpay':
+        return const Color(0xFF2D81F7);
+      case 'pp_payu_payu':
+        return const Color(0xFF6CB33F);
+      case 'pp_icici_icici':
+        return const Color(0xFFE87722);
+      case 'pp_neft_neft':
+        return const Color(0xFF1565C0);
+      case 'pp_wallet_wallet':
+        return const Color(0xFF2E7D32);
+      case 'pp_stripe_stripe':
+        return const Color(0xFF635BFF);
+      default:
+        return const Color(0xFF795548);
     }
   }
 
@@ -247,14 +269,14 @@ class _CartPageState extends State<CartPage>
           Navigator.pop(context, true);
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       body: Stack(
         children: [
           apiLoading
               ? const CartPageSkeleton()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
-                      backgroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFF9F9FB),
                       body: SingleChildScrollView(
                         child: Column(
                           children: [
@@ -1138,7 +1160,8 @@ class _CartPageState extends State<CartPage>
       setState(() => cartLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 
@@ -1206,7 +1229,14 @@ class _CartPageState extends State<CartPage>
           children: [
             Icon(Icons.account_balance_wallet, color: AppColors.primary),
             const SizedBox(width: 8),
-            const Text('Insufficient Balance', style: TextStyle(fontSize: 16)),
+            const Expanded(
+              child: Text(
+                'Insufficient Balance',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -1648,6 +1678,7 @@ class _CartPageState extends State<CartPage>
       ),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Left: Amount + View details
           Expanded(
@@ -1658,6 +1689,8 @@ class _CartPageState extends State<CartPage>
               children: [
                 Text(
                   amount,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: FontUtils.primaryFontStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -1739,6 +1772,8 @@ class _CartPageState extends State<CartPage>
                           ),
                           Text(
                             providerName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 10,
                               color: Colors.white70,
@@ -1762,18 +1797,28 @@ class _CartPageState extends State<CartPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
-          Text(value,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: valueColor ?? AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
+          Expanded(
+            child: Text(label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: fontSize,
+                  color: AppColors.textColor,
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                )),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value,
+                maxLines: 2,
+                textAlign: TextAlign.right,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: fontSize,
+                  color: valueColor ?? AppColors.textColor,
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                )),
+          ),
         ],
       ),
     );

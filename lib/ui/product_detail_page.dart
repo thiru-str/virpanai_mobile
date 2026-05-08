@@ -34,6 +34,7 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../model/product_response.dart' hide Image;
@@ -201,14 +202,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               productId: product?.id ?? widget.productId,
               productHandle: product?.handle ?? '',
               selectedVariantId: selectedVariantId,
-              variants: product?.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
+              variants: product?.variants
+                      ?.map((v) => {'id': v.id, 'title': v.title})
+                      .toList() ??
+                  [],
               isLoggedIn: isLoggedIn,
               config: _favConfig,
               initialSaved: isFavorite,
               size: 22,
             ),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           body: apiLoading
               ? const ProductDetailSkeleton()
               : SafeArea(
@@ -218,7 +222,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         Expanded(
                           child: SingleChildScrollView(
                             child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 12, 16, 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -274,7 +279,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         : (product?.images ?? []).map((img) => img.url ?? '').toList();
 
     return SizedBox(
-      height: 250,
+      height: 280,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: displayUrls.length,
@@ -295,8 +300,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               );
             },
             child: Container(
-              width: 180,
-              decoration: BoxDecoration(color: AppColors.secondary),
+              width: 210,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
               child: isVideo
                   ? Stack(
                       alignment: Alignment.center,
@@ -304,14 +320,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         if (videoThumbnails?[url] != null)
                           Image.file(
                             videoThumbnails![url]!,
-                            width: 180,
-                            height: 250,
+                            width: 210,
+                            height: 280,
                             fit: BoxFit.cover,
                           )
                         else
                           Container(
-                            width: 180,
-                            height: 250,
+                            width: 210,
+                            height: 280,
                             color: Colors.black12,
                             alignment: Alignment.center,
                             child: const CircularProgressIndicator(),
@@ -322,10 +338,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     )
                   : CachedNetworkImage(
                       imageUrl: url,
-                      height: 250,
+                      height: 280,
                       fit: BoxFit.cover,
                       errorWidget: (_, __, ___) =>
-                          const ImageFallbackWidget(h: 250),
+                          const ImageFallbackWidget(h: 280),
                     ),
             ),
           );
@@ -352,47 +368,68 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          product?.title ?? '',
-          style: FontUtils.secondaryFontStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
-          ),
-        ),
-        const SizedBox(height: 15),
-        Row(
-          children: [
-            Text(
-              getDisplayedPrice(),
-              style: FontUtils.secondaryFontStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppColors.primary,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Visibility(
-              visible: selectedVariant != null &&
-                  selectedVariant!
-                          .calculatedPrice?.rawCalculatedAmount?.value !=
-                      selectedVariant!
-                          .calculatedPrice?.rawOriginalAmount?.value,
-              child: Text(
-                CurrencyUtil.appendCurrency(selectedVariant
-                        ?.calculatedPrice?.rawOriginalAmount?.value ??
-                    '0'),
-                style: FontUtils.secondaryFontStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.grey,
-                  decoration: TextDecoration.lineThrough,
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                product?.title ?? '',
+                style: UiTypography.cardTitle(
+                  color: AppColors.textColor,
+                ).copyWith(
+                  fontSize: 20,
+                  height: 1.25,
                 ),
               ),
-            )
-          ],
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    getDisplayedPrice(),
+                    style: UiTypography.cardPrice(
+                      color: AppColors.primary,
+                    ).copyWith(
+                      fontSize: 20,
+                    ),
+                  ),
+                  Visibility(
+                    visible: selectedVariant != null &&
+                        selectedVariant!
+                                .calculatedPrice?.rawCalculatedAmount?.value !=
+                            selectedVariant!
+                                .calculatedPrice?.rawOriginalAmount?.value,
+                    child: Text(
+                      CurrencyUtil.appendCurrency(selectedVariant
+                              ?.calculatedPrice?.rawOriginalAmount?.value ??
+                          '0'),
+                      style: UiTypography.cardMeta(
+                        color: Colors.grey,
+                      ).copyWith(
+                        fontSize: 14,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
         // Loyalty earn preview — points this product earns
         if ((num.tryParse(selectedVariant
@@ -462,12 +499,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 15),
+        const SizedBox(height: 18),
         if (showVariantSelection) buildDynamicVariantSelection(),
         Text(
           AppStrings.select_qty,
-          style: FontUtils.secondaryFontStyle(
-              fontSize: 16, fontWeight: FontWeight.bold),
+          style: UiTypography.cardTitle().copyWith(fontSize: 16),
         ),
         const SizedBox(height: 10),
         buildQuantitySelector(),
@@ -489,10 +525,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         children: [
           Text(
             "$title: ${selectedOptions[option.id!]?.value ?? AppStrings.select}",
-            style: FontUtils.secondaryFontStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: UiTypography.cardTitle().copyWith(fontSize: 16),
           ),
           const SizedBox(height: 10),
           Align(
@@ -512,20 +545,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     });
                   },
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: isSelected ? Colors.black : Colors.grey,
+                        color: isSelected ? Colors.black : Colors.grey.shade300,
                       ),
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(999),
                       color: isSelected ? Colors.black : Colors.white,
                     ),
                     child: Text(
                       optionValue.value ?? '',
-                      style: TextStyle(
+                      style: UiTypography.cardAction(
                         color: isSelected ? Colors.white : Colors.black,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -696,7 +728,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         alignment: Alignment.bottomCenter,
         child: cartItems != null
             ? Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + 16,
+                ),
                 child: GestureDetector(
                   onTap: () {
                     PageRouteUtils.pushWithSlide(context, const CartPage());
@@ -715,11 +749,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       children: [
         // Quantity Dropdown with a fixed width
         Container(
-          width: 80, // Adjust the width as needed
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          width: 92,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: DropdownButton<int>(
             value: selectedQuantity,
@@ -750,9 +785,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ? Colors.grey
                   : AppColors.primary,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              minimumSize: const Size(
-                  double.infinity, 50), // Ensures height remains the same
+                  borderRadius: BorderRadius.circular(16)),
+              minimumSize: const Size(double.infinity, 54),
+              elevation: 0,
             ),
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
@@ -833,7 +868,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ? AppStrings.out_of_stock
                             : AppStrings.add_to_cart,
                     style: FontUtils.primaryFontStyle(
-                        fontSize: 18, color: Colors.white),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white),
                   ),
           ),
         ),
@@ -1002,7 +1039,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         // isFavorite and _favConfig are set by _loadFavouriteState() which uses
         // the real config API + saved-items. Only fall back to productInfo if
         // _loadFavouriteState hasn't completed yet.
-        if (!_favConfig.enabled && (productInfoResponse?.favouriteListEnabled ?? false)) {
+        if (!_favConfig.enabled &&
+            (productInfoResponse?.favouriteListEnabled ?? false)) {
           _favConfig = FavouriteListConfig(
             enabled: productInfoResponse?.favouriteListEnabled ?? false,
             displayName: productInfoResponse?.displayName?.isNotEmpty == true

@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
         appBar: homeAppBar,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9F9FB),
         body: SafeArea(
           child: apiLoading
               ? const HomePageSkeleton()
@@ -192,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                           // Main UI Components
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 0.0, vertical: 16.0),
+                                horizontal: 0.0, vertical: 12.0),
                             child: buildComponentList(),
                           ),
 
@@ -216,7 +216,7 @@ class _HomePageState extends State<HomePage> {
 
                           SizedBox(
                             height:
-                                cartItems != null && cartItems != 0 ? 100 : 20,
+                                cartItems != null && cartItems != 0 ? 112 : 28,
                           )
                         ],
                       ),
@@ -503,17 +503,20 @@ class _HomePageState extends State<HomePage> {
       }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
-      final productItems = cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).toList() ?? [];
+      final productItems = cartResponse?.cart?.items
+              ?.where((item) => !item.isPlatformFee)
+              .toList() ??
+          [];
       setState(() {
         cartItems = productItems.length;
-        cartItemImages = productItems
-            .map((item) => item.thumbnail ?? "")
-            .toList();
+        cartItemImages =
+            productItems.map((item) => item.thumbnail ?? "").toList();
       });
       if (productItems.isNotEmpty) {
         final qtyMap = <String, int>{};
         for (var item in productItems) {
-          if (item.variantId != null) qtyMap[item.variantId!] = item.quantity ?? 0;
+          if (item.variantId != null)
+            qtyMap[item.variantId!] = item.quantity ?? 0;
         }
 
         eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));

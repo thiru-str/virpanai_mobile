@@ -166,7 +166,7 @@ class _BottomNavPageState extends State<BottomNavPage>
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 260),
             switchInCurve: Curves.easeOutCubic,
@@ -180,72 +180,95 @@ class _BottomNavPageState extends State<BottomNavPage>
           ),
           bottomNavigationBar: SlideTransition(
             position: _slideAnimation,
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index; // Update selected tab
-                });
-              },
-              items: [
-                const BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-                  label: AppStrings.shop,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.black.withOpacity(0.06)),
                 ),
-                const BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-                  label: AppStrings.categories,
-                ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    children: [
-                      const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                      if ((cartItems ?? 0) > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              cartItems!.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 18,
+                    offset: const Offset(0, -6),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index; // Update selected tab
+                  });
+                },
+                items: [
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                    label: AppStrings.shop,
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+                    label: AppStrings.categories,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Stack(
+                      children: [
+                        const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                        if ((cartItems ?? 0) > 0)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              textAlign: TextAlign.center,
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                cartItems!.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
+                    label: AppStrings.cart,
                   ),
-                  label: AppStrings.cart,
+                  if (isLoggedIn)
+                    const BottomNavigationBarItem(
+                      icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+                      label: AppStrings.favourite,
+                    ),
+                  if (isLoggedIn)
+                    const BottomNavigationBarItem(
+                      icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                      label: AppStrings.account,
+                    ),
+                ],
+                selectedItemColor: AppColors.primary,
+                unselectedItemColor: AppColors.tabInActivecolor,
+                showUnselectedLabels: true,
+                backgroundColor: Colors.white,
+                type: BottomNavigationBarType.fixed,
+                elevation: 0,
+                selectedFontSize: 12,
+                unselectedFontSize: 12,
+                selectedLabelStyle: FontUtils.primaryFontStyle(
+                  fontWeight: FontWeight.w600,
                 ),
-                if (isLoggedIn)
-                  const BottomNavigationBarItem(
-                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-                    label: AppStrings.favourite,
-                  ),
-                if (isLoggedIn)
-                  const BottomNavigationBarItem(
-                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-                    label: AppStrings.account,
-                  ),
-              ],
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: AppColors.tabInActivecolor,
-              showUnselectedLabels: true,
-              backgroundColor: Colors.white,
-              type: BottomNavigationBarType.fixed,
-              selectedLabelStyle: FontUtils.primaryFontStyle(),
-              unselectedLabelStyle: FontUtils.primaryFontStyle(),
+                unselectedLabelStyle: FontUtils.primaryFontStyle(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ),
         ));

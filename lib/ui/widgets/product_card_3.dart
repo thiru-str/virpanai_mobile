@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -105,13 +105,11 @@ class ProductCard3 extends StatelessWidget {
                       height: 24,
                       color: Colors.green,
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         AppStrings.new_tag,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: UiTypography.cardMeta(color: Colors.white)
+                            .copyWith(
+                                fontSize: 10.5, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -137,11 +135,8 @@ class ProductCard3 extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       "${5 ?? 0} (${2 ?? 0})",
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      style: UiTypography.cardMeta(color: Colors.black87)
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -155,10 +150,7 @@ class ProductCard3 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? '',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: UiTypography.cardTitle(),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -169,23 +161,19 @@ class ProductCard3 extends StatelessWidget {
             // ---- Price Row ----
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 2,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
+                    style: UiTypography.cardPrice(),
                   ),
-                  const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                      style: UiTypography.cardMeta().copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -199,11 +187,8 @@ class ProductCard3 extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green,
-                  ),
+                  style: UiTypography.cardMeta(color: Colors.green)
+                      .copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
             // ---- Add to Cart Button ----
@@ -216,17 +201,15 @@ class ProductCard3 extends StatelessWidget {
                   onPressed: onAddToCart,
                   icon: const Icon(Icons.shopping_cart_outlined,
                       size: 16, color: Colors.brown),
-                  label: const Text(
+                  label: Text(
                     AppStrings.add_to_cart,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.brown,
-                    ),
+                    style: UiTypography.cardAction(color: Colors.brown)
+                        .copyWith(fontWeight: FontWeight.w700),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown[50],
                     foregroundColor: Colors.brown,
+                    minimumSize: const Size(double.infinity, 44),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(0),

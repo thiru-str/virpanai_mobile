@@ -1,17 +1,7 @@
-import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
-import '../model/product_categories_response.dart';
-
-import 'dart:math';
-import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 
 import '../api/api_service.dart';
@@ -67,189 +57,194 @@ class _CategoryPage2State extends State<CategoryPage2> {
       backgroundColor: Colors.white,
       body: apiLoading
           ? Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// 1. Horizontal parent list
-            SizedBox(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount:
-                productCategoriesResponse!.productCategories!.length,
-                itemBuilder: (context, index) {
-                  final parent =
-                  productCategoriesResponse!.productCategories![index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: InkWell(
-                      onTap: () {
-                        if (parent.categoryChildren != null &&
-                            parent.categoryChildren!.isNotEmpty) {
-                          PageRouteUtils.pushWithFade(
-                            context,
-                            SubCategoryPage(
-                              categoryTitle: parent.name!,
-                              productCategory: parent.categoryChildren!,
-                            ),
-                          );
-                        } else {
-                          PageRouteUtils.pushWithFade(
-                            context,
-                            ProductPage(categoryId: parent.id!),
-                          );
-                        }
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 70,
-                            width: 70,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: Colors.grey.shade200,
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: parent.image != null &&
-                                parent.image!.isNotEmpty
-                                ? CachedNetworkImage(imageUrl:parent.image!,
-                                fit: BoxFit.cover)
-                                : const Icon(Icons.image_not_supported),
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            width: 70,
-                            child: Text(
-                              parent.name ?? '',
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// 2. Vertical parent sections
-
-            Column(
-              children: productCategoriesResponse!.productCategories!.map((parent) {
-                final bgColor = getRandomBgColor();
-                return Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(0),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// Parent Title inside top-right
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Text(
-                          parent.name ?? '',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      /// Subcategories horizontal list
-                      SizedBox(
-                        height: 140, // taller so image + text fit inside
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: parent.categoryChildren?.length ?? 0,
-                          itemBuilder: (context, index) {
-                            final sub = parent.categoryChildren![index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: InkWell(
-                                onTap: () {
-                                  if (sub.categoryChildren != null &&
-                                      sub.categoryChildren!.isNotEmpty) {
-                                    PageRouteUtils.pushWithFade(
-                                      context,
-                                      SubCategoryPage(
-                                        categoryTitle: sub.name!,
-                                        productCategory: sub.categoryChildren!,
-                                      ),
-                                    );
-                                  } else {
-                                    PageRouteUtils.pushWithFade(
-                                      context,
-                                      ProductPage(categoryId: sub.id!),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  width: 90,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// 1. Horizontal parent list
+                  SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount:
+                          productCategoriesResponse!.productCategories!.length,
+                      itemBuilder: (context, index) {
+                        final parent = productCategoriesResponse!
+                            .productCategories![index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: InkWell(
+                            onTap: () {
+                              if (parent.categoryChildren != null &&
+                                  parent.categoryChildren!.isNotEmpty) {
+                                PageRouteUtils.pushWithFade(
+                                  context,
+                                  SubCategoryPage(
+                                    categoryTitle: parent.name!,
+                                    productCategory: parent.categoryChildren!,
+                                  ),
+                                );
+                              } else {
+                                PageRouteUtils.pushWithFade(
+                                  context,
+                                  ProductPage(categoryId: parent.id!),
+                                );
+                              }
+                            },
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 72,
+                                  width: 72,
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),
+                                    color: Colors.grey.shade200,
                                   ),
-                                  padding: const EdgeInsets.all(8),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: sub.image != null &&
-                                            sub.image!.isNotEmpty
-                                            ? CachedNetworkImage(imageUrl:sub.image!,
-                                            fit: BoxFit.contain)
-                                            : const Icon(Icons.image_not_supported),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        sub.name ?? '',
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                                  clipBehavior: Clip.antiAlias,
+                                  child: parent.image != null &&
+                                          parent.image!.isNotEmpty
+                                      ? CachedNetworkImage(
+                                          imageUrl: parent.image!,
+                                          fit: BoxFit.cover)
+                                      : const Icon(Icons.image_not_supported),
+                                ),
+                                const SizedBox(height: 6),
+                                SizedBox(
+                                  width: 76,
+                                  child: Text(
+                                    parent.name ?? '',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  /// 2. Vertical parent sections
+
+                  Column(
+                    children: productCategoriesResponse!.productCategories!
+                        .map((parent) {
+                      final bgColor = getRandomBgColor();
+                      return Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 0),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.circular(0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// Parent Title inside top-right
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                parent.name ?? '',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
                                 ),
                               ),
-                            );
-                          },
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            /// Subcategories horizontal list
+                            SizedBox(
+                              height: 140, // taller so image + text fit inside
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: parent.categoryChildren?.length ?? 0,
+                                itemBuilder: (context, index) {
+                                  final sub = parent.categoryChildren![index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    child: InkWell(
+                                      onTap: () {
+                                        if (sub.categoryChildren != null &&
+                                            sub.categoryChildren!.isNotEmpty) {
+                                          PageRouteUtils.pushWithFade(
+                                            context,
+                                            SubCategoryPage(
+                                              categoryTitle: sub.name!,
+                                              productCategory:
+                                                  sub.categoryChildren!,
+                                            ),
+                                          );
+                                        } else {
+                                          PageRouteUtils.pushWithFade(
+                                            context,
+                                            ProductPage(categoryId: sub.id!),
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        width: 98,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: sub.image != null &&
+                                                      sub.image!.isNotEmpty
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: sub.image!,
+                                                      fit: BoxFit.contain)
+                                                  : const Icon(Icons
+                                                      .image_not_supported),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              sub.name ?? '',
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
+                ],
+              ),
             ),
-
-
-
-
-          ],
-        ),
-      ),
     );
   }
 
@@ -268,4 +263,3 @@ class _CategoryPage2State extends State<CategoryPage2> {
     }
   }
 }
-

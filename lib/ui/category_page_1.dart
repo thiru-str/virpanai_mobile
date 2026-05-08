@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 
 import '../api/api_service.dart';
@@ -50,7 +49,7 @@ class _CategoryPage1State extends State<CategoryPage1> {
               children: [
                 // LEFT MAIN CATEGORY LIST
                 Container(
-                  width: 100,
+                  width: 108,
                   color: Color(0xFFF5FEF2),
                   child: ListView.builder(
                     itemCount:
@@ -217,9 +216,8 @@ class SubCategoryTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(12),
-            child: SizedBox(
-              height: 70,
-              width: 70,
+            child: AspectRatio(
+              aspectRatio: 1,
               child: imagePath.isNotEmpty
                   ? CachedNetworkImage(imageUrl: imagePath, fit: BoxFit.contain)
                   : const Icon(Icons.image_not_supported, size: 40),

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -197,11 +197,7 @@ class _ProductCard1State extends State<ProductCard1> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? '',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textColor,
-                ),
+                style: UiTypography.cardTitle(color: AppColors.textColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -213,10 +209,7 @@ class _ProductCard1State extends State<ProductCard1> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 2),
                 child: Text(
                   description,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 12,
-                    color: AppColors.textColor,
-                  ),
+                  style: UiTypography.cardSubtitle(color: AppColors.textColor50),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -230,11 +223,7 @@ class _ProductCard1State extends State<ProductCard1> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
+                    style: UiTypography.cardPrice(),
                   ),
                   if (hasDiscount && orig != null) ...[
                     const SizedBox(height: 2),
@@ -245,20 +234,14 @@ class _ProductCard1State extends State<ProductCard1> {
                       children: [
                         Text(
                           _fmt(orig),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                          style: UiTypography.cardMeta().copyWith(
                             decoration: TextDecoration.lineThrough,
                           ),
                         ),
                         if (percentOff != null)
                           Text(
                             '$percentOff% Off',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.green,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: UiTypography.cardMeta(color: Colors.green),
                           ),
                       ],
                     ),
@@ -267,11 +250,7 @@ class _ProductCard1State extends State<ProductCard1> {
                     const SizedBox(height: 2),
                     Text(
                       '$percentOff% Off',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: UiTypography.cardMeta(color: Colors.green),
                     ),
                   ],
                 ],
