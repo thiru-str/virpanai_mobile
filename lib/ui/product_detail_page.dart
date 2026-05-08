@@ -560,27 +560,80 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildProductDescription() {
-    final variantDesc = selectedVariant?.metadata?.description ?? '';
-    final productDesc =
-        product?.metadata?.additionalDescription ?? product?.description ?? '';
+    final variantDesc = (selectedVariant?.metadata?.description ?? '').trim();
+    final productDesc = (product?.description ?? '').trim();
+    final additionalDesc =
+        (product?.metadata?.additionalDescription ?? '').trim();
 
-    final descriptionToShow =
-        (variantDesc?.isNotEmpty == true) ? variantDesc : productDesc;
+    final primaryDescription = variantDesc.isNotEmpty ? variantDesc : productDesc;
+
+    if (primaryDescription.isEmpty && additionalDesc.isEmpty) {
+      return const SizedBox();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          AppStrings.description,
-          style: FontUtils.secondaryFontStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textColor,
+        if (primaryDescription.isNotEmpty) ...[
+          Text(
+            AppStrings.description,
+            style: FontUtils.secondaryFontStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.textColor,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
+          const SizedBox(height: 10),
+          CommonHtmlWidget(htmlContent: primaryDescription),
+          const SizedBox(height: 20),
+        ],
+        if (additionalDesc.isNotEmpty)
+          _buildExpandableHtmlSection(
+            title: 'Additional Information',
+            htmlContent: additionalDesc,
+            initiallyExpanded: true,
+          ),
       ],
+    );
+  }
+
+  Widget _buildExpandableHtmlSection({
+    required String title,
+    required String htmlContent,
+    bool initiallyExpanded = false,
+  }) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Color(0x14000000)),
+          bottom: BorderSide(color: Color(0x14000000)),
+        ),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 12),
+          initiallyExpanded: initiallyExpanded,
+          iconColor: AppColors.textColor,
+          collapsedIconColor: AppColors.textColor,
+          title: Text(
+            title,
+            style: FontUtils.secondaryFontStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.textColor,
+            ),
+          ),
+          children: [
+            CommonHtmlWidget(htmlContent: htmlContent),
+          ],
+        ),
+      ),
     );
   }
 
