@@ -168,219 +168,214 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
       minChildSize: minChildSize,
       expand: false,
       builder: (_, scrollController) {
-        return AnimatedPadding(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          padding: EdgeInsets.only(bottom: keyboardInset),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Column(
-              children: [
-                // Handle
-                Padding(
-                  padding: const EdgeInsets.only(top: 10, bottom: 4),
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 4),
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Text(
+                      'Coupons & Offers',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(Icons.close,
+                          color: Colors.grey.shade600, size: 22),
+                    ),
+                  ],
                 ),
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Coupons & Offers',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Icon(Icons.close,
-                            color: Colors.grey.shade600, size: 22),
-                      ),
-                    ],
-                  ),
-                ),
-                Divider(height: 1, color: Colors.grey.shade100),
-                // Manual entry
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _manualController,
-                              textCapitalization: TextCapitalization.none,
-                              style: FontUtils.primaryFontStyle(
+              ),
+              Divider(height: 1, color: Colors.grey.shade100),
+              // Manual entry
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _manualController,
+                            textCapitalization: TextCapitalization.none,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter coupon code',
+                              hintStyle: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.w400,
                               ),
-                              decoration: InputDecoration(
-                                hintText: 'Enter coupon code',
-                                hintStyle: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade400,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                      color: AppColors.primary, width: 1.5),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.red.shade300),
-                                ),
-                              ),
-                              onSubmitted: (_) => _applyManual(),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: _actionCode != null ? null : _applyManual,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 13),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
+                              border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade200),
                               ),
-                              child: _actionCode != null &&
-                                      _actionCode ==
-                                          _manualController.text
-                                              .trim()
-                                              .toUpperCase()
-                                  ? SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Apply',
-                                      style: FontUtils.primaryFontStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade200),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                    color: AppColors.primary, width: 1.5),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.red.shade300),
+                              ),
                             ),
+                            onSubmitted: (_) => _applyManual(),
                           ),
-                        ],
-                      ),
-                      if (_manualError != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          _manualError!,
-                          style: TextStyle(
-                              fontSize: 11, color: Colors.red.shade600),
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (_showCouponList || applied.isNotEmpty) ...[
-                  Divider(height: 1, color: Colors.grey.shade100),
-                  // Content
-                  Expanded(
-                    child: _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _error != null
-                            ? Center(
-                                child: Text(_error!,
-                                    style:
-                                        TextStyle(color: Colors.grey.shade600)),
-                              )
-                            : _promotions.isEmpty
-                                ? Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.local_offer_outlined,
-                                            size: 48,
-                                            color: Colors.grey.shade300),
-                                        const SizedBox(height: 12),
-                                        Text('No coupons available',
-                                            style: TextStyle(
-                                                color: Colors.grey.shade500)),
-                                      ],
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: _actionCode != null ? null : _applyManual,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 13),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: _actionCode != null &&
+                                    _actionCode ==
+                                        _manualController.text
+                                            .trim()
+                                            .toUpperCase()
+                                ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
                                     ),
                                   )
-                                : ListView(
-                                    controller: scrollController,
-                                    padding: const EdgeInsets.fromLTRB(
-                                        16, 8, 16, 24),
+                                : Text(
+                                    'Apply',
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_manualError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _manualError!,
+                        style:
+                            TextStyle(fontSize: 11, color: Colors.red.shade600),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (_showCouponList || applied.isNotEmpty) ...[
+                Divider(height: 1, color: Colors.grey.shade100),
+                // Content
+                Expanded(
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                          ? Center(
+                              child: Text(_error!,
+                                  style:
+                                      TextStyle(color: Colors.grey.shade600)),
+                            )
+                          : _promotions.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      if (applied.isNotEmpty) ...[
-                                        _sectionLabel(_showCouponList
-                                            ? 'Applied'
-                                            : 'Applied Coupon'),
-                                        ...applied.map((p) => _PromoCard(
-                                              promo: p,
-                                              actionCode: _actionCode,
-                                              onRemove: () => _remove(
-                                                applied
-                                                    .map((x) => x.code)
-                                                    .toList(),
-                                              ),
-                                            )),
-                                        const SizedBox(height: 8),
-                                      ],
-                                      if (_showCouponList &&
-                                          eligible.isNotEmpty) ...[
-                                        _sectionLabel('Available Offers'),
-                                        ...eligible.map((p) => _PromoCard(
-                                              promo: p,
-                                              actionCode: _actionCode,
-                                              onApply: () => _apply(p.code),
-                                            )),
-                                        const SizedBox(height: 8),
-                                      ],
-                                      if (_showCouponList &&
-                                          ineligible.isNotEmpty) ...[
-                                        _sectionLabel('Not Available Offers'),
-                                        ...ineligible.map((p) => _PromoCard(
-                                              promo: p,
-                                              actionCode: _actionCode,
-                                            )),
-                                      ],
+                                      Icon(Icons.local_offer_outlined,
+                                          size: 48,
+                                          color: Colors.grey.shade300),
+                                      const SizedBox(height: 12),
+                                      Text('No coupons available',
+                                          style: TextStyle(
+                                              color: Colors.grey.shade500)),
                                     ],
                                   ),
-                  ),
-                ],
+                                )
+                              : ListView(
+                                  controller: scrollController,
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                                  children: [
+                                    if (applied.isNotEmpty) ...[
+                                      _sectionLabel(_showCouponList
+                                          ? 'Applied'
+                                          : 'Applied Coupon'),
+                                      ...applied.map((p) => _PromoCard(
+                                            promo: p,
+                                            actionCode: _actionCode,
+                                            onRemove: () => _remove(
+                                              applied
+                                                  .map((x) => x.code)
+                                                  .toList(),
+                                            ),
+                                          )),
+                                      const SizedBox(height: 8),
+                                    ],
+                                    if (_showCouponList &&
+                                        eligible.isNotEmpty) ...[
+                                      _sectionLabel('Available Offers'),
+                                      ...eligible.map((p) => _PromoCard(
+                                            promo: p,
+                                            actionCode: _actionCode,
+                                            onApply: () => _apply(p.code),
+                                          )),
+                                      const SizedBox(height: 8),
+                                    ],
+                                    if (_showCouponList &&
+                                        ineligible.isNotEmpty) ...[
+                                      _sectionLabel('Not Available Offers'),
+                                      ...ineligible.map((p) => _PromoCard(
+                                            promo: p,
+                                            actionCode: _actionCode,
+                                          )),
+                                    ],
+                                  ],
+                                ),
+                ),
               ],
-            ),
+            ],
           ),
         );
       },
