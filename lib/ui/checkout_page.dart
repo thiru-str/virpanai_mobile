@@ -14,6 +14,8 @@ import 'package:waioz/ui/order_placed_page.dart';
 import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
+import 'package:waioz/model/delivery_schedule_response.dart';
+import 'package:waioz/ui/widgets/fulfillment_method_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
@@ -83,10 +85,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
   bool walletLoading = false;
   TopUpConfig? walletTopupConfig;
 
+  // Fulfillment selection (standard by default; updated by FulfillmentMethodWidget)
+  FulfillmentSelection _fulfillment = const FulfillmentSelection(type: 'standard');
+
   @override
   void initState() {
     super.initState();
     cartResponse = widget.cartResponse;
+    final m = cartResponse?.cart?.metadata;
+    if (m is Map) {
+      final type = m['fulfillment_type'] as String? ?? 'standard';
+      if (type == 'scheduled') {
+        _fulfillment = FulfillmentSelection(
+          type: 'scheduled',
+          deliveryDate: m['delivery_date'] as String?,
+          deliverySlotId: m['delivery_time_slot_id'] as String?,
+          deliverySlotLabel: m['delivery_time_slot_label'] as String?,
+          deliveryInstructions: m['delivery_instructions'] as String?,
+        );
+      } else if (type == 'pickup') {
+        _fulfillment = FulfillmentSelection(
+          type: 'pickup',
+          pickupDate: m['pickup_date'] as String?,
+          pickupSlotId: m['pickup_slot_id'] as String?,
+          pickupSlotLabel: m['pickup_slot_label'] as String?,
+          pickupAnyTime: m['pickup_any_time'] == true,
+        );
+      }
+    }
     getShippingInfo();
     _loadWalletBalance();
   }
@@ -151,6 +177,26 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               //       showShippingBottomSheet(context,
                               //           shippingResponse!.shippingOptions!);
                               //     }),
+                              // Fulfillment method — delivery scheduling / self pickup
+                              FulfillmentMethodWidget(
+                                cartMetadata: cartResponse?.cart?.metadata is Map<String, dynamic>
+                                    ? cartResponse!.cart!.metadata as Map<String, dynamic>
+                                    : null,
+                                onChanged: (sel) async {
+                                  setState(() => _fulfillment = sel ?? const FulfillmentSelection(type: 'standard'));
+                                  try {
+                                    await ApiService().updateCartFulfillment(
+                                      context,
+                                      _fulfillment.toMetadata(),
+                                    );
+                                  } catch (_) {}
+                                },
+                              ),
+
+                              if (_fulfillment.type == 'pickup') _buildPickupNotice(),
+
+                              const SizedBox(height: 8),
+
                               // Wallet Split Banner — shown in split_payment mode
                               // Payment method selection — hide if wallet covers full amount in split mode
                               if (!(splitActive && splitFullCoverage))
@@ -162,7 +208,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                         ? pp_title!
                                         : AppStrings.add_payment_method,
                                     onTap: () async {
-                                      if (!addAddress) {
+                                      if (!addAddress && _fulfillment.type != 'pickup') {
                                         AppUtils.showToast(
                                             AppStrings.choose_shipping_address);
                                         return;
@@ -252,7 +298,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         ? 'Pay from Wallet'
                         : AppStrings.place_order,
                     onPressed: () {
-                      if (!addAddress) {
+                      if (!addAddress && _fulfillment.type != 'pickup') {
                         AppUtils.showToast(AppStrings.add_shipping_address);
                       } else if (!addShippingOption) {
                         AppUtils.showToast(AppStrings.add_shipping_method);
@@ -270,6 +316,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     }),
           ),
         ));
+  }
+
+  Widget _buildPickupNotice() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Row(children: [
+        Icon(Icons.storefront_outlined, size: 20, color: Colors.orange.shade700),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Self Pickup selected',
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600,
+                    color: Colors.orange.shade800)),
+            const SizedBox(height: 2),
+            Text('Your saved address is used for the order record.',
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 11, color: Colors.orange.shade600)),
+          ]),
+        ),
+      ]),
+    );
   }
 
   void makeRazorPayCall(String orderId) {
