@@ -132,8 +132,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
         ? (_showCouponList
             ? 0.82
             : hasHiddenAppliedCoupons
-                ? 0.6
-                : 0.42)
+                ? 0.72
+                : 0.72)
         : (_showCouponList
             ? 0.75
             : hasHiddenAppliedCoupons
@@ -143,8 +143,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
         ? (_showCouponList
             ? 0.96
             : hasHiddenAppliedCoupons
-                ? 0.72
-                : 0.58)
+                ? 0.82
+                : 0.82)
         : (_showCouponList
             ? 0.92
             : hasHiddenAppliedCoupons
@@ -154,8 +154,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
         ? (_showCouponList
             ? 0.6
             : hasHiddenAppliedCoupons
-                ? 0.5
-                : 0.36)
+                ? 0.58
+                : 0.58)
         : (_showCouponList
             ? 0.4
             : hasHiddenAppliedCoupons
@@ -163,6 +163,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                 : 0.22);
 
     return DraggableScrollableSheet(
+      key: ValueKey('${_showCouponList}_${applied.isNotEmpty}_$isKeyboardOpen'),
       initialChildSize: initialChildSize,
       maxChildSize: maxChildSize,
       minChildSize: minChildSize,
