@@ -30,18 +30,40 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   String? _actionCode; // code currently being applied/removed
 
   final TextEditingController _manualController = TextEditingController();
+  final DraggableScrollableController _sheetController =
+      DraggableScrollableController();
+  final FocusNode _manualFocusNode = FocusNode();
   String? _manualError;
 
   @override
   void initState() {
     super.initState();
+    _manualFocusNode.addListener(() {
+      if (_manualFocusNode.hasFocus) {
+        _expandCompactSheetForInput();
+      }
+    });
     _initializeCouponSettings();
   }
 
   @override
   void dispose() {
+    _manualFocusNode.dispose();
+    _sheetController.dispose();
     _manualController.dispose();
     super.dispose();
+  }
+
+  Future<void> _expandCompactSheetForInput() async {
+    if (_showCouponList || !_sheetController.isAttached) return;
+
+    try {
+      await _sheetController.animateTo(
+        0.72,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+      );
+    } catch (_) {}
   }
 
   Future<void> _initializeCouponSettings() async {
@@ -125,45 +147,21 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
     final applied = _promotions.where((p) => p.isApplied).toList();
     final ineligible =
         _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
-    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
-    final isKeyboardOpen = keyboardInset > 0;
     final hasHiddenAppliedCoupons = !_showCouponList && applied.isNotEmpty;
-    final initialChildSize = isKeyboardOpen
-        ? (_showCouponList
-            ? 0.82
-            : hasHiddenAppliedCoupons
-                ? 0.72
-                : 0.72)
-        : (_showCouponList
-            ? 0.75
-            : hasHiddenAppliedCoupons
-                ? 0.42
-                : 0.24);
-    final maxChildSize = isKeyboardOpen
-        ? (_showCouponList
-            ? 0.96
-            : hasHiddenAppliedCoupons
-                ? 0.82
-                : 0.82)
-        : (_showCouponList
-            ? 0.92
-            : hasHiddenAppliedCoupons
-                ? 0.5
-                : 0.28);
-    final minChildSize = isKeyboardOpen
-        ? (_showCouponList
-            ? 0.6
-            : hasHiddenAppliedCoupons
-                ? 0.58
-                : 0.58)
-        : (_showCouponList
-            ? 0.4
-            : hasHiddenAppliedCoupons
-                ? 0.34
-                : 0.22);
+    final initialChildSize = _showCouponList
+        ? 0.75
+        : hasHiddenAppliedCoupons
+            ? 0.42
+            : 0.24;
+    final maxChildSize = _showCouponList ? 0.92 : 0.82;
+    final minChildSize = _showCouponList
+        ? 0.4
+        : hasHiddenAppliedCoupons
+            ? 0.34
+            : 0.22;
 
     return DraggableScrollableSheet(
-      key: ValueKey('${_showCouponList}_${applied.isNotEmpty}_$isKeyboardOpen'),
+      controller: _sheetController,
       initialChildSize: initialChildSize,
       maxChildSize: maxChildSize,
       minChildSize: minChildSize,
@@ -221,6 +219,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                       children: [
                         Expanded(
                           child: TextField(
+                            focusNode: _manualFocusNode,
                             controller: _manualController,
                             textCapitalization: TextCapitalization.none,
                             style: FontUtils.primaryFontStyle(
