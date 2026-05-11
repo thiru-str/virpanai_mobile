@@ -1117,6 +1117,34 @@ class ApiService {
     );
   }
 
+  Future<bool> getCouponListVisibility() async {
+    return _makeGetRequest<bool>(
+      'store/web/global_settings',
+      null,
+      null,
+      (json) {
+        final value = json['globalSettings']?['coupon_list_enabled'];
+
+        if (value is bool) {
+          return value;
+        }
+
+        if (value is String) {
+          final normalized = value.trim().toLowerCase();
+          if (['false', '0', 'off', 'no'].contains(normalized)) {
+            return false;
+          }
+          if (['true', '1', 'on', 'yes'].contains(normalized)) {
+            return true;
+          }
+        }
+
+        return true;
+      },
+      null,
+    );
+  }
+
   Future<dynamic> uploadImage(BuildContext context, File file) async {
     await addToken();
     return _uploadFile(
