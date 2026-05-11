@@ -25,6 +25,7 @@ class CouponBottomSheet extends StatefulWidget {
 class _CouponBottomSheetState extends State<CouponBottomSheet> {
   List<AvailablePromotion> _promotions = [];
   bool _loading = true;
+  bool _showCouponList = true;
   String? _error;
   String? _actionCode; // code currently being applied/removed
 
@@ -34,13 +35,38 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadPromotions();
+    _initializeCouponSettings();
   }
 
   @override
   void dispose() {
     _manualController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initializeCouponSettings() async {
+    try {
+      final visible = await ApiService().getCouponListVisibility();
+      if (!mounted) return;
+
+      setState(() {
+        _showCouponList = visible;
+      });
+
+      if (!visible) {
+        setState(() {
+          _loading = false;
+        });
+        return;
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _showCouponList = true;
+      });
+    }
+
+    await _loadPromotions();
   }
 
   Future<void> _applyManual() async {
@@ -103,11 +129,14 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
     final eligible = _promotions.where((p) => p.isEligible && !p.isApplied).toList();
     final applied = _promotions.where((p) => p.isApplied).toList();
     final ineligible = _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
+    final initialChildSize = _showCouponList ? 0.75 : 0.24;
+    final maxChildSize = _showCouponList ? 0.92 : 0.28;
+    final minChildSize = _showCouponList ? 0.4 : 0.22;
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      maxChildSize: 0.92,
-      minChildSize: 0.4,
+      initialChildSize: initialChildSize,
+      maxChildSize: maxChildSize,
+      minChildSize: minChildSize,
       expand: false,
       builder: (_, scrollController) {
         return Container(
@@ -247,63 +276,65 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                   ],
                 ),
               ),
-              Divider(height: 1, color: Colors.grey.shade100),
-              // Content
-              Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _error != null
-                        ? Center(
-                            child: Text(_error!,
-                                style: TextStyle(color: Colors.grey.shade600)),
-                          )
-                        : _promotions.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+              if (_showCouponList) ...[
+                Divider(height: 1, color: Colors.grey.shade100),
+                // Content
+                Expanded(
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                          ? Center(
+                              child: Text(_error!,
+                                  style: TextStyle(color: Colors.grey.shade600)),
+                            )
+                          : _promotions.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.local_offer_outlined,
+                                          size: 48, color: Colors.grey.shade300),
+                                      const SizedBox(height: 12),
+                                      Text('No coupons available',
+                                          style: TextStyle(color: Colors.grey.shade500)),
+                                    ],
+                                  ),
+                                )
+                              : ListView(
+                                  controller: scrollController,
+                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                                   children: [
-                                    Icon(Icons.local_offer_outlined,
-                                        size: 48, color: Colors.grey.shade300),
-                                    const SizedBox(height: 12),
-                                    Text('No coupons available',
-                                        style: TextStyle(color: Colors.grey.shade500)),
+                                    if (applied.isNotEmpty) ...[
+                                      _sectionLabel('Applied'),
+                                      ...applied.map((p) => _PromoCard(
+                                            promo: p,
+                                            actionCode: _actionCode,
+                                            onRemove: () => _remove(
+                                              applied.map((x) => x.code).toList(),
+                                            ),
+                                          )),
+                                      const SizedBox(height: 8),
+                                    ],
+                                    if (eligible.isNotEmpty) ...[
+                                      _sectionLabel('Available Offers'),
+                                      ...eligible.map((p) => _PromoCard(
+                                            promo: p,
+                                            actionCode: _actionCode,
+                                            onApply: () => _apply(p.code),
+                                          )),
+                                      const SizedBox(height: 8),
+                                    ],
+                                    if (ineligible.isNotEmpty) ...[
+                                      _sectionLabel('Not Available Offers'),
+                                      ...ineligible.map((p) => _PromoCard(
+                                            promo: p,
+                                            actionCode: _actionCode,
+                                          )),
+                                    ],
                                   ],
                                 ),
-                              )
-                            : ListView(
-                                controller: scrollController,
-                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                                children: [
-                                  if (applied.isNotEmpty) ...[
-                                    _sectionLabel('Applied'),
-                                    ...applied.map((p) => _PromoCard(
-                                          promo: p,
-                                          actionCode: _actionCode,
-                                          onRemove: () => _remove(
-                                            applied.map((x) => x.code).toList(),
-                                          ),
-                                        )),
-                                    const SizedBox(height: 8),
-                                  ],
-                                  if (eligible.isNotEmpty) ...[
-                                    _sectionLabel('Available Offers'),
-                                    ...eligible.map((p) => _PromoCard(
-                                          promo: p,
-                                          actionCode: _actionCode,
-                                          onApply: () => _apply(p.code),
-                                        )),
-                                    const SizedBox(height: 8),
-                                  ],
-                                  if (ineligible.isNotEmpty) ...[
-                                    _sectionLabel('Not Available Offers'),
-                                    ...ineligible.map((p) => _PromoCard(
-                                          promo: p,
-                                          actionCode: _actionCode,
-                                        )),
-                                  ],
-                                ],
-                              ),
-              ),
+                ),
+              ],
             ],
           ),
         );
