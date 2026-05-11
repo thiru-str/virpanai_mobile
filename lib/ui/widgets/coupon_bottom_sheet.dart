@@ -52,13 +52,6 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
       setState(() {
         _showCouponList = visible;
       });
-
-      if (!visible) {
-        setState(() {
-          _loading = false;
-        });
-        return;
-      }
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -129,9 +122,10 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
     final eligible = _promotions.where((p) => p.isEligible && !p.isApplied).toList();
     final applied = _promotions.where((p) => p.isApplied).toList();
     final ineligible = _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
-    final initialChildSize = _showCouponList ? 0.75 : 0.24;
-    final maxChildSize = _showCouponList ? 0.92 : 0.28;
-    final minChildSize = _showCouponList ? 0.4 : 0.22;
+    final hasHiddenAppliedCoupons = !_showCouponList && applied.isNotEmpty;
+    final initialChildSize = _showCouponList ? 0.75 : hasHiddenAppliedCoupons ? 0.42 : 0.24;
+    final maxChildSize = _showCouponList ? 0.92 : hasHiddenAppliedCoupons ? 0.5 : 0.28;
+    final minChildSize = _showCouponList ? 0.4 : hasHiddenAppliedCoupons ? 0.34 : 0.22;
 
     return DraggableScrollableSheet(
       initialChildSize: initialChildSize,
@@ -276,7 +270,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                   ],
                 ),
               ),
-              if (_showCouponList) ...[
+              if (_showCouponList || applied.isNotEmpty) ...[
                 Divider(height: 1, color: Colors.grey.shade100),
                 // Content
                 Expanded(
@@ -305,7 +299,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                                   children: [
                                     if (applied.isNotEmpty) ...[
-                                      _sectionLabel('Applied'),
+                                      _sectionLabel(
+                                          _showCouponList ? 'Applied' : 'Applied Coupon'),
                                       ...applied.map((p) => _PromoCard(
                                             promo: p,
                                             actionCode: _actionCode,
@@ -315,7 +310,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                           )),
                                       const SizedBox(height: 8),
                                     ],
-                                    if (eligible.isNotEmpty) ...[
+                                    if (_showCouponList && eligible.isNotEmpty) ...[
                                       _sectionLabel('Available Offers'),
                                       ...eligible.map((p) => _PromoCard(
                                             promo: p,
@@ -324,7 +319,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                           )),
                                       const SizedBox(height: 8),
                                     ],
-                                    if (ineligible.isNotEmpty) ...[
+                                    if (_showCouponList && ineligible.isNotEmpty) ...[
                                       _sectionLabel('Not Available Offers'),
                                       ...ineligible.map((p) => _PromoCard(
                                             promo: p,
