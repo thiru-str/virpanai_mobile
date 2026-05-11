@@ -129,11 +129,14 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
     final eligible = _promotions.where((p) => p.isEligible && !p.isApplied).toList();
     final applied = _promotions.where((p) => p.isApplied).toList();
     final ineligible = _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
+    final initialChildSize = _showCouponList ? 0.75 : 0.24;
+    final maxChildSize = _showCouponList ? 0.92 : 0.28;
+    final minChildSize = _showCouponList ? 0.4 : 0.22;
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      maxChildSize: 0.92,
-      minChildSize: 0.4,
+      initialChildSize: initialChildSize,
+      maxChildSize: maxChildSize,
+      minChildSize: minChildSize,
       expand: false,
       builder: (_, scrollController) {
         return Container(
