@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
-import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
-import 'package:waioz/ui/cart_response.dart' hide Product, Customer;
 import 'package:waioz/ui/favourite_list_detail_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/model/register_response.dart';
 
 Future<Customer?> getCustomerResponse() async {
   final dynamic userData = await SharedPreferencesUtil().getMap('customer');
@@ -179,55 +178,6 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
     try {
       await _api.deleteFavouriteList(context, group.id!);
       if (mounted) setState(() => groups.removeWhere((g) => g.id == group.id));
-    } catch (_) {}
-  }
-
-  Future<void> _addGroupToCart(CustomerWishlistGroup group) async {
-    bool cartHasItems = false;
-    try {
-      final cartRes = await _api.getCart(context);
-      cartHasItems = cartRes.cart?.items?.isNotEmpty ?? false;
-    } catch (_) {}
-
-    String choice = 'keep';
-    if (cartHasItems) {
-      if (!mounted) return;
-      final picked = await showModalBottomSheet<String>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (_) => _GroupAddToCartSheet(
-          groupName: group.wishlistGroupName ?? 'list',
-          itemCount: group.productCount ?? 0,
-        ),
-      );
-      if (picked == null) return;
-      choice = picked;
-    }
-
-    try {
-      final res = await _api.moveFavouriteListToCart(
-        context,
-        group.id!,
-        clearExistingCart: choice == 'clear',
-      );
-      if (mounted) {
-        final added = res.addedCount ?? 0;
-        final skipped = res.skippedCount ?? 0;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            backgroundColor: const Color(0xFF272727),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            content: Text(
-              added > 0
-                  ? 'Added $added item${added != 1 ? 's' : ''} to cart${skipped > 0 ? ', $skipped skipped' : ''}.'
-                  : 'No items could be added.',
-              style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.white),
-            ),
-          ),
-        );
-      }
     } catch (_) {}
   }
 
@@ -466,21 +416,17 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
             child: _GroupCard(
               group: group,
               icon: _configIcon(),
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => FavouriteListDetailPage(
-                      listId: group.id!,
-                      listName: group.wishlistGroupName ?? config.displayName,
-                      config: config,
-                    ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FavouriteListDetailPage(
+                    listId: group.id!,
+                    listName: group.wishlistGroupName ?? config.displayName,
+                    config: config,
                   ),
-                );
-                if (mounted) _load();
-              },
+                ),
+              ),
               onDelete: () => _deleteList(group),
-              onAddToCart: () => _addGroupToCart(group),
             ),
           );
         },
@@ -494,14 +440,12 @@ class _GroupCard extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   final VoidCallback onDelete;
-  final Future<void> Function() onAddToCart;
 
   const _GroupCard({
     required this.group,
     required this.icon,
     required this.onTap,
     required this.onDelete,
-    required this.onAddToCart,
   });
 
   @override
@@ -510,7 +454,6 @@ class _GroupCard extends StatefulWidget {
 
 class _GroupCardState extends State<_GroupCard> {
   bool _pressed = false;
-  bool _addingToCart = false;
 
   @override
   Widget build(BuildContext context) {
@@ -557,55 +500,15 @@ class _GroupCardState extends State<_GroupCard> {
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.group.wishlistGroupName ?? '',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF272727),
-                      ),
-                    ),
-                    if (widget.group.productCount != null)
-                      Text(
-                        '${widget.group.productCount} item${widget.group.productCount != 1 ? 's' : ''}',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                  ],
+                child: Text(
+                  widget.group.wishlistGroupName ?? '',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF272727),
+                  ),
                 ),
               ),
-              GestureDetector(
-                onTap: _addingToCart
-                    ? null
-                    : () async {
-                        setState(() => _addingToCart = true);
-                        try {
-                          await widget.onAddToCart();
-                        } finally {
-                          if (mounted) setState(() => _addingToCart = false);
-                        }
-                      },
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: _addingToCart
-                      ? SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.8,
-                            color: AppColors.primary,
-                          ),
-                        )
-                      : Icon(Icons.shopping_cart_outlined,
-                          size: 20, color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(width: 2),
               GestureDetector(
                 onTap: widget.onDelete,
                 child: Padding(
@@ -619,134 +522,6 @@ class _GroupCardState extends State<_GroupCard> {
                   size: 20, color: Colors.grey.shade400),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GroupAddToCartSheet extends StatelessWidget {
-  final String groupName;
-  final int itemCount;
-
-  const _GroupAddToCartSheet({required this.groupName, required this.itemCount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Add "$groupName" to cart',
-            style: FontUtils.secondaryFontStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF272727),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '$itemCount item${itemCount != 1 ? 's' : ''} will be added.',
-            style: FontUtils.primaryFontStyle(fontSize: 13, color: Colors.grey.shade500),
-          ),
-          const SizedBox(height: 20),
-          _SheetOption(
-            icon: Icons.playlist_add_rounded,
-            title: 'Keep cart & add',
-            subtitle: 'Existing cart items stay.',
-            onTap: () => Navigator.pop(context, 'keep'),
-          ),
-          const SizedBox(height: 10),
-          _SheetOption(
-            icon: Icons.delete_sweep_outlined,
-            title: 'Clear cart & add',
-            subtitle: 'Start fresh with this list.',
-            destructive: true,
-            onTap: () => Navigator.pop(context, 'clear'),
-          ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(minimumSize: const Size(double.infinity, 44)),
-            child: Text('Cancel',
-                style: FontUtils.primaryFontStyle(fontSize: 14, color: Colors.grey.shade500)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SheetOption extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final bool destructive;
-
-  const _SheetOption({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.destructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = destructive ? Colors.red.shade400 : AppColors.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.15)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 18, color: color),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: FontUtils.primaryFontStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600, color: color)),
-                  Text(subtitle,
-                      style: FontUtils.primaryFontStyle(
-                          fontSize: 12, color: Colors.grey.shade500)),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

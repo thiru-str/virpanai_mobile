@@ -149,7 +149,6 @@ class CustomerWishlistGroup {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic deletedAt;
-  int? productCount;
 
   CustomerWishlistGroup({
     this.id,
@@ -158,7 +157,6 @@ class CustomerWishlistGroup {
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
-    this.productCount,
   });
 
   factory CustomerWishlistGroup.fromJson(Map<String, dynamic> json) =>
@@ -173,7 +171,6 @@ class CustomerWishlistGroup {
             ? null
             : DateTime.parse(json["updated_at"]),
         deletedAt: json["deleted_at"],
-        productCount: json["product_count"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -183,7 +180,6 @@ class CustomerWishlistGroup {
         "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),
         "deleted_at": deletedAt,
-        "product_count": productCount,
       };
 }
 
