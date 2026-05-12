@@ -113,7 +113,7 @@ class ApiService {
           return status != null && status < 500;
         },
       ));
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200) {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
@@ -701,158 +701,6 @@ class ApiService {
     );
   }
 
-  Future<FavouriteListConfig> getFavouriteListConfig(
-      BuildContext context) async {
-    await addToken();
-    return _makeGetRequest<FavouriteListConfig>(
-      'store/favourite-list/config',
-      null,
-      null,
-      (json) => FavouriteListConfig.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> getFavouriteLists(BuildContext context) async {
-    await addToken();
-    String? regionId = await SharedPreferencesUtil().getString('region_id');
-    return _makeGetRequest<WishlistResponse>(
-      'store/customer-wishlist-group',
-      null,
-      {"region_id": regionId},
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> getFavouriteListProducts(
-      BuildContext context, String listId) async {
-    await addToken();
-    String? regionId = await SharedPreferencesUtil().getString('region_id');
-    return _makeGetRequest<WishlistResponse>(
-      'store/wishlist_group_products',
-      null,
-      {"region_id": regionId, "customer_wishlist_group_id": listId},
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> createFavouriteList(
-      BuildContext context, String name) async {
-    await addToken();
-    return _makePostRequest(
-      'store/customer-wishlist-group',
-      {"wishlist_group_name": name},
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> addProductToFavouriteList(
-    BuildContext context, {
-    required String productId,
-    String? listId,
-    String? listName,
-    String? variantId,
-    int quantity = 1,
-  }) async {
-    await addToken();
-    final body = <String, dynamic>{
-      "product_id": productId,
-      "quantity": quantity,
-    };
-    if (listId?.isNotEmpty == true) {
-      body["customer_wishlist_group_id"] = listId;
-    }
-    if (listName?.trim().isNotEmpty == true) {
-      body["wishlist_group_name"] = listName!.trim();
-    }
-    if (variantId?.isNotEmpty == true) {
-      body["variant_id"] = variantId;
-    }
-    return _makePostRequest(
-      'store/favourite-list/add',
-      body,
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> deleteFavouriteList(
-      BuildContext context, String listId) async {
-    await addToken();
-    return _makeDeleteRequest(
-      'store/customer-wishlist-group',
-      listId,
-      null,
-      (data) => WishlistResponse.fromJson(data),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> deleteProductFromFavouriteList(
-    BuildContext context, {
-    required String productId,
-    String? listId,
-    String? variantId,
-  }) async {
-    await addToken();
-    final body = <String, dynamic>{
-      "product_id": productId,
-    };
-    if (listId?.isNotEmpty == true) {
-      body["customer_wishlist_group_id"] = listId;
-    }
-    if (variantId?.isNotEmpty == true) {
-      body["variant_id"] = variantId;
-    }
-    return _makeDeleteRequest(
-      'store/wishlist_group_products',
-      null,
-      body,
-      (data) => WishlistResponse.fromJson(data),
-      context,
-    );
-  }
-
-  Future<MoveFavouriteListToCartResponse> moveFavouriteListToCart(
-    BuildContext context,
-    String listId, {
-    bool clearExistingCart = false,
-  }) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/favourite-list/$listId/move-to-cart',
-      {"cart_id": cartId, "clear_existing_cart": clearExistingCart},
-      (json) => MoveFavouriteListToCartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<SavedItemsResponse> getSavedItems(BuildContext context) async {
-    await addToken();
-    return _makeGetRequest<SavedItemsResponse>(
-      'store/favourite-list/saved-items',
-      null,
-      null,
-      (json) => SavedItemsResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> updateFavouriteListItemQty(
-      BuildContext context, String itemId, int quantity) async {
-    await addToken();
-    return _makePostRequest<WishlistResponse>(
-      'store/wishlist_group_products/$itemId/qty',
-      {'quantity': quantity},
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
-  }
-
   Future<CartResponse> addCart(
       BuildContext context, int qty, String variantId) async {
     await addToken();
@@ -889,8 +737,8 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addPromoCode(BuildContext context, String promoCode,
-      {List<String>? removeCodes}) async {
+  Future<CartResponse> addPromoCode(
+      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final body = <String, dynamic>{
@@ -1450,8 +1298,7 @@ class ApiService {
     return _dio.get('/store/loyalty');
   }
 
-  Future<Response> getLoyaltyTransactions(
-      {int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/transactions',
@@ -1489,8 +1336,8 @@ class ApiService {
   Future<Response> removeLoyaltyCheckout(String cartId) async {
     await addToken();
     await setPublishableKey();
-    return _dio
-        .delete('/store/loyalty/checkout-apply', data: {'cart_id': cartId});
+    return _dio.delete('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId});
   }
 
   Future<Response> getLoyaltyReferral() async {
@@ -1499,8 +1346,7 @@ class ApiService {
     return _dio.get('/store/loyalty/referral');
   }
 
-  Future<Response> getLoyaltyReferralHistory(
-      {int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/referral/history',
@@ -1510,8 +1356,8 @@ class ApiService {
   Future<Response> applyReferralCode(String code) async {
     await addToken();
     await setPublishableKey();
-    return _dio
-        .post('/store/loyalty/referral/apply', data: {'referral_code': code});
+    return _dio.post('/store/loyalty/referral/apply',
+        data: {'referral_code': code});
   }
 
   /// Public endpoint — no auth required. Validates a referral code before signup.
