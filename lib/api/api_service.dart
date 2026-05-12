@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:waioz/model/delivery_schedule_response.dart';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -701,6 +703,48 @@ class ApiService {
     );
   }
 
+  // ── Delivery & Pickup Scheduling ──────────────────────────────────────────
+
+  Future<DeliveryConfig> getDeliveryConfig(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<DeliveryConfig>(
+      'store/delivery-scheduling/config',
+      null,
+      null,
+      (json) => DeliveryConfig.fromJson(json),
+      context,
+    );
+  }
+
+  Future<DeliverySlotsResponse> getDeliverySlots(
+    BuildContext context,
+    String date,
+    String type, // "delivery" | "pickup"
+  ) async {
+    await addToken();
+    return _makeGetRequest<DeliverySlotsResponse>(
+      'store/delivery-scheduling/slots',
+      null,
+      {'date': date, 'type': type},
+      (json) => DeliverySlotsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<void> updateCartFulfillment(
+    BuildContext context,
+    Map<String, dynamic> metadata,
+  ) async {
+    await addToken();
+    final String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    await _makePostRequest(
+      'store/carts/$cartId',
+      {'metadata': metadata},
+      (json) => json,
+      context,
+    );
+  }
+
   Future<FavouriteListConfig> getFavouriteListConfig(
       BuildContext context) async {
     await addToken();
@@ -993,6 +1037,7 @@ class ApiService {
 
   Future<String?> initiateIciciPayment(BuildContext context) async {
     await setPublishableKey();
+    await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final response = await _dio.post(
       'store/place-order/$cartId',
@@ -1518,5 +1563,23 @@ class ApiService {
     await setPublishableKey();
     return _dio.get('/store/loyalty/referral/validate',
         queryParameters: {'code': code.trim().toUpperCase()});
+  }
+
+  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
+    BuildContext context,
+    String cartId,
+  ) async {
+    try {
+      await addToken();
+      return _makeGetRequest<Map<String, dynamic>>(
+        'store/delivery/free-delivery-info',
+        null,
+        {'cart_id': cartId},
+        (json) => Map<String, dynamic>.from(json as Map),
+        context,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 }

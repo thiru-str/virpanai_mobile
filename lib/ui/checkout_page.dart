@@ -11,8 +11,11 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
+import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
+import 'package:waioz/model/delivery_schedule_response.dart';
+import 'package:waioz/ui/widgets/fulfillment_method_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
@@ -82,10 +85,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
   bool walletLoading = false;
   TopUpConfig? walletTopupConfig;
 
+  // Fulfillment selection (standard by default; updated by FulfillmentMethodWidget)
+  FulfillmentSelection _fulfillment = const FulfillmentSelection(type: 'standard');
+
   @override
   void initState() {
     super.initState();
     cartResponse = widget.cartResponse;
+    final m = cartResponse?.cart?.metadata;
+    if (m is Map) {
+      final type = m['fulfillment_type'] as String? ?? 'standard';
+      if (type == 'scheduled') {
+        _fulfillment = FulfillmentSelection(
+          type: 'scheduled',
+          deliveryDate: m['delivery_date'] as String?,
+          deliverySlotId: m['delivery_time_slot_id'] as String?,
+          deliverySlotLabel: m['delivery_time_slot_label'] as String?,
+          deliveryInstructions: m['delivery_instructions'] as String?,
+        );
+      } else if (type == 'pickup') {
+        _fulfillment = FulfillmentSelection(
+          type: 'pickup',
+          pickupDate: m['pickup_date'] as String?,
+          pickupSlotId: m['pickup_slot_id'] as String?,
+          pickupSlotLabel: m['pickup_slot_label'] as String?,
+          pickupAnyTime: m['pickup_any_time'] == true,
+        );
+      }
+    }
     getShippingInfo();
     _loadWalletBalance();
   }
@@ -150,6 +177,26 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               //       showShippingBottomSheet(context,
                               //           shippingResponse!.shippingOptions!);
                               //     }),
+                              // Fulfillment method — delivery scheduling / self pickup
+                              FulfillmentMethodWidget(
+                                cartMetadata: cartResponse?.cart?.metadata is Map<String, dynamic>
+                                    ? cartResponse!.cart!.metadata as Map<String, dynamic>
+                                    : null,
+                                onChanged: (sel) async {
+                                  setState(() => _fulfillment = sel ?? const FulfillmentSelection(type: 'standard'));
+                                  try {
+                                    await ApiService().updateCartFulfillment(
+                                      context,
+                                      _fulfillment.toMetadata(),
+                                    );
+                                  } catch (_) {}
+                                },
+                              ),
+
+                              if (_fulfillment.type == 'pickup') _buildPickupNotice(),
+
+                              const SizedBox(height: 8),
+
                               // Wallet Split Banner — shown in split_payment mode
                               // Payment method selection — hide if wallet covers full amount in split mode
                               if (!(splitActive && splitFullCoverage))
@@ -161,7 +208,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                         ? pp_title!
                                         : AppStrings.add_payment_method,
                                     onTap: () async {
-                                      if (!addAddress) {
+                                      if (!addAddress && _fulfillment.type != 'pickup') {
                                         AppUtils.showToast(
                                             AppStrings.choose_shipping_address);
                                         return;
@@ -217,12 +264,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Loyalty checkout apply widget
                               LoyaltyCheckoutWidget(
                                 cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
+                                cartTotal: cartResponse?.cart?.total,
+                                walletAmount: splitActive ? splitWalletAmount : 0,
+                                walletApplied: splitActive && splitWalletAmount > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
                                 onApplied: () {
-                                  // Refresh cart to reflect updated total after points applied
                                   getCartApi();
                                 },
                                 onRemoved: () {
-                                  // Refresh cart to reflect updated total after points removed
                                   getCartApi();
                                 },
                               ),
@@ -248,7 +298,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         ? 'Pay from Wallet'
                         : AppStrings.place_order,
                     onPressed: () {
-                      if (!addAddress) {
+                      if (!addAddress && _fulfillment.type != 'pickup') {
                         AppUtils.showToast(AppStrings.add_shipping_address);
                       } else if (!addShippingOption) {
                         AppUtils.showToast(AppStrings.add_shipping_method);
@@ -266,6 +316,34 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     }),
           ),
         ));
+  }
+
+  Widget _buildPickupNotice() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Row(children: [
+        Icon(Icons.storefront_outlined, size: 20, color: Colors.orange.shade700),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Self Pickup selected',
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600,
+                    color: Colors.orange.shade800)),
+            const SizedBox(height: 2),
+            Text('Your saved address is used for the order record.',
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 11, color: Colors.orange.shade600)),
+          ]),
+        ),
+      ]),
+    );
   }
 
   void makeRazorPayCall(String orderId) {
@@ -839,13 +917,19 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — place-order handles the full session creation.
+    // Skip update-payment-method to avoid duplicate payment sessions.
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
+
     final ApiService apiService = ApiService();
     dynamic apiResponse = await apiService.updatePaymentMethod(
         context, paymentProviderId, cartResponse!);
 
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
-      case 'pp_icici_icici':
         String? orderId = extractOrderId(apiResponse);
         if (orderId != null) {
           makeRazorPayCall(orderId);
@@ -869,6 +953,45 @@ class _CheckOutPageState extends State<CheckOutPage> {
       case 'pp_wallet_wallet':
         makeWalletPayCall();
         break;
+    }
+  }
+
+  Future<void> _makeIciciPayment() async {
+    setState(() => placeOrderApiLoading = true);
+    try {
+      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
+      if (!mounted) return;
+      setState(() => placeOrderApiLoading = false);
+
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IciciPaymentPage(
+            redirectUrl: redirectUrl,
+            onSuccess: (orderId) {
+              Navigator.pop(context);
+              PageRouteUtils.pushAndRemoveUntil(
+                context,
+                OrderPlacedPage(orderId: orderId),
+              );
+            },
+            onFailure: () {
+              Navigator.pop(context);
+              AppUtils.showToast('ICICI payment failed or was cancelled.');
+              getCartApi();
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() => placeOrderApiLoading = false);
+      AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
     }
   }
 

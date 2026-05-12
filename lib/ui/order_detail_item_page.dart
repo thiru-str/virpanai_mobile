@@ -44,6 +44,28 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     return 0;
   }
 
+  Map<String, dynamic>? get _fulfillmentMeta {
+    final m = order?.metadata;
+    if (m is Map) return Map<String, dynamic>.from(m);
+    return null;
+  }
+
+  String get _fulfillmentType => _fulfillmentMeta?['fulfillment_type'] as String? ?? 'standard';
+
+  String _friendlyDate(String? iso) {
+    if (iso == null) return '';
+    final d = DateTime.tryParse(iso);
+    if (d == null) return iso;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    if (d.isAtSameMomentAs(today)) return 'Today';
+    if (d.isAtSameMomentAs(tomorrow)) return 'Tomorrow';
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${days[d.weekday - 1]}, ${d.day} ${months[d.month - 1]}';
+  }
+
   num get _loyaltyDiscount {
     final meta = order?.metadata;
     if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
@@ -283,9 +305,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                           paymentStatus: order?.paymentStatus ?? '',
                           orderId: order?.id,
                         ),
-                      _buildSectionTitle(AppStrings.shipping_details),
+                      _buildSectionTitle('Delivery Details'),
                       const SizedBox(height: 20), // List of order items
-                      _buildShippingDetailsCard(), // Shipping details card
+                      _buildFulfillmentCard(), // Fulfillment details card
                       const SizedBox(height: 20),
                       Visibility(
                         visible: (order?.paymentStatus ?? '') == 'pending',
@@ -469,29 +491,170 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     );
   }
 
-  Widget _buildShippingDetailsCard() {
+  Widget _buildFulfillmentCard() {
+    final type = _fulfillmentType;
+    final meta = _fulfillmentMeta ?? {};
+
+    final isPickup = type == 'pickup';
+    final isScheduled = type == 'scheduled';
+
+    final IconData icon = isPickup
+        ? Icons.storefront_outlined
+        : isScheduled
+            ? Icons.event_available_rounded
+            : Icons.local_shipping_outlined;
+
+    final Color iconColor = isPickup
+        ? Colors.orange.shade600
+        : AppColors.primary;
+
+    final String typeLabel = isPickup
+        ? 'Self Pickup'
+        : isScheduled
+            ? 'Scheduled Delivery'
+            : 'Standard Delivery';
+
+    String? slotLine;
+    if (isPickup) {
+      final date = _friendlyDate(meta['pickup_date'] as String?);
+      final slot = meta['pickup_any_time'] == true
+          ? 'Any time'
+          : meta['pickup_slot_label'] as String?;
+      if (date.isNotEmpty || slot != null) {
+        slotLine = [date, slot].where((s) => s != null && s.isNotEmpty).join('  ·  ');
+      }
+    } else if (isScheduled) {
+      final date = _friendlyDate(meta['delivery_date'] as String?);
+      final slot = meta['delivery_time_slot_label'] as String?;
+      if (date.isNotEmpty || slot != null) {
+        slotLine = [date, slot].where((s) => s != null && s.isNotEmpty).join('  ·  ');
+      }
+    }
+
+    final pickupAddress = meta['pickup_address'] as String?;
+    final hasShippingAddress = order?.shippingAddress?.address1 != null;
+
+    // Build clean address string
+    final String? addressText = isPickup
+        ? (pickupAddress?.isNotEmpty == true ? pickupAddress : null)
+        : order?.shippingAddress?.address1 != null
+            ? [
+                order!.shippingAddress!.address1,
+                if ((order!.shippingAddress!.address2 ?? '').isNotEmpty)
+                  order!.shippingAddress!.address2,
+                order!.shippingAddress!.city,
+                order!.shippingAddress!.postalCode,
+              ].where((s) => s != null && s!.isNotEmpty).join(', ')
+            : null;
+
+    final String? phoneText = !isPickup &&
+            (order?.shippingAddress?.phone ?? '').isNotEmpty
+        ? order!.shippingAddress!.phone
+        : null;
+
+    final String? instructionsText = isScheduled &&
+            (meta['delivery_instructions'] as String?)?.isNotEmpty == true
+        ? meta['delivery_instructions'] as String
+        : null;
+
+    final bool hasBottom =
+        addressText != null || phoneText != null || instructionsText != null;
+
+    // Accent color — primary purple for all types (matches app language)
+    const Color accent = Color(0xFF8E6CEF); // AppColors.primary
+
     return Container(
-        padding: const EdgeInsets.all(20),
-        width: double.infinity, // Full width
-        decoration: BoxDecoration(
-          color: AppColors.secondary, // Background color
-          borderRadius:
-              BorderRadius.circular(8), // Border radius for rounded corners
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+        // ── Header strip: type icon + label ──────────────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          color: accent.withValues(alpha: 0.05),
+          child: Row(children: [
+            Icon(icon, size: 16, color: accent),
+            const SizedBox(width: 8),
+            Text(typeLabel,
+                style: FontUtils.primaryFontStyle(
+                    fontSize: 13, fontWeight: FontWeight.w700, color: accent)),
+          ]),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            //
-            Text(
-              '${order?.shippingAddress?.address1}, '
-              '${order?.shippingAddress?.city}, '
-              '${order?.shippingAddress?.postalCode}, '
-              '${order?.shippingAddress?.province ?? ''}.',
-            ),
-            const SizedBox(height: 8),
-            Text('${order?.shippingAddress?.phone ?? ''}'),
-          ],
-        ));
+
+        Divider(color: Colors.grey.shade100, height: 1),
+
+        // ── Date · slot ───────────────────────────────────────────
+        Padding(
+          padding: EdgeInsets.fromLTRB(14, 14, 14, hasBottom ? 0 : 14),
+          child: slotLine != null && slotLine.isNotEmpty
+              ? Text(slotLine,
+                  style: FontUtils.primaryFontStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textColor))
+              : Text('Delivered as soon as possible',
+                  style: FontUtils.primaryFontStyle(
+                      fontSize: 13, color: Colors.grey.shade500)),
+        ),
+
+        // ── Address / instructions ────────────────────────────────
+        if (hasBottom) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+            child: Divider(color: Colors.grey.shade100, height: 1),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+              if (instructionsText != null) ...[
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(Icons.notes_rounded, size: 13, color: Colors.grey.shade400),
+                  const SizedBox(width: 7),
+                  Expanded(child: Text(instructionsText,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 12, color: Colors.grey.shade500))),
+                ]),
+                if (addressText != null) const SizedBox(height: 7),
+              ],
+              if (addressText != null)
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(
+                    isPickup ? Icons.location_on_outlined : Icons.home_outlined,
+                    size: 13, color: Colors.grey.shade400),
+                  const SizedBox(width: 7),
+                  Expanded(child: Text(addressText,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 12, color: Colors.grey.shade500))),
+                ]),
+              if (phoneText != null) ...[
+                const SizedBox(height: 6),
+                Row(children: [
+                  Icon(Icons.phone_outlined, size: 13, color: Colors.grey.shade400),
+                  const SizedBox(width: 7),
+                  Text(phoneText,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 12, color: Colors.grey.shade500)),
+                ]),
+              ],
+            ]),
+          ),
+        ],
+
+      ]),
+    );
   }
 
   List<OrderStatusStep> buildOrderSteps(

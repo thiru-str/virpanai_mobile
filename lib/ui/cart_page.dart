@@ -17,6 +17,9 @@ import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
+import 'package:waioz/model/delivery_schedule_response.dart';
+import 'package:waioz/ui/widgets/fulfillment_method_widget.dart';
+import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
@@ -68,6 +71,9 @@ class _CartPageState extends State<CartPage>
   String? clientSecret;
   Razorpay razorpay = Razorpay();
   bool showPriceBreakdown = false;
+
+  // Fulfillment selection
+  FulfillmentSelection _fulfillment = const FulfillmentSelection(type: 'standard');
 
   // Wallet split state
   bool splitActive = false;
@@ -258,10 +264,32 @@ class _CartPageState extends State<CartPage>
                       body: SingleChildScrollView(
                         child: Column(
                           children: [
+                            // Fulfillment method — right after address (Zepto pattern)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                              child: FulfillmentMethodWidget(
+                                cartMetadata: cartResponse?.cart?.metadata is Map<String, dynamic>
+                                    ? cartResponse!.cart!.metadata as Map<String, dynamic>
+                                    : null,
+                                onChanged: (sel) async {
+                                  setState(() => _fulfillment = sel ?? const FulfillmentSelection(type: 'standard'));
+                                  try {
+                                    await ApiService().updateCartFulfillment(
+                                      context,
+                                      _fulfillment.toMetadata(),
+                                    );
+                                  } catch (_) {}
+                                },
+                              ),
+                            ),
+
                             Visibility(
-                              visible: cartResponse!.cart!.items!.isNotEmpty,
+                              visible: cartResponse!.cart!.items!.isNotEmpty &&
+                                  _fulfillment.type != 'pickup',
                               child: AppReveal(
-                                child: DeliveryAddressWidget(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: DeliveryAddressWidget(
                                   address: _buildShippingAddress(cartResponse),
                                   label: null,
                                   isLoading: addressLoading,
@@ -294,6 +322,7 @@ class _CartPageState extends State<CartPage>
                                 ),
                               ),
                             ),
+                          ),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16.0),
@@ -484,6 +513,8 @@ class _CartPageState extends State<CartPage>
                                 loyaltyApply: _loyaltyApplyMetadata(),
                                 cartTotal: cartResponse?.cart?.total ?? 0,
                                 walletAmount: _walletAmountFromMetadata(),
+                                walletApplied: _walletAmountFromMetadata() > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -497,6 +528,16 @@ class _CartPageState extends State<CartPage>
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
+
+                            // Free delivery progress banner
+                            if ((cartResponse?.cart?.id ?? '').isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                child: FreeDeliveryBannerWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  cartTotal: cartResponse?.cart?.itemSubtotal ?? cartResponse?.cart?.subtotal ?? 0,
+                                ),
+                              ),
 
                             // Price Details (view only)
                             AppReveal(
@@ -1041,6 +1082,11 @@ class _CartPageState extends State<CartPage>
   }
 
   Future<void> updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — session created at place-order time, not here.
+    if (paymentProviderId == 'pp_icici_icici') {
+      setState(() => pp_id = 'pp_icici_icici');
+      return;
+    }
     try {
       setState(() {
         cartLoading = true;
@@ -1116,11 +1162,12 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
-        makeRazorPayCall(orderId!);
-        break;
-      case 'pp_icici_icici':
         makeRazorPayCall(orderId!);
         break;
       case 'pp_stripe_stripe':
@@ -1135,9 +1182,6 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
-      case 'pp_icici_icici':
-        _makeIciciPayment();
-        break;
     }
   }
 
@@ -1145,6 +1189,7 @@ class _CartPageState extends State<CartPage>
     setState(() => cartLoading = true);
     try {
       final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
       if (!mounted) return;
       setState(() => cartLoading = false);
 
