@@ -546,6 +546,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int getMaxQuantity(ProductResponse.Variant? variant, List<Item> cartItems) {
     if (variant == null) return 10;
 
+    final inventoryManaged = variant.manageInventory == true;
+    final backorderAllowed = variant.allowBackorder == true;
+
+    if (!inventoryManaged || backorderAllowed) {
+      return 9999;
+    }
+
     // how many of this variant already in cart
     final cartQuantity = cartItems.fold<int>(0, (sum, item) {
       if (item.variantId == variant.id) {

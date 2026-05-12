@@ -334,6 +334,13 @@ class _CartPageState extends State<CartPage>
                                               return;
                                             }
 
+                                            if (!_shouldEnforceInventory(
+                                                item)) {
+                                              updateCart(newQty, item.id!,
+                                                  originalIndex);
+                                              return;
+                                            }
+
                                             if (stockQty == 0) {
                                               await showDialog(
                                                 context: context,
@@ -848,6 +855,10 @@ class _CartPageState extends State<CartPage>
     print('total qty ${totalQty}');
     eventBus.fire(ViewCartModel(
         totalQty, productItems.map((item) => item.thumbnail!).toList()));
+  }
+
+  bool _shouldEnforceInventory(Item item) {
+    return item.manageInventory == true && item.allowBackorder != true;
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
