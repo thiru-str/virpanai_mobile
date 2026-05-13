@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-ProductsResponse productsResponseFromJson(String str) => ProductsResponse.fromJson(json.decode(str));
+ProductsResponse productsResponseFromJson(String str) =>
+    ProductsResponse.fromJson(json.decode(str));
 
-String productsResponseToJson(ProductsResponse data) => json.encode(data.toJson());
+String productsResponseToJson(ProductsResponse data) =>
+    json.encode(data.toJson());
 
 class ProductsResponse {
   List<Product>? products;
@@ -21,19 +23,25 @@ class ProductsResponse {
     this.limit,
   });
 
-  factory ProductsResponse.fromJson(Map<String, dynamic> json) => ProductsResponse(
-    products: json["products"] == null ? [] : List<Product>.from(json["products"]!.map((x) => Product.fromJson(x))),
-    count: json["count"],
-    offset: json["offset"],
-    limit: json["limit"],
-  );
+  factory ProductsResponse.fromJson(Map<String, dynamic> json) =>
+      ProductsResponse(
+        products: json["products"] == null
+            ? []
+            : List<Product>.from(
+                json["products"]!.map((x) => Product.fromJson(x))),
+        count: json["count"],
+        offset: json["offset"],
+        limit: json["limit"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "products": products == null ? [] : List<dynamic>.from(products!.map((x) => x.toJson())),
-    "count": count,
-    "offset": offset,
-    "limit": limit,
-  };
+        "products": products == null
+            ? []
+            : List<dynamic>.from(products!.map((x) => x.toJson())),
+        "count": count,
+        "offset": offset,
+        "limit": limit,
+      };
 }
 
 class Product {
@@ -102,94 +110,129 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
-    id: json["id"],
-    title: json["title"],
-    subtitle: json["subtitle"],
-    description: json["description"],
-    handle: json["handle"],
-    isGiftcard: json["is_giftcard"],
-    discountable: json["discountable"],
-    thumbnail: json["thumbnail"],
-    collectionId: json["collection_id"],
-    typeId: json["type_id"],
-    weight: json["weight"],
-    length: json["length"],
-    height: json["height"],
-    width: json["width"],
-    hsCode: json["hs_code"],
-    originCountry: json["origin_country"],
-    midCode: json["mid_code"],
-    material: json["material"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
-    type: json["type"],
-    collection: json["collection"] == null ? null : Tion.fromJson(json["collection"]),
-    options: json["options"] == null
-        ? []
-        : List<ProductOption>.from(
-        json["options"].map((x) => ProductOption.fromJson(x))),
-    tags: json["tags"] == null ? [] : List<dynamic>.from(json["tags"]!.map((x) => x)),
-    images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
-    variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
-    productReview: json["product_review"] == null ? [] : List<ProductWishlistElement>.from(json["product_review"]!.map((x) => ProductWishlistElement.fromJson(x))),
-    productWishlist: json["product_wishlist"] == null ? null : ProductWishlistElement.fromJson(json["product_wishlist"]),
-
-  );
+        id: json["id"],
+        title: json["title"],
+        subtitle: json["subtitle"],
+        description: json["description"],
+        handle: json["handle"],
+        isGiftcard: json["is_giftcard"],
+        discountable: json["discountable"],
+        thumbnail: json["thumbnail"],
+        collectionId: json["collection_id"],
+        typeId: json["type_id"],
+        weight: json["weight"],
+        length: json["length"],
+        height: json["height"],
+        width: json["width"],
+        hsCode: json["hs_code"],
+        originCountry: json["origin_country"],
+        midCode: json["mid_code"],
+        material: json["material"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        metadata: json["metadata"] == null
+            ? null
+            : Metadata.fromJson(json["metadata"]),
+        type: json["type"],
+        collection: json["collection"] == null
+            ? null
+            : Tion.fromJson(json["collection"]),
+        options: json["options"] == null
+            ? []
+            : List<ProductOption>.from(
+                json["options"].map((x) => ProductOption.fromJson(x))),
+        tags: json["tags"] == null
+            ? []
+            : List<dynamic>.from(json["tags"]!.map((x) => x)),
+        images: json["images"] == null
+            ? []
+            : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
+        variants: json["variants"] == null
+            ? []
+            : List<Variant>.from(
+                json["variants"]!.map((x) => Variant.fromJson(x))),
+        productReview: json["product_review"] == null
+            ? []
+            : List<ProductWishlistElement>.from(json["product_review"]!
+                .map((x) => ProductWishlistElement.fromJson(x))),
+        productWishlist: json["product_wishlist"] == null
+            ? null
+            : ProductWishlistElement.fromJson(json["product_wishlist"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "subtitle": subtitle,
-    "description": description,
-    "handle": handle,
-    "is_giftcard": isGiftcard,
-    "discountable": discountable,
-    "thumbnail": thumbnail,
-    "collection_id": collectionId,
-    "type_id": typeId,
-    "weight": weight,
-    "length": length,
-    "height": height,
-    "width": width,
-    "hs_code": hsCode,
-    "origin_country": originCountry,
-    "mid_code": midCode,
-    "material": material,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "metadata": metadata?.toJson(),
-    "type": type,
-    "collection": collection?.toJson(),
-    "options": options == null
-        ? []
-        : List<dynamic>.from(options!.map((x) => x.toJson())),
-    "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
-    "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
-    "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
-    "product_review": productReview == null ? [] : List<dynamic>.from(productReview!.map((x) => x.toJson())),
-    "product_wishlist": productWishlist?.toJson(),
-  };
+        "id": id,
+        "title": title,
+        "subtitle": subtitle,
+        "description": description,
+        "handle": handle,
+        "is_giftcard": isGiftcard,
+        "discountable": discountable,
+        "thumbnail": thumbnail,
+        "collection_id": collectionId,
+        "type_id": typeId,
+        "weight": weight,
+        "length": length,
+        "height": height,
+        "width": width,
+        "hs_code": hsCode,
+        "origin_country": originCountry,
+        "mid_code": midCode,
+        "material": material,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "metadata": metadata?.toJson(),
+        "type": type,
+        "collection": collection?.toJson(),
+        "options": options == null
+            ? []
+            : List<dynamic>.from(options!.map((x) => x.toJson())),
+        "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
+        "images": images == null
+            ? []
+            : List<dynamic>.from(images!.map((x) => x.toJson())),
+        "variants": variants == null
+            ? []
+            : List<dynamic>.from(variants!.map((x) => x.toJson())),
+        "product_review": productReview == null
+            ? []
+            : List<dynamic>.from(productReview!.map((x) => x.toJson())),
+        "product_wishlist": productWishlist?.toJson(),
+      };
 }
 
 class Metadata {
   ReviewSummary? reviewSummary;
   String? additionalDescription;
+  String? additionalSpecification;
+  String? warrantyInformation;
 
   Metadata({
     this.reviewSummary,
     this.additionalDescription,
+    this.additionalSpecification,
+    this.warrantyInformation,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
-    reviewSummary: json["review_summary"] == null ? null : ReviewSummary.fromJson(json["review_summary"]),
-    additionalDescription: json["additional_description"],
-  );
+        reviewSummary: json["review_summary"] == null
+            ? null
+            : ReviewSummary.fromJson(json["review_summary"]),
+        additionalDescription: json["additional_description"],
+        additionalSpecification: json["additional_specification"],
+        warrantyInformation: json["warranty_information"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "review_summary": reviewSummary?.toJson(),
-    "additional_description": additionalDescription,
-  };
+        "review_summary": reviewSummary?.toJson(),
+        "additional_description": additionalDescription,
+        "additional_specification": additionalSpecification,
+        "warranty_information": warrantyInformation,
+      };
 }
 
 class ReviewSummary {
@@ -202,14 +245,14 @@ class ReviewSummary {
   });
 
   factory ReviewSummary.fromJson(Map<String, dynamic> json) => ReviewSummary(
-    totalReviews: json["total_reviews"],
-    averageRating: json["average_rating"],
-  );
+        totalReviews: json["total_reviews"],
+        averageRating: json["average_rating"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "total_reviews": totalReviews,
-    "average_rating": averageRating,
-  };
+        "total_reviews": totalReviews,
+        "average_rating": averageRating,
+      };
 }
 
 class Tion {
@@ -234,26 +277,30 @@ class Tion {
   });
 
   factory Tion.fromJson(Map<String, dynamic> json) => Tion(
-    id: json["id"],
-    title: json["title"],
-    handle: json["handle"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    metadata: json["metadata"],
-    deletedAt: json["deleted_at"],
-    productId: json["product_id"],
-  );
+        id: json["id"],
+        title: json["title"],
+        handle: json["handle"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        metadata: json["metadata"],
+        deletedAt: json["deleted_at"],
+        productId: json["product_id"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "handle": handle,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "metadata": metadata,
-    "deleted_at": deletedAt,
-    "product_id": productId,
-  };
+        "id": id,
+        "title": title,
+        "handle": handle,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "metadata": metadata,
+        "deleted_at": deletedAt,
+        "product_id": productId,
+      };
 }
 
 class Image {
@@ -282,30 +329,38 @@ class Image {
   });
 
   factory Image.fromJson(Map<String, dynamic> json) => Image(
-    id: json["id"],
-    url: json["url"],
-    metadata: json["metadata"],
-    rank: json["rank"],
-    productId: json["product_id"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-    title: json["title"],
-    values: json["values"] == null ? [] : List<Value>.from(json["values"]!.map((x) => Value.fromJson(x))),
-  );
+        id: json["id"],
+        url: json["url"],
+        metadata: json["metadata"],
+        rank: json["rank"],
+        productId: json["product_id"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        deletedAt: json["deleted_at"],
+        title: json["title"],
+        values: json["values"] == null
+            ? []
+            : List<Value>.from(json["values"]!.map((x) => Value.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "url": url,
-    "metadata": metadata,
-    "rank": rank,
-    "product_id": productId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-    "title": title,
-    "values": values == null ? [] : List<dynamic>.from(values!.map((x) => x.toJson())),
-  };
+        "id": id,
+        "url": url,
+        "metadata": metadata,
+        "rank": rank,
+        "product_id": productId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "deleted_at": deletedAt,
+        "title": title,
+        "values": values == null
+            ? []
+            : List<dynamic>.from(values!.map((x) => x.toJson())),
+      };
 }
 
 class Value {
@@ -330,26 +385,30 @@ class Value {
   });
 
   factory Value.fromJson(Map<String, dynamic> json) => Value(
-    id: json["id"],
-    value: json["value"],
-    metadata: json["metadata"],
-    optionId: json["option_id"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-    option: json["option"] == null ? null : Tion.fromJson(json["option"]),
-  );
+        id: json["id"],
+        value: json["value"],
+        metadata: json["metadata"],
+        optionId: json["option_id"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        deletedAt: json["deleted_at"],
+        option: json["option"] == null ? null : Tion.fromJson(json["option"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "value": value,
-    "metadata": metadata,
-    "option_id": optionId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-    "option": option?.toJson(),
-  };
+        "id": id,
+        "value": value,
+        "metadata": metadata,
+        "option_id": optionId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "deleted_at": deletedAt,
+        "option": option?.toJson(),
+      };
 }
 
 class ProductWishlistElement {
@@ -373,27 +432,32 @@ class ProductWishlistElement {
     this.deletedAt,
   });
 
-  factory ProductWishlistElement.fromJson(Map<String, dynamic> json) => ProductWishlistElement(
-    id: json["id"],
-    customerId: json["customer_id"],
-    productId: json["product_id"],
-    rating: json["rating"],
-    description: json["description"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-  );
+  factory ProductWishlistElement.fromJson(Map<String, dynamic> json) =>
+      ProductWishlistElement(
+        id: json["id"],
+        customerId: json["customer_id"],
+        productId: json["product_id"],
+        rating: json["rating"],
+        description: json["description"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        deletedAt: json["deleted_at"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "customer_id": customerId,
-    "product_id": productId,
-    "rating": rating,
-    "description": description,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-  };
+        "id": id,
+        "customer_id": customerId,
+        "product_id": productId,
+        "rating": rating,
+        "description": description,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "deleted_at": deletedAt,
+      };
 }
 
 class Variant {
@@ -452,60 +516,72 @@ class Variant {
   });
 
   factory Variant.fromJson(Map<String, dynamic> json) => Variant(
-    id: json["id"],
-    title: json["title"],
-    sku: json["sku"],
-    barcode: json["barcode"],
-    ean: json["ean"],
-    upc: json["upc"],
-    allowBackorder: json["allow_backorder"],
-    manageInventory: json["manage_inventory"],
-    inventoryQuantity: json["inventory_quantity"],
-    hsCode: json["hs_code"],
-    originCountry: json["origin_country"],
-    midCode: json["mid_code"],
-    material: json["material"],
-    weight: json["weight"],
-    length: json["length"],
-    height: json["height"],
-    width: json["width"],
-    metadata: json["metadata"] == null ? null : VariantMetaData.fromJson(json["metadata"]),
-    variantRank: json["variant_rank"],
-    productId: json["product_id"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-    options: json["options"] == null ? [] : List<Value>.from(json["options"]!.map((x) => Value.fromJson(x))),
-    calculatedPrice: json["calculated_price"] == null ? null : CalculatedPrice.fromJson(json["calculated_price"]),
-  );
+        id: json["id"],
+        title: json["title"],
+        sku: json["sku"],
+        barcode: json["barcode"],
+        ean: json["ean"],
+        upc: json["upc"],
+        allowBackorder: json["allow_backorder"],
+        manageInventory: json["manage_inventory"],
+        inventoryQuantity: json["inventory_quantity"],
+        hsCode: json["hs_code"],
+        originCountry: json["origin_country"],
+        midCode: json["mid_code"],
+        material: json["material"],
+        weight: json["weight"],
+        length: json["length"],
+        height: json["height"],
+        width: json["width"],
+        metadata: json["metadata"] == null
+            ? null
+            : VariantMetaData.fromJson(json["metadata"]),
+        variantRank: json["variant_rank"],
+        productId: json["product_id"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        deletedAt: json["deleted_at"],
+        options: json["options"] == null
+            ? []
+            : List<Value>.from(json["options"]!.map((x) => Value.fromJson(x))),
+        calculatedPrice: json["calculated_price"] == null
+            ? null
+            : CalculatedPrice.fromJson(json["calculated_price"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "sku": sku,
-    "barcode": barcode,
-    "ean": ean,
-    "upc": upc,
-    "allow_backorder": allowBackorder,
-    "manage_inventory": manageInventory,
-    "inventory_quantity": inventoryQuantity,
-    "hs_code": hsCode,
-    "origin_country": originCountry,
-    "mid_code": midCode,
-    "material": material,
-    "weight": weight,
-    "length": length,
-    "height": height,
-    "width": width,
-    "metadata": metadata?.toJson(),
-    "variant_rank": variantRank,
-    "product_id": productId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-    "options": options == null ? [] : List<dynamic>.from(options!.map((x) => x.toJson())),
-    "calculated_price": calculatedPrice?.toJson(),
-  };
+        "id": id,
+        "title": title,
+        "sku": sku,
+        "barcode": barcode,
+        "ean": ean,
+        "upc": upc,
+        "allow_backorder": allowBackorder,
+        "manage_inventory": manageInventory,
+        "inventory_quantity": inventoryQuantity,
+        "hs_code": hsCode,
+        "origin_country": originCountry,
+        "mid_code": midCode,
+        "material": material,
+        "weight": weight,
+        "length": length,
+        "height": height,
+        "width": width,
+        "metadata": metadata?.toJson(),
+        "variant_rank": variantRank,
+        "product_id": productId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "deleted_at": deletedAt,
+        "options": options == null
+            ? []
+            : List<dynamic>.from(options!.map((x) => x.toJson())),
+        "calculated_price": calculatedPrice?.toJson(),
+      };
 }
 
 class CalculatedPrice {
@@ -537,35 +613,45 @@ class CalculatedPrice {
     this.originalPrice,
   });
 
-  factory CalculatedPrice.fromJson(Map<String, dynamic> json) => CalculatedPrice(
-    id: json["id"],
-    isCalculatedPricePriceList: json["is_calculated_price_price_list"],
-    isCalculatedPriceTaxInclusive: json["is_calculated_price_tax_inclusive"],
-    calculatedAmount: json["calculated_amount"],
-    rawCalculatedAmount: json["raw_calculated_amount"] == null ? null : RawAmount.fromJson(json["raw_calculated_amount"]),
-    isOriginalPricePriceList: json["is_original_price_price_list"],
-    isOriginalPriceTaxInclusive: json["is_original_price_tax_inclusive"],
-    originalAmount: json["original_amount"],
-    rawOriginalAmount: json["raw_original_amount"] == null ? null : RawAmount.fromJson(json["raw_original_amount"]),
-    currencyCode: json["currency_code"],
-    calculatedPrice: json["calculated_price"] == null ? null : Price.fromJson(json["calculated_price"]),
-    originalPrice: json["original_price"] == null ? null : Price.fromJson(json["original_price"]),
-  );
+  factory CalculatedPrice.fromJson(Map<String, dynamic> json) =>
+      CalculatedPrice(
+        id: json["id"],
+        isCalculatedPricePriceList: json["is_calculated_price_price_list"],
+        isCalculatedPriceTaxInclusive:
+            json["is_calculated_price_tax_inclusive"],
+        calculatedAmount: json["calculated_amount"],
+        rawCalculatedAmount: json["raw_calculated_amount"] == null
+            ? null
+            : RawAmount.fromJson(json["raw_calculated_amount"]),
+        isOriginalPricePriceList: json["is_original_price_price_list"],
+        isOriginalPriceTaxInclusive: json["is_original_price_tax_inclusive"],
+        originalAmount: json["original_amount"],
+        rawOriginalAmount: json["raw_original_amount"] == null
+            ? null
+            : RawAmount.fromJson(json["raw_original_amount"]),
+        currencyCode: json["currency_code"],
+        calculatedPrice: json["calculated_price"] == null
+            ? null
+            : Price.fromJson(json["calculated_price"]),
+        originalPrice: json["original_price"] == null
+            ? null
+            : Price.fromJson(json["original_price"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "is_calculated_price_price_list": isCalculatedPricePriceList,
-    "is_calculated_price_tax_inclusive": isCalculatedPriceTaxInclusive,
-    "calculated_amount": calculatedAmount,
-    "raw_calculated_amount": rawCalculatedAmount?.toJson(),
-    "is_original_price_price_list": isOriginalPricePriceList,
-    "is_original_price_tax_inclusive": isOriginalPriceTaxInclusive,
-    "original_amount": originalAmount,
-    "raw_original_amount": rawOriginalAmount?.toJson(),
-    "currency_code": currencyCode,
-    "calculated_price": calculatedPrice?.toJson(),
-    "original_price": originalPrice?.toJson(),
-  };
+        "id": id,
+        "is_calculated_price_price_list": isCalculatedPricePriceList,
+        "is_calculated_price_tax_inclusive": isCalculatedPriceTaxInclusive,
+        "calculated_amount": calculatedAmount,
+        "raw_calculated_amount": rawCalculatedAmount?.toJson(),
+        "is_original_price_price_list": isOriginalPricePriceList,
+        "is_original_price_tax_inclusive": isOriginalPriceTaxInclusive,
+        "original_amount": originalAmount,
+        "raw_original_amount": rawOriginalAmount?.toJson(),
+        "currency_code": currencyCode,
+        "calculated_price": calculatedPrice?.toJson(),
+        "original_price": originalPrice?.toJson(),
+      };
 }
 
 class Price {
@@ -584,20 +670,20 @@ class Price {
   });
 
   factory Price.fromJson(Map<String, dynamic> json) => Price(
-    id: json["id"],
-    priceListId: json["price_list_id"],
-    priceListType: json["price_list_type"],
-    minQuantity: json["min_quantity"],
-    maxQuantity: json["max_quantity"],
-  );
+        id: json["id"],
+        priceListId: json["price_list_id"],
+        priceListType: json["price_list_type"],
+        minQuantity: json["min_quantity"],
+        maxQuantity: json["max_quantity"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "price_list_id": priceListId,
-    "price_list_type": priceListType,
-    "min_quantity": minQuantity,
-    "max_quantity": maxQuantity,
-  };
+        "id": id,
+        "price_list_id": priceListId,
+        "price_list_type": priceListType,
+        "min_quantity": minQuantity,
+        "max_quantity": maxQuantity,
+      };
 }
 
 class RawAmount {
@@ -610,14 +696,14 @@ class RawAmount {
   });
 
   factory RawAmount.fromJson(Map<String, dynamic> json) => RawAmount(
-    value: json["value"],
-    precision: json["precision"],
-  );
+        value: json["value"],
+        precision: json["precision"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "value": value,
-    "precision": precision,
-  };
+        "value": value,
+        "precision": precision,
+      };
 }
 
 class ProductOption {
@@ -628,20 +714,20 @@ class ProductOption {
   ProductOption({this.id, this.title, this.values});
 
   factory ProductOption.fromJson(Map<String, dynamic> json) => ProductOption(
-    id: json["id"],
-    title: json["title"],
-    values: json["values"] == null
-        ? []
-        : List<Value>.from(
-        json["values"].map((x) => Value.fromJson(x))),
-  );
+        id: json["id"],
+        title: json["title"],
+        values: json["values"] == null
+            ? []
+            : List<Value>.from(json["values"].map((x) => Value.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "values":
-    values == null ? [] : List<dynamic>.from(values!.map((x) => x.toJson())),
-  };
+        "id": id,
+        "title": title,
+        "values": values == null
+            ? []
+            : List<dynamic>.from(values!.map((x) => x.toJson())),
+      };
 }
 
 class ProductImage {
@@ -666,30 +752,30 @@ class ProductImage {
   });
 
   factory ProductImage.fromJson(Map<String, dynamic> json) => ProductImage(
-    id: json["id"],
-    url: json["url"],
-    metadata: json["metadata"],
-    rank: json["rank"],
-    productId: json["product_id"],
-    createdAt: json["created_at"] == null
-        ? null
-        : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null
-        ? null
-        : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-  );
+        id: json["id"],
+        url: json["url"],
+        metadata: json["metadata"],
+        rank: json["rank"],
+        productId: json["product_id"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        deletedAt: json["deleted_at"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "url": url,
-    "metadata": metadata,
-    "rank": rank,
-    "product_id": productId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-  };
+        "id": id,
+        "url": url,
+        "metadata": metadata,
+        "rank": rank,
+        "product_id": productId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "deleted_at": deletedAt,
+      };
 }
 
 class VariantMetaData {
@@ -703,16 +789,20 @@ class VariantMetaData {
     this.description,
   });
 
-  factory VariantMetaData.fromJson(Map<String, dynamic> json) => VariantMetaData(
-    images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
-    description: json["description"],
-    thumbnail: json["thumbnail"],
-  );
+  factory VariantMetaData.fromJson(Map<String, dynamic> json) =>
+      VariantMetaData(
+        images: json["images"] == null
+            ? []
+            : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
+        description: json["description"],
+        thumbnail: json["thumbnail"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
-    "description": description,
-    "thumbnail": thumbnail,
-  };
+        "images": images == null
+            ? []
+            : List<dynamic>.from(images!.map((x) => x.toJson())),
+        "description": description,
+        "thumbnail": thumbnail,
+      };
 }
-

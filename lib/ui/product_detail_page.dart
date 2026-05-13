@@ -5,8 +5,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:waioz/model/add_on_products_response.dart';
+import 'package:waioz/model/public_detail_model.dart' as public_detail_model;
 import 'package:waioz/model/product_info_response.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 import 'package:waioz/model/related_products_response.dart';
@@ -34,6 +36,7 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
 import '../model/product_response.dart' hide Image;
@@ -60,6 +63,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   UpSellProductsResponse? upSellProductsResponse;
   AddOnProductsResponse? addOnProductsResponse;
   CartResponse? cartResponse;
+  public_detail_model.PublicDetailsResponse? publicDetails;
 
   bool apiLoading = true;
   bool quantityLoading = false;
@@ -123,6 +127,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() => apiLoading = true);
 
     try {
+      public_detail_model.PublicDetailsResponse? cachedPublicDetails;
+      try {
+        cachedPublicDetails = await ApiService().getPublicDetails();
+        await SharedPreferencesUtil()
+            .saveMap('public_details', cachedPublicDetails.toJson());
+      } catch (_) {
+        cachedPublicDetails = await SharedPreferencesUtil().getPublicDetails();
+      }
+
+      if (mounted) {
+        setState(() {
+          publicDetails = cachedPublicDetails;
+        });
+      }
+
       await getProductsApi();
       if (mounted) {
         setState(() => apiLoading = false);
@@ -412,11 +431,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return const SizedBox();
     }
 
+    final specification =
+        (product?.metadata?.additionalSpecification ?? '').trim();
+    final showRazorpayTrust = productDetailSettings?.rzpIsEnabled == true ||
+        productInfoResponse?.rzpIsEnabled == true;
+    final showWhatsappCard = effectiveWhatsappSettings?.isEnabled == true &&
+        (effectiveWhatsappSettings?.whatsappNumber ?? '').trim().isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 15),
         if (showVariantSelection) buildDynamicVariantSelection(),
+        if (showWhatsappCard) ...[
+          buildWhatsappOfferCard(),
+          const SizedBox(height: 18),
+        ],
+        if (specification.isNotEmpty) ...[
+          buildSpecificationHighlights(specification),
+          const SizedBox(height: 18),
+        ],
         Text(
           AppStrings.select_qty,
           style: FontUtils.secondaryFontStyle(
@@ -424,6 +458,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         const SizedBox(height: 10),
         buildQuantitySelector(),
+        if (showRazorpayTrust) ...[
+          const SizedBox(height: 18),
+          buildRazorpayTrustStrip(),
+        ],
         const SizedBox(height: 10),
       ],
     );
@@ -510,6 +548,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     print("Selected Variant ID: ${selectedVariant?.id}");
     print("Stock not available: ${!isStockAvailable(selectedVariant)}");
+
+    if (matchedVariant?.id != null) {
+      unawaited(getProductsInfoApi());
+    }
   }
 
   bool isStockAvailable(ProductResponse.Variant? variant) {
@@ -564,35 +606,70 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final productDesc = (product?.description ?? '').trim();
     final additionalDesc =
         (product?.metadata?.additionalDescription ?? '').trim();
+    final warrantyInformation = ((product?.metadata?.warrantyInformation ?? '')
+            .trim()
+            .isNotEmpty)
+        ? (product?.metadata?.warrantyInformation ?? '').trim()
+        : ((productDetailSettings?.warrantyInformation ?? '').trim().isNotEmpty
+            ? (productDetailSettings?.warrantyInformation ?? '').trim()
+            : (productInfoResponse?.warrantyInformation ?? '').trim());
+    final deliveryAndShipping =
+        ((productDetailSettings?.deliveryAndShipping ?? '').trim().isNotEmpty)
+            ? (productDetailSettings?.deliveryAndShipping ?? '').trim()
+            : (productInfoResponse?.deliveryAndShipping ?? '').trim();
 
-    final primaryDescription = variantDesc.isNotEmpty ? variantDesc : productDesc;
+    final primaryDescription =
+        variantDesc.isNotEmpty ? variantDesc : productDesc;
+    final sections = <Widget>[];
 
-    if (primaryDescription.isEmpty && additionalDesc.isEmpty) {
+    if (primaryDescription.isNotEmpty) {
+      sections.add(
+        _buildExpandableHtmlSection(
+          title: AppStrings.description,
+          htmlContent: primaryDescription,
+          initiallyExpanded: true,
+        ),
+      );
+    }
+
+    if (additionalDesc.isNotEmpty) {
+      sections.add(
+        _buildExpandableHtmlSection(
+          title: 'Additional Information',
+          htmlContent: additionalDesc,
+        ),
+      );
+    }
+
+    if (warrantyInformation.isNotEmpty) {
+      sections.add(
+        _buildExpandableHtmlSection(
+          title: 'Warranty Information',
+          htmlContent: warrantyInformation,
+        ),
+      );
+    }
+
+    if (deliveryAndShipping.isNotEmpty) {
+      sections.add(
+        _buildExpandableHtmlSection(
+          title: 'Delivery and Shipping',
+          htmlContent: deliveryAndShipping,
+        ),
+      );
+    }
+
+    if (sections.isEmpty) {
       return const SizedBox();
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (primaryDescription.isNotEmpty) ...[
-          Text(
-            AppStrings.description,
-            style: FontUtils.secondaryFontStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: AppColors.textColor,
-            ),
-          ),
-          const SizedBox(height: 10),
-          CommonHtmlWidget(htmlContent: primaryDescription),
-          const SizedBox(height: 20),
+        for (int i = 0; i < sections.length; i++) ...[
+          sections[i],
+          if (i != sections.length - 1) const SizedBox(height: 12),
         ],
-        if (additionalDesc.isNotEmpty)
-          _buildExpandableHtmlSection(
-            title: 'Additional Information',
-            htmlContent: additionalDesc,
-            initiallyExpanded: true,
-          ),
       ],
     );
   }
@@ -636,6 +713,239 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
     );
   }
+
+  Widget buildWhatsappOfferCard() {
+    final settings = effectiveWhatsappSettings;
+    final themeColor = _parseHexColor(
+      settings?.themeColor,
+      fallback: const Color(0xFFFF2A2A),
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: themeColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: themeColor.withValues(alpha: 0.85)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.chat_bubble_outline_rounded,
+                  color: themeColor, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Want a Better Price?',
+                  textAlign: TextAlign.center,
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: themeColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Contact us on WhatsApp for exclusive discounts.',
+            textAlign: TextAlign.center,
+            style: FontUtils.secondaryFontStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textColor,
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _openWhatsappOffer,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              child: Text(
+                'Chat on WhatsApp',
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSpecificationHighlights(String htmlContent) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: CommonHtmlWidget(htmlContent: htmlContent),
+    );
+  }
+
+  Widget buildRazorpayTrustStrip() {
+    final featureStyle = FontUtils.secondaryFontStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xFF1E4FBF),
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F7FF),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF9AB8FF), width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2EC971),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.verified_user_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Razorpay',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1B4CC4),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Trusted Business',
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1B4CC4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 18,
+            runSpacing: 14,
+            children: [
+              _buildTrustFeature(
+                  Icons.verified_outlined, 'Verified\nBusiness', featureStyle),
+              _buildTrustFeature(
+                  Icons.shield_outlined, 'Secured\nPayments', featureStyle),
+              _buildTrustFeature(Icons.history_toggle_off_rounded,
+                  'Prompt\nSupport', featureStyle),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrustFeature(IconData icon, String label, TextStyle style) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 22, color: const Color(0xFF2563EB)),
+        const SizedBox(width: 8),
+        Text(label, style: style),
+      ],
+    );
+  }
+
+  String _buildWhatsappMessage() {
+    final template = effectiveWhatsappSettings?.defaultMessage ??
+        "Hi, I'm interested in {product.title}, is it possible to make some special offer";
+    final replacements = <String, String>{
+      'product.title': product?.title ?? '',
+      'product.handle': product?.handle ?? '',
+      'product.id': product?.id ?? '',
+      'variant.title': selectedVariant?.title ?? '',
+      'variant.id': selectedVariant?.id ?? '',
+    };
+
+    return template.replaceAllMapped(RegExp(r'\{([^}]+)\}'), (match) {
+      final key = (match.group(1) ?? '').trim();
+      return replacements[key] ?? '';
+    });
+  }
+
+  Future<void> _openWhatsappOffer() async {
+    final number = (effectiveWhatsappSettings?.whatsappNumber ?? '').trim();
+    if (number.isEmpty) {
+      AppUtils.showToast('WhatsApp contact is unavailable');
+      return;
+    }
+
+    final uri = Uri.parse(
+      'https://wa.me/$number?text=${Uri.encodeComponent(_buildWhatsappMessage())}',
+    );
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      AppUtils.showToast('Unable to open WhatsApp');
+    }
+  }
+
+  Color _parseHexColor(String? rawColor, {required Color fallback}) {
+    if (rawColor == null || rawColor.trim().isEmpty) {
+      return fallback;
+    }
+
+    var value = rawColor.trim().replaceFirst('#', '');
+    if (value.length == 3) {
+      value = value.split('').map((char) => '$char$char').join();
+    }
+    if (value.length == 6) {
+      value = 'FF$value';
+    }
+
+    final parsed = int.tryParse(value, radix: 16);
+    if (parsed == null) {
+      return fallback;
+    }
+
+    return Color(parsed);
+  }
+
+  public_detail_model.ProductDetailSettings? get productDetailSettings =>
+      publicDetails?.productDetail;
+
+  public_detail_model.PdWhatsappSettings? get effectiveWhatsappSettings =>
+      productDetailSettings?.pdWhatsappSettings;
 
   Widget buildRatingSection() {
     return RatingWidget(
@@ -752,7 +1062,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         Expanded(
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: selectedVariantId == null && stockNotAvailable
+              backgroundColor: selectedVariantId == null || stockNotAvailable
                   ? Colors.grey
                   : AppColors.primary,
               shape: RoundedRectangleBorder(
