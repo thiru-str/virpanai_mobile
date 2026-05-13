@@ -1,7 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
-import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -15,8 +13,6 @@ class ProductCard4 extends StatefulWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
-  final FavouriteListConfig? favConfig;
-  final bool isLoggedIn;
 
   const ProductCard4({
     Key? key,
@@ -25,8 +21,6 @@ class ProductCard4 extends StatefulWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
-    this.favConfig,
-    this.isLoggedIn = false,
   }) : super(key: key);
 
   @override
@@ -124,19 +118,26 @@ class _ProductCard4State extends State<ProductCard4> {
                 ),
 
                 // Wishlist button
-                Positioned(
-                  top: 6,
-                  right: 6,
-                  child: FavouriteHeartButton(
-                    productId: widget.product.id ?? '',
-                    productHandle: widget.product.handle ?? '',
-                    variants: widget.product.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
-                    isLoggedIn: widget.isLoggedIn,
-                    config: widget.favConfig,
-                    initialSaved: widget.isFavorite,
-                    size: 16,
+                if(widget.onTapFavorite!=null)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: GestureDetector(
+                      onTap: widget.onTapFavorite,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
 
 
                 // ADD button inside image container (Zepto style)

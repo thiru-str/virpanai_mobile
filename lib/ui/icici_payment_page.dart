@@ -60,7 +60,10 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.redirectUrl));
+      ..loadRequest(
+        Uri.parse(widget.redirectUrl),
+        headers: {'Referer': 'https://annachimaligai.com'},
+      );
   }
 
   @override
