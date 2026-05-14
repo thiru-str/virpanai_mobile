@@ -60,9 +60,15 @@ class PublicDetailsResponse {
         storeDetails: json["storeDetails"] == null
             ? null
             : StoreDetails.fromJson(json["storeDetails"]),
-        productDetail: json["productDetail"] == null
-            ? null
-            : ProductDetailSettings.fromJson(json["productDetail"]),
+        // Backend nests productDetail inside theme on hakadts release.
+        // Read from theme.productDetail first, fallback to root for older shapes.
+        productDetail: (json["theme"] is Map &&
+                (json["theme"] as Map)["productDetail"] != null)
+            ? ProductDetailSettings.fromJson(
+                (json["theme"] as Map)["productDetail"])
+            : (json["productDetail"] == null
+                ? null
+                : ProductDetailSettings.fromJson(json["productDetail"])),
         enabledExtensions: json["enabled_extensions"] != null
             ? List<String>.from(json["enabled_extensions"])
             : [],
