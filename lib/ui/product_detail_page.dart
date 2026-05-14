@@ -433,8 +433,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     final specification =
         (product?.metadata?.additionalSpecification ?? '').trim();
-    final showRazorpayTrust = productDetailSettings?.rzpIsEnabled == true ||
-        productInfoResponse?.rzpIsEnabled == true;
+    final showRazorpayTrust =
+        productDetailSettings?.rzpIsEnabled == "true" ||
+            productInfoResponse?.rzpIsEnabled == "true";
     final showWhatsappCard = effectiveWhatsappSettings?.isEnabled == true &&
         (effectiveWhatsappSettings?.whatsappNumber ?? '').trim().isNotEmpty;
 

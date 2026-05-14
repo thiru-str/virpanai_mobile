@@ -96,7 +96,7 @@ class PublicDetailsResponse {
 class ProductDetailSettings {
   String? name;
   String? pdImgView;
-  bool? rzpIsEnabled;
+  String? rzpIsEnabled;
   String? deliveryAndShipping;
   String? warrantyInformation;
   PdWhatsappSettings? pdWhatsappSettings;
