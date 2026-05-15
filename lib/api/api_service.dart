@@ -73,6 +73,26 @@ class ApiService {
     );
   }
 
+  // Pull a human-readable error message from response.data without assuming
+  // it's a Map. Some upstreams return plain text or HTML, in which case
+  // response.data['message'] threw "type 'String' is not a subtype of type
+  // 'int' of 'index'" and masked the real failure.
+  String _extractErrorMessage(dynamic data) {
+    if (data is Map) {
+      final m = data['message'];
+      if (m is String && m.isNotEmpty) return m;
+      final err = data['error'];
+      if (err is Map) {
+        final em = err['message'];
+        if (em is String && em.isNotEmpty) return em;
+      }
+      if (err is String && err.isNotEmpty) return err;
+    } else if (data is String && data.isNotEmpty) {
+      return data;
+    }
+    return 'An error occurred';
+  }
+
   Future<T> _makePostRequest<T>(
     String endpoint,
     Map<String, dynamic>? data,
@@ -97,12 +117,11 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -152,13 +171,12 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context!, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context!, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
@@ -209,9 +227,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -264,9 +280,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -825,6 +839,20 @@ class ApiService {
     );
   }
 
+  Future<String?> initiateIciciPayment(BuildContext context) async {
+    await setPublishableKey();
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final response = await _dio.post(
+      'store/place-order/$cartId',
+      data: {"payment_provider_id": "pp_icici_icici"},
+    );
+    if (response.statusCode == 200) {
+      return response.data?['icici_redirect_url'] as String?;
+    }
+    throw Exception('Failed to initiate ICICI payment');
+  }
+
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
   //   await addToken();
   //   return _makeGetRequest<WishlistResponse>(
@@ -934,6 +962,34 @@ class ApiService {
       null,
       null,
       (json) => PublicDetailsResponse.fromJson(json),
+      null,
+    );
+  }
+
+  Future<bool> getCouponListVisibility() async {
+    return _makeGetRequest<bool>(
+      'store/web/global_settings',
+      null,
+      null,
+      (json) {
+        final value = json['globalSettings']?['coupon_list_enabled'];
+
+        if (value is bool) {
+          return value;
+        }
+
+        if (value is String) {
+          final normalized = value.trim().toLowerCase();
+          if (['false', '0', 'off', 'no'].contains(normalized)) {
+            return false;
+          }
+          if (['true', '1', 'on', 'yes'].contains(normalized)) {
+            return true;
+          }
+        }
+
+        return true;
+      },
       null,
     );
   }
@@ -1232,5 +1288,82 @@ class ApiService {
       debugPrint('removeWalletSplit error: $e');
       rethrow;
     }
+  }
+
+  // ─── Loyalty ──────────────────────────────────────────────
+
+  Future<Response> getLoyaltyAccount() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty');
+  }
+
+  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/transactions',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> getLoyaltyPreview(num orderTotal, {String? orderId}) async {
+    await setPublishableKey();
+    final params = <String, dynamic>{};
+    if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    if (orderTotal > 0) params['order_total'] = orderTotal;
+    return _dio.get('/store/loyalty/preview', queryParameters: params);
+  }
+
+  Future<Response> redeemLoyaltyPoints(int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/redeem', data: {'points': points});
+  }
+
+  Future<Response> applyLoyaltyCheckout(String cartId, int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId, 'points': points});
+  }
+
+  Future<Response> getLoyaltyCheckoutStatus(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/checkout-apply',
+        queryParameters: {'cart_id': cartId});
+  }
+
+  Future<Response> removeLoyaltyCheckout(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.delete('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId});
+  }
+
+  Future<Response> getLoyaltyReferral() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral');
+  }
+
+  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/history',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> applyReferralCode(String code) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/referral/apply',
+        data: {'referral_code': code});
+  }
+
+  /// Public endpoint — no auth required. Validates a referral code before signup.
+  Future<Response> validateReferralCode(String code) async {
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/validate',
+        queryParameters: {'code': code.trim().toUpperCase()});
   }
 }

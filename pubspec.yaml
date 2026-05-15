@@ -44,7 +44,7 @@ dependencies:
   flutter_svg: ^2.0.0
   pin_code_fields: ^8.0.1
   flutter_spin_wheel_menu: ^0.0.4
-  google_fonts: ^6.2.1
+  google_fonts: ^8.1.0
   cached_network_image: ^3.4.0
   shared_preferences: ^2.0.15
   flutter_rating_bar: ^4.0.1

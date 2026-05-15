@@ -11,8 +11,11 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
+import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_button.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
+import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
+import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -72,7 +75,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   double splitWalletAmount = 0;
   double splitGatewayAmount = 0;
   bool splitFullCoverage = false;
-  bool isSplitPaymentMode = false; // true when wallet extension is enabled with split_payment mode
+  bool isSplitPaymentMode =
+      false; // true when wallet extension is enabled with split_payment mode
 
   // Wallet state
   double walletBalance = 0;
@@ -97,7 +101,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
           },
         ),
         backgroundColor: Colors.white,
-        /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
         body: Scaffold(
           backgroundColor: Colors.white,
           body: apiLoading
@@ -173,7 +176,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                         // Filter out wallet from payment methods in split mode
                                         final providers = isSplitPaymentMode
                                             ? global.paymentProvider!
-                                                .where((p) => p.id != 'pp_wallet_wallet')
+                                                .where((p) =>
+                                                    p.id != 'pp_wallet_wallet')
                                                 .toList()
                                             : global.paymentProvider!;
                                         showPaymentMethodsBottomSheet(
@@ -184,6 +188,48 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
                                 _buildWalletInfoWidget(),
+
+                              const SizedBox(height: 12),
+
+                              // Loyalty earn preview — based on actual paid amount
+                              Builder(builder: (_) {
+                                final meta = cartResponse?.cart?.metadata;
+                                final loyaltyOff = (meta is Map &&
+                                        meta['loyalty_checkout_apply'] is Map &&
+                                        ((meta['loyalty_checkout_apply']
+                                                    ['points_to_apply'] ??
+                                                0) as num) >
+                                            0)
+                                    ? (meta['loyalty_checkout_apply']
+                                            ['discount_amount'] ??
+                                        0) as num
+                                    : 0;
+                                return LoyaltyEarnPreview(
+                                  orderTotal:
+                                      (cartResponse!.cart!.itemSubtotal ??
+                                              cartResponse!.cart!.total ??
+                                              0) -
+                                          loyaltyOff,
+                                );
+                              }),
+
+                              const SizedBox(height: 4),
+
+                              // Loyalty checkout apply widget
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
+                                cartTotal: cartResponse?.cart?.total,
+                                walletAmount: splitActive ? splitWalletAmount : 0,
+                                walletApplied: splitActive && splitWalletAmount > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                onApplied: () {
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  getCartApi();
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -198,11 +244,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     child: Lottie.asset(AppAssets.place_order_lottie,
                         fit: BoxFit.cover))
                 : CartButton(
-                    amount: CurrencyUtil.appendCurrency(
-                        (splitActive
+                    amount: CurrencyUtil.appendCurrency((splitActive
                             ? splitGatewayAmount
                             : (cartResponse?.cart?.total ?? 0))
-                            .toStringAsFixed(2)),
+                        .toStringAsFixed(2)),
                     title: splitActive && splitFullCoverage
                         ? 'Pay from Wallet'
                         : AppStrings.place_order,
@@ -356,7 +401,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
         ),
         child: const Center(
           child: SizedBox(
-            width: 20, height: 20,
+            width: 20,
+            height: 20,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
@@ -372,17 +418,21 @@ class _CheckOutPageState extends State<CheckOutPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: hasSufficientBalance ? Colors.green.shade200 : Colors.orange.shade200,
+          color: hasSufficientBalance
+              ? Colors.green.shade200
+              : Colors.orange.shade200,
         ),
         borderRadius: BorderRadius.circular(12),
-        color: hasSufficientBalance ? Colors.green.shade50 : Colors.orange.shade50,
+        color:
+            hasSufficientBalance ? Colors.green.shade50 : Colors.orange.shade50,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+              Icon(Icons.account_balance_wallet,
+                  color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Row(
@@ -391,20 +441,24 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Available Balance', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const Text('Available Balance',
+                            style: TextStyle(fontSize: 11, color: Colors.grey)),
                         Text(
                           '₹${walletBalance.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text('Order Total', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const Text('Order Total',
+                            style: TextStyle(fontSize: 11, color: Colors.grey)),
                         Text(
                           '₹${cartTotal.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -433,7 +487,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                   child: Text('Add ₹${shortfall.toStringAsFixed(0)} to Wallet'),
@@ -788,6 +843,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — place-order handles the full session creation.
+    // Skip update-payment-method to avoid duplicate payment sessions.
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
+
     final ApiService apiService = ApiService();
     dynamic apiResponse = await apiService.updatePaymentMethod(
         context, paymentProviderId, cartResponse!);
@@ -820,10 +882,50 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
+  Future<void> _makeIciciPayment() async {
+    setState(() => placeOrderApiLoading = true);
+    try {
+      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
+      if (!mounted) return;
+      setState(() => placeOrderApiLoading = false);
+
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IciciPaymentPage(
+            redirectUrl: redirectUrl,
+            onSuccess: (orderId) {
+              Navigator.pop(context);
+              PageRouteUtils.pushAndRemoveUntil(
+                context,
+                OrderPlacedPage(orderId: orderId),
+              );
+            },
+            onFailure: () {
+              Navigator.pop(context);
+              AppUtils.showToast('ICICI payment failed or was cancelled.');
+              getCartApi();
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() => placeOrderApiLoading = false);
+      AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+    }
+  }
+
   String? extractOrderId(dynamic response) {
     try {
       if (response is PaymentMethodResponse) {
-        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
+        return response
+            .paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
       }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["id"];
@@ -836,7 +938,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   String? extractClientSecret(dynamic response) {
     try {
       if (response is PaymentMethodResponse) {
-        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret;
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            ?.clientSecret;
       }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["client_secret"];

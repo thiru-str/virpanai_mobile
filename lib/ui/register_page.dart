@@ -42,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController companyController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController referralCodeController = TextEditingController();
 
 
   bool apiCalling = false;
@@ -241,6 +242,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
 
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    hintText: 'Referral Code (optional)',
+                    controller: referralCodeController,
+                    validator: (value) => null,
+                  ),
+                  const SizedBox(height: 16),
                   apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                     onPressed:() {
                       if (_formKey.currentState!.validate()) {
@@ -278,6 +286,51 @@ class _RegisterPageState extends State<RegisterPage> {
         apiCalling = true;
       });
       final ApiService apiService = ApiService();
+
+      // Validate referral code BEFORE creating account — block if invalid
+      final referralCode = referralCodeController.text.trim();
+      if (referralCode.isNotEmpty) {
+        try {
+          final validateResp = await apiService.validateReferralCode(referralCode);
+          final validateData = validateResp.data as Map<String, dynamic>?;
+          if (validateData?['valid'] != true) {
+            final msg = validateData?['message'] as String? ?? 'Invalid referral code. Please check and try again.';
+            if (mounted) {
+              setState(() => apiCalling = false);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(msg),
+                backgroundColor: Colors.red.shade700,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ));
+            }
+            return;
+          }
+        } catch (e) {
+          // If validate endpoint fails (e.g. loyalty extension not installed), skip and proceed
+          final isNotFound = e.toString().contains('404') || e.toString().contains('DioExceptionType');
+          if (!isNotFound) {
+            // For 400 errors — code is invalid
+            String errMsg = 'Invalid referral code. Please check and try again.';
+            try {
+              final dioErr = e as dynamic;
+              final data = dioErr.response?.data as Map<String, dynamic>?;
+              if (data?['message'] != null) errMsg = data!['message'] as String;
+            } catch (_) {}
+            if (mounted) {
+              setState(() => apiCalling = false);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(errMsg),
+                backgroundColor: Colors.red.shade700,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ));
+            }
+            return;
+          }
+        }
+      }
+
       if(!isEmailLogin) {
         registerResponse = await apiService.register(
             context,
@@ -310,6 +363,22 @@ class _RegisterPageState extends State<RegisterPage> {
             .saveMap('customer', emailRegisterResponse?.customer?.toJson() ?? {});
       }
 
+
+      // Apply referral code — already validated above, should always succeed
+      if (referralCode.isNotEmpty) {
+        try {
+          final refResp = await apiService.applyReferralCode(referralCode);
+          final refData = refResp.data as Map<String, dynamic>?;
+          if (mounted && refData?['status'] == true) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text('Referral code applied! Welcome bonus points added.'),
+              backgroundColor: Colors.green.shade700,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ));
+          }
+        } catch (_) {}
+      }
 
       if (mounted) {
         if (widget.redirectPage != null) {

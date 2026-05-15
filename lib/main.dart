@@ -14,6 +14,7 @@ import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_link_helper.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/currency_util.dart';
+import 'package:waioz/utility/extensions_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
@@ -50,6 +51,7 @@ Future<void> main() async {
     // Render immediately using cached config (if present), then refresh in background.
     final PublicDetailsResponse? cachedPublicDetails =
         await SharedPreferencesUtil().getPublicDetails();
+    await ExtensionsUtil.refresh();
     _applyThemeFromPublicDetails(cachedPublicDetails);
     final bool skipLogin = await prefs.getBool('skip_login') ??
         (cachedPublicDetails?.storeDetails?.storeMetadata?.skipLogin ?? false);
@@ -109,6 +111,7 @@ Future<void> _bootstrapPublicDetails() async {
     final PublicDetailsResponse publicDetailsResponse =
         await ApiService().getPublicDetails();
     await _savePublicDetailsToPrefs(publicDetailsResponse);
+    await ExtensionsUtil.refresh();
     _applyThemeFromPublicDetails(publicDetailsResponse);
   } catch (e) {
     AppErrorReporter.instance.recordHandled(
