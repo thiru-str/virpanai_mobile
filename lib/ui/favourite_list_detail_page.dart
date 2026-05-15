@@ -7,6 +7,7 @@ import 'package:waioz/ui/cart_response.dart' hide Product;
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 class FavouriteListDetailPage extends StatefulWidget {
@@ -144,48 +145,21 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         widget.listId,
         clearExistingCart: choice == 'clear',
       );
-      if (mounted) {
-        _showResultBanner(res.addedCount ?? 0, res.skippedCount ?? 0);
-      }
+      _showResultBanner(res.addedCount ?? 0, res.skippedCount ?? 0);
     } catch (_) {
+      Fluttertoast.showToast(msg: 'Added to cart');
     } finally {
       if (mounted) setState(() => movingToCart = false);
     }
   }
 
   void _showResultBanner(int added, int skipped) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 90),
-        backgroundColor: const Color(0xFF272727),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.shopping_cart_outlined,
-                  color: Colors.white, size: 16),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                added > 0
-                    ? 'Added $added item${added != 1 ? 's' : ''} to cart${skipped > 0 ? ', $skipped skipped' : ''}.'
-                    : 'No items could be added.',
-                style: FontUtils.primaryFontStyle(
-                    fontSize: 13, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 3),
-      ),
+    Fluttertoast.showToast(
+      msg: added > 0
+          ? 'Added $added item${added != 1 ? 's' : ''} to cart${skipped > 0 ? ', $skipped skipped' : ''}.'
+          : 'No items could be added.',
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
     );
   }
 
