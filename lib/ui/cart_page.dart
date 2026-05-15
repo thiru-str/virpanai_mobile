@@ -25,7 +25,7 @@ import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
-import 'package:waioz/ui/widgets/screen_skeletons.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -257,7 +257,7 @@ class _CartPageState extends State<CartPage>
       body: Stack(
         children: [
           apiLoading
-              ? const CartPageSkeleton()
+              ? const AppLoader()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
                       backgroundColor: Colors.white,
@@ -751,14 +751,7 @@ class _CartPageState extends State<CartPage>
           ),
         ],
       ),
-      bottomNavigationBar: apiLoading
-          ? const SafeArea(
-              child: SizedBox(
-                height: 80,
-                child: CartFooterSkeleton(),
-              ),
-            )
-          : null,
+      bottomNavigationBar: null,
     );
   }
 

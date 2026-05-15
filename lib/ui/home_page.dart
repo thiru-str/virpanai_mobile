@@ -38,7 +38,7 @@ import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
-import 'package:waioz/ui/widgets/screen_skeletons.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -143,30 +143,25 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    late final PreferredSizeWidget homeAppBar;
-    if (apiLoading) {
-      homeAppBar = HomeHeaderSkeleton(
-        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
-      );
-    } else {
-      homeAppBar = CombinedHeaderAppBar(
-        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
-        title: headerTitle,
-        cartCount: cartItems ?? 0,
-        onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-        onSearchClick: () => PageRouteUtils.pushWithFade(
-          context,
-          const ProductPage(),
-        ),
-      );
-    }
+    final PreferredSizeWidget? homeAppBar = apiLoading
+        ? null
+        : CombinedHeaderAppBar(
+            headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+            title: headerTitle,
+            cartCount: cartItems ?? 0,
+            onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+            onSearchClick: () => PageRouteUtils.pushWithFade(
+              context,
+              const ProductPage(),
+            ),
+          );
 
     return Scaffold(
         appBar: homeAppBar,
         backgroundColor: Colors.white,
         body: SafeArea(
           child: apiLoading
-              ? const HomePageSkeleton()
+              ? const AppLoader()
               : RefreshIndicator(
                   onRefresh: () async {
                     _offset = 0;
