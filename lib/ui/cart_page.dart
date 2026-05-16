@@ -256,9 +256,8 @@ class _CartPageState extends State<CartPage>
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          apiLoading
-              ? const AppLoader()
-              : cartResponse?.cart?.items?.isNotEmpty ?? false
+          if (apiLoading) const AppLoader(),
+          if (!apiLoading) cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
                       backgroundColor: Colors.white,
                       body: SingleChildScrollView(

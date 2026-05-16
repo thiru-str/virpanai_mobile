@@ -18,6 +18,7 @@ import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/add_on_product_card.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
@@ -210,7 +211,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
           backgroundColor: Colors.white,
           body: apiLoading
-              ? const ProductDetailSkeleton()
+              ? const AppLoader()
               : SafeArea(
                   child: Stack(children: [
                     Column(

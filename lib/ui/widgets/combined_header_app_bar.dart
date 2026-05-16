@@ -88,7 +88,7 @@ class CombinedHeaderAppBar extends StatelessWidget
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
+          Image.asset(AppAssets.ic_logo_text, height: 36, fit: BoxFit.contain),
           _buildIcon(Icons.shopping_cart,
               color: AppColors.primary,
               onPressed: onCartClick,
@@ -110,7 +110,7 @@ class CombinedHeaderAppBar extends StatelessWidget
     return _baseAppBar(
       child: Column(
         children: [
-          _buildIcon(null, assetPath: AppAssets.app_icon, size: 100),
+          Image.asset(AppAssets.ic_logo_text, height: 48, fit: BoxFit.contain),
           const SizedBox(height: 8),
           _buildSearchBar(),
         ],
@@ -126,13 +126,10 @@ class CombinedHeaderAppBar extends StatelessWidget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                AppStrings.home,
-                style: FontUtils.secondaryFontStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: AppColors.textColor,
-                ),
+              Image.asset(
+                AppAssets.ic_logo_text,
+                height: 36,
+                fit: BoxFit.contain,
               ),
               _buildIcon(Icons.shopping_cart,
                   color: AppColors.primary,
@@ -155,7 +152,7 @@ class CombinedHeaderAppBar extends StatelessWidget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
+              Image.asset(AppAssets.ic_logo_text, height: 36, fit: BoxFit.contain),
               _buildIcon(Icons.shopping_cart,
                   color: AppColors.primary,
                   onPressed: onCartClick,
@@ -284,8 +281,7 @@ class CombinedHeaderAppBar extends StatelessWidget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildIcon(null,
-                  assetPath: AppAssets.app_icon, size: 50,),
+              Image.asset(AppAssets.ic_logo_text, height: 36, fit: BoxFit.contain),
               _buildIcon(Icons.shopping_cart,
                   color: Colors.white,
                   onPressed: onCartClick,

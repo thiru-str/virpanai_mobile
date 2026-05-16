@@ -32,4 +32,6 @@ class AppAssets {
   static const String ic_payment_cash = 'images/ic_payment_cash.svg';
   static const String ic_bank_transfer = 'images/ic_bank_transfer.svg';
   static const String ic_online = 'images/ic_online.svg';
+  static const String ic_logo_text = 'images/ic_logo_text.png';
+  static const String app_loader = 'images/app_loader.gif';
 }

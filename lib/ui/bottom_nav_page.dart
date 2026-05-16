@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
@@ -172,7 +173,7 @@ class _BottomNavPageState extends State<BottomNavPage>
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
             child: _isLoading
-                ? const ShellSkeleton()
+                ? const AppLoader()
                 : KeyedSubtree(
                     key: ValueKey(_currentIndex),
                     child: _getPage(),

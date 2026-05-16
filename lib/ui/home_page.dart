@@ -143,26 +143,26 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final PreferredSizeWidget? homeAppBar = apiLoading
-        ? null
-        : CombinedHeaderAppBar(
-            headerType: appHeader.isEmpty ? 'header-4' : appHeader,
-            title: headerTitle,
-            cartCount: cartItems ?? 0,
-            onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-            onSearchClick: () => PageRouteUtils.pushWithFade(
-              context,
-              const ProductPage(),
-            ),
-          );
+    final PreferredSizeWidget homeAppBar = CombinedHeaderAppBar(
+      headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+      title: headerTitle,
+      cartCount: cartItems ?? 0,
+      onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+      onSearchClick: () => PageRouteUtils.pushWithFade(
+        context,
+        const ProductPage(),
+      ),
+    );
 
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
         appBar: homeAppBar,
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: apiLoading
-              ? const AppLoader()
-              : RefreshIndicator(
+          child: Stack(
+            children: [
+              RefreshIndicator(
                   onRefresh: () async {
                     _offset = 0;
                     _hasMore = true;
@@ -218,7 +218,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-        ));
+            ],
+          ),
+        )),
+        if (apiLoading) const Positioned.fill(child: AppLoader()),
+      ],
+    );
   }
 
   ListView buildComponentList() {

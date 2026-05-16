@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
@@ -189,10 +190,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // Profile Items Section
           Expanded(
             child: isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ))
+                ? const AppLoader()
                 : ListView(
                     children: [
                       _buildProfileItem(AppStrings.address, () {

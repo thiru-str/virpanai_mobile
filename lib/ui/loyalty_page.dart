@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../api/api_service.dart';
@@ -192,7 +193,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
             style: FontUtils.primaryFontStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const AppLoader()
           : _account == null
               ? const Center(child: Text('Unable to load loyalty data'))
               : RefreshIndicator(

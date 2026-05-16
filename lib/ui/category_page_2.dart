@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 
 import '../model/product_categories_response.dart';
@@ -66,9 +67,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
       ),
       backgroundColor: Colors.white,
       body: apiLoading
-          ? Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      )
+          ? const AppLoader()
           : SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
