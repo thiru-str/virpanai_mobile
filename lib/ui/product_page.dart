@@ -15,9 +15,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
-import '../model/wishlist_reponse.dart';
 import '../utility/app_assets.dart';
-import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'widgets/common_header_app_bar.dart';
 
@@ -58,15 +56,11 @@ class _ProductPageState extends State<ProductPage> {
   bool isFilterApplied = false;
   ScrollController scrollController = ScrollController();
   String? productViewType = ProductCardType.productView1.name;
-  bool _isLoggedIn = false;
-  FavouriteListConfig? _favConfig;
-  Set<String> _savedProductIds = {};
 
   @override
   void initState() {
     super.initState();
     _loadProductViewType();
-    _loadFavouriteState();
     getProductsApi(
         categoryIds: widget.categoryId,
         collectionIds: widget.collectionId,
@@ -90,28 +84,9 @@ class _ProductPageState extends State<ProductPage> {
   Future<void> _loadProductViewType() async {
     final type = await SharedPreferencesUtil().getString('product_view');
     if (!mounted) return;
-    setState(() => productViewType = type);
-  }
-
-  Future<void> _loadFavouriteState() async {
-    final loggedIn = await AppUtils.isLoggedIn();
-    if (!mounted) return;
-    setState(() => _isLoggedIn = loggedIn);
-    if (!loggedIn) return;
-    final api = ApiService();
-    try {
-      final results = await Future.wait([
-        api.getFavouriteListConfig(context),
-        api.getSavedItems(context),
-      ]);
-      final config = results[0] as FavouriteListConfig;
-      final saved = results[1] as SavedItemsResponse;
-      if (!mounted) return;
-      setState(() {
-        _favConfig = config;
-        _savedProductIds = saved.items.map((i) => i.productId).toSet();
-      });
-    } catch (_) {}
+    setState(() {
+      productViewType = type;
+    });
   }
 
   void loadMoreProducts() {
@@ -371,10 +346,7 @@ class _ProductPageState extends State<ProductPage> {
                           child: ProductView(
                             product: product,
                             type: productViewType,
-                            isLoggedIn: _isLoggedIn,
-                            favConfig: _favConfig,
-                            isFavorite:
-                                _savedProductIds.contains(product.id ?? ''),
+
                             onTapCard: () {
                               PageRouteUtils.pushWithSlide(
                                 context,

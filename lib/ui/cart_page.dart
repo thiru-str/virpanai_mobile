@@ -484,6 +484,8 @@ class _CartPageState extends State<CartPage>
                                 loyaltyApply: _loyaltyApplyMetadata(),
                                 cartTotal: cartResponse?.cart?.total ?? 0,
                                 walletAmount: _walletAmountFromMetadata(),
+                                walletApplied: _walletAmountFromMetadata() > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -1041,6 +1043,11 @@ class _CartPageState extends State<CartPage>
   }
 
   Future<void> updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — session created at place-order time, not here.
+    if (paymentProviderId == 'pp_icici_icici') {
+      setState(() => pp_id = 'pp_icici_icici');
+      return;
+    }
     try {
       setState(() {
         cartLoading = true;
@@ -1079,6 +1086,17 @@ class _CartPageState extends State<CartPage>
           providerId: pp_id,
           walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
+            // When wallet + loyalty already cover the full order, the gateway
+            // payable is 0. Real gateways reject 0-amount sessions, so the
+            // customer's selection would silently flip back to COD. Tell them
+            // why instead of letting the UI pretend the change took.
+            if (_displayTotalAmount() <= 0 &&
+                paymentProvider.id != 'pp_system_default') {
+              AppUtils.showToast(
+                'Your order is fully covered. Free orders can be placed only via Cash on Delivery.',
+              );
+              return;
+            }
             if (pp_id != paymentProvider.id) {
               updatePaymentMethod(paymentProvider.id!);
             }
@@ -1105,11 +1123,12 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
-        makeRazorPayCall(orderId!);
-        break;
-      case 'pp_icici_icici':
         makeRazorPayCall(orderId!);
         break;
       case 'pp_stripe_stripe':
@@ -1124,9 +1143,6 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
-      case 'pp_icici_icici':
-        _makeIciciPayment();
-        break;
     }
   }
 
@@ -1134,6 +1150,7 @@ class _CartPageState extends State<CartPage>
     setState(() => cartLoading = true);
     try {
       final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
       if (!mounted) return;
       setState(() => cartLoading = false);
 
