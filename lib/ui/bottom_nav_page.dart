@@ -183,11 +183,19 @@ class _BottomNavPageState extends State<BottomNavPage>
             top: false,
             child: SlideTransition(
             position: _slideAnimation,
-            child: BottomNavigationBar(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200, width: 1),
+                ),
+              ),
+              child: BottomNavigationBar(
               currentIndex: _currentIndex,
+              elevation: 0,
               onTap: (index) {
                 setState(() {
-                  _currentIndex = index; // Update selected tab
+                  _currentIndex = index;
                 });
               },
               items: [
@@ -250,7 +258,7 @@ class _BottomNavPageState extends State<BottomNavPage>
               selectedLabelStyle: FontUtils.primaryFontStyle(),
               unselectedLabelStyle: FontUtils.primaryFontStyle(),
             ),
-          )),
+          ))),
         ));
   }
 

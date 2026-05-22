@@ -116,7 +116,7 @@ class _FulfillmentMethodWidgetState extends State<FulfillmentMethodWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const SizedBox(height: 4);
+    // Show nothing only on first load (no restored selection yet)
     if (_config == null) return const SizedBox.shrink();
     final cfg = _config!;
 
@@ -512,7 +512,9 @@ class _DeliverySheetState extends State<_DeliverySheet> {
                         const SizedBox(height: 8),
                         TextField(
                           controller: _instrCtrl,
-                          maxLines: 2,
+                          maxLines: 3,
+                          textInputAction: TextInputAction.done,
+                          onEditingComplete: () => FocusScope.of(context).unfocus(),
                           style: FontUtils.primaryFontStyle(fontSize: 13),
                           decoration: InputDecoration(
                             hintText: 'e.g. Leave at the gate...',

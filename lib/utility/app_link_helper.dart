@@ -61,17 +61,13 @@ class AppLinkHelper {
       ) async {
     try {
 
-      final Uri link = Uri.parse('${AppConfig.baseUrl}details?id=${productId}');
+      final Uri link = Uri.parse('${AppConfig.baseUrl}products/$productId');
 
-      final String message = '''
-Check out this product on ${AppConfig.appName}! 🛍️
-
-I think you'll love this. Here's the link: $link
-''';
+      final String message = 'Check out this product on ${AppConfig.appName}! 🛍️\n\n$link';
 
       await Share.share(
         message,
-        subject: 'Look what I found on GoWelMart!',
+        subject: 'Look what I found on ${AppConfig.appName}!',
       );
     } catch (e, stack) {
       debugPrint('❌ Failed to share booking invite: $e');
