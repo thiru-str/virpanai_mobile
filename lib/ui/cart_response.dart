@@ -971,7 +971,7 @@ class ShippingMethod {
   });
 
   factory ShippingMethod.fromJson(Map<String, dynamic> json) => ShippingMethod(
-    amount: json["amount"],
+    amount: (json["amount"] as num?)?.toInt(),
     isTaxInclusive: json["is_tax_inclusive"],
     shippingOptionId: json["shipping_option_id"],
     id: json["id"],
