@@ -748,15 +748,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
       final ApiService apiService = ApiService();
       var response = await apiService.getShippingInfo(context);
       if (mounted) {
+        final options = response.shippingOptions ?? [];
+        final first = options.isNotEmpty ? options.first : null;
         setState(() {
           apiLoading = false;
           shippingResponse = response;
+          if (first != null) {
+            shippingOption = first;
+            addShippingOption = true;
+          } else {
+            addShippingOption = false;
+          }
         });
+        if (first != null) updateShippingMethod();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           apiLoading = false;
+          addShippingOption = false;
         });
       }
       print(e);

@@ -179,7 +179,9 @@ class _BottomNavPageState extends State<BottomNavPage>
                     child: _getPage(),
                   ),
           ),
-          bottomNavigationBar: SlideTransition(
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: SlideTransition(
             position: _slideAnimation,
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
@@ -248,7 +250,7 @@ class _BottomNavPageState extends State<BottomNavPage>
               selectedLabelStyle: FontUtils.primaryFontStyle(),
               unselectedLabelStyle: FontUtils.primaryFontStyle(),
             ),
-          ),
+          )),
         ));
   }
 

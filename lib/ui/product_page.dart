@@ -72,10 +72,13 @@ class _ProductPageState extends State<ProductPage> {
         collectionIds: widget.collectionId,
         tagIds: widget.tagId);
     scrollController.addListener(() {
-      if (scrollController.position.pixels ==
-              scrollController.position.maxScrollExtent &&
+      if (!scrollController.hasClients) return;
+
+      if (scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 200 &&
           hasMore &&
-          !isPaginating) {
+          !isPaginating &&
+          !apiLoading) {
         loadMoreProducts();
       }
     });
@@ -334,62 +337,56 @@ class _ProductPageState extends State<ProductPage> {
 
               // Main Content Area
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  child: Builder(
-                    builder: (_) {
-                      if (apiLoading && currentPage == 0) {
-                        return const ProductGridSkeleton();
-                      }
+                child: Builder(
+                  builder: (_) {
+                    if (apiLoading && currentPage == 0) {
+                      return const ProductGridSkeleton();
+                    }
 
-                      if (filteredProducts.isEmpty) {
-                        return NoOrdersWidget(
-                          message: AppStrings.no_product,
-                          buttonText: AppStrings.explore_categories,
-                          iconPath: AppAssets.ic_cart_empty,
-                          onButtonTap: () {},
-                          showExplore: false,
-                        );
-                      }
-
-                      return MasonryGridView.count(
-                        key: ValueKey(
-                            '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
-                        controller: scrollController,
-                        padding: EdgeInsets.zero,
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        itemCount:
-                            filteredProducts.length + (isPaginating ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == filteredProducts.length &&
-                              isPaginating) {
-                            return const ProductCardSkeleton();
-                          }
-                          final product = filteredProducts[index];
-                          return AppReveal(
-                            index: index % 10,
-                            child: ProductView(
-                              product: product,
-                              type: productViewType,
-                              isLoggedIn: _isLoggedIn,
-                              favConfig: _favConfig,
-                              isFavorite: _savedProductIds.contains(product.id ?? ''),
-                              onTapCard: () {
-                                PageRouteUtils.pushWithSlide(
-                                  context,
-                                  ProductDetailPage(productId: product.id!),
-                                );
-                              },
-                            ),
-                          );
-                        },
+                    if (filteredProducts.isEmpty) {
+                      return NoOrdersWidget(
+                        message: AppStrings.no_product,
+                        buttonText: AppStrings.explore_categories,
+                        iconPath: AppAssets.ic_cart_empty,
+                        onButtonTap: () {},
+                        showExplore: false,
                       );
-                    },
-                  ),
+                    }
+
+                    return MasonryGridView.count(
+                      key: ValueKey(
+                          '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      itemCount:
+                          filteredProducts.length + (isPaginating ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == filteredProducts.length && isPaginating) {
+                          return const ProductCardSkeleton();
+                        }
+                        final product = filteredProducts[index];
+                        return AppReveal(
+                          index: index % 10,
+                          child: ProductView(
+                            product: product,
+                            type: productViewType,
+                            isLoggedIn: _isLoggedIn,
+                            favConfig: _favConfig,
+                            isFavorite: _savedProductIds.contains(product.id ?? ''),
+                            onTapCard: () {
+                              PageRouteUtils.pushWithSlide(
+                                context,
+                                ProductDetailPage(productId: product.id!),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -455,6 +452,9 @@ class _ProductPageState extends State<ProductPage> {
     } catch (e) {
       // Only update state if this is the most recent request
       if (searchToken == null || searchToken == _searchToken) {
+        if (currentPage > 0) {
+          currentPage--;
+        }
         setState(() {
           apiLoading = false;
           isPaginating = false;
