@@ -408,6 +408,7 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         ),
         itemCount: products.length,
         itemBuilder: (_, i) => _WishlistGridCard(
+          key: ValueKey(products[i].id ?? i.toString()),
           product: products[i],
           config: widget.config,
           item: itemMap[products[i].id ?? ''],
@@ -428,6 +429,7 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         itemCount: products.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (_, i) => _WishlistListCard(
+          key: ValueKey(products[i].id ?? i.toString()),
           product: products[i],
           config: widget.config,
           item: itemMap[products[i].id ?? ''],
@@ -451,6 +453,7 @@ class _WishlistGridCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _WishlistGridCard({
+    super.key,
     required this.product,
     required this.config,
     required this.item,
@@ -640,6 +643,7 @@ class _WishlistListCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _WishlistListCard({
+    super.key,
     required this.product,
     required this.config,
     required this.item,

@@ -1172,13 +1172,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 20,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-          ),
+        return GestureDetector(
+          onTap: () => FocusScope.of(sheetContext).unfocus(),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 20,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+            ),
           child: FutureBuilder<WishlistResponse>(
             future: ApiService().getFavouriteLists(context),
             builder: (context, snapshot) {
@@ -1200,6 +1204,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Expanded(
                         child: TextField(
                           controller: controller,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => FocusScope.of(context).unfocus(),
                           decoration: const InputDecoration(
                             hintText: 'New list name',
                           ),
@@ -1258,7 +1264,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               );
             },
           ),
-        );
+        )));
       },
     );
   }

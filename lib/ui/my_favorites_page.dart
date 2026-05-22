@@ -6,6 +6,7 @@ import 'package:waioz/ui/cart_response.dart' hide Product, Customer;
 import 'package:waioz/ui/favourite_list_detail_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 Future<Customer?> getCustomerResponse() async {
@@ -88,6 +89,13 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
       ),
     );
     if (name == null || name.isEmpty) return;
+    final isDuplicate = groups.any(
+      (g) => (g.wishlistGroupName ?? '').trim().toLowerCase() == name.toLowerCase(),
+    );
+    if (isDuplicate) {
+      if (mounted) AppUtils.showToast('A list named "$name" already exists');
+      return;
+    }
     try {
       final res = await _api.createFavouriteList(context, name);
       if (res.success == true && res.createdWishlistGroup != null && mounted) {
@@ -770,7 +778,9 @@ class _CreateListSheetState extends State<_CreateListSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Container(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
       padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottom),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -872,6 +882,6 @@ class _CreateListSheetState extends State<_CreateListSheet> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
