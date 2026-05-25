@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/services.dart';
@@ -137,10 +138,20 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
           ));
         }
       }
-    } catch (_) {
+    } catch (e) {
+      // Extract the API's actual error message (e.g. "Insufficient points. You
+      // have 500 points" or "Daily redemption limit reached..."). Falls back
+      // to a generic message only when the API didn't send one.
+      String message = 'Failed to redeem points';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] is String) {
+          message = data['message'] as String;
+        }
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text('Failed to redeem points'),
+          content: Text(message),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

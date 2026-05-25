@@ -641,7 +641,10 @@ class _ProductPageState extends State<ProductPage> {
               ),
               const SizedBox(height: 10),
 
-              // Main Content Area
+              // Main Content Area — MasonryGridView is ALWAYS mounted so its
+              // scroll position is preserved across state changes (filter, search,
+              // refresh). Skeleton + empty states overlay on top instead of
+              // swapping widget types.
               Expanded(
                 child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -649,23 +652,10 @@ class _ProductPageState extends State<ProductPage> {
                   duration: const Duration(milliseconds: 280),
                   switchInCurve: Curves.easeOutCubic,
                   switchOutCurve: Curves.easeInCubic,
-                  child: Builder(
-                    builder: (_) {
-                      if (apiLoading && currentPage == 0) {
-                        return const ProductGridSkeleton();
-                      }
-
-                    if (filteredProducts.isEmpty) {
-                      return NoOrdersWidget(
-                        message: AppStrings.no_product,
-                        buttonText: AppStrings.explore_categories,
-                        iconPath: AppAssets.ic_cart_empty,
-                        onButtonTap: () {},
-                        showExplore: false,
-                      );
-                    }
-
-                    return MasonryGridView.count(
+                  child: Stack(
+                      fit: StackFit.expand,
+                  children: [
+                     MasonryGridView.count(
                       key: ValueKey(
                           '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
                       controller: scrollController,
@@ -697,8 +687,30 @@ class _ProductPageState extends State<ProductPage> {
                           ),
                         );
                       },
-                    );
-                  },
+                    ),
+                    // Skeleton overlay during initial load
+                    if (apiLoading && currentPage == 0)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white,
+                          child: const ProductGridSkeleton(),
+                        ),
+                      ),
+                    // Empty-state overlay (only after load completes)
+                    if (!apiLoading && filteredProducts.isEmpty)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white,
+                          child: NoOrdersWidget(
+                            message: AppStrings.no_product,
+                            buttonText: AppStrings.explore_categories,
+                            iconPath: AppAssets.ic_cart_empty,
+                            onButtonTap: () {},
+                            showExplore: false,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               ),
