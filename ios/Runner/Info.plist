@@ -28,10 +28,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
-			<string>id.waioz.cartel</string>
+			<string>com.waioz.build_merchant</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>comwaiozcartel</string>
+				<string>comwaiozbuildmerchant</string>
 			</array>
 		</dict>
 	</array>
