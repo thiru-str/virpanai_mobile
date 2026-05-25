@@ -205,11 +205,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                         0) as num
                                     : 0;
                                 return LoyaltyEarnPreview(
-                                  orderTotal:
-                                      (cartResponse!.cart!.itemSubtotal ??
-                                              cartResponse!.cart!.total ??
-                                              0) -
-                                          loyaltyOff,
+                                  cartId: cartResponse!.cart!.id,
+                                  orderTotal: 0,
                                 );
                               }),
 

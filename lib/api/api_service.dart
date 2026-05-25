@@ -1305,10 +1305,17 @@ class ApiService {
         queryParameters: {'limit': limit, 'offset': offset});
   }
 
-  Future<Response> getLoyaltyPreview(num orderTotal, {String? orderId}) async {
+  Future<Response> getLoyaltyPreview(
+    num orderTotal, {
+    String? orderId,
+    String? cartId,
+  }) async {
     await setPublishableKey();
     final params = <String, dynamic>{};
     if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    // Prefer cart_id when available — backend computes earnable amount server-side
+    // (excludes platform_fee + applies earn restriction).
+    if (cartId != null && cartId.isNotEmpty) params['cart_id'] = cartId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
