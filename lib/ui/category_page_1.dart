@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/ui/product_page.dart';
@@ -43,9 +44,7 @@ class _CategoryPage1State extends State<CategoryPage1> {
       ),
       backgroundColor: Colors.white,
       body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? const AppLoader()
           : Row(
               children: [
                 // LEFT MAIN CATEGORY LIST

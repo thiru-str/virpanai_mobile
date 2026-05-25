@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/ui/filter_page.dart';
 import 'package:waioz/ui/product_detail_page.dart';
@@ -15,7 +16,9 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../model/wishlist_reponse.dart';
 import '../utility/app_assets.dart';
+import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'widgets/common_header_app_bar.dart';
 
@@ -56,11 +59,26 @@ class _ProductPageState extends State<ProductPage> {
   bool isFilterApplied = false;
   ScrollController scrollController = ScrollController();
   String? productViewType = ProductCardType.productView1.name;
+  bool _isLoggedIn = false;
+  FavouriteListConfig? _favConfig;
+  Set<String> _savedProductIds = {};
+
+  // Inline category chip rows — main + sub
+  List<ProductCategory> _mainCategories = [];
+  List<ProductCategory> _allSubs = []; // flat list of all sub-categories
+  String? _selectedMainId; // null = "All main"
+  String? _selectedSubId; // null = "All sub"
+  final GlobalKey _selectedMainKey = GlobalKey();
+  final GlobalKey _selectedSubKey = GlobalKey();
+  final ScrollController _mainRowCtrl = ScrollController();
+  final ScrollController _subRowCtrl = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadProductViewType();
+    _loadFavouriteState();
+    _loadCategories();
     getProductsApi(
         categoryIds: widget.categoryId,
         collectionIds: widget.collectionId,
@@ -84,9 +102,28 @@ class _ProductPageState extends State<ProductPage> {
   Future<void> _loadProductViewType() async {
     final type = await SharedPreferencesUtil().getString('product_view');
     if (!mounted) return;
-    setState(() {
-      productViewType = type;
-    });
+    setState(() => productViewType = type);
+  }
+
+  Future<void> _loadFavouriteState() async {
+    final loggedIn = await AppUtils.isLoggedIn();
+    if (!mounted) return;
+    setState(() => _isLoggedIn = loggedIn);
+    if (!loggedIn) return;
+    final api = ApiService();
+    try {
+      final results = await Future.wait([
+        api.getFavouriteListConfig(context),
+        api.getSavedItems(context),
+      ]);
+      final config = results[0] as FavouriteListConfig;
+      final saved = results[1] as SavedItemsResponse;
+      if (!mounted) return;
+      setState(() {
+        _favConfig = config;
+        _savedProductIds = saved.items.map((i) => i.productId).toSet();
+      });
+    } catch (_) {}
   }
 
   void loadMoreProducts() {
@@ -150,6 +187,8 @@ class _ProductPageState extends State<ProductPage> {
     _debounce?.cancel();
     scrollController.dispose();
     searchController.dispose();
+    _mainRowCtrl.dispose();
+    _subRowCtrl.dispose();
     super.dispose();
   }
 
@@ -168,6 +207,291 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
+  Future<void> _loadCategories() async {
+    try {
+      final res = await ApiService().productCategories(context);
+      if (!mounted) return;
+      final all = res.productCategories ?? [];
+      // Mains = top-level only
+      final mains = all.where((c) => (c.parentCategoryId == null || c.parentCategoryId!.isEmpty)).toList();
+      // Subs come either as flat entries OR nested under categoryChildren
+      final subs = <ProductCategory>[];
+      for (final c in all) {
+        if (c.parentCategoryId != null && c.parentCategoryId!.isNotEmpty) {
+          subs.add(c);
+        }
+        for (final child in (c.categoryChildren ?? [])) {
+          // Ensure parent linkage in case API omits it on the child
+          if (child.parentCategoryId == null || child.parentCategoryId!.isEmpty) {
+            child.parentCategoryId = c.id;
+          }
+          if (!subs.any((s) => s.id == child.id)) subs.add(child);
+        }
+      }
+      // Pre-select from incoming widget.categoryId OR existing filter selection
+      String? preMain;
+      String? preSub;
+      final seedIds = <String>[
+        if (selectedCategoriesList.isNotEmpty) ...selectedCategoriesList,
+        if (widget.categoryId.isNotEmpty) widget.categoryId,
+      ];
+      // Combined lookup pool: mains + subs (so we can resolve any id)
+      final pool = [...mains, ...subs];
+      for (final id in seedIds) {
+        final match = pool.firstWhere((c) => c.id == id,
+            orElse: () => ProductCategory());
+        if (match.id == null) continue;
+        if (match.parentCategoryId == null || match.parentCategoryId!.isEmpty) {
+          preMain = match.id;
+        } else {
+          preSub = match.id;
+          preMain = match.parentCategoryId;
+        }
+      }
+      setState(() {
+        _mainCategories = mains;
+        _allSubs = subs;
+        _selectedMainId = preMain;
+        _selectedSubId = preSub;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _ensureSelectedVisible());
+    } catch (_) {}
+  }
+
+  // Average chip widths — used only as a coarse jump-to-near-position estimate
+  // before refining via Scrollable.ensureVisible. Horizontal ListView.separated
+  // is lazy; offscreen items are not built, so a precise scroll requires two
+  // stages: (1) jump near the target so the item is built, (2) ensureVisible
+  // to fine-tune using the actual rendered widget.
+  static const double _mainChipAvgWidth = 110.0;
+  static const double _subChipAvgWidth = 90.0;
+
+  void _ensureSelectedVisible({bool main = true, bool sub = true}) {
+    if (!mounted) return;
+    if (main) _scrollRowToSelected(_mainRowCtrl, _selectedMainKey,
+        _selectedMainId, _mainCategories, _mainChipAvgWidth);
+    if (sub) _scrollRowToSelected(_subRowCtrl, _selectedSubKey,
+        _selectedSubId, _visibleSubs, _subChipAvgWidth);
+  }
+
+  void _scrollRowToSelected(
+    ScrollController ctrl,
+    GlobalKey key,
+    String? selectedId,
+    List<ProductCategory> items,
+    double avgChipWidth,
+  ) {
+    if (selectedId == null || !ctrl.hasClients) return;
+    final idx = items.indexWhere((c) => c.id == selectedId);
+    if (idx < 0) return;
+
+    // Stage 1 — jump near the target so the lazy ListView builds the chip.
+    final screenW = MediaQuery.of(context).size.width;
+    final estimated = (idx + 1) * avgChipWidth - screenW / 2;
+    ctrl.jumpTo(estimated.clamp(0.0, ctrl.position.maxScrollExtent));
+
+    // Stage 2 — wait for the chip to render, then center it precisely.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = key.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(ctx,
+          alignment: 0.5, duration: Duration.zero);
+    });
+  }
+
+  List<ProductCategory> get _visibleSubs {
+    if (_selectedMainId == null) return _allSubs;
+    return _allSubs.where((c) => c.parentCategoryId == _selectedMainId).toList();
+  }
+
+  void _onMainTap(String? id) {
+    setState(() {
+      _selectedMainId = id;
+      _selectedSubId = null; // reset sub when main changes
+    });
+    _refetchForChips();
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _ensureSelectedVisible(main: true, sub: false));
+  }
+
+  void _onSubTap(String? id) {
+    setState(() => _selectedSubId = id);
+    _refetchForChips();
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _ensureSelectedVisible(main: false, sub: true));
+  }
+
+  void _refetchForChips() {
+    final ids = <String>[];
+    if (_selectedSubId != null) {
+      ids.add(_selectedSubId!);
+    } else if (_selectedMainId != null) {
+      ids.add(_selectedMainId!);
+    }
+    setState(() {
+      selectedCategoriesList = ids;
+      currentPage = 0;
+      hasMore = true;
+      filteredProducts.clear();
+      apiLoading = true;
+      isFilterApplied = ids.isNotEmpty || selectedCollectionsList.isNotEmpty || selectedTagsList.isNotEmpty;
+    });
+    getProductsApi(
+      categoryIds: ids.isNotEmpty ? ids.join(',') : null,
+      collectionIds: selectedCollectionsList.isNotEmpty ? selectedCollectionsList.join(',') : null,
+      tagIds: selectedTagsList.isNotEmpty ? selectedTagsList.join(',') : null,
+    );
+  }
+
+  Widget _mainChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        alignment: Alignment.center,
+        color: selected ? const Color(0xFFD5E5C5) : Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Text(
+          label,
+          style: FontUtils.primaryFontStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _subChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: IntrinsicWidth(
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textColor,
+                  ),
+                ),
+              ),
+              Container(
+                height: 3,
+                color: selected ? AppColors.primary : Colors.transparent,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChipRows() {
+    if (_mainCategories.isEmpty) return const SizedBox.shrink();
+    final subs = _visibleSubs;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Main row — light grey background, soft green pill on selected
+          Container(
+            color: const Color(0xFFF5F5F7),
+            height: 38,
+            child: ListView.separated(
+              controller: _mainRowCtrl,
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.zero,
+              itemCount: _mainCategories.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(width: 0),
+              itemBuilder: (_, i) {
+                if (i == 0) {
+                  return KeyedSubtree(
+                    key: _selectedMainId == null ? _selectedMainKey : null,
+                    child: _mainChip(
+                      label: 'All',
+                      selected: _selectedMainId == null,
+                      onTap: () => _onMainTap(null),
+                    ),
+                  );
+                }
+                final c = _mainCategories[i - 1];
+                return KeyedSubtree(
+                  key: _selectedMainId == c.id ? _selectedMainKey : null,
+                  child: _mainChip(
+                    label: c.name ?? '',
+                    selected: _selectedMainId == c.id,
+                    onTap: () => _onMainTap(c.id),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Sub row — white bg, only underline indicates selection
+          if (subs.isNotEmpty) ...[
+            Container(
+              height: 1,
+              color: const Color(0xFFEEEFF1),
+            ),
+            Container(
+              color: Colors.white,
+              height: 38,
+              child: ListView.separated(
+                controller: _subRowCtrl,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(left: 4),
+                itemCount: subs.length + 1,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (_, i) {
+                  if (i == 0) {
+                    return KeyedSubtree(
+                      key: _selectedSubId == null ? _selectedSubKey : null,
+                      child: _subChip(
+                        label: 'All',
+                        selected: _selectedSubId == null,
+                        onTap: () => _onSubTap(null),
+                      ),
+                    );
+                  }
+                  final c = subs[i - 1];
+                  return KeyedSubtree(
+                    key: _selectedSubId == c.id ? _selectedSubKey : null,
+                    child: _subChip(
+                      label: c.name ?? '',
+                      selected: _selectedSubId == c.id,
+                      onTap: () => _onSubTap(c.id),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Container(height: 1, color: const Color(0xFFEEEFF1)),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -181,12 +505,14 @@ class _ProductPageState extends State<ProductPage> {
           },
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Search bar + Filter icon
-              Row(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
                 children: [
                   Expanded(
                     child: Container(
@@ -295,11 +621,16 @@ class _ProductPageState extends State<ProductPage> {
                   ),
                 ],
               ),
+              ),
+
+              // Inline category chips — full-width, sits outside horizontal padding
+              _buildCategoryChipRows(),
+
               const SizedBox(height: 16),
 
               // Title
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Text(
                   AppStrings.all_product,
                   style: FontUtils.primaryFontStyle(
@@ -312,11 +643,17 @@ class _ProductPageState extends State<ProductPage> {
 
               // Main Content Area
               Expanded(
-                child: Builder(
-                  builder: (_) {
-                    if (apiLoading && currentPage == 0) {
-                      return const ProductGridSkeleton();
-                    }
+                child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 280),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  child: Builder(
+                    builder: (_) {
+                      if (apiLoading && currentPage == 0) {
+                        return const ProductGridSkeleton();
+                      }
 
                     if (filteredProducts.isEmpty) {
                       return NoOrdersWidget(
@@ -329,6 +666,8 @@ class _ProductPageState extends State<ProductPage> {
                     }
 
                     return MasonryGridView.count(
+                      key: ValueKey(
+                          '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
                       controller: scrollController,
                       padding: EdgeInsets.zero,
                       crossAxisCount: 2,
@@ -346,7 +685,9 @@ class _ProductPageState extends State<ProductPage> {
                           child: ProductView(
                             product: product,
                             type: productViewType,
-
+                            isLoggedIn: _isLoggedIn,
+                            favConfig: _favConfig,
+                            isFavorite: _savedProductIds.contains(product.id ?? ''),
                             onTapCard: () {
                               PageRouteUtils.pushWithSlide(
                                 context,
@@ -359,6 +700,8 @@ class _ProductPageState extends State<ProductPage> {
                     );
                   },
                 ),
+              ),
+              ),
               ),
             ],
           ),

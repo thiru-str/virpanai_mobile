@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
@@ -172,7 +173,7 @@ class _BottomNavPageState extends State<BottomNavPage>
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
             child: _isLoading
-                ? const ShellSkeleton()
+                ? const AppLoader()
                 : KeyedSubtree(
                     key: ValueKey(_currentIndex),
                     child: _getPage(),
@@ -182,11 +183,19 @@ class _BottomNavPageState extends State<BottomNavPage>
             top: false,
             child: SlideTransition(
             position: _slideAnimation,
-            child: BottomNavigationBar(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200, width: 1),
+                ),
+              ),
+              child: BottomNavigationBar(
               currentIndex: _currentIndex,
+              elevation: 0,
               onTap: (index) {
                 setState(() {
-                  _currentIndex = index; // Update selected tab
+                  _currentIndex = index;
                 });
               },
               items: [
@@ -249,7 +258,7 @@ class _BottomNavPageState extends State<BottomNavPage>
               selectedLabelStyle: FontUtils.primaryFontStyle(),
               unselectedLabelStyle: FontUtils.primaryFontStyle(),
             ),
-          )),
+          ))),
         ));
   }
 

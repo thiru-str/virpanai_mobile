@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/register_response.dart';
@@ -55,11 +56,7 @@ class _AddressListPageState extends State<AddressListPage> {
         },
       ),
       body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+          ? const AppLoader()
           : addressListResponse?.addresses?.isNotEmpty ?? false
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),

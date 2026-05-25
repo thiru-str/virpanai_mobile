@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
@@ -38,6 +39,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool isLoading = false;
   String? _appVersion;
   List<String> enabledExtensions = [];
+  bool favouriteListEnabled = false;
+  String favouriteListName = AppStrings.favourites;
 
   @override
   void initState() {
@@ -52,9 +55,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadExtensions() async {
     try {
       final details = await ApiService().getPublicDetails();
+      final favouriteConfig =
+          await ApiService().getFavouriteListConfig(context);
       if (mounted) {
         setState(() {
           enabledExtensions = details.enabledExtensions;
+          // Show the wishlist entry in both simple mode (enabled=false) and
+          // full mode (enabled=true). The enabled flag controls UI mode, not
+          // whether the feature exists.
+          favouriteListEnabled = true;
+          favouriteListName = favouriteConfig.displayName;
         });
       }
     } catch (_) {}
@@ -180,20 +190,18 @@ class _SettingsPageState extends State<SettingsPage> {
           // Profile Items Section
           Expanded(
             child: isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ))
+                ? const AppLoader()
                 : ListView(
                     children: [
                       _buildProfileItem(AppStrings.address, () {
                         PageRouteUtils.pushWithSlide(context,
                             AddressListPage(onSelectedAddress: (address) {}));
                       }),
-                      _buildProfileItem(AppStrings.favourites, () {
-                        PageRouteUtils.pushWithSlide(
-                            context, MyFavoritesPage());
-                      }),
+                      if (favouriteListEnabled)
+                        _buildProfileItem(favouriteListName, () {
+                          PageRouteUtils.pushWithSlide(
+                              context, MyFavoritesPage());
+                        }),
                       _buildProfileItem(AppStrings.orders, () {
                         PageRouteUtils.pushWithSlide(
                             context, OrdersHistoryPage());

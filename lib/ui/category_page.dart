@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/ui/product_page.dart';
@@ -44,7 +45,7 @@ class _CategoryPageState extends State<CategoryPage> {
         ),
         backgroundColor: Colors.white,
         body: apiLoading
-            ? const CategoryPageSkeleton()
+            ? const AppLoader()
             : Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
