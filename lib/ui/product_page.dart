@@ -648,11 +648,7 @@ class _ProductPageState extends State<ProductPage> {
               Expanded(
                 child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  child: Stack(
+                child: Stack(
                       fit: StackFit.expand,
                   children: [
                      MasonryGridView.count(
@@ -712,7 +708,6 @@ class _ProductPageState extends State<ProductPage> {
                       ),
                   ],
                 ),
-              ),
               ),
               ),
             ],
