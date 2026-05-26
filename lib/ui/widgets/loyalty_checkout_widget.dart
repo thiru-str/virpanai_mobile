@@ -11,6 +11,8 @@ import '../../utility/font_utils.dart';
 /// Actual debit happens on order.placed (server-side).
 class LoyaltyCheckoutWidget extends StatefulWidget {
   final String cartId;
+  final bool walletApplied;
+  final bool hasActiveCoupon;
   final VoidCallback onApplied;
   final VoidCallback onRemoved;
 
@@ -39,6 +41,8 @@ class LoyaltyCheckoutWidget extends StatefulWidget {
     this.loyaltyApply,
     this.cartTotal,
     this.walletAmount,
+    this.walletApplied = false,
+    this.hasActiveCoupon = false,
   });
 
   @override
@@ -49,7 +53,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
   final ApiService _api = ApiService();
   LoyaltyAccountData? _account;
   bool _loading = true;
-  bool _busy = false; // Blocks ALL interaction until fully settled
+  bool _busy = false;
   bool _applied = false;
   int _appliedPoints = 0;
   int _discountAmount = 0;
@@ -114,13 +118,28 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     }
   }
 
+  /// Returns a conflict message if the current state blocks applying points, null otherwise.
+  String? _conflictMessage() {
+    if (_applied) return null; // Already applied — allow removal regardless
+    if (!(_account?.allowWalletWithPoints ?? true) && widget.walletApplied) {
+      return 'Remove wallet to use loyalty points';
+    }
+    if (!(_account?.allowCouponWithPoints ?? true) && widget.hasActiveCoupon) {
+      return 'Remove coupon to use loyalty points';
+    }
+    return null;
+  }
+
   Future<void> _toggle() async {
     if (_busy) return;
-    if (mounted)
-      setState(() {
-        _busy = true;
-        _error = null;
-      });
+
+    final conflict = _conflictMessage();
+    if (conflict != null) {
+      if (mounted) setState(() => _error = conflict);
+      return;
+    }
+
+    if (mounted) setState(() { _busy = true; _error = null; });
 
     try {
       if (!_applied) {
@@ -136,7 +155,6 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
             });
           }
           widget.onApplied();
-          // Wait for cart refresh to settle before unlocking
           await Future.delayed(const Duration(milliseconds: 500));
         } else {
           if (mounted) setState(() => _error = result['message'] ?? 'Failed');
@@ -169,25 +187,22 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
     final balance = _account!.pointsBalance ?? 0;
     if (balance <= 0 && !_applied) return const SizedBox.shrink();
 
-    // Effective remaining the gateway would charge if loyalty weren't applied.
-    // Priority is coupon → wallet → loyalty, so this is the redeemable cap for
-    // points: cart.total (post-coupon) − wallet_amount. When this hits 0
-    // (wallet already covers the cart) there's nothing left for points to
-    // bite into — hide the section entirely so the customer doesn't see a
-    // useless redemption row.
+    // Effective remaining after wallet deduction — hide widget when wallet
+    // already covers the full cart (nothing left for loyalty to apply to).
     final cartTotal = (widget.cartTotal ?? 0).toDouble();
-    final walletAmount = (widget.walletAmount ?? 0).toDouble();
-    final remaining =
-        (cartTotal - walletAmount).clamp(0, double.infinity).toInt();
-
+    final walletAmt = (widget.walletAmount ?? 0).toDouble();
+    final remaining = (cartTotal - walletAmt).clamp(0, double.infinity).toInt();
     if (remaining <= 0 && !_applied) return const SizedBox.shrink();
 
-    final canUsePoints = remaining > 0 || _applied;
+    // Conflict detection — wallet or coupon restriction
+    final conflictMsg = _conflictMessage();
+    final isBlocked = conflictMsg != null;
+    final canUsePoints = (remaining > 0 || _applied) && !isBlocked;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isBlocked ? Colors.grey.shade50 : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -197,9 +212,11 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
           ),
         ],
         border: Border.all(
-          color: _applied
-              ? AppColors.primary.withOpacity(0.4)
-              : Colors.grey.shade200,
+          color: isBlocked
+              ? Colors.grey.shade200
+              : _applied
+                  ? AppColors.primary.withOpacity(0.4)
+                  : Colors.grey.shade200,
           width: _applied ? 1.5 : 1,
         ),
       ),
@@ -212,14 +229,18 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: canUsePoints
-                        ? AppColors.primary.withOpacity(0.1)
-                        : Colors.grey.shade100,
+                    color: isBlocked
+                        ? Colors.grey.shade100
+                        : canUsePoints
+                            ? AppColors.primary.withOpacity(0.1)
+                            : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.stars_outlined,
-                    color: canUsePoints ? AppColors.primary : Colors.grey,
+                    color: isBlocked || !canUsePoints
+                        ? Colors.grey
+                        : AppColors.primary,
                     size: 18,
                   ),
                 ),
@@ -233,17 +254,24 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                         style: FontUtils.primaryFontStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color:
-                              canUsePoints ? AppColors.textColor : Colors.grey,
+                          color: isBlocked || !canUsePoints
+                              ? Colors.grey
+                              : AppColors.textColor,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Available: $balance points',
+                        isBlocked
+                            ? conflictMsg!
+                            : 'Available: $balance points',
                         style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                          fontSize: 12,
+                          color: isBlocked
+                              ? Colors.orange.shade700
+                              : Colors.grey.shade600,
+                        ),
                       ),
-                      if (_error != null)
+                      if (_error != null && !isBlocked)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(

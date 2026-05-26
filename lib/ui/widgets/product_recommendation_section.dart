@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_response.dart';
-import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/product_view.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -12,18 +11,12 @@ class ProductRecommendationSection extends StatelessWidget {
   final String title;
   final List<Product> products;
   final Future<void> Function(Product product)? onReturnFromProductDetail;
-  final bool isLoggedIn;
-  final FavouriteListConfig? favConfig;
-  final Set<String> savedProductIds;
 
   const ProductRecommendationSection({
     super.key,
     required this.title,
     required this.products,
     this.onReturnFromProductDetail,
-    this.isLoggedIn = false,
-    this.favConfig,
-    this.savedProductIds = const {},
   });
 
   @override
@@ -71,9 +64,6 @@ class ProductRecommendationSection extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 10),
                   child: ProductView(
                     product: product,
-                    isLoggedIn: isLoggedIn,
-                    favConfig: favConfig,
-                    isFavorite: savedProductIds.contains(product.id ?? ''),
                     onTapCard: () async {
                       await PageRouteUtils.pushWithSlide(
                         context,

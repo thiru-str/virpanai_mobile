@@ -38,8 +38,6 @@ class _SettingsPageState extends State<SettingsPage> {
   bool isLoading = false;
   String? _appVersion;
   List<String> enabledExtensions = [];
-  bool favouriteListEnabled = false;
-  String favouriteListName = AppStrings.favourites;
 
   @override
   void initState() {
@@ -54,16 +52,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadExtensions() async {
     try {
       final details = await ApiService().getPublicDetails();
-      final favouriteConfig =
-          await ApiService().getFavouriteListConfig(context);
       if (mounted) {
         setState(() {
           enabledExtensions = details.enabledExtensions;
-          // Show the wishlist entry in both simple mode (enabled=false) and
-          // full mode (enabled=true). The enabled flag controls UI mode, not
-          // whether the feature exists.
-          favouriteListEnabled = true;
-          favouriteListName = favouriteConfig.displayName;
         });
       }
     } catch (_) {}
@@ -199,11 +190,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         PageRouteUtils.pushWithSlide(context,
                             AddressListPage(onSelectedAddress: (address) {}));
                       }),
-                      if (favouriteListEnabled)
-                        _buildProfileItem(favouriteListName, () {
-                          PageRouteUtils.pushWithSlide(
-                              context, MyFavoritesPage());
-                        }),
+                      _buildProfileItem(AppStrings.favourites, () {
+                        PageRouteUtils.pushWithSlide(
+                            context, MyFavoritesPage());
+                      }),
                       _buildProfileItem(AppStrings.orders, () {
                         PageRouteUtils.pushWithSlide(
                             context, OrdersHistoryPage());

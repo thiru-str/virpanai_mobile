@@ -15,9 +15,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
-import '../model/wishlist_reponse.dart';
 import '../utility/app_assets.dart';
-import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'widgets/common_header_app_bar.dart';
 
@@ -58,24 +56,23 @@ class _ProductPageState extends State<ProductPage> {
   bool isFilterApplied = false;
   ScrollController scrollController = ScrollController();
   String? productViewType = ProductCardType.productView1.name;
-  bool _isLoggedIn = false;
-  FavouriteListConfig? _favConfig;
-  Set<String> _savedProductIds = {};
 
   @override
   void initState() {
     super.initState();
     _loadProductViewType();
-    _loadFavouriteState();
     getProductsApi(
         categoryIds: widget.categoryId,
         collectionIds: widget.collectionId,
         tagIds: widget.tagId);
     scrollController.addListener(() {
-      if (scrollController.position.pixels ==
-              scrollController.position.maxScrollExtent &&
+      if (!scrollController.hasClients) return;
+
+      if (scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 200 &&
           hasMore &&
-          !isPaginating) {
+          !isPaginating &&
+          !apiLoading) {
         loadMoreProducts();
       }
     });
@@ -87,28 +84,9 @@ class _ProductPageState extends State<ProductPage> {
   Future<void> _loadProductViewType() async {
     final type = await SharedPreferencesUtil().getString('product_view');
     if (!mounted) return;
-    setState(() => productViewType = type);
-  }
-
-  Future<void> _loadFavouriteState() async {
-    final loggedIn = await AppUtils.isLoggedIn();
-    if (!mounted) return;
-    setState(() => _isLoggedIn = loggedIn);
-    if (!loggedIn) return;
-    final api = ApiService();
-    try {
-      final results = await Future.wait([
-        api.getFavouriteListConfig(context),
-        api.getSavedItems(context),
-      ]);
-      final config = results[0] as FavouriteListConfig;
-      final saved = results[1] as SavedItemsResponse;
-      if (!mounted) return;
-      setState(() {
-        _favConfig = config;
-        _savedProductIds = saved.items.map((i) => i.productId).toSet();
-      });
-    } catch (_) {}
+    setState(() {
+      productViewType = type;
+    });
   }
 
   void loadMoreProducts() {
@@ -332,64 +310,65 @@ class _ProductPageState extends State<ProductPage> {
               ),
               const SizedBox(height: 10),
 
-              // Main Content Area
+              // Main Content Area — MasonryGridView is ALWAYS mounted so its
+              // scroll position is preserved across state changes (filter, search,
+              // refresh). Skeleton + empty states overlay on top instead of
+              // swapping widget types.
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  child: Builder(
-                    builder: (_) {
-                      if (apiLoading && currentPage == 0) {
-                        return const ProductGridSkeleton();
-                      }
-
-                      if (filteredProducts.isEmpty) {
-                        return NoOrdersWidget(
-                          message: AppStrings.no_product,
-                          buttonText: AppStrings.explore_categories,
-                          iconPath: AppAssets.ic_cart_empty,
-                          onButtonTap: () {},
-                          showExplore: false,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    MasonryGridView.count(
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      itemCount:
+                          filteredProducts.length + (isPaginating ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == filteredProducts.length && isPaginating) {
+                          return const ProductCardSkeleton();
+                        }
+                        final product = filteredProducts[index];
+                        return AppReveal(
+                          index: index % 10,
+                          child: ProductView(
+                            product: product,
+                            type: productViewType,
+                            onTapCard: () {
+                              PageRouteUtils.pushWithSlide(
+                                context,
+                                ProductDetailPage(productId: product.id!),
+                              );
+                            },
+                          ),
                         );
-                      }
-
-                      return MasonryGridView.count(
-                        key: ValueKey(
-                            '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
-                        controller: scrollController,
-                        padding: EdgeInsets.zero,
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        itemCount:
-                            filteredProducts.length + (isPaginating ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == filteredProducts.length &&
-                              isPaginating) {
-                            return const ProductCardSkeleton();
-                          }
-                          final product = filteredProducts[index];
-                          return AppReveal(
-                            index: index % 10,
-                            child: ProductView(
-                              product: product,
-                              type: productViewType,
-                              isLoggedIn: _isLoggedIn,
-                              favConfig: _favConfig,
-                              isFavorite: _savedProductIds.contains(product.id ?? ''),
-                              onTapCard: () {
-                                PageRouteUtils.pushWithSlide(
-                                  context,
-                                  ProductDetailPage(productId: product.id!),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                      },
+                    ),
+                    // Skeleton overlay during initial load
+                    if (apiLoading && currentPage == 0)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white,
+                          child: const ProductGridSkeleton(),
+                        ),
+                      ),
+                    // Empty-state overlay (only after load completes)
+                    if (!apiLoading && filteredProducts.isEmpty)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white,
+                          child: NoOrdersWidget(
+                            message: AppStrings.no_product,
+                            buttonText: AppStrings.explore_categories,
+                            iconPath: AppAssets.ic_cart_empty,
+                            onButtonTap: () {},
+                            showExplore: false,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -455,6 +434,9 @@ class _ProductPageState extends State<ProductPage> {
     } catch (e) {
       // Only update state if this is the most recent request
       if (searchToken == null || searchToken == _searchToken) {
+        if (currentPage > 0) {
+          currentPage--;
+        }
         setState(() {
           apiLoading = false;
           isPaginating = false;

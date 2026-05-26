@@ -178,7 +178,9 @@ class _BottomNavPageState extends State<BottomNavPage>
                     child: _getPage(),
                   ),
           ),
-          bottomNavigationBar: SlideTransition(
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: SlideTransition(
             position: _slideAnimation,
             child: Container(
               decoration: BoxDecoration(
@@ -270,7 +272,7 @@ class _BottomNavPageState extends State<BottomNavPage>
                 ),
               ),
             ),
-          ),
+          )),
         ));
   }
 

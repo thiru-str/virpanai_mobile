@@ -4,10 +4,16 @@ import '../../utility/app_colors.dart';
 import '../../utility/extensions_util.dart';
 import '../../utility/font_utils.dart';
 
-/// Slim earn preview: "Earn X points on this order"
+/// Slim earn preview: "Earn X points on this order".
+///
+/// Prefer passing [cartId] for cart/checkout views — the API will then
+/// compute the earnable amount server-side (excludes platform_fee and
+/// applies earn restriction). [orderTotal] is only used as a fallback when
+/// [cartId] is null.
 class LoyaltyEarnPreview extends StatefulWidget {
   final num orderTotal;
-  const LoyaltyEarnPreview({super.key, required this.orderTotal});
+  final String? cartId;
+  const LoyaltyEarnPreview({super.key, required this.orderTotal, this.cartId});
 
   @override
   State<LoyaltyEarnPreview> createState() => _LoyaltyEarnPreviewState();
@@ -30,16 +36,18 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   @override
   void didUpdateWidget(LoyaltyEarnPreview old) {
     super.didUpdateWidget(old);
-    if (old.orderTotal != widget.orderTotal) _load();
+    if (old.orderTotal != widget.orderTotal || old.cartId != widget.cartId) _load();
   }
 
   Future<void> _load() async {
-    if (!ExtensionsUtil.has('loyalty') || widget.orderTotal <= 0) {
+    final hasCart = widget.cartId != null && widget.cartId!.isNotEmpty;
+    if (!ExtensionsUtil.has('loyalty') || (!hasCart && widget.orderTotal <= 0)) {
       if (mounted) setState(() => _loading = false);
       return;
     }
     try {
-      final resp = await ApiService().getLoyaltyPreview(widget.orderTotal);
+      final resp = await ApiService()
+          .getLoyaltyPreview(widget.orderTotal, cartId: widget.cartId);
       final d = resp.data;
       if (d['status'] == true && d['data'] != null) {
         final data = d['data'] as Map<String, dynamic>;

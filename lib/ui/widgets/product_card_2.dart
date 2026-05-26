@@ -1,7 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
-import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -15,8 +13,6 @@ class ProductCard2 extends StatefulWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
-  final FavouriteListConfig? favConfig;
-  final bool isLoggedIn;
 
   const ProductCard2({
     Key? key,
@@ -25,8 +21,6 @@ class ProductCard2 extends StatefulWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
-    this.favConfig,
-    this.isLoggedIn = false,
   }) : super(key: key);
 
   @override
@@ -145,14 +139,30 @@ class _ProductCard2State extends State<ProductCard2> {
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: FavouriteHeartButton(
-                    productId: widget.product.id ?? '',
-                    productHandle: widget.product.handle ?? '',
-                    variants: widget.product.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
-                    isLoggedIn: widget.isLoggedIn,
-                    config: widget.favConfig,
-                    initialSaved: widget.isFavorite,
-                    size: 18,
+                  child: GestureDetector(
+                    onTap: widget.onTapFavorite,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        widget.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        size: 18,
+                        color:
+                        widget.isFavorite ? Colors.red : Colors.grey[700],
+                      ),
+                    ),
                   ),
                 ),
               ],

@@ -25,6 +25,7 @@ class CouponBottomSheet extends StatefulWidget {
 class _CouponBottomSheetState extends State<CouponBottomSheet> {
   List<AvailablePromotion> _promotions = [];
   bool _loading = true;
+  bool _showCouponList = true;
   String? _error;
   String? _actionCode; // code currently being applied/removed
 
@@ -34,13 +35,38 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadPromotions();
+    _initializeCouponSettings();
   }
 
   @override
   void dispose() {
     _manualController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initializeCouponSettings() async {
+    try {
+      final visible = await ApiService().getCouponListVisibility();
+      if (!mounted) return;
+
+      setState(() {
+        _showCouponList = visible;
+      });
+
+      if (!visible) {
+        setState(() {
+          _loading = false;
+        });
+        return;
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _showCouponList = true;
+      });
+    }
+
+    await _loadPromotions();
   }
 
   Future<void> _applyManual() async {
@@ -104,13 +130,15 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
     final eligible =
         _promotions.where((p) => p.isEligible && !p.isApplied).toList();
     final applied = _promotions.where((p) => p.isApplied).toList();
-    final ineligible =
-        _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
+    final ineligible = _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
+    final initialChildSize = _showCouponList ? 0.75 : 0.24;
+    final maxChildSize = _showCouponList ? 0.92 : 0.28;
+    final minChildSize = _showCouponList ? 0.4 : 0.22;
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      maxChildSize: 0.92,
-      minChildSize: 0.4,
+      initialChildSize: initialChildSize,
+      maxChildSize: maxChildSize,
+      minChildSize: minChildSize,
       expand: false,
       builder: (_, scrollController) {
         return SafeArea(
@@ -160,106 +188,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                     ],
                   ),
                 ),
-                Divider(height: 1, color: Colors.grey.shade100),
-                // Manual entry
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _manualController,
-                              textCapitalization: TextCapitalization.none,
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Enter coupon code',
-                                hintStyle: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade400,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                      color: AppColors.primary, width: 1.5),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.red.shade300),
-                                ),
-                              ),
-                              onSubmitted: (_) => _applyManual(),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: _actionCode != null ? null : _applyManual,
-                            child: Container(
-                              constraints: const BoxConstraints(minWidth: 82),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 13),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: _actionCode != null &&
-                                      _actionCode ==
-                                          _manualController.text
-                                              .trim()
-                                              .toUpperCase()
-                                  ? SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Apply',
-                                      textAlign: TextAlign.center,
-                                      style: FontUtils.primaryFontStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_manualError != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          _manualError!,
-                          style: TextStyle(
-                              fontSize: 11, color: Colors.red.shade600),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+              ),
+              if (_showCouponList) ...[
                 Divider(height: 1, color: Colors.grey.shade100),
                 // Content
                 Expanded(
@@ -268,8 +198,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                       : _error != null
                           ? Center(
                               child: Text(_error!,
-                                  style:
-                                      TextStyle(color: Colors.grey.shade600)),
+                                  style: TextStyle(color: Colors.grey.shade600)),
                             )
                           : _promotions.isEmpty
                               ? Center(
@@ -277,19 +206,16 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(Icons.local_offer_outlined,
-                                          size: 48,
-                                          color: Colors.grey.shade300),
+                                          size: 48, color: Colors.grey.shade300),
                                       const SizedBox(height: 12),
                                       Text('No coupons available',
-                                          style: TextStyle(
-                                              color: Colors.grey.shade500)),
+                                          style: TextStyle(color: Colors.grey.shade500)),
                                     ],
                                   ),
                                 )
                               : ListView(
                                   controller: scrollController,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                                   children: [
                                     if (applied.isNotEmpty) ...[
                                       _sectionLabel('Applied'),
@@ -297,9 +223,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                             promo: p,
                                             actionCode: _actionCode,
                                             onRemove: () => _remove(
-                                              applied
-                                                  .map((x) => x.code)
-                                                  .toList(),
+                                              applied.map((x) => x.code).toList(),
                                             ),
                                           )),
                                       const SizedBox(height: 8),
@@ -324,7 +248,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                 ),
                 ),
               ],
-            ),
+            ],
           ),
         );
       },
