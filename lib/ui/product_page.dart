@@ -652,8 +652,6 @@ class _ProductPageState extends State<ProductPage> {
                       fit: StackFit.expand,
                   children: [
                      MasonryGridView.count(
-                      key: ValueKey(
-                          '${filteredProducts.length}_${isPaginating}_${productViewType ?? 'default'}'),
                       controller: scrollController,
                       padding: EdgeInsets.zero,
                       crossAxisCount: 2,
