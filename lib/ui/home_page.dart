@@ -41,6 +41,7 @@ import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/ui_typography.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
@@ -168,6 +169,10 @@ class _HomePageState extends State<HomePage> {
           child: apiLoading
               ? const HomePageSkeleton()
               : RefreshIndicator(
+                  color: AppColors.primary,
+                  backgroundColor: Colors.white,
+                  displacement: 28,
+                  strokeWidth: 2.6,
                   onRefresh: () async {
                     _offset = 0;
                     _hasMore = true;
@@ -191,26 +196,35 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           // Main UI Components
                           Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 0.0, vertical: 12.0),
+                            padding: const EdgeInsets.only(
+                                left: 0.0, right: 0.0, top: 14.0, bottom: 12.0),
                             child: buildComponentList(),
                           ),
 
                           // Load More Indicator
                           if (_isLoadingMore)
                             Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: CircularProgressIndicator(
-                                color: AppColors.primary,
+                              padding: const EdgeInsets.all(20.0),
+                              child: SizedBox(
+                                width: 26,
+                                height: 26,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                  strokeWidth: 2.6,
+                                ),
                               ),
                             ),
 
                           if (!_hasMore)
-                            const Padding(
-                              padding: EdgeInsets.all(16.0),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 18.0),
                               child: Text(
                                 AppStrings.end_of_page,
-                                style: TextStyle(color: Colors.grey),
+                                style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ),
 
@@ -244,11 +258,17 @@ class _HomePageState extends State<HomePage> {
 
         return _isLoadingMore
             ? Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Center(
+                  child: SizedBox(
+                    width: 26,
+                    height: 26,
                     child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                )),
+                      color: AppColors.primary,
+                      strokeWidth: 2.6,
+                    ),
+                  ),
+                ),
               )
             : const SizedBox.shrink();
       },

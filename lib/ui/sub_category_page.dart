@@ -5,8 +5,8 @@ import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import 'widgets/common_header_app_bar.dart';
 
@@ -33,29 +33,36 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
             Navigator.of(context).pop();
           },
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9F9FB),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 2.0),
                 child: Wrap(
-                  spacing: 4,
+                  spacing: 6,
                   runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text('${AppStrings.all_category} >',
-                        style: FontUtils.primaryFontStyle(
-                            fontSize: 16, color: AppColors.textColor)),
+                    Text(AppStrings.all_category,
+                        style: UiTypography.cardMeta(color: Colors.grey.shade600)
+                            .copyWith(fontSize: 14)),
+                    Icon(Icons.chevron_right,
+                        size: 18, color: Colors.grey.shade400),
                     Text(widget.categoryTitle,
-                        style: FontUtils.primaryFontStyle(
-                            fontSize: 16, color: AppColors.primary)),
+                        style: UiTypography.cardTitle().copyWith(
+                          fontSize: 20,
+                          height: 1.25,
+                          letterSpacing: -0.2,
+                          color: AppColors.primary,
+                        )),
                   ],
                 ),
               ),
               const SizedBox(
-                height: 10,
+                height: 14,
               ),
               Expanded(
                 child: MasonryGridView.count(

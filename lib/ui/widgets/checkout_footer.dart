@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
 class CheckoutFooter extends StatelessWidget {
@@ -28,9 +29,9 @@ class CheckoutFooter extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
@@ -52,8 +53,8 @@ class CheckoutFooter extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey.shade50,
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: SvgPicture.asset(
                       svgPath,
@@ -69,17 +70,14 @@ class CheckoutFooter extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             Text(
                               "Pay Using",
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black87,
-                              ),
+                              style: UiTypography.cardMeta(color: Colors.black54)
+                                  .copyWith(fontSize: 10),
                             ),
-                            Icon(
+                            const Icon(
                               Icons.arrow_drop_down,
                               size: 20,
                               color: Colors.black54,
@@ -147,12 +145,11 @@ class CheckoutFooter extends StatelessWidget {
                         "$amount\nPlace Order",
                         key: const ValueKey("text"),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
-                          height: 1.3,
-                        ),
+                        ).copyWith(height: 1.3),
                       ),
               ),
             ),

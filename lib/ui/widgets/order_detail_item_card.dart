@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -42,8 +43,15 @@ class OrderDetailItemCard extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(color: Colors.grey.shade300, width: 1.2),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(color: const Color(0xFFE5E7EC)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,13 +62,18 @@ class OrderDetailItemCard extends StatelessWidget {
                 children: [
                   // Product Image
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
+                    borderRadius: BorderRadius.circular(12.0),
+                    child: Container(
                       width: 70,
                       height: 70,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, _, __) => _fallbackWidget(),
+                      color: AppColors.secondary,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, _, __) => _fallbackWidget(),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -79,11 +92,8 @@ class OrderDetailItemCard extends StatelessWidget {
                                 productName,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
+                                style: UiTypography.cardTitle(color: Colors.black87)
+                                    .copyWith(height: 1.2),
                               ),
                             ),
                             const SizedBox(width: 6),
@@ -93,11 +103,8 @@ class OrderDetailItemCard extends StatelessWidget {
                                 maxLines: 2,
                                 textAlign: TextAlign.right,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                                style: UiTypography.cardPrice(color: AppColors.primary)
+                                    .copyWith(fontSize: 16),
                               ),
                             ),
                           ],
@@ -105,10 +112,7 @@ class OrderDetailItemCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           variant,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
+                          style: UiTypography.cardSubtitle(color: Colors.black54),
                         ),
                       ],
                     ),
@@ -119,7 +123,7 @@ class OrderDetailItemCard extends StatelessWidget {
               // Divider
               if (showRating || showReturnButton) ...[
                 const SizedBox(height: 8),
-                Divider(color: Colors.grey.shade300, thickness: 1),
+                const Divider(color: Color(0xFFE5E7EC), thickness: 1),
               ],
 
               // 🔹 Rating & Return Button Section
@@ -158,13 +162,10 @@ class OrderDetailItemCard extends StatelessWidget {
                               SizedBox(
                                 height: 4,
                               ),
-                              const Text(
+                              Text(
                                 "Please rate the product",
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black87,
-                                ),
+                                style: UiTypography.cardMeta(color: Colors.black87)
+                                    .copyWith(fontSize: 12.5),
                               ),
                             ],
                           )
@@ -175,15 +176,17 @@ class OrderDetailItemCard extends StatelessWidget {
                             onPressed: onReturnTap,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
+                              elevation: 0,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 18, vertical: 10),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               AppStrings.return_order,
-                              style: TextStyle(color: Colors.white),
+                              style: UiTypography.cardAction(color: Colors.white)
+                                  .copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
                       ],
@@ -203,13 +206,13 @@ class OrderDetailItemCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300, width: 1),
-              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE5E7EC)),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -225,11 +228,8 @@ class OrderDetailItemCard extends StatelessWidget {
                         : '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
+                    style: UiTypography.cardMeta(color: Colors.black87)
+                        .copyWith(fontSize: 13),
                   ),
                 )
               ],

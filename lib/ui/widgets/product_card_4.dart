@@ -75,8 +75,15 @@ class _ProductCard4State extends State<ProductCard4> {
         width: 160,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,10 +92,10 @@ class _ProductCard4State extends State<ProductCard4> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Container(
                     height: 140,
-                    color: Colors.grey[100],
+                    color: AppColors.secondary,
                     child: images.isEmpty
                         ? const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain)
                         : PageView.builder(
@@ -125,10 +132,17 @@ class _ProductCard4State extends State<ProductCard4> {
                     child: GestureDetector(
                       onTap: widget.onTapFavorite,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Icon(
                           widget.isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -157,7 +171,7 @@ class _ProductCard4State extends State<ProductCard4> {
                       ),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       padding: MaterialStateProperty.all<EdgeInsets>(
@@ -188,13 +202,13 @@ class _ProductCard4State extends State<ProductCard4> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: UiTypography.cardMeta().copyWith(
+                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -207,8 +221,8 @@ class _ProductCard4State extends State<ProductCard4> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "SAVE ₹${(orig! - calc!).toStringAsFixed(0)}",
-                  style: UiTypography.cardMeta(color: Colors.green)
-                      .copyWith(fontWeight: FontWeight.w600),
+                  style: UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                      .copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
 

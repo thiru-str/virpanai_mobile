@@ -15,6 +15,7 @@ import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
+import '../utility/ui_typography.dart';
 import 'bottom_nav_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -73,9 +74,9 @@ class _RegisterPageState extends State<RegisterPage> {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           elevation: 0,
           leading: IconButton(
             icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
@@ -88,19 +89,44 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Form(
             key: _formKey,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     AppStrings.register_msg,
-                    style: FontUtils.secondaryFontStyle(
+                    style: UiTypography.cardTitle().copyWith(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      height: 1.2,
+                      letterSpacing: -0.3,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Create your account to start shopping',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 14,
+                      color: AppColors.textColor50,
+                    ).copyWith(height: 1.5),
+                  ),
+                  const SizedBox(height: 24),
+                  // Grouped fields card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                   Row(
                     children: [
                       Expanded(
@@ -152,25 +178,35 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     IntlPhoneField(
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      dropdownTextStyle: FontUtils.primaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textColor,
+                      ),
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textColor,
+                      ),
                       decoration: InputDecoration(
-                        fillColor: AppColors.secondary,
+                        hintText: AppStrings.mobile_number,
+                        hintStyle: UiTypography.searchHint(),
+                        fillColor: Colors.white,
                         filled: true,
                         contentPadding:
-                        const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                          BorderSide(color: AppColors.secondary, width: 1.5),
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                          BorderSide(color: AppColors.secondary, width: 1.5),
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide:
-                          BorderSide(color: AppColors.secondary, width: 1.5),
+                          BorderSide(color: AppColors.primary, width: 1.5),
                         ),
                       ),
                       initialCountryCode: AppStrings.country_code,
@@ -248,29 +284,47 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: referralCodeController,
                     validator: (value) => null,
                   ),
-                  const SizedBox(height: 16),
-                  apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
-                    onPressed:() {
-                      if (_formKey.currentState!.validate()) {
-                        register();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary, // Button color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      minimumSize: const Size(double.infinity, 60),
-                    ),
-                    child: Text(
-                      AppStrings.register,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    ],
                   ),
+                ),
+                  const SizedBox(height: 24),
+                  apiCalling
+                      ? SizedBox(
+                          height: 54,
+                          child: Center(
+                            child: SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              register();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary, // Button color
+                            elevation: 0,
+                            minimumSize: const Size(double.infinity, 54),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            AppStrings.register,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),

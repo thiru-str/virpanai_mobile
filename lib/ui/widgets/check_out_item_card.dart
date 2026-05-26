@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class CheckoutItemCard extends StatelessWidget {
   final String title;
@@ -21,8 +21,16 @@ class CheckoutItemCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12.0),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -34,22 +42,15 @@ class CheckoutItemCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal,
-                    ),
+                    style: UiTypography.cardSubtitle(),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: UiTypography.cardAction(color: Colors.black87)
+                        .copyWith(fontSize: 16),
                   ),
                 ],
               ),

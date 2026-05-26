@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
@@ -69,8 +70,15 @@ class ProductCard8 extends StatelessWidget {
         width: 113,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFEFEFEF)),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,11 +87,11 @@ class ProductCard8 extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(10)),
+                      const BorderRadius.vertical(top: Radius.circular(14)),
                   child: Container(
                     width: double.infinity,
                     height: 141,
-                    color: const Color(0xFFE1E4ED),
+                    color: AppColors.secondary,
                     child: images.isEmpty
                         ? const Center(
                             child: ImageFallbackWidget(
@@ -107,9 +115,9 @@ class ProductCard8 extends StatelessWidget {
                     height: 17,
                     width: 60,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFD4D5D8),
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
+                        topLeft: Radius.circular(14),
                         topRight: Radius.circular(2),
                         bottomRight: Radius.circular(2),
                       ),
@@ -133,8 +141,17 @@ class ProductCard8 extends StatelessWidget {
                   right: 0,
                   child: Container(
                     height: 30,
-                    color: const Color(0xFFD4D5D8),
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.45),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Row(
                       children: [
                         Expanded(
@@ -143,7 +160,7 @@ class ProductCard8 extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: UiTypography.cardMeta(
-                              color: Colors.black,
+                              color: Colors.white,
                             ).copyWith(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -154,8 +171,8 @@ class ProductCard8 extends StatelessWidget {
                           height: 16,
                           width: 32,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE1E4ED),
-                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           alignment: Alignment.center,
                           child: Text(
@@ -194,7 +211,7 @@ class ProductCard8 extends StatelessWidget {
                       _fmt(calc ?? orig ?? 0),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: UiTypography.cardPrice(),
+                      style: UiTypography.cardPrice(color: AppColors.primary),
                     ),
                   ),
                   const _SwatchDot(),
@@ -226,9 +243,9 @@ class ProductCard8 extends StatelessWidget {
                   Text(
                     percentOff != null ? '$percentOff% OFF' : '',
                     style: UiTypography.cardMeta(
-                      color: Colors.black.withOpacity(0.8),
+                      color: const Color(0xFF1FA971),
                     ).copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],

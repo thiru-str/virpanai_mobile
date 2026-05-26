@@ -73,7 +73,15 @@ class _ProductCard1State extends State<ProductCard1> {
         width: 180,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,9 +91,11 @@ class _ProductCard1State extends State<ProductCard1> {
               children: [
                 // Image carousel
                 ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(4)),
-                  child: SizedBox(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Container(
                     height: 225,
+                    color: AppColors.secondary,
                     child: PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
@@ -208,7 +218,8 @@ class _ProductCard1State extends State<ProductCard1> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? '',
-                style: UiTypography.cardTitle(color: AppColors.textColor),
+                style: UiTypography.cardTitle(color: AppColors.textColor)
+                    .copyWith(fontSize: 15, height: 1.2),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -234,7 +245,7 @@ class _ProductCard1State extends State<ProductCard1> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   if (hasDiscount && orig != null) ...[
                     const SizedBox(height: 2),
@@ -245,14 +256,17 @@ class _ProductCard1State extends State<ProductCard1> {
                       children: [
                         Text(
                           _fmt(orig),
-                          style: UiTypography.cardMeta().copyWith(
+                          style: UiTypography.cardMeta(color: Colors.grey)
+                              .copyWith(
                             decoration: TextDecoration.lineThrough,
                           ),
                         ),
                         if (percentOff != null)
                           Text(
                             '$percentOff% Off',
-                            style: UiTypography.cardMeta(color: Colors.green),
+                            style: UiTypography.cardMeta(
+                                    color: const Color(0xFF1FA971))
+                                .copyWith(fontWeight: FontWeight.w700),
                           ),
                       ],
                     ),
@@ -261,7 +275,8 @@ class _ProductCard1State extends State<ProductCard1> {
                     const SizedBox(height: 2),
                     Text(
                       '$percentOff% Off',
-                      style: UiTypography.cardMeta(color: Colors.green),
+                      style: UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                          .copyWith(fontWeight: FontWeight.w700),
                     ),
                   ],
                 ],

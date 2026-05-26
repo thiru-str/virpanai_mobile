@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
@@ -63,27 +64,42 @@ class ProductCard7 extends StatelessWidget {
       onTap: onTapCard,
       child: Container(
         width: 190,
-        color: Colors.white,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              height: 300,
-              color: const Color(0xFFE1E4ED),
-              child: images.isEmpty
-                  ? const Center(
-                      child: ImageFallbackWidget(
-                          w: 60, h: 60, fit: BoxFit.contain),
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: images.first.url ?? '',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorWidget: (context, url, error) => const Center(
-                          child: ImageFallbackWidget(
-                              w: 60, h: 60, fit: BoxFit.contain)),
-                    ),
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Container(
+                width: double.infinity,
+                height: 300,
+                color: AppColors.secondary,
+                child: images.isEmpty
+                    ? const Center(
+                        child: ImageFallbackWidget(
+                            w: 60, h: 60, fit: BoxFit.contain),
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: images.first.url ?? '',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorWidget: (context, url, error) => const Center(
+                            child: ImageFallbackWidget(
+                                w: 60, h: 60, fit: BoxFit.contain)),
+                      ),
+              ),
             ),
             const SizedBox(height: 8),
             Padding(
@@ -92,7 +108,10 @@ class ProductCard7 extends StatelessWidget {
                 product.title ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: UiTypography.cardTitle(),
+                style: UiTypography.cardTitle().copyWith(
+                  fontSize: 15,
+                  height: 1.2,
+                ),
               ),
             ),
             const SizedBox(height: 2),
@@ -105,7 +124,7 @@ class ProductCard7 extends StatelessWidget {
                       _fmt(calc ?? orig ?? 0),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: UiTypography.cardPrice(),
+                      style: UiTypography.cardPrice(color: AppColors.primary),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -142,6 +161,7 @@ class ProductCard7 extends StatelessWidget {
                 ),
               ),
             ],
+            const SizedBox(height: 12),
           ],
         ),
       ),

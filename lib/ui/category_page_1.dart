@@ -9,6 +9,7 @@ import '../api/api_service.dart';
 import '../model/product_categories_response.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
+import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 
 class CategoryPage1 extends StatefulWidget {
@@ -40,18 +41,20 @@ class _CategoryPage1State extends State<CategoryPage1> {
           Navigator.pop(context, true);
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       body: apiLoading
           ? Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             )
           : Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // LEFT MAIN CATEGORY LIST
                 Container(
-                  width: 108,
-                  color: Color(0xFFF5FEF2),
+                  width: 112,
+                  color: Colors.white,
                   child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount:
                         productCategoriesResponse!.productCategories!.length,
                     itemBuilder: (context, index) {
@@ -65,45 +68,56 @@ class _CategoryPage1State extends State<CategoryPage1> {
                             selectedIndex = index;
                           });
                         },
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
                           decoration: BoxDecoration(
-                            color:
-                                isSelected ? Colors.white : Color(0xFFF5FEF2),
+                            color: isSelected
+                                ? const Color(0xFFF9F9FB)
+                                : Colors.white,
                             border: Border(
                               left: BorderSide(
                                 color: isSelected
                                     ? AppColors.primary
                                     : Colors.transparent,
-                                width: 4, // Blue indicator width
+                                width: 3,
                               ),
                             ),
                           ),
                           padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 8),
+                              vertical: 14, horizontal: 8),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (mainCategory.image != null &&
                                   mainCategory.image!.isNotEmpty)
-                                CachedNetworkImage(
-                                    imageUrl: mainCategory.image!,
-                                    height: 40,
-                                    width: 40,
-                                    fit: BoxFit.contain),
-                              const SizedBox(height: 6),
+                                Container(
+                                  height: 48,
+                                  width: 48,
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.primary.withOpacity(0.08)
+                                        : const Color(0xFFF4F4F4),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: CachedNetworkImage(
+                                      imageUrl: mainCategory.image!,
+                                      fit: BoxFit.contain),
+                                ),
+                              const SizedBox(height: 8),
                               Text(
                                 mainCategory.name ?? '',
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                style: FontUtils.primaryFontStyle(
                                   fontSize: 12,
                                   fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
                                   color: isSelected
                                       ? AppColors.primary
-                                      : Colors.black,
+                                      : AppColors.textColor,
                                 ),
                               ),
                             ],
@@ -113,11 +127,12 @@ class _CategoryPage1State extends State<CategoryPage1> {
                     },
                   ),
                 ),
+                Container(width: 1, color: const Color(0xFFE5E7EC)),
 
                 // RIGHT SUBCATEGORY GRID
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Builder(
                       builder: (_) {
                         final selectedCategory = productCategoriesResponse!
@@ -128,14 +143,20 @@ class _CategoryPage1State extends State<CategoryPage1> {
 
                         if (subCategories.isEmpty) {
                           return Center(
-                            child: Text(AppStrings.no_subcategories_found),
+                            child: Text(
+                              AppStrings.no_subcategories_found,
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
                           );
                         }
 
                         return MasonryGridView.count(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
                           itemCount: subCategories.length,
                           itemBuilder: (context, index) {
                             final subCategory = subCategories[index];
@@ -205,25 +226,33 @@ class SubCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Grey Rounded Image Container
+          // Rounded image surface (premium card)
           Container(
             decoration: BoxDecoration(
-              color: Color(0xFFF5FEF2), // light grey background
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             child: AspectRatio(
               aspectRatio: 1,
               child: imagePath.isNotEmpty
                   ? CachedNetworkImage(imageUrl: imagePath, fit: BoxFit.contain)
-                  : const Icon(Icons.image_not_supported, size: 40),
+                  : Icon(Icons.image_not_supported,
+                      size: 40, color: Colors.grey.shade400),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
 
           // Title outside container
           Text(
@@ -231,10 +260,10 @@ class SubCategoryTile extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
             ),
           ),
         ],

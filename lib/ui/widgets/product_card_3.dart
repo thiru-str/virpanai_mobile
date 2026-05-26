@@ -68,8 +68,15 @@ class ProductCard3 extends StatelessWidget {
         width: 180,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,12 +86,12 @@ class ProductCard3 extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
                   child: Container(
                     height: 140,
-                    color: Colors.grey[100],
+                    color: AppColors.secondary,
                     child: CachedNetworkImage(
                       imageUrl: product.thumbnail ?? '',
                       fit: BoxFit.contain,
@@ -103,7 +110,7 @@ class ProductCard3 extends StatelessWidget {
                     child: Container(
                       width: 50,
                       height: 24,
-                      color: Colors.green,
+                      color: const Color(0xFF1FA971),
                       alignment: Alignment.center,
                       child: Text(
                         AppStrings.new_tag,
@@ -125,13 +132,13 @@ class ProductCard3 extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.brown[50],
-                  borderRadius: BorderRadius.circular(4),
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star, size: 14, color: Colors.brown),
+                    Icon(Icons.star, size: 14, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text(
                       "${5 ?? 0} (${2 ?? 0})",
@@ -150,7 +157,10 @@ class ProductCard3 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? '',
-                style: UiTypography.cardTitle(),
+                style: UiTypography.cardTitle().copyWith(
+                  fontSize: 15,
+                  height: 1.2,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -168,12 +178,12 @@ class ProductCard3 extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: UiTypography.cardMeta().copyWith(
+                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -187,8 +197,8 @@ class ProductCard3 extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
-                  style: UiTypography.cardMeta(color: Colors.green)
-                      .copyWith(fontWeight: FontWeight.w600),
+                  style: UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                      .copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
             // ---- Add to Cart Button ----
@@ -199,22 +209,19 @@ class ProductCard3 extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
                 child: ElevatedButton.icon(
                   onPressed: onAddToCart,
-                  icon: const Icon(Icons.shopping_cart_outlined,
-                      size: 16, color: Colors.brown),
+                  icon: Icon(Icons.shopping_cart_outlined,
+                      size: 16, color: AppColors.primary),
                   label: Text(
                     AppStrings.add_to_cart,
-                    style: UiTypography.cardAction(color: Colors.brown)
+                    style: UiTypography.cardAction(color: AppColors.primary)
                         .copyWith(fontWeight: FontWeight.w700),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown[50],
-                    foregroundColor: Colors.brown,
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: AppColors.primary,
                     minimumSize: const Size(double.infinity, 44),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(0),
-                        bottomRight: Radius.circular(0),
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
                   ),

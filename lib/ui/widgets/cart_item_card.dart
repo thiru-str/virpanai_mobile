@@ -44,8 +44,16 @@ class CartItemCard extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(12.0),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(color: const Color(0xFFE5E7EC)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,26 +63,31 @@ class CartItemCard extends StatelessWidget {
                 children: [
                   // Product Image
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            width: 60,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            fadeInDuration: const Duration(milliseconds: 250),
-                            placeholder: (context, url) => const AppShimmer(
-                              child: ShimmerBox(
-                                width: 60,
-                                height: 80,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
+                    borderRadius: BorderRadius.circular(12.0),
+                    child: Container(
+                      width: 60,
+                      height: 80,
+                      color: AppColors.secondary,
+                      child: imageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              width: 60,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              fadeInDuration: const Duration(milliseconds: 250),
+                              placeholder: (context, url) => const AppShimmer(
+                                child: ShimmerBox(
+                                  width: 60,
+                                  height: 80,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(12)),
+                                ),
                               ),
-                            ),
-                            errorWidget: (context, _, __) =>
-                                const ImageFallbackWidget(w: 60, h: 80),
-                          )
-                        : const ImageFallbackWidget(w: 60, h: 80),
+                              errorWidget: (context, _, __) =>
+                                  const ImageFallbackWidget(w: 60, h: 80),
+                            )
+                          : const ImageFallbackWidget(w: 60, h: 80),
+                    ),
                   ),
                   const SizedBox(width: 12.0),
                   // Product Details
@@ -115,53 +128,49 @@ class CartItemCard extends StatelessWidget {
                             maxLines: 2,
                             textAlign: TextAlign.right,
                             overflow: TextOverflow.ellipsis,
-                            style: UiTypography.cardPrice(color: Colors.black87)
+                            style: UiTypography.cardPrice(color: AppColors.primary)
                                 .copyWith(fontSize: 16),
                           ),
                           const SizedBox(height: 8),
                           FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: onDecrease,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4.0),
-                                    decoration: BoxDecoration(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border:
+                                    Border.all(color: const Color(0xFFE5E7EC)),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 4),
+                              child: Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: onDecrease,
+                                    child: Icon(
+                                      Icons.remove_rounded,
                                       color: AppColors.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.remove,
-                                      color: Colors.white,
-                                      size: 16,
+                                      size: 18,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '$quantity',
-                                  style: UiTypography.cardAction(
-                                    color: Colors.black87,
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    '$quantity',
+                                    style: UiTypography.cardAction(
+                                      color: AppColors.textColor,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: onIncrease,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4.0),
-                                    decoration: BoxDecoration(
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: onIncrease,
+                                    child: Icon(
+                                      Icons.add_rounded,
                                       color: AppColors.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: Colors.white,
-                                      size: 16,
+                                      size: 18,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -172,10 +181,11 @@ class CartItemCard extends StatelessWidget {
                               child: Text(
                                 "Remove All",
                                 textAlign: TextAlign.right,
-                                style: UiTypography.cardMeta(color: Colors.red)
+                                style: UiTypography.cardMeta(
+                                        color: const Color(0xFFE5484D))
                                     .copyWith(
                                   fontWeight: FontWeight.w600,
-                                  decorationColor: Colors.red,
+                                  decorationColor: const Color(0xFFE5484D),
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -194,7 +204,7 @@ class CartItemCard extends StatelessWidget {
                       const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
                   child: Text(
                     error,
-                    style: UiTypography.cardMeta(color: Colors.red),
+                    style: UiTypography.cardMeta(color: const Color(0xFFE5484D)),
                     maxLines: 2,
                   ),
                 ),
@@ -208,7 +218,7 @@ class CartItemCard extends StatelessWidget {
             height: 100,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.72),
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(16.0),
             ),
             child: const Center(
               child: AppShimmer(

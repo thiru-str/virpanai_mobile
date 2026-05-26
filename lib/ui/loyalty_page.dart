@@ -7,6 +7,12 @@ import '../model/loyalty_response.dart';
 import '../utility/app_colors.dart';
 import '../utility/currency_util.dart';
 import '../utility/font_utils.dart';
+import '../utility/ui_typography.dart';
+
+const Color _kScaffoldBg = Color(0xFFF9F9FB);
+const Color _kHairline = Color(0xFFE5E7EC);
+const Color _kCredit = Color(0xFF1FA971);
+const Color _kCreditBg = Color(0xFFE7F7F0);
 
 class LoyaltyPage extends StatefulWidget {
   const LoyaltyPage({super.key});
@@ -195,12 +201,14 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: _kScaffoldBg,
       appBar: AppBar(
-        backgroundColor: Colors.white, elevation: 0, surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.white, elevation: 0.5, surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0, shadowColor: Colors.black.withOpacity(0.05),
         iconTheme: IconThemeData(color: AppColors.primary),
         title: Text('Loyalty Points',
-            style: FontUtils.primaryFontStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.bold)),
+            style: UiTypography.cardTitle(color: AppColors.primary)
+                .copyWith(fontSize: 20, height: 1.25, letterSpacing: -0.2)),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.primary))
@@ -230,11 +238,11 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.82)],
           begin: Alignment.topLeft, end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))],
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.30), blurRadius: 22, offset: const Offset(0, 10))],
       ),
       child: Column(
         children: [
@@ -282,16 +290,16 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
 
   Widget _earnBanner() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.06), borderRadius: BorderRadius.circular(10),
+        color: AppColors.primary.withOpacity(0.06), borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.primary.withOpacity(0.1)),
       ),
       child: Row(children: [
         Icon(Icons.stars_rounded, color: AppColors.primary, size: 18),
         const SizedBox(width: 8),
         Expanded(child: Text('Earn 1 point for every ₹${_numFmt(_account!.earnRatio)} spent',
-            style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade700))),
+            style: FontUtils.secondaryFontStyle(fontSize: 12.5, fontWeight: FontWeight.w500, color: Colors.grey.shade700))),
       ]),
     );
   }
@@ -301,23 +309,24 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
       Row(children: [
         Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary, size: 18),
         const SizedBox(width: 8),
-        Text('Redeem → Wallet', style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        Text('Redeem → Wallet', style: UiTypography.cardTitle().copyWith(fontSize: 16, letterSpacing: -0.2)),
       ]),
       const SizedBox(height: 4),
       Text('${_numFmt(_account!.redeemRatio)} points = ${CurrencyUtil.appendCurrency("1")}',
-          style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.grey.shade500)),
-      const SizedBox(height: 12),
+          style: UiTypography.cardMeta(color: Colors.grey.shade500)),
+      const SizedBox(height: 14),
       Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Expanded(
           child: TextField(
             controller: _redeemCtrl,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              hintText: 'Points to redeem', hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), isDense: true,
+              filled: true, fillColor: Colors.white,
+              hintText: 'Points to redeem', hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade300)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14), isDense: true,
               suffixIcon: GestureDetector(
                 onTap: _useMax,
                 child: Center(
@@ -325,7 +334,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+                    decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
                     child: Text('MAX', style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
                   ),
                 ),
@@ -334,23 +343,23 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
           ),
         ),
         const SizedBox(width: 10),
-        SizedBox(height: 46, child: ElevatedButton(
+        SizedBox(height: 50, child: ElevatedButton(
           onPressed: _isRedeeming ? null : _handleRedeem,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary, foregroundColor: Colors.white, elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            padding: const EdgeInsets.symmetric(horizontal: 22),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           child: _isRedeeming
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : const Text('Redeem', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+              : Text('Redeem', style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
         )),
       ]),
       if (_redeemPreview != null)
-        Padding(padding: const EdgeInsets.only(top: 6, left: 2), child: Row(children: [
-          Icon(Icons.arrow_forward, size: 12, color: Colors.green.shade600),
+        Padding(padding: const EdgeInsets.only(top: 8, left: 2), child: Row(children: [
+          const Icon(Icons.arrow_forward, size: 12, color: _kCredit),
           const SizedBox(width: 4),
-          Text('$_redeemPreview wallet credit', style: FontUtils.secondaryFontStyle(fontSize: 12, color: Colors.green.shade700)),
+          Text('$_redeemPreview wallet credit', style: FontUtils.secondaryFontStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _kCredit)),
         ])),
     ]));
   }
@@ -365,56 +374,60 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
       Row(children: [
         Icon(Icons.people_outline, color: AppColors.primary, size: 18),
         const SizedBox(width: 8),
-        Text('Refer & Earn', style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        Text('Refer & Earn', style: UiTypography.cardTitle().copyWith(fontSize: 16, letterSpacing: -0.2)),
       ]),
       // Reward info banner
       if (rewardEnabled) ...[
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.green.shade50, borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.green.shade100),
+            color: _kCreditBg, borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if ((rewardMode == 'signup' || rewardMode == 'both') && (signupPts as num) > 0)
                 Text('• Earn $signupPts pts when a friend signs up',
-                    style: FontUtils.secondaryFontStyle(fontSize: 11, color: Colors.green.shade700)),
+                    style: FontUtils.secondaryFontStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: _kCredit)),
               if ((rewardMode == 'first_order' || rewardMode == 'both') && (orderPts as num) > 0)
                 Text('• Earn $orderPts pts when they place first order',
-                    style: FontUtils.secondaryFontStyle(fontSize: 11, color: Colors.green.shade700)),
+                    style: FontUtils.secondaryFontStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: _kCredit)),
             ],
           ),
         ),
       ],
-      const SizedBox(height: 12),
+      const SizedBox(height: 14),
       Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.04), borderRadius: BorderRadius.circular(10),
+          color: AppColors.primary.withOpacity(0.05), borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.primary.withOpacity(0.15)),
         ),
         child: Center(child: Text(_referral!.referralCode!,
             style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 3))),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 14),
       Row(children: [
         Expanded(child: OutlinedButton.icon(
-          onPressed: _copyCode, icon: const Icon(Icons.copy, size: 15), label: const Text('Copy'),
+          onPressed: _copyCode, icon: const Icon(Icons.copy, size: 16),
+          label: Text('Copy', style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary, side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
-            padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            backgroundColor: Colors.white, foregroundColor: AppColors.primary,
+            side: BorderSide(color: AppColors.primary, width: 1.5),
+            minimumSize: const Size(0, 50),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         )),
         const SizedBox(width: 10),
         Expanded(child: ElevatedButton.icon(
-          onPressed: _shareCode, icon: const Icon(Icons.share, size: 15), label: const Text('Share'),
+          onPressed: _shareCode, icon: const Icon(Icons.share, size: 16),
+          label: Text('Share', style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary, foregroundColor: Colors.white, elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            minimumSize: const Size(0, 50),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         )),
       ]),
@@ -538,32 +551,38 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
 
   Widget _historySection() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Points History', style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 10),
+      Text('Points History', style: UiTypography.cardTitle().copyWith(fontSize: 18, letterSpacing: -0.2)),
+      const SizedBox(height: 12),
       if (_transactions.isEmpty)
         Container(
           width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 36),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+          decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 18, offset: const Offset(0, 8))],
+          ),
           child: Column(children: [
             Icon(Icons.stars_outlined, size: 36, color: Colors.grey.shade300),
             const SizedBox(height: 8),
-            Text('No transactions yet', style: FontUtils.secondaryFontStyle(fontSize: 13, color: Colors.grey)),
+            Text('No transactions yet', style: UiTypography.cardSubtitle(color: Colors.grey).copyWith(fontSize: 13)),
             const SizedBox(height: 2),
             Text('Earn points by placing orders!', style: FontUtils.secondaryFontStyle(fontSize: 11, color: Colors.grey.shade400)),
           ]),
         )
       else
         Container(
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+          decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 18, offset: const Offset(0, 8))],
+          ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
             child: Column(
               children: [
                 ..._transactions.asMap().entries.map((e) {
                   final i = e.key; final txn = e.value;
                   return Column(children: [
                     _txnItem(txn),
-                    if (i < _transactions.length - 1) Divider(height: 1, indent: 56, color: Colors.grey.shade100),
+                    if (i < _transactions.length - 1) const Divider(height: 1, indent: 60, color: _kHairline),
                   ]);
                 }),
                 // Load More button
@@ -572,16 +591,16 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
                     onTap: _isLoadingMore ? null : _loadMoreTransactions,
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: const BoxDecoration(
+                        border: Border(top: BorderSide(color: _kHairline)),
                       ),
                       child: Center(
                         child: _isLoadingMore
                             ? SizedBox(width: 16, height: 16,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
                             : Text('Load More',
-                                style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                                style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
                       ),
                     ),
                   ),
@@ -605,7 +624,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
         ),
         const SizedBox(width: 10),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(info.label, style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(info.label, style: UiTypography.cardTitle().copyWith(fontSize: 13.5)),
           if (txn.note != null && txn.note!.isNotEmpty)
             Text(txn.note!, maxLines: 2, overflow: TextOverflow.ellipsis,
                 style: FontUtils.secondaryFontStyle(fontSize: 11, color: Colors.grey.shade500)),
@@ -613,16 +632,16 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
         const SizedBox(width: 8),
         Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: pos ? Colors.green.shade50 : Colors.red.shade50,
-              borderRadius: BorderRadius.circular(6),
+              color: pos ? _kCreditBg : const Color(0xFFFDECEC),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '${pos ? "+" : ""}$pts pts',
               style: FontUtils.primaryFontStyle(
                 fontSize: 13, fontWeight: FontWeight.bold,
-                color: pos ? Colors.green.shade700 : Colors.red.shade600,
+                color: pos ? _kCredit : const Color(0xFFE5484D),
               ),
             ),
           ),
@@ -631,7 +650,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
             pos ? 'Credited' : 'Debited',
             style: FontUtils.secondaryFontStyle(
               fontSize: 10,
-              color: pos ? Colors.green.shade400 : Colors.red.shade300,
+              color: pos ? _kCredit.withOpacity(0.7) : const Color(0xFFE5484D).withOpacity(0.7),
             ),
           ),
           if (txn.createdAt != null)
@@ -662,11 +681,10 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   }
 
   Widget _card({required Widget child}) => Container(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: Colors.white, borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade200),
-      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2))],
+      color: Colors.white, borderRadius: BorderRadius.circular(20),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 18, offset: const Offset(0, 8))],
     ),
     child: child,
   );

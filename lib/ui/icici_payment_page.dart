@@ -69,12 +69,14 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF9F9FB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.close, size: 22),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           color: const Color(0xFF272727),
           onPressed: () => widget.onFailure(),
         ),
@@ -110,8 +112,31 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
         children: [
           WebViewWidget(controller: _controller),
           if (_loading)
-            Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+            Container(
+              color: const Color(0xFFF9F9FB),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2.8,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Securing your payment…',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0x80272727),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),

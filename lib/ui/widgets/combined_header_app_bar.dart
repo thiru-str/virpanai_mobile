@@ -8,6 +8,7 @@ import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
+import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -339,18 +340,17 @@ class CombinedHeaderAppBar extends StatelessWidget
         height: 44,
         decoration: BoxDecoration(
           color: AppColors.searchBarColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.textColor),
+            Icon(Icons.search, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 AppStrings.search,
-                style: FontUtils.secondaryFontStyle(
-                  color: AppColors.textColor.withOpacity(0.7),
-                ),
+                style: UiTypography.searchHint(),
               ),
             ),
           ],

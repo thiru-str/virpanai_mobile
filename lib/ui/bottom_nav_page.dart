@@ -218,24 +218,27 @@ class _BottomNavPageState extends State<BottomNavPage>
                         const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
                         if ((cartItems ?? 0) > 0)
                           Positioned(
-                            right: 0,
-                            top: 0,
+                            right: -4,
+                            top: -3,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 2),
+                                  horizontal: 5, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.red,
+                                color: const Color(0xFFE5484D),
                                 borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.white, width: 1.5),
                               ),
                               constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
+                                minWidth: 18,
+                                minHeight: 18,
                               ),
                               child: Text(
-                                cartItems!.toString(),
-                                style: const TextStyle(
+                                cartItems! > 99 ? '99+' : cartItems!.toString(),
+                                style: FontUtils.primaryFontStyle(
                                   color: Colors.white,
-                                  fontSize: 10,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
