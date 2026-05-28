@@ -579,13 +579,19 @@ class _DeliveryOptionTile extends StatelessWidget {
           ),
           child: Row(children: [
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label,
-                    style: FontUtils.primaryFontStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700,
-                        color: active ? AppColors.primary : const Color(0xFF1A1A1A))),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(label,
+                      maxLines: 1, softWrap: false,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 13, fontWeight: FontWeight.w700,
+                          color: active ? AppColors.primary : const Color(0xFF1A1A1A))),
+                ),
                 const SizedBox(height: 2),
                 Text(sub,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: FontUtils.primaryFontStyle(
                         fontSize: 11,
                         color: active ? AppColors.primary.withValues(alpha: 0.65) : Colors.grey.shade500)),
@@ -909,6 +915,35 @@ class _DateStrip extends StatelessWidget {
   }
 }
 
+// Format slot start/end (HH:mm) into a clean hour-only label:
+//   09:00–10:00 → "9 - 10 AM"
+//   11:00–13:00 → "11 AM - 1 PM"
+//   minutes shown only when non-zero (e.g. "9:30 - 10:30 AM")
+String _formatSlot(DeliverySlot s) {
+  final st = s.startTime.split(':');
+  final et = s.endTime.split(':');
+  if (st.length < 2 || et.length < 2) return s.label;
+  final sH = int.tryParse(st[0]);
+  final sM = int.tryParse(st[1]);
+  final eH = int.tryParse(et[0]);
+  final eM = int.tryParse(et[1]);
+  if (sH == null || sM == null || eH == null || eM == null) return s.label;
+
+  String fmt(int hour, int minute, bool withSuffix) {
+    final isPm = hour >= 12;
+    final h12 = (hour == 0) ? 12 : (hour > 12 ? hour - 12 : hour);
+    final mm = minute == 0 ? '' : ':${minute.toString().padLeft(2, '0')}';
+    final suf = withSuffix ? (isPm ? ' PM' : ' AM') : '';
+    return '$h12$mm$suf';
+  }
+
+  final sameMeridiem = (sH < 12) == (eH < 12);
+  if (sameMeridiem) {
+    return '${fmt(sH, sM, false)} - ${fmt(eH, eM, true)}';
+  }
+  return '${fmt(sH, sM, true)} - ${fmt(eH, eM, true)}';
+}
+
 class _SlotSection extends StatelessWidget {
   final List<DeliverySlot> slots;
   final bool loading;
@@ -934,13 +969,14 @@ class _SlotSection extends StatelessWidget {
     if (slots.isEmpty) return _InfoBanner(message: 'No slots available. Try another date.', color: Colors.grey);
     return GridView.count(
       shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3, childAspectRatio: 2.0, mainAxisSpacing: 10, crossAxisSpacing: 10,
+      crossAxisCount: 3, childAspectRatio: 2.4, mainAxisSpacing: 10, crossAxisSpacing: 10,
       children: slots.map((slot) {
         final sel = selectedId == slot.id;
         return GestureDetector(
           onTap: slot.available ? () => onSelect(slot) : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
             decoration: BoxDecoration(
               color: !slot.available
                   ? Colors.grey.shade50
@@ -952,12 +988,15 @@ class _SlotSection extends StatelessWidget {
               ),
             ),
             child: Stack(alignment: Alignment.center, children: [
-              Text(slot.label,
-                  textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: FontUtils.primaryFontStyle(
-                      fontSize: 11,
-                      fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
-                      color: !slot.available ? Colors.grey.shade400 : sel ? accent : const Color(0xFF2A2A2A))),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(_formatSlot(slot),
+                    textAlign: TextAlign.center, maxLines: 1, softWrap: false,
+                    style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                        color: !slot.available ? Colors.grey.shade400 : sel ? accent : const Color(0xFF2A2A2A))),
+              ),
               if (!slot.available)
                 Positioned(top: 3, right: 4,
                     child: Text('Full', style: FontUtils.primaryFontStyle(fontSize: 9, color: Colors.grey.shade400))),
