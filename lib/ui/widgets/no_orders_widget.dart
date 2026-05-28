@@ -40,6 +40,7 @@ class NoOrdersWidget extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -69,11 +70,12 @@ class NoOrdersWidget extends StatelessWidget {
                 onPressed: onButtonTap,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary, // Background color
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 ),
                 child: Text(
                   buttonText,

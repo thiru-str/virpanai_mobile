@@ -58,69 +58,71 @@ class CartItemCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Product Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12.0),
-                    child: Container(
-                      width: 60,
-                      height: 80,
-                      color: AppColors.secondary,
-                      child: imageUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              width: 60,
-                              height: 80,
-                              fit: BoxFit.cover,
-                              fadeInDuration: const Duration(milliseconds: 250),
-                              placeholder: (context, url) => const AppShimmer(
-                                child: ShimmerBox(
-                                  width: 60,
-                                  height: 80,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(12)),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Product Image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Container(
+                        width: 60,
+                        height: 80,
+                        color: AppColors.secondary,
+                        child: imageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: 60,
+                                height: 80,
+                                fit: BoxFit.cover,
+                                fadeInDuration:
+                                    const Duration(milliseconds: 250),
+                                placeholder: (context, url) => const AppShimmer(
+                                  child: ShimmerBox(
+                                    width: 60,
+                                    height: 80,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(12)),
+                                  ),
                                 ),
-                              ),
-                              errorWidget: (context, _, __) =>
-                                  const ImageFallbackWidget(w: 60, h: 80),
-                            )
-                          : const ImageFallbackWidget(w: 60, h: 80),
+                                errorWidget: (context, _, __) =>
+                                    const ImageFallbackWidget(w: 60, h: 80),
+                              )
+                            : const ImageFallbackWidget(w: 60, h: 80),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12.0),
-                  // Product Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          productName,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: UiTypography.cardTitle(color: Colors.black87),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          size,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: UiTypography.cardSubtitle(
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Price and Quantity Adjustment
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(minWidth: 96, maxWidth: 132),
+                    const SizedBox(width: 12.0),
+                    // Product Details
+                    Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            productName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                                UiTypography.cardTitle(color: Colors.black87),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            size,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: UiTypography.cardSubtitle(
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Price and Quantity Adjustment
+                    const SizedBox(width: 12.0),
+                    SizedBox(
+                      width: 132,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
@@ -128,74 +130,87 @@ class CartItemCard extends StatelessWidget {
                             maxLines: 2,
                             textAlign: TextAlign.right,
                             overflow: TextOverflow.ellipsis,
-                            style: UiTypography.cardPrice(color: AppColors.primary)
-                                .copyWith(fontSize: 16),
+                            style:
+                                UiTypography.cardPrice(color: AppColors.primary)
+                                    .copyWith(fontSize: 16),
                           ),
-                          const SizedBox(height: 8),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border:
-                                    Border.all(color: const Color(0xFFE5E7EC)),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 4),
-                              child: Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: onDecrease,
-                                    child: Icon(
-                                      Icons.remove_rounded,
-                                      color: AppColors.primary,
-                                      size: 18,
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                          color: const Color(0xFFE5E7EC)),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: onDecrease,
+                                          child: Icon(
+                                            Icons.remove_rounded,
+                                            color: AppColors.primary,
+                                            size: 18,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          '$quantity',
+                                          style: UiTypography.cardAction(
+                                            color: AppColors.textColor,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        GestureDetector(
+                                          onTap: onIncrease,
+                                          child: Icon(
+                                            Icons.add_rounded,
+                                            color: AppColors.primary,
+                                            size: 18,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    '$quantity',
-                                    style: UiTypography.cardAction(
-                                      color: AppColors.textColor,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  GestureDetector(
-                                    onTap: onIncrease,
-                                    child: Icon(
-                                      Icons.add_rounded,
-                                      color: AppColors.primary,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Visibility(
-                            visible: quantity > 1,
-                            child: GestureDetector(
-                              onTap: onRemoveAll,
-                              child: Text(
-                                "Remove All",
-                                textAlign: TextAlign.right,
-                                style: UiTypography.cardMeta(
-                                        color: const Color(0xFFE5484D))
-                                    .copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  decorationColor: const Color(0xFFE5484D),
-                                  decoration: TextDecoration.underline,
                                 ),
                               ),
-                            ),
+                              Visibility(
+                                visible: quantity > 1,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: GestureDetector(
+                                    onTap: onRemoveAll,
+                                    child: Text(
+                                      "Remove All",
+                                      textAlign: TextAlign.right,
+                                      style: UiTypography.cardMeta(
+                                              color: const Color(0xFFE5484D))
+                                          .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        decorationColor:
+                                            const Color(0xFFE5484D),
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Visibility(
                 visible: error.isNotEmpty,
@@ -204,7 +219,8 @@ class CartItemCard extends StatelessWidget {
                       const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
                   child: Text(
                     error,
-                    style: UiTypography.cardMeta(color: const Color(0xFFE5484D)),
+                    style:
+                        UiTypography.cardMeta(color: const Color(0xFFE5484D)),
                     maxLines: 2,
                   ),
                 ),

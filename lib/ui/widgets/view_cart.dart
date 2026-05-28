@@ -117,7 +117,7 @@ class ViewCartWidget extends StatelessWidget {
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(width: 14),
           // Action button
           Container(
             height: 40,
