@@ -7,7 +7,7 @@ class AppLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withValues(alpha: 0.12),
+      color: Colors.white,
       alignment: Alignment.center,
       child: Image.asset(
         AppAssets.app_loader,
