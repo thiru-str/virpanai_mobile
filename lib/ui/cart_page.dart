@@ -1153,6 +1153,37 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    // Ensure cart has a shipping method attached before placing the order.
+    // Some backends rely on a subscriber to auto-attach (distance-based etc.),
+    // but if it fails the cart stays without one and complete-cart rejects
+    // with "No shipping method selected but the cart contains items that
+    // require shipping". Fetch options here and attach the first as fallback.
+    final hasShipping = (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    if (!hasShipping) {
+      try {
+        setState(() => cartLoading = true);
+        final api = ApiService();
+        final shipping = await api.getShippingInfo(context);
+        final first = shipping.shippingOptions?.isNotEmpty == true
+            ? shipping.shippingOptions!.first
+            : null;
+        if (first?.id != null) {
+          await api.updateShippingMethod(context, first!.id!);
+          await getCartApi();
+        } else {
+          setState(() => cartLoading = false);
+          AppUtils.showToast('No shipping method available for this address.');
+          return;
+        }
+      } catch (e) {
+        setState(() => cartLoading = false);
+        AppUtils.showToast('Could not attach shipping method. Please try again.');
+        return;
+      } finally {
+        setState(() => cartLoading = false);
+      }
+    }
+
     if (paymentProviderId == 'pp_icici_icici') {
       _makeIciciPayment();
       return;
