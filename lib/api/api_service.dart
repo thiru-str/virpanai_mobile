@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -51,6 +50,7 @@ import '../model/tags_response.dart';
 import '../ui/bottom_nav_page.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
+import '../utility/location_util.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
@@ -91,6 +91,32 @@ class ApiService {
       return data;
     }
     return 'An error occurred';
+  }
+
+  Future<Map<String, dynamic>> _getLocationPayload() async {
+    final prefs = SharedPreferencesUtil();
+    double? latitude = await prefs.getDouble('current_latitude');
+    double? longitude = await prefs.getDouble('current_longitude');
+
+    if (latitude == null || longitude == null) {
+      final position = await LocationUtil.getApproximateLocation();
+      latitude = position?.latitude;
+      longitude = position?.longitude;
+
+      if (latitude != null && longitude != null) {
+        await prefs.saveDouble('current_latitude', latitude);
+        await prefs.saveDouble('current_longitude', longitude);
+      }
+    }
+
+    if (latitude == null || longitude == null) {
+      return {};
+    }
+
+    return {
+      'lat': latitude,
+      'lng': longitude,
+    };
   }
 
   Future<T> _makePostRequest<T>(
@@ -557,10 +583,14 @@ class ApiService {
   Future<ProductDetailReponse> productDetail(
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
+    final locationPayload = await _getLocationPayload();
     return _makeGetRequest<ProductDetailReponse>(
-      'store/products',
+      'store/custom-product-detail',
       '$productId?fields=+variants.inventory_quantity,+metadata',
-      {"region_id": regionId},
+      {
+        "region_id": regionId,
+        ...locationPayload,
+      },
       (json) => ProductDetailReponse.fromJson(json),
       context,
     );
@@ -604,9 +634,16 @@ class ApiService {
   Future<HomePageResponse> getHomePage(BuildContext context,
       {int offset = 0, int limit = 0}) async {
     await addToken();
+    final locationPayload = await _getLocationPayload();
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest<HomePageResponse>(
-      'store/get_home_page/v8',
-      {'limit': limit, 'offset': offset},
+      'store/get_home_page/tryfresh/v1',
+      {
+        'limit': limit,
+        'offset': offset,
+        if (cartId != null && cartId.isNotEmpty) 'cart_id': cartId,
+        ...locationPayload,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -708,6 +745,27 @@ class ApiService {
     return _makePostRequest(
       'store/custom-carts/$cartId/line-items',
       {"variant_id": variantId, "quantity": qty, "metadata": {}},
+      (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CartResponse> addUnitBasedCart(
+    BuildContext context, {
+    required int qty,
+    required String variantId,
+    required int unitQuantity,
+  }) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/unit-cart/add',
+      {
+        "cart_id": cartId,
+        "variant_id": variantId,
+        "unit_quantity": unitQuantity,
+        "quantity": qty,
+      },
       (json) => CartResponse.fromJson(json),
       context,
     );
