@@ -380,21 +380,27 @@ class _AddToListSheetState extends State<_AddToListSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-    final maxH = MediaQuery.of(context).size.height * 0.85;
+    final media = MediaQuery.of(context);
+    // Cap to the space above the keyboard; sheet shrinks when keyboard opens
+    // so the focused TextField auto-scrolls into the remaining visible area.
+    final maxH = media.size.height - media.viewInsets.bottom - 80;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        constraints: BoxConstraints(maxHeight: maxH),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottom),
-          child: Column(
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        child: Container(
+          constraints: BoxConstraints(maxHeight: maxH),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -669,6 +675,7 @@ class _AddToListSheetState extends State<_AddToListSheet> {
           ),
         ],
       ),
+          ),
         ),
       ),
     );
