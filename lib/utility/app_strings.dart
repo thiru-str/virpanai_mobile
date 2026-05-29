@@ -139,6 +139,7 @@ class AppStrings {
   static const String billing_details = 'Billing details';
   static const String shipping_details = "Shipping Details";
   static const String fast_delivery = "Lightning-Fast Delivery";
+  static const String set_delivery_address = "Set delivery address";
   static const String delivered = 'Delivered';
   static const String shipped = 'Shipped';
   static const String order_confirmed = " Order Confirmed";
