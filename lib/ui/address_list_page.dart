@@ -85,7 +85,7 @@ class _AddressListPageState extends State<AddressListPage> {
                                   bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                                   final result = await PageRouteUtils.pushWithSlide(
                                       context,
-                                      isGoogleMapUsage? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0):AddAddressPage(
+                                      isGoogleMapUsage? MapPage(doublePop: true,isEditAddress: true,selectedAddress: address,latitude: double.tryParse(address?.metadata?.latitude ?? '') ?? 0.0,longitude: double.tryParse(address?.metadata?.longitude ?? '') ?? 0.0,intent: MapPageIntent.saveAddress,):AddAddressPage(
                                         selectedAddress: address,
                                       ));
                                   if (result == true) {
@@ -111,7 +111,7 @@ class _AddressListPageState extends State<AddressListPage> {
                               bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                               final result = await PageRouteUtils.pushWithSlide(
                                   context,
-                                  isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
+                                  isGoogleMapUsage? MapPage(doublePop: true, intent: MapPageIntent.saveAddress): AddAddressPage());
                               if (result == true) {
                                 getAddressListApi();
                               }
@@ -146,7 +146,7 @@ class _AddressListPageState extends State<AddressListPage> {
                     bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
                     final result = await PageRouteUtils.pushWithSlide(
                         context,
-                        isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
+                        isGoogleMapUsage? MapPage(doublePop: true, intent: MapPageIntent.saveAddress): AddAddressPage());
                     if (result == true) {
                       getAddressListApi();
                     }

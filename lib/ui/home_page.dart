@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
@@ -39,6 +40,7 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/page_route_utils.dart';
@@ -61,6 +63,11 @@ class _HomePageState extends State<HomePage> {
   String headerTitle = "";
   String addressType = "";
   String appHeader = "";
+  // Location params derived from the selected delivery address — passed to
+  // the home page API so backend can later use them for geo-aware content.
+  double? _selectedLat;
+  double? _selectedLng;
+  String? _selectedPincode;
 
   int? cartItems;
   List<String>? cartItemImages;
@@ -138,21 +145,57 @@ class _HomePageState extends State<HomePage> {
         appHeader = savedHeader;
       });
     }
+    await _loadSelectedAddress();
     getHomePageApi(limit: _limit, offset: _offset);
+  }
+
+  Future<void> _loadSelectedAddress() async {
+    final map = await SharedPreferencesUtil().getMap('selected_address');
+    if (!mounted || map == null) return;
+    // Build a single-line address from the parts we care about
+    final addr1 = map['address_1'] as String? ?? '';
+    final city = map['city'] as String? ?? '';
+    final province = map['province'] as String? ?? '';
+    final postal = map['postal_code'] as String? ?? '';
+    final parts =
+        [addr1, city, province, postal].where((s) => s.trim().isNotEmpty);
+    final meta = map['metadata'] as Map<String, dynamic>?;
+    setState(() {
+      headerTitle = parts.join(', ');
+      addressType = (map['address_name'] as String?)?.trim().isNotEmpty == true
+          ? map['address_name'] as String
+          : 'Other';
+      _selectedLat = double.tryParse((meta?['latitude'] as String?) ?? '');
+      _selectedLng = double.tryParse((meta?['longitude'] as String?) ?? '');
+      _selectedPincode = postal;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final PreferredSizeWidget homeAppBar = CombinedHeaderAppBar(
-      headerType: appHeader.isEmpty ? 'header-4' : appHeader,
-      title: headerTitle,
-      cartCount: cartItems ?? 0,
-      onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-      onSearchClick: () => PageRouteUtils.pushWithFade(
-        context,
-        const ProductPage(),
-      ),
-    );
+    late final PreferredSizeWidget homeAppBar;
+    if (apiLoading) {
+      homeAppBar = HomeHeaderSkeleton(
+        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+      );
+    } else {
+      homeAppBar = CombinedHeaderAppBar(
+        headerType: appHeader.isEmpty ? 'header-4' : appHeader,
+        title: headerTitle,
+        addressType: addressType,
+        cartCount: cartItems ?? 0,
+        onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
+        onSearchClick: () => PageRouteUtils.pushWithFade(
+          context,
+          const ProductPage(),
+        ),
+        onLocationTap: () async {
+          await PageRouteUtils.pushWithSlide(context, const SearchAddressPage());
+          initializePages();
+        },
+        onProfileTap: () => eventBus.fire(TabSwitchEvent(4)),
+      );
+    }
 
     return Stack(
       children: [
@@ -452,6 +495,9 @@ class _HomePageState extends State<HomePage> {
         context,
         limit: limit,
         offset: offset,
+        latitude: _selectedLat,
+        longitude: _selectedLng,
+        pincode: _selectedPincode,
       );
 
       /// FIRST PAGE

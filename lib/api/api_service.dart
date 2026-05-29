@@ -604,11 +604,21 @@ class ApiService {
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
-      {int offset = 0, int limit = 0}) async {
+      {int offset = 0,
+      int limit = 0,
+      double? latitude,
+      double? longitude,
+      String? pincode}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-      {'limit': limit, 'offset': offset},
+      {
+        'limit': limit,
+        'offset': offset,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
