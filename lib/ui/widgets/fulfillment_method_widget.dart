@@ -437,7 +437,10 @@ class _DeliverySheetState extends State<_DeliverySheet> {
   Widget build(BuildContext context) {
     final bottomPad = MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom;
 
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
       margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.12),
       decoration: const BoxDecoration(
         color: Color(0xFFF5F5F7),
@@ -474,6 +477,7 @@ class _DeliverySheetState extends State<_DeliverySheet> {
 
         Expanded(
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPad + 90),
             child: _mode == 'instant'
                 ? _InstantContent()
@@ -545,6 +549,7 @@ class _DeliverySheetState extends State<_DeliverySheet> {
           onTap: _canConfirm ? _confirm : null,
         ),
       ]),
+      ),
     );
   }
 }
