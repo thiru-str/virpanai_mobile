@@ -128,7 +128,7 @@ Future<void> _savePublicDetailsToPrefs(PublicDetailsResponse details) async {
   final prefs = SharedPreferencesUtil();
   await prefs.saveMap('public_details', details.toJson());
   await prefs.saveString('publishable_key', details.token ?? '');
-  await prefs.saveBool('google_map_usage', false);
+  await prefs.saveBool('google_map_usage', details.googleMapUsage ?? false);
   await prefs.saveString('app_header', details.theme?.header ?? '');
   await prefs.saveString('product_view', details.theme?.productView ?? '');
   await prefs.saveString(
