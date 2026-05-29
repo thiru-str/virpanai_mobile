@@ -193,8 +193,10 @@ class CombinedHeaderAppBar extends StatelessWidget
     );
   }
 
-  /// Reusable location row — tappable, brand-tinted, ellipsised, empty state.
-  Widget _locationRow() {
+  /// Reusable location row — tappable, ellipsised, empty state.
+  /// [showLeadingIcon] paints the brand-tinted pin on the left; header-7 sets
+  /// it to false because it already has a profile icon there.
+  Widget _locationRow({bool showLeadingIcon = true}) {
     final bool hasAddress = title.trim().isNotEmpty;
     final String label =
         addressType.trim().isNotEmpty ? addressType : AppStrings.fast_delivery;
@@ -207,18 +209,20 @@ class CombinedHeaderAppBar extends StatelessWidget
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 32,
-              height: 32,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
+            if (showLeadingIcon) ...[
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.location_on_rounded,
+                    color: AppColors.primary, size: 18),
               ),
-              child: Icon(Icons.location_on_rounded,
-                  color: AppColors.primary, size: 18),
-            ),
-            const SizedBox(width: 10),
+              const SizedBox(width: 10),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +282,7 @@ class CombinedHeaderAppBar extends StatelessWidget
                     color: Colors.grey, size: 36),
               ),
               const SizedBox(width: 8),
-              Expanded(child: _locationRow()),
+              Expanded(child: _locationRow(showLeadingIcon: false)),
             ],
           ),
           const SizedBox(height: 8),
