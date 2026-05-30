@@ -381,54 +381,64 @@ class _AddToListSheetState extends State<_AddToListSheet> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    // Cap to the space above the keyboard; sheet shrinks when keyboard opens
-    // so the focused TextField auto-scrolls into the remaining visible area.
-    final maxH = media.size.height - media.viewInsets.bottom - 80;
+    final keyboardH = media.viewInsets.bottom;
+    // Fixed sheet height (75% of screen) clamped so it never overflows when
+    // the keyboard is visible. Title + actions stay anchored; only the middle
+    // section scrolls — no layout jump on focus/blur.
+    final sheetH = (media.size.height * 0.75)
+        .clamp(0.0, media.size.height - keyboardH - 40);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => FocusScope.of(context).unfocus(),
       child: AnimatedPadding(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
-        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        padding: EdgeInsets.only(bottom: keyboardH),
         child: Container(
-          constraints: BoxConstraints(maxHeight: maxH),
+          height: sheetH,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Sticky header: drag handle + title ──────────────────────
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
-          ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  'Save to ${widget.config.displayName}',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF272727),
+                  ),
+                ),
+              ),
+              Divider(height: 16, thickness: 0.5, color: Colors.grey.shade200),
 
-          // Title
-          Text(
-            'Save to ${widget.config.displayName}',
-            style: FontUtils.secondaryFontStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF272727),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Variant picker
+              // ── Scrollable middle ──────────────────────────────────────
+              Expanded(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Variant picker
           if (widget.variants.length > 1) ...[
             _sectionLabel('Variant'),
             const SizedBox(height: 8),
@@ -625,56 +635,70 @@ class _AddToListSheetState extends State<_AddToListSheet> {
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Actions
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _saving ? null : () => Navigator.pop(context, false),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade200),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    ],
                   ),
-                  child: Text('Cancel',
-                      style: FontUtils.primaryFontStyle(
-                          fontSize: 14, fontWeight: FontWeight.w500)),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _saving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    disabledBackgroundColor:
-                        AppColors.primary.withOpacity(0.5),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+
+              // ── Sticky footer: Cancel + Save ────────────────────────
+              // Light top divider (no full divider) — just enough separation.
+              Container(height: 1, color: Colors.grey.shade100),
+              SafeArea(
+                top: false,
+                minimum: const EdgeInsets.only(bottom: 8),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+                  child: Row(
+                    children: [
+                      // Secondary: text-only cancel — less visual weight
+                      TextButton(
+                        onPressed: _saving
+                            ? null
+                            : () => Navigator.pop(context, false),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Cancel',
+                            style: FontUtils.primaryFontStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF6B7280))),
+                      ),
+                      const Spacer(),
+                      // Primary CTA — focused, right-aligned, comfortable size
+                      ElevatedButton(
+                        onPressed: _saving ? null : _save,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          disabledBackgroundColor:
+                              AppColors.primary.withOpacity(0.5),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 12),
+                        ),
+                        child: _saving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : Text('Save',
+                                style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                      ),
+                    ],
                   ),
-                  child: _saving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : Text('Save',
-                          style: FontUtils.primaryFontStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
                 ),
               ),
             ],
-          ),
-        ],
-      ),
           ),
         ),
       ),
