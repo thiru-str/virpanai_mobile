@@ -50,7 +50,6 @@ import '../model/tags_response.dart';
 import '../ui/bottom_nav_page.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
-import '../utility/location_util.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
@@ -91,32 +90,6 @@ class ApiService {
       return data;
     }
     return 'An error occurred';
-  }
-
-  Future<Map<String, dynamic>> _getLocationPayload() async {
-    final prefs = SharedPreferencesUtil();
-    double? latitude = await prefs.getDouble('current_latitude');
-    double? longitude = await prefs.getDouble('current_longitude');
-
-    if (latitude == null || longitude == null) {
-      final position = await LocationUtil.getApproximateLocation();
-      latitude = position?.latitude;
-      longitude = position?.longitude;
-
-      if (latitude != null && longitude != null) {
-        await prefs.saveDouble('current_latitude', latitude);
-        await prefs.saveDouble('current_longitude', longitude);
-      }
-    }
-
-    if (latitude == null || longitude == null) {
-      return {};
-    }
-
-    return {
-      'lat': latitude,
-      'lng': longitude,
-    };
   }
 
   Future<T> _makePostRequest<T>(
@@ -583,13 +556,23 @@ class ApiService {
   Future<ProductDetailReponse> productDetail(
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    final locationPayload = await _getLocationPayload();
+    final selectedAddress =
+        await SharedPreferencesUtil().getMap('selected_address');
+    final metadata = selectedAddress?['metadata'];
+    final latitude = metadata is Map
+        ? double.tryParse(metadata['latitude']?.toString() ?? '')
+        : null;
+    final longitude = metadata is Map
+        ? double.tryParse(metadata['longitude']?.toString() ?? '')
+        : null;
+
     return _makeGetRequest<ProductDetailReponse>(
       'store/custom-product-detail',
       '$productId?fields=+variants.inventory_quantity,+metadata',
       {
         "region_id": regionId,
-        ...locationPayload,
+        if (latitude != null) "latitude": latitude,
+        if (longitude != null) "longitude": longitude,
       },
       (json) => ProductDetailReponse.fromJson(json),
       context,
@@ -638,8 +621,6 @@ class ApiService {
       double? longitude,
       String? pincode}) async {
     await addToken();
-    final locationPayload = await _getLocationPayload();
-    final cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/tryfresh/v1',
       {
@@ -1019,14 +1000,65 @@ class ApiService {
     );
   }
 
-  Future<PublicDetailsResponse> getPublicDetails() async {
+  Future<PublicDetailsResponse> getPublicDetails({
+    double? latitude,
+    double? longitude,
+  }) async {
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',
       null,
-      null,
+      {
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
+      },
       (json) => PublicDetailsResponse.fromJson(json),
       null,
     );
+  }
+
+  Future<Map<String, dynamic>> syncCartLocation(
+    BuildContext context, {
+    required double latitude,
+    required double longitude,
+    Map<String, dynamic>? address,
+  }) async {
+    await addToken();
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    final countryCode =
+        address?['country_code']?.toString().trim().toLowerCase();
+    return _makePostRequest<Map<String, dynamic>>(
+      'store/custom-carts/location-sync',
+      {
+        'cart_id': cartId,
+        'latitude': latitude,
+        'longitude': longitude,
+        if (address != null) 'address_1': address['address_1'],
+        if (address != null) 'address_2': address['address_2'],
+        if (address != null) 'city': address['city'],
+        if (address != null) 'province': address['province'],
+        if (address != null) 'postal_code': address['postal_code'],
+        if (countryCode != null && countryCode.isNotEmpty)
+          'country_code': countryCode,
+        if (address != null) 'first_name': address['first_name'],
+        if (address != null) 'last_name': address['last_name'],
+        if (address != null) 'phone': address['phone'],
+        if (address != null) 'company': address['company'],
+      },
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<void> clearCartItems(BuildContext context) async {
+    await addToken();
+    final cart = await getCart(context);
+    final items = cart.cart?.items ?? [];
+
+    for (final item in items) {
+      final itemId = item.id;
+      if (itemId == null || itemId.isEmpty) continue;
+      await removeCart(context, itemId);
+    }
   }
 
   Future<bool> getCouponListVisibility() async {
@@ -1101,8 +1133,6 @@ class ApiService {
   }
 
   Future<CollectionsResponse> listCollections(BuildContext context) async {
-    String? regionId = await SharedPreferencesUtil().getString('region_id');
-
     return _makeGetRequest<CollectionsResponse>(
       'store/collections',
       null,

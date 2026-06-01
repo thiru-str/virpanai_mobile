@@ -727,6 +727,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return (10 - cartQuantity).clamp(0, 10);
   }
 
+  void _clampSelectedQuantity() {
+    final maxQty = getMaxQuantity(
+      selectedVariant,
+      cartResponse?.cart?.items ?? const [],
+    );
+
+    final normalizedQty = maxQty <= 0
+        ? 1
+        : selectedQuantity.clamp(1, maxQty).toInt();
+
+    if (selectedQuantity != normalizedQty) {
+      selectedQuantity = normalizedQty;
+    }
+  }
+
   Widget buildProductDescription() {
     final variantDesc = selectedVariant?.metadata?.description ?? '';
     final productDesc =
@@ -992,6 +1007,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 getDefaultUnitQuantity(product!.variants!.first);
             showVariantSelection = false;
             stockNotAvailable = !isStockAvailable(product!.variants!.first);
+            _clampSelectedQuantity();
           });
         } else {
           final cheapestAvailable = getCheapestAvailableVariant(product!);
@@ -1024,6 +1040,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               }
 
               showVariantSelection = true;
+              _clampSelectedQuantity();
             });
           }
         }
@@ -1031,6 +1048,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         setState(() {
           selectedVariantId = product?.id;
           showVariantSelection = false;
+          _clampSelectedQuantity();
         });
       }
     } catch (e) {
@@ -1287,6 +1305,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         productPresentInCart = cartResponse?.cart?.items
                 ?.any((item) => item.variantId == selectedVariantId) ??
             false;
+        _clampSelectedQuantity();
         emitEvent(cartResponse!);
       });
     } catch (e) {
@@ -1404,25 +1423,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void emitEvent(CartResponse cartResponse) {
+    final productItems = (cartResponse.cart?.items ?? [])
+        .where((item) => !item.isVirtualItem)
+        .toList();
+    final totalQty = productItems
+        .map((item) => item.quantity ?? 0)
+        .fold<int>(0, (sum, qty) => sum + qty);
+
     setState(() {
-      cartItems =
-          cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
-      cartItemImages = cartResponse.cart?.items
-          ?.where((item) => !item.isPlatformFee)
-          .map((item) => item.thumbnail ?? "")
-          .toList();
+      cartItems = totalQty;
+      cartItemImages = productItems.map((item) => item.thumbnail ?? "").toList();
     });
-    if ((cartResponse.cart?.items
-                ?.where((item) => !item.isPlatformFee)
-                .length ??
-            0) >
-        0) {
-      final qtyMap = <String, int>{};
-      for (var item in cartResponse.cart?.items ?? []) {
-        qtyMap[item.variantId] = item.quantity;
-      }
-      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
+    final qtyMap = <String, int>{};
+    for (var item in productItems) {
+      final variantId = item.variantId;
+      if (variantId == null) continue;
+      qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
     }
+    eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
   }
 
   bool isUnitBasedVariant(ProductResponse.Variant? variant) {

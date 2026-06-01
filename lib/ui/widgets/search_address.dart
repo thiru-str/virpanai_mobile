@@ -135,7 +135,9 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
           intent: MapPageIntent.selectActive,
         ),
       );
-      if (result == true && mounted) Navigator.of(context).pop(true);
+      if (result is Map<String, dynamic> && mounted) {
+        Navigator.of(context).pop(result);
+      }
     } catch (_) {/* ignore */}
   }
 
@@ -157,7 +159,9 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
       context,
       MapPage(intent: MapPageIntent.selectActive),
     );
-    if (result == true && mounted) Navigator.of(context).pop(true);
+    if (result is Map<String, dynamic> && mounted) {
+      Navigator.of(context).pop(result);
+    }
   }
 
   Future<void> _addNewManually() async {
@@ -174,16 +178,11 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
   }
 
   Future<void> _pickSaved(Address address) async {
-    // Persist as the active delivery address so other screens (home header,
-    // location-dependent API calls) can pick it up via prefs.
-    await SharedPreferencesUtil()
-        .saveMap('selected_address', address.toJson());
-
     if (!mounted) return;
     if (widget.onTapAddress != null) {
       widget.onTapAddress!(address);
     }
-    Navigator.of(context).pop(true);
+    Navigator.of(context).pop(address.toJson());
   }
 
   @override
