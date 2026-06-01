@@ -193,6 +193,7 @@ class _HomePageState extends State<HomePage> {
         headerType: appHeader.isEmpty ? 'header-4' : appHeader,
         title: headerTitle,
         addressType: addressType,
+        deliveryEta: homePageResponse?.global?.approximateDeliveryTime ?? "",
         cartCount: cartItems ?? 0,
         onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
         onSearchClick: () => PageRouteUtils.pushWithFade(

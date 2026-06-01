@@ -538,12 +538,14 @@ class Global {
   String? regionId;
   String? cartId;
   String? currencySymbol;
+  String? approximateDeliveryTime;
 
   Global({
     this.paymentProvider,
     this.regionId,
     this.cartId,
     this.currencySymbol,
+    this.approximateDeliveryTime,
   });
 
   factory Global.fromJson(Map<String, dynamic> json) => Global(
@@ -554,6 +556,8 @@ class Global {
         regionId: json["region_id"],
         cartId: json["cart_id"],
         currencySymbol: json["currency_symbol"],
+        approximateDeliveryTime:
+            json["approximate_delivery_time"]?.toString(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -563,6 +567,7 @@ class Global {
         "region_id": regionId,
         "cart_id": cartId,
         "currency_symbol": currencySymbol,
+        "approximate_delivery_time": approximateDeliveryTime,
       };
 }
 
