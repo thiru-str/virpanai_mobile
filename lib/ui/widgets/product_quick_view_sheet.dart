@@ -300,12 +300,16 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
               await apiService.addCart(
                   context, selectedQuantity, selectedVariantId!);
               final cartResponse = await apiService.getCart(context);
+              final productItems = cartResponse.cart?.items
+                      ?.where((i) => !i.isVirtualItem)
+                      .toList() ??
+                  [];
+              final totalQty = productItems
+                  .map((item) => item.quantity ?? 0)
+                  .fold<int>(0, (sum, qty) => sum + qty);
               eventBus.fire(ViewCartModel(
-                cartResponse.cart?.items?.where((i) => !i.isPlatformFee).length ?? 0,
-                cartResponse.cart?.items
-                    ?.where((i) => !i.isPlatformFee)
-                    .map((i) => i.thumbnail ?? "")
-                    .toList() ?? [],
+                totalQty,
+                productItems.map((i) => i.thumbnail ?? "").toList(),
               ));
               Navigator.pop(context);
             },

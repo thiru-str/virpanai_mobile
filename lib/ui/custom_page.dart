@@ -476,22 +476,25 @@ class _CustomPageState extends State<CustomPage> {
       }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
+      final productItems = cartResponse?.cart?.items
+              ?.where((item) => !item.isVirtualItem)
+              .toList() ??
+          [];
+      final totalQty = productItems
+          .map((item) => item.quantity ?? 0)
+          .fold<int>(0, (sum, qty) => sum + qty);
       setState(() {
-        cartItems = cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).length;
-        cartItemImages = cartResponse?.cart?.items
-            ?.where((item) => !item.isPlatformFee)
-            .map((item) => item.thumbnail ?? "")
-            .toList();
+        cartItems = totalQty;
+        cartItemImages = productItems.map((item) => item.thumbnail ?? "").toList();
       });
-      if ((cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).length ?? 0) > 0) {
-        final qtyMap = <String, int>{};
-        for (var item in cartResponse?.cart?.items ?? []) {
-          qtyMap[item.variantId] = item.quantity;
-        }
-
-        eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
-        //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
+      final qtyMap = <String, int>{};
+      for (var item in productItems) {
+        final variantId = item.variantId;
+        if (variantId == null) continue;
+        qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
       }
+      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
+      //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
     } catch (e) {
       print(e);
     }

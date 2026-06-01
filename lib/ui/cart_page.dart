@@ -907,9 +907,17 @@ class _CartPageState extends State<CartPage>
     final totalQty = productItems
         .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
-    print('total qty ${totalQty}');
+    final qtyMap = <String, int>{};
+    for (final item in productItems) {
+      final variantId = item.variantId;
+      if (variantId == null) continue;
+      qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
+    }
     eventBus.fire(ViewCartModel(
-        totalQty, productItems.map((item) => item.thumbnail ?? '').toList()));
+      totalQty,
+      productItems.map((item) => item.thumbnail ?? '').toList(),
+      qtyMap,
+    ));
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {

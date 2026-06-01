@@ -59,6 +59,7 @@ class _HomePageState extends State<HomePage> {
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
+  bool _locationChangeInProgress = false;
   String headerTitle = "";
   String addressType = "";
   String appHeader = "";
@@ -145,12 +146,22 @@ class _HomePageState extends State<HomePage> {
       });
     }
     await _loadSelectedAddress();
-    getHomePageApi(limit: _limit, offset: _offset);
+    await getHomePageApi(limit: _limit, offset: _offset);
   }
 
   Future<void> _loadSelectedAddress() async {
     final map = await SharedPreferencesUtil().getMap('selected_address');
-    if (!mounted || map == null) return;
+    if (!mounted) return;
+    if (map == null) {
+      setState(() {
+        headerTitle = "";
+        addressType = "";
+        _selectedLat = null;
+        _selectedLng = null;
+        _selectedPincode = null;
+      });
+      return;
+    }
     // Build a single-line address from the parts we care about
     final addr1 = map['address_1'] as String? ?? '';
     final city = map['city'] as String? ?? '';
@@ -182,6 +193,7 @@ class _HomePageState extends State<HomePage> {
         headerType: appHeader.isEmpty ? 'header-4' : appHeader,
         title: headerTitle,
         addressType: addressType,
+        deliveryEta: homePageResponse?.global?.approximateDeliveryTime ?? "",
         cartCount: cartItems ?? 0,
         onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
         onSearchClick: () => PageRouteUtils.pushWithFade(
@@ -189,8 +201,14 @@ class _HomePageState extends State<HomePage> {
           const ProductPage(),
         ),
         onLocationTap: () async {
-          await PageRouteUtils.pushWithSlide(context, const SearchAddressPage());
-          initializePages();
+          if (_locationChangeInProgress) return;
+          final result = await PageRouteUtils.pushWithSlide(
+            context,
+            const SearchAddressPage(),
+          );
+          final selectedAddress = _normalizeSelectedAddress(result);
+          if (selectedAddress == null || !mounted) return;
+          await _handleLocationSelection(selectedAddress);
         },
         onProfileTap: () => eventBus.fire(TabSwitchEvent(4)),
       );
@@ -541,25 +559,298 @@ class _HomePageState extends State<HomePage> {
       }
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
-      final productItems = cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).toList() ?? [];
+      final productItems = cartResponse?.cart?.items
+              ?.where((item) => !item.isVirtualItem)
+              .toList() ??
+          [];
+      final totalQty = productItems
+          .map((item) => item.quantity ?? 0)
+          .fold<int>(0, (sum, qty) => sum + qty);
       setState(() {
-        cartItems = productItems.length;
-        cartItemImages = productItems
-            .map((item) => item.thumbnail ?? "")
-            .toList();
+        cartItems = totalQty;
+        cartItemImages = productItems.map((item) => item.thumbnail ?? "").toList();
       });
-      if (productItems.isNotEmpty) {
-        final qtyMap = <String, int>{};
-        for (var item in productItems) {
-          if (item.variantId != null) qtyMap[item.variantId!] = item.quantity ?? 0;
+      final qtyMap = <String, int>{};
+      for (var item in productItems) {
+        if (item.variantId != null) {
+          qtyMap[item.variantId!] =
+              (qtyMap[item.variantId!] ?? 0) + (item.quantity ?? 0);
         }
-
-        eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
-        //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
       }
+      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
+      //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
     } catch (e) {
       print(e);
     }
+  }
+
+  Map<String, dynamic>? _normalizeSelectedAddress(dynamic result) {
+    if (result is! Map) return null;
+    return Map<String, dynamic>.from(result);
+  }
+
+  double? _extractLatitude(Map<String, dynamic>? address) {
+    final metadata = address?['metadata'];
+    if (metadata is! Map) return null;
+    return double.tryParse(metadata['latitude']?.toString() ?? '');
+  }
+
+  double? _extractLongitude(Map<String, dynamic>? address) {
+    final metadata = address?['metadata'];
+    if (metadata is! Map) return null;
+    return double.tryParse(metadata['longitude']?.toString() ?? '');
+  }
+
+  String _extractCartStoreId(CartResponse? cart) {
+    final metadata = cart?.cart?.metadata;
+    if (metadata is! Map) return '';
+    final storeId = metadata['storeId']?.toString().trim() ?? '';
+    return storeId;
+  }
+
+  bool _isSameLocation(
+    Map<String, dynamic>? currentAddress,
+    Map<String, dynamic> nextAddress,
+  ) {
+    final currentLat = _extractLatitude(currentAddress);
+    final currentLng = _extractLongitude(currentAddress);
+    final nextLat = _extractLatitude(nextAddress);
+    final nextLng = _extractLongitude(nextAddress);
+
+    if (currentLat != null &&
+        currentLng != null &&
+        nextLat != null &&
+        nextLng != null) {
+      return currentLat == nextLat && currentLng == nextLng;
+    }
+
+    final currentLabel =
+        (currentAddress?['address_1'] ?? currentAddress?['address_name'] ?? '')
+            .toString();
+    final nextLabel =
+        (nextAddress['address_1'] ?? nextAddress['address_name'] ?? '')
+            .toString();
+    return currentLabel.isNotEmpty && currentLabel == nextLabel;
+  }
+
+  Future<bool> _showReplaceCartDialog(
+    Future<void> Function() onConfirm,
+  ) async {
+    Object? dialogError;
+    StackTrace? dialogStackTrace;
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        var isProcessing = false;
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return PopScope(
+              canPop: !isProcessing,
+              child: AlertDialog(
+                backgroundColor: Colors.white,
+                title: const Text('Replace Cart Items?'),
+                content: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: isProcessing
+                      ? const SizedBox(
+                          key: ValueKey('location-change-loading'),
+                          width: 220,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 16),
+                              Text(
+                                'Updating location...',
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      : const Text(
+                          key: ValueKey('location-change-message'),
+                          'Your cart already contains items for the current location. If you switch location, those items will be removed.',
+                        ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: isProcessing
+                        ? null
+                        : () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('No, Stay in Current Location'),
+                  ),
+                  TextButton(
+                    onPressed: isProcessing
+                        ? null
+                        : () async {
+                            setDialogState(() => isProcessing = true);
+                            try {
+                              await onConfirm();
+                              if (dialogContext.mounted) {
+                                Navigator.of(dialogContext).pop(true);
+                              }
+                            } catch (error, stackTrace) {
+                              dialogError = error;
+                              dialogStackTrace = stackTrace;
+                              if (dialogContext.mounted) {
+                                Navigator.of(dialogContext).pop(false);
+                              }
+                            }
+                          },
+                    child: const Text('Yes, Change Location'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (dialogError != null) {
+      Error.throwWithStackTrace(dialogError!, dialogStackTrace!);
+    }
+
+    return result == true;
+  }
+
+  Future<void> _handleLocationSelection(
+    Map<String, dynamic> nextAddress,
+  ) async {
+    final nextLat = _extractLatitude(nextAddress);
+    final nextLng = _extractLongitude(nextAddress);
+
+    if (nextLat == null || nextLng == null) {
+      AppUtils.showToast('Unable to determine the selected location.');
+      return;
+    }
+
+    final currentAddress =
+        await SharedPreferencesUtil().getMap('selected_address');
+    if (_isSameLocation(currentAddress, nextAddress)) {
+      return;
+    }
+
+    setState(() => _locationChangeInProgress = true);
+
+    try {
+      final apiService = ApiService();
+      final nextLocationDetails = await apiService.getPublicDetails(
+        latitude: nextLat,
+        longitude: nextLng,
+      );
+      final nextStoreId = nextLocationDetails.storeId?.trim() ?? '';
+
+      if (nextStoreId.isEmpty) {
+        AppUtils.showToast('No store found for the selected location.');
+        return;
+      }
+
+      final cartId = await SharedPreferencesUtil().getString('cart_id');
+      CartResponse? activeCart;
+      String currentCartStoreId = '';
+
+      if (cartId != null && cartId.isNotEmpty) {
+        activeCart = await apiService.getCart(context);
+        currentCartStoreId = _extractCartStoreId(activeCart);
+
+        final currentLat = _extractLatitude(currentAddress);
+        final currentLng = _extractLongitude(currentAddress);
+
+        if (currentLat != null && currentLng != null) {
+          final currentLocationDetails = await apiService.getPublicDetails(
+            latitude: currentLat,
+            longitude: currentLng,
+          );
+          final currentResolvedStoreId =
+              currentLocationDetails.storeId?.trim() ?? '';
+
+          if (currentResolvedStoreId.isNotEmpty &&
+              currentCartStoreId != currentResolvedStoreId) {
+            await apiService.syncCartLocation(
+              context,
+              latitude: currentLat,
+              longitude: currentLng,
+              address: currentAddress,
+            );
+            activeCart = await apiService.getCart(context);
+            currentCartStoreId = _extractCartStoreId(activeCart);
+          }
+
+          if (currentCartStoreId.isEmpty) {
+            currentCartStoreId = currentResolvedStoreId;
+          }
+        }
+      }
+
+      final realCartItems = (activeCart?.cart?.items ?? [])
+          .where((item) => !item.isVirtualItem)
+          .toList();
+
+      final shouldReplaceCart = realCartItems.isNotEmpty &&
+          currentCartStoreId.isNotEmpty &&
+          currentCartStoreId != nextStoreId;
+
+      if (shouldReplaceCart) {
+        final confirmed = await _showReplaceCartDialog(
+          () => _applyLocationChange(
+            nextAddress,
+            clearCartItems: true,
+          ),
+        );
+        if (!confirmed) {
+          return;
+        }
+      } else {
+        await _applyLocationChange(
+          nextAddress,
+          clearCartItems: false,
+        );
+      }
+    } catch (e) {
+      AppUtils.showToast('Failed to change location. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() => _locationChangeInProgress = false);
+      }
+    }
+  }
+
+  Future<void> _applyLocationChange(
+    Map<String, dynamic> nextAddress, {
+    required bool clearCartItems,
+  }) async {
+    final latitude = _extractLatitude(nextAddress);
+    final longitude = _extractLongitude(nextAddress);
+
+    if (latitude == null || longitude == null) {
+      AppUtils.showToast('Unable to determine the selected location.');
+      return;
+    }
+
+    final apiService = ApiService();
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+
+    if (cartId != null && cartId.isNotEmpty) {
+      await apiService.syncCartLocation(
+        context,
+        latitude: latitude,
+        longitude: longitude,
+        address: nextAddress,
+      );
+
+      if (clearCartItems) {
+        await apiService.clearCartItems(context);
+      }
+    }
+
+    await SharedPreferencesUtil().saveMap('selected_address', nextAddress);
+
+    _offset = 0;
+    _hasMore = true;
+    await initializePages();
+    getCartApi();
   }
 
   Future<void> addCart(int qty, String variantId) async {
