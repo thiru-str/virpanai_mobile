@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waioz/model/email_register_response.dart';
 import 'package:waioz/model/refresh_token_response.dart';
 import 'package:waioz/model/register_response.dart';
@@ -243,11 +245,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
                   const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: 'Referral Code (optional)',
-                    controller: referralCodeController,
-                    validator: (value) => null,
-                  ),
+                  _buildReferralField(),
                   const SizedBox(height: 16),
                   apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
                     onPressed:() {
@@ -278,6 +276,160 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  // Item 7 — Referral input with inline QR scan + contact picker icons.
+  // Field accepts either a unique code or a phone number; backend resolves.
+  Widget _buildReferralField() {
+    return TextField(
+      controller: referralCodeController,
+      style: FontUtils.primaryFontStyle(fontSize: 14),
+      decoration: InputDecoration(
+        hintText: 'Referral code or phone (optional)',
+        hintStyle: FontUtils.primaryFontStyle(
+            fontSize: 14, color: Colors.grey.shade400),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        suffixIcon: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: 'Scan QR',
+              icon: Icon(Icons.qr_code_scanner_rounded,
+                  color: AppColors.primary, size: 22),
+              onPressed: _scanQrCode,
+            ),
+            IconButton(
+              tooltip: 'Pick from contacts',
+              icon: Icon(Icons.contacts_rounded,
+                  color: AppColors.primary, size: 22),
+              onPressed: _pickFromContacts,
+            ),
+            const SizedBox(width: 4),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _scanQrCode() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const _QrScannerSheet()),
+    );
+    if (result != null && result.trim().isNotEmpty && mounted) {
+      referralCodeController.text = result.trim();
+    }
+  }
+
+  Future<void> _pickFromContacts() async {
+    // Pre-prompt soft sheet — explain why we need contacts before the system dialog.
+    final proceed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Icon(Icons.contacts_rounded, color: AppColors.primary, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              'Find your referrer easily',
+              style: FontUtils.primaryFontStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Pick a contact whose phone number is registered as a referrer. '
+              'We do not store or share your contact list.',
+              style: FontUtils.secondaryFontStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Not now'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Allow'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    if (proceed != true || !mounted) return;
+
+    final granted = await FlutterContacts.requestPermission(readonly: true);
+    if (!granted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text(
+            'Permission denied. You can still type the referral code manually.'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ));
+      return;
+    }
+
+    try {
+      final contact = await FlutterContacts.openExternalPick();
+      if (contact == null || !mounted) return;
+      final full = await FlutterContacts.getContact(contact.id);
+      final phone = full?.phones.isNotEmpty == true
+          ? full!.phones.first.number
+          : (contact.phones.isNotEmpty ? contact.phones.first.number : '');
+      if (phone.trim().isNotEmpty) {
+        referralCodeController.text = phone.trim();
+      }
+    } catch (_) {
+      // External pick may not be available on all OEMs — fall through silently.
+    }
   }
 
   void register() async {
@@ -446,4 +598,60 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+}
+
+// Item 7 — Full-screen QR scanner used by the referral input.
+// Returns the decoded string via Navigator.pop on first successful scan.
+class _QrScannerSheet extends StatefulWidget {
+  const _QrScannerSheet();
+
+  @override
+  State<_QrScannerSheet> createState() => _QrScannerSheetState();
+}
+
+class _QrScannerSheetState extends State<_QrScannerSheet> {
+  final MobileScannerController _controller = MobileScannerController();
+  bool _handled = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_handled) return;
+    final list = capture.barcodes;
+    for (final b in list) {
+      final raw = b.rawValue;
+      if (raw != null && raw.trim().isNotEmpty) {
+        _handled = true;
+        Navigator.of(context).pop(raw.trim());
+        return;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('Scan Referral QR'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flash_on),
+            onPressed: () => _controller.toggleTorch(),
+          ),
+        ],
+      ),
+      body: MobileScanner(
+        controller: _controller,
+        onDetect: _onDetect,
+      ),
+    );
+  }
 }
