@@ -429,8 +429,14 @@ class _HomePageState extends State<HomePage> {
             ? const SizedBox()
             : Slider9(
                 content: homePageContent!,
-                onCartQtyChanged: (deltaQty, variantId) async {
-                  await addCart(deltaQty, variantId);
+                onCartQtyChanged:
+                    (deltaQty, layoutData, currentQty, currentLineItemId) async {
+                  await updateHomeCart(
+                    deltaQty,
+                    layoutData,
+                    currentQty,
+                    currentLineItemId,
+                  );
                 },
               );
       case "Banner1":
@@ -452,8 +458,14 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item9(
                   content: homePageContent!,
-                  onCartQtyChanged: (deltaQty, variantId) async {
-                    await addCart(deltaQty, variantId);
+                  onCartQtyChanged:
+                      (deltaQty, layoutData, currentQty, currentLineItemId) async {
+                    await updateHomeCart(
+                      deltaQty,
+                      layoutData,
+                      currentQty,
+                      currentLineItemId,
+                    );
                   },
                 ),
               );
@@ -571,13 +583,33 @@ class _HomePageState extends State<HomePage> {
         cartItemImages = productItems.map((item) => item.thumbnail ?? "").toList();
       });
       final qtyMap = <String, int>{};
+      final unitLineQtyMap = <String, int>{};
+      final unitLineIdMap = <String, String>{};
       for (var item in productItems) {
         if (item.variantId != null) {
           qtyMap[item.variantId!] =
               (qtyMap[item.variantId!] ?? 0) + (item.quantity ?? 0);
         }
+        final metadata = item.metadata;
+        if (item.variantId != null &&
+            metadata?.unitBasedInventory == true &&
+            metadata?.unitQuantity != null &&
+            metadata!.unitQuantity! > 0 &&
+            item.id != null) {
+          final key = '${item.variantId!}::${metadata.unitQuantity!}';
+          unitLineQtyMap[key] = item.quantity ?? 0;
+          unitLineIdMap[key] = item.id!;
+        }
       }
-      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
+      eventBus.fire(
+        ViewCartModel(
+          cartItems,
+          cartItemImages,
+          qtyMap,
+          unitLineQtyMap,
+          unitLineIdMap,
+        ),
+      );
       //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
     } catch (e) {
       print(e);
@@ -857,6 +889,61 @@ class _HomePageState extends State<HomePage> {
     try {
       final apiService = ApiService();
       await apiService.addCart(context, qty, variantId);
+      getCartApi();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> updateHomeCart(
+    int deltaQty,
+    LayoutDatum layoutData,
+    int currentQty,
+    String? currentLineItemId,
+  ) async {
+    try {
+      final apiService = ApiService();
+      final variantId = layoutData.variantDetails?.variantId ?? '';
+
+      if (variantId.isEmpty || deltaQty == 0) {
+        return;
+      }
+
+      final isUnitBased =
+          layoutData.variantDetails?.unitBasedInventory == true;
+      final defaultUnitQuantity =
+          layoutData.variantDetails?.defaultUnitQuantity ?? 0;
+
+      if (isUnitBased) {
+        if (deltaQty > 0) {
+          if (defaultUnitQuantity <= 0) {
+            AppUtils.showToast(
+                'No preset quantities are enabled for this product.');
+            return;
+          }
+
+          await apiService.addUnitBasedCart(
+            context,
+            qty: deltaQty,
+            variantId: variantId,
+            unitQuantity: defaultUnitQuantity,
+          );
+        } else {
+          if (currentLineItemId == null || currentLineItemId.isEmpty) {
+            return;
+          }
+
+          final nextQty = currentQty + deltaQty;
+          if (nextQty <= 0) {
+            await apiService.removeCart(context, currentLineItemId);
+          } else {
+            await apiService.updateCart(context, nextQty, currentLineItemId);
+          }
+        }
+      } else {
+        await apiService.addCart(context, deltaQty, variantId);
+      }
+
       getCartApi();
     } catch (e) {
       print(e);

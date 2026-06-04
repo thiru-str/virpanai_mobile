@@ -273,12 +273,16 @@ class CartDetails {
   String? lineItemId;
   String? variantId;
   int? quantity;
+  bool unitBasedInventory;
+  int? unitQuantity;
 
   CartDetails({
     this.cartId,
     this.lineItemId,
     this.variantId,
     this.quantity,
+    this.unitBasedInventory = false,
+    this.unitQuantity,
   });
 
   factory CartDetails.fromJson(Map<String, dynamic> json) => CartDetails(
@@ -286,6 +290,9 @@ class CartDetails {
         lineItemId: json["line_item_id"],
         variantId: json["variant_id"],
         quantity: json["quantity"],
+        unitBasedInventory: json["unit_based_inventory"] == true ||
+            json["unit_based_inventory"] == "true",
+        unitQuantity: _parseInt(json["unit_quantity"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -293,6 +300,8 @@ class CartDetails {
         "line_item_id": lineItemId,
         "variant_id": variantId,
         "quantity": quantity,
+        "unit_based_inventory": unitBasedInventory,
+        "unit_quantity": unitQuantity,
       };
 }
 
@@ -301,6 +310,11 @@ class VariantDetails {
   String? variantTitle;
   String? variantSku;
   String? variantPrice;
+  String? originalVariantPrice;
+  bool unitBasedInventory;
+  int? baseUnitGrams;
+  int? defaultUnitQuantity;
+  List<int> presetOptions;
   List<VariantOption>? variantOptions;
 
   VariantDetails({
@@ -308,6 +322,11 @@ class VariantDetails {
     this.variantTitle,
     this.variantSku,
     this.variantPrice,
+    this.originalVariantPrice,
+    this.unitBasedInventory = false,
+    this.baseUnitGrams,
+    this.defaultUnitQuantity,
+    this.presetOptions = const [],
     this.variantOptions,
   });
 
@@ -316,6 +335,12 @@ class VariantDetails {
         variantTitle: json["variant_title"],
         variantSku: json["variant_sku"],
         variantPrice: json["variant_price"],
+        originalVariantPrice: json["original_variant_price"],
+        unitBasedInventory: json["unit_based_inventory"] == true ||
+            json["unit_based_inventory"] == "true",
+        baseUnitGrams: _parseInt(json["base_unit_grams"]),
+        defaultUnitQuantity: _parseInt(json["default_unit_quantity"]),
+        presetOptions: _parseIntList(json["preset_options"]),
         variantOptions: json["variant_options"] == null
             ? []
             : List<VariantOption>.from(
@@ -327,10 +352,30 @@ class VariantDetails {
         "variant_title": variantTitle,
         "variant_sku": variantSku,
         "variant_price": variantPrice,
+        "original_variant_price": originalVariantPrice,
+        "unit_based_inventory": unitBasedInventory,
+        "base_unit_grams": baseUnitGrams,
+        "default_unit_quantity": defaultUnitQuantity,
+        "preset_options": presetOptions,
         "variant_options": variantOptions == null
             ? []
             : List<dynamic>.from(variantOptions!.map((x) => x.toJson())),
       };
+}
+
+int? _parseInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value == null) return null;
+  return int.tryParse(value.toString());
+}
+
+List<int> _parseIntList(dynamic value) {
+  if (value is! List) return const [];
+  return value
+      .map(_parseInt)
+      .whereType<int>()
+      .toList(growable: false);
 }
 
 class VariantOption {

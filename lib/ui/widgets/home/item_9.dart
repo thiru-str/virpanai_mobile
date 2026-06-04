@@ -20,7 +20,8 @@ import '../../product_page.dart';
 
 class Item9 extends StatefulWidget {
   final Content content;
-  final void Function(int delta, String variantId)? onCartQtyChanged;
+  final void Function(int delta, LayoutDatum layoutData, int currentQty,
+      String? currentLineItemId)? onCartQtyChanged;
 
   const Item9({
     Key? key,
@@ -34,19 +35,28 @@ class Item9 extends StatefulWidget {
 
 class _Item9State extends State<Item9> {
   late Map<String, int> variantQtyMap;
+  late Map<String, int> unitLineQtyMap;
+  late Map<String, String> unitLineIdMap;
   late StreamSubscription<ViewCartModel> _cartSubscription;
 
   @override
   void initState() {
     super.initState();
     variantQtyMap = {};
+    unitLineQtyMap = {};
+    unitLineIdMap = {};
 
     _cartSubscription = eventBus.on<ViewCartModel>().listen((event) {
       setState(() {
         variantQtyMap = event.variantQtyMap;
+        unitLineQtyMap = event.unitLineQtyMap;
+        unitLineIdMap = event.unitLineIdMap;
       });
     });
   }
+
+  String _buildUnitKey(String variantId, int unitQuantity) =>
+      '$variantId::$unitQuantity';
 
   @override
   void dispose() {
@@ -123,23 +133,45 @@ class _Item9State extends State<Item9> {
                   for (int i = 0;
                       i < (content.layoutData?.length ?? 0);
                       i++) ...[
-                    _Item9Card(
-                      layoutData: content.layoutData![i],
-                      cartQty: variantQtyMap[content
-                              .layoutData![i].variantDetails?.variantId] ??
-                          content.layoutData![i].cartDetails?.quantity ??
-                          0,
-                      onCartQtyChanged: widget.onCartQtyChanged,
-                      onTap: () {
-                        // Navigate to product detail when the card body is
-                        // tapped — matches the pattern used by Item11/Item12.
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption ?? '',
-                          layoutData: content.layoutData![i],
-                        );
-                      },
-                    ),
+                    () {
+                      final layoutData = content.layoutData![i];
+                      final variantId =
+                          layoutData.variantDetails?.variantId ?? '';
+                      final isUnitBased =
+                          layoutData.variantDetails?.unitBasedInventory == true;
+                      final defaultUnitQuantity =
+                          layoutData.variantDetails?.defaultUnitQuantity ?? 0;
+                      final defaultLineKey = isUnitBased &&
+                              variantId.isNotEmpty &&
+                              defaultUnitQuantity > 0
+                          ? _buildUnitKey(variantId, defaultUnitQuantity)
+                          : null;
+                      final currentLineItemId = defaultLineKey != null
+                          ? unitLineIdMap[defaultLineKey] ??
+                              layoutData.cartDetails?.lineItemId
+                          : layoutData.cartDetails?.lineItemId;
+                      final currentQty = defaultLineKey != null
+                          ? unitLineQtyMap[defaultLineKey] ??
+                              layoutData.cartDetails?.quantity ??
+                              0
+                          : variantQtyMap[variantId] ??
+                              layoutData.cartDetails?.quantity ??
+                              0;
+
+                      return _Item9Card(
+                        layoutData: layoutData,
+                        cartQty: currentQty,
+                        currentLineItemId: currentLineItemId,
+                        onCartQtyChanged: widget.onCartQtyChanged,
+                        onTap: () {
+                          RedirectUtils.handleContentRedirect(
+                            context: context,
+                            layoutOption: content.layoutOption ?? '',
+                            layoutData: layoutData,
+                          );
+                        },
+                      );
+                    }(),
                     if (i != content.layoutData!.length - 1)
                       const SizedBox(width: 16),
                   ],
@@ -156,13 +188,16 @@ class _Item9State extends State<Item9> {
 class _Item9Card extends StatelessWidget {
   final dynamic layoutData;
   final int cartQty;
-  final void Function(int delta, String variantId)? onCartQtyChanged;
+  final String? currentLineItemId;
+  final void Function(int delta, LayoutDatum layoutData, int currentQty,
+      String? currentLineItemId)? onCartQtyChanged;
   final VoidCallback? onTap;
 
   const _Item9Card({
     Key? key,
     required this.layoutData,
     required this.cartQty,
+    this.currentLineItemId,
     required this.onCartQtyChanged,
     this.onTap,
   }) : super(key: key);
@@ -274,7 +309,8 @@ class _Item9Card extends StatelessWidget {
                     children: [
                       _qtyButton(Icons.remove, () {
                         if (cartQty > 0) {
-                          onCartQtyChanged?.call(-1, variantId);
+                          onCartQtyChanged?.call(
+                              -1, layoutData, cartQty, currentLineItemId);
                         }
                       }),
                       Text(
@@ -285,7 +321,8 @@ class _Item9Card extends StatelessWidget {
                         ),
                       ),
                       _qtyButton(Icons.add, () {
-                        onCartQtyChanged?.call(1, variantId);
+                        onCartQtyChanged?.call(
+                            1, layoutData, cartQty, currentLineItemId);
                       }),
                     ],
                   )
@@ -293,7 +330,8 @@ class _Item9Card extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () {
-                        onCartQtyChanged?.call(1, variantId);
+                        onCartQtyChanged?.call(
+                            1, layoutData, cartQty, currentLineItemId);
                       },
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: Colors.grey.shade400),

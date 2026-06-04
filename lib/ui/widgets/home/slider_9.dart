@@ -10,7 +10,8 @@ import 'package:waioz/utility/redirect_utils.dart';
 
 class Slider9 extends StatelessWidget {
   final Content content;
-  final void Function(int delta, String variantId)? onCartQtyChanged;
+  final void Function(int delta, LayoutDatum layoutData, int currentQty,
+      String? currentLineItemId)? onCartQtyChanged;
 
   const Slider9({
     super.key,
@@ -104,7 +105,8 @@ class Slider9 extends StatelessWidget {
 class _Slider9Card extends StatelessWidget {
   final LayoutDatum layoutData;
   final VoidCallback onTap;
-  final void Function(int delta, String variantId)? onCartQtyChanged;
+  final void Function(int delta, LayoutDatum layoutData, int currentQty,
+      String? currentLineItemId)? onCartQtyChanged;
 
   const _Slider9Card({
     required this.layoutData,
@@ -244,7 +246,12 @@ class _Slider9Card extends StatelessWidget {
                         onPressed: variantId.isEmpty
                             ? onTap
                             : () {
-                                onCartQtyChanged?.call(1, variantId);
+                                onCartQtyChanged?.call(
+                                  1,
+                                  layoutData,
+                                  layoutData.cartDetails?.quantity ?? 0,
+                                  layoutData.cartDetails?.lineItemId,
+                                );
                               },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
