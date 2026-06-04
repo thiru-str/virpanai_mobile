@@ -14,6 +14,7 @@ import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
@@ -598,6 +599,19 @@ class _CartPageState extends State<CartPage>
 
                             // Delivery Method Card
                             _buildDeliveryMethodCard(),
+                            // Free delivery progress banner — hides itself when
+                            // no shipping address or no slabs configured.
+                            if ((cartResponse?.cart?.id ?? '').isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 4),
+                                child: FreeDeliveryBannerWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  cartTotal: cartResponse?.cart?.itemSubtotal ??
+                                      cartResponse?.cart?.subtotal ??
+                                  0,
+                                ),
+                              ),
 
                             // Price Details (view only)
                             AppReveal(
