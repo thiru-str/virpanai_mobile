@@ -70,6 +70,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_razorpay_razorpay": "Razorpay",
     "pp_neft_neft": "NEFT",
     "pp_payu_payu": "PayU",
+    "pp_paytm_paytm": "Paytm",
     "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;

@@ -36,6 +36,13 @@ _ProviderMeta _meta(String? id, {String? walletBalanceLabel}) {
         icon: Icons.credit_card_rounded,
         color: Color(0xFF6CB33F),
       );
+    case 'pp_paytm_paytm':
+      return const _ProviderMeta(
+        displayName: 'Paytm',
+        subtitle: 'UPI · Cards · Net banking · Wallets',
+        icon: Icons.account_balance_wallet_rounded,
+        color: Color(0xFF00BAF2),
+      );
     case 'pp_icici_icici':
       return const _ProviderMeta(
         displayName: 'ICICI Bank',
