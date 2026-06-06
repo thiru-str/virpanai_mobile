@@ -908,15 +908,28 @@ class _CartPageState extends State<CartPage>
         .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
     final qtyMap = <String, int>{};
+    final unitLineQtyMap = <String, int>{};
+    final unitLineIdMap = <String, String>{};
     for (final item in productItems) {
       final variantId = item.variantId;
       if (variantId == null) continue;
       qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
+      final metadata = item.metadata;
+      if (metadata?.unitBasedInventory == true &&
+          metadata?.unitQuantity != null &&
+          metadata!.unitQuantity! > 0 &&
+          item.id != null) {
+        final key = '${variantId}::${metadata.unitQuantity!}';
+        unitLineQtyMap[key] = item.quantity ?? 0;
+        unitLineIdMap[key] = item.id!;
+      }
     }
     eventBus.fire(ViewCartModel(
       totalQty,
       productItems.map((item) => item.thumbnail ?? '').toList(),
       qtyMap,
+      unitLineQtyMap,
+      unitLineIdMap,
     ));
   }
 
