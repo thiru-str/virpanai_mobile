@@ -106,7 +106,9 @@ class _WishlistPageState extends State<WishlistPage> {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.72,
+        // 4:3 thumb + tighter text padding fits 2-line title + variant
+        // without overflow and trims the dead space below the title.
+        childAspectRatio: 0.78,
       ),
       itemBuilder: (_, i) {
         final item = _items[i] as Map<String, dynamic>;
@@ -139,7 +141,7 @@ class _WishlistPageState extends State<WishlistPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AspectRatio(
-                      aspectRatio: 1,
+                      aspectRatio: 4 / 3,
                       child: thumb != null
                           ? ClipRRect(
                               borderRadius: const BorderRadius.vertical(
@@ -149,7 +151,7 @@ class _WishlistPageState extends State<WishlistPage> {
                           : Container(color: Colors.grey.shade100),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

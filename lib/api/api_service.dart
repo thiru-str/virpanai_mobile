@@ -701,8 +701,19 @@ class ApiService {
   Future<List<dynamic>> listWishlist(BuildContext context) async {
     await addToken();
     try {
+      // Pass region + currency so the backend can enrich items with
+      // calculated_price (Medusa's price selector needs both in context).
+      final params = <String, dynamic>{'with': 'product'};
+      final regionId = await SharedPreferencesUtil().getString('region_id');
+      final currency = await SharedPreferencesUtil().getString('currency_code');
+      if (regionId != null && regionId.isNotEmpty) {
+        params['region_id'] = regionId;
+      }
+      if (currency != null && currency.isNotEmpty) {
+        params['currency_code'] = currency;
+      }
       final response = await _dio.get('/store/wishlist',
-          queryParameters: {'with': 'product'});
+          queryParameters: params);
       return (response.data?['items'] as List?) ?? [];
     } catch (_) {
       return [];

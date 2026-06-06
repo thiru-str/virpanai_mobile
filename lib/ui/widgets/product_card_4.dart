@@ -6,6 +6,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import 'wishlist_heart_button.dart';
 
 class ProductCard4 extends StatefulWidget {
   final Product product;
@@ -13,6 +14,9 @@ class ProductCard4 extends StatefulWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
+  final bool isLoggedIn;
+  /// wishlist_item.id when this product's first variant is already saved
+  final String? initialSavedId;
 
   const ProductCard4({
     Key? key,
@@ -21,6 +25,8 @@ class ProductCard4 extends StatefulWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
+    this.isLoggedIn = false,
+    this.initialSavedId,
   }) : super(key: key);
 
   @override
@@ -117,25 +123,18 @@ class _ProductCard4State extends State<ProductCard4> {
                   ),
                 ),
 
-                // Wishlist button
-                if(widget.onTapFavorite!=null)
+                // Wishlist heart — self-contained: tap → API → state.
+                // Hidden for guests + when product has no variant.
+                if (widget.isLoggedIn && (widget.product.variants?.isNotEmpty ?? false))
                   Positioned(
                     top: 6,
                     right: 6,
-                    child: GestureDetector(
-                      onTap: widget.onTapFavorite,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          widget.isFavorite ? Icons.favorite : Icons.favorite_border,
-                          size: 16,
-                          color: AppColors.primary,
-                        ),
-                      ),
+                    child: WishlistHeartButton(
+                      variantId: widget.product.variants!.first.id ?? '',
+                      productId: widget.product.id ?? '',
+                      initialSavedId: widget.initialSavedId,
+                      isLoggedIn: widget.isLoggedIn,
+                      size: 16,
                     ),
                   ),
 

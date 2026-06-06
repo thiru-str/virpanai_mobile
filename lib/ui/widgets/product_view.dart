@@ -19,6 +19,9 @@ class ProductView extends StatefulWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
+  final bool isLoggedIn;
+  /// wishlist_item.id for product's first variant when already saved
+  final String? initialSavedId;
 
   const ProductView({
     super.key,
@@ -28,6 +31,8 @@ class ProductView extends StatefulWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
+    this.isLoggedIn = false,
+    this.initialSavedId,
   });
 
   @override
@@ -100,6 +105,8 @@ class _ProductViewState extends State<ProductView> {
           onTapCard: widget.onTapCard,
           onTapFavorite: widget.onTapFavorite,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          initialSavedId: widget.initialSavedId,
         );
 
       case ProductCardType.productView2:
@@ -109,6 +116,8 @@ class _ProductViewState extends State<ProductView> {
           onTapFavorite: widget.onTapFavorite,
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          initialSavedId: widget.initialSavedId,
         );
 
       case ProductCardType.productView3:
@@ -125,6 +134,8 @@ class _ProductViewState extends State<ProductView> {
           onTapFavorite: widget.onTapFavorite,
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          initialSavedId: widget.initialSavedId,
         );
 
       case ProductCardType.productView7:
@@ -146,6 +157,8 @@ class _ProductViewState extends State<ProductView> {
           onTapFavorite: widget.onTapFavorite,
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
+          isLoggedIn: widget.isLoggedIn,
+          initialSavedId: widget.initialSavedId,
         );
     }
   }

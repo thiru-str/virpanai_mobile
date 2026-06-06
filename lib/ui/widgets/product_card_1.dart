@@ -6,12 +6,16 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import 'wishlist_heart_button.dart';
 
 class ProductCard1 extends StatefulWidget {
   final Product product;
   final VoidCallback onTapCard;
   final VoidCallback? onTapFavorite;
   final bool isFavorite;
+  final bool isLoggedIn;
+  /// wishlist_item.id when product's first variant is already saved
+  final String? initialSavedId;
 
   const ProductCard1({
     Key? key,
@@ -19,6 +23,8 @@ class ProductCard1 extends StatefulWidget {
     required this.onTapCard,
     this.onTapFavorite,
     this.isFavorite = false,
+    this.isLoggedIn = false,
+    this.initialSavedId,
   }) : super(key: key);
 
   @override
@@ -167,37 +173,21 @@ class _ProductCard1State extends State<ProductCard1> {
                 //   ),
                 // ),
 
-                // ✅ Wishlist button top-right
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: widget.onTapFavorite,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.circular(8.0),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 2,
-                            offset: Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        widget.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        size: 18,
-                        color:
-                        widget.isFavorite ? Colors.red : Colors.grey[700],
-                      ),
+                // Wishlist heart — self-contained: tap → API → state.
+                // Hidden for guests + when product has no variant.
+                if (widget.isLoggedIn &&
+                    (widget.product.variants?.isNotEmpty ?? false))
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: WishlistHeartButton(
+                      variantId: widget.product.variants!.first.id ?? '',
+                      productId: widget.product.id ?? '',
+                      initialSavedId: widget.initialSavedId,
+                      isLoggedIn: widget.isLoggedIn,
+                      size: 18,
                     ),
                   ),
-                ),
               ],
             ),
 

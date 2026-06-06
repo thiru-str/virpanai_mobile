@@ -5,6 +5,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import 'wishlist_heart_button.dart';
 
 class ProductCard9 extends StatelessWidget {
   final Product product;
@@ -12,6 +13,9 @@ class ProductCard9 extends StatelessWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
+  final bool isLoggedIn;
+  /// wishlist_item.id when product's first variant is already saved
+  final String? initialSavedId;
 
   const ProductCard9({
     Key? key,
@@ -20,6 +24,8 @@ class ProductCard9 extends StatelessWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
+    this.isLoggedIn = false,
+    this.initialSavedId,
   }) : super(key: key);
 
   Variant? _cheapestVariant(Product p) {
@@ -251,15 +257,14 @@ class ProductCard9 extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: onTapFavorite,
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite,
+                      if (isLoggedIn && (product.variants?.isNotEmpty ?? false))
+                        WishlistHeartButton(
+                          variantId: product.variants!.first.id ?? '',
+                          productId: product.id ?? '',
+                          initialSavedId: initialSavedId,
+                          isLoggedIn: isLoggedIn,
                           size: 24,
-                          color:
-                              isFavorite ? Colors.red : const Color(0xFFB4B4B4),
                         ),
-                      ),
                     ],
                   );
                 },

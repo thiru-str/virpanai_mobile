@@ -57,10 +57,16 @@ class _ProductPageState extends State<ProductPage> {
   ScrollController scrollController = ScrollController();
   String? productViewType = ProductCardType.productView1.name;
 
+  // Wishlist state: variant_id -> wishlist_item.id. Empty when logged out
+  // or before the first fetch resolves. Used to seed each card's heart icon.
+  Map<String, String> _savedVariantIds = {};
+  bool _isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
     _loadProductViewType();
+    _loadLoginState();
     getProductsApi(
         categoryIds: widget.categoryId,
         collectionIds: widget.collectionId,
@@ -331,11 +337,19 @@ class _ProductPageState extends State<ProductPage> {
                           return const ProductCardSkeleton();
                         }
                         final product = filteredProducts[index];
+                        final firstVariantId =
+                            product.variants?.isNotEmpty == true
+                                ? (product.variants!.first.id ?? '')
+                                : '';
                         return AppReveal(
                           index: index % 10,
                           child: ProductView(
                             product: product,
                             type: productViewType,
+                            isLoggedIn: _isLoggedIn,
+                            initialSavedId: firstVariantId.isEmpty
+                                ? null
+                                : _savedVariantIds[firstVariantId],
                             onTapCard: () {
                               PageRouteUtils.pushWithSlide(
                                 context,
@@ -431,6 +445,11 @@ class _ProductPageState extends State<ProductPage> {
 
         hasMore = (response.products?.length ?? 0) == pageSize;
       });
+
+      // Hydrate wishlist state for the visible product variants. Fire-and-
+      // forget — slot's existing heart paints empty until this resolves, then
+      // didUpdateWidget on WishlistHeartButton flips it filled.
+      _refreshSavedVariantIds();
     } catch (e) {
       // Only update state if this is the most recent request
       if (searchToken == null || searchToken == _searchToken) {
@@ -444,5 +463,32 @@ class _ProductPageState extends State<ProductPage> {
       }
       print(e);
     }
+  }
+
+  Future<void> _loadLoginState() async {
+    final token = await SharedPreferencesUtil().getString('token');
+    if (!mounted) return;
+    setState(() {
+      _isLoggedIn = (token ?? '').isNotEmpty;
+    });
+  }
+
+  Future<void> _refreshSavedVariantIds() async {
+    if (!_isLoggedIn) return;
+    final variantIds = <String>{};
+    for (final p in filteredProducts) {
+      final v = p.variants;
+      if (v == null || v.isEmpty) continue;
+      final id = v.first.id;
+      if (id != null && id.isNotEmpty) variantIds.add(id);
+    }
+    if (variantIds.isEmpty) return;
+
+    final map = await ApiService()
+        .wishlistIsSaved(context, variantIds.toList());
+    if (!mounted) return;
+    setState(() {
+      _savedVariantIds = map;
+    });
   }
 }

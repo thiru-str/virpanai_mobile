@@ -6,6 +6,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import 'wishlist_heart_button.dart';
 
 class ProductCard2 extends StatefulWidget {
   final Product product;
@@ -13,6 +14,9 @@ class ProductCard2 extends StatefulWidget {
   final VoidCallback? onTapFavorite;
   final VoidCallback? onAddToCart;
   final bool isFavorite;
+  final bool isLoggedIn;
+  /// wishlist_item.id when product's first variant is already saved
+  final String? initialSavedId;
 
   const ProductCard2({
     Key? key,
@@ -21,6 +25,8 @@ class ProductCard2 extends StatefulWidget {
     this.onTapFavorite,
     this.onAddToCart,
     this.isFavorite = false,
+    this.isLoggedIn = false,
+    this.initialSavedId,
   }) : super(key: key);
 
   @override
@@ -138,36 +144,20 @@ class _ProductCard2State extends State<ProductCard2> {
                   ),
 
 
-                // ---- Wishlist ----
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: widget.onTapFavorite,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 2,
-                            offset: Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        widget.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        size: 18,
-                        color:
-                        widget.isFavorite ? Colors.red : Colors.grey[700],
-                      ),
+                // ---- Wishlist heart (self-contained) ----
+                if (widget.isLoggedIn &&
+                    (widget.product.variants?.isNotEmpty ?? false))
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: WishlistHeartButton(
+                      variantId: widget.product.variants!.first.id ?? '',
+                      productId: widget.product.id ?? '',
+                      initialSavedId: widget.initialSavedId,
+                      isLoggedIn: widget.isLoggedIn,
+                      size: 18,
                     ),
                   ),
-                ),
               ],
             ),
 

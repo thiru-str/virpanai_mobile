@@ -15,7 +15,7 @@ class AppStrings {
 
   static const String my_address = 'My Address';
   static const String add_address = 'Add Address';
-  static const String my_favorites = 'My Favorites';
+  static const String my_favorites = 'Wishlist';
   static const String orders = 'Orders';
   static const String description = 'Description';
   static const String home = 'Home';
@@ -46,7 +46,7 @@ class AppStrings {
   static const String lastname = 'Last Name';
   static const String edit = 'Edit';
   static const String address = 'Address';
-  static const String favourites = 'Favourites';
+  static const String favourites = 'Wishlist';
   static const String help = 'Help';
   static const String support = 'Support';
   static const String signout = 'Sign Out';
@@ -103,7 +103,7 @@ class AppStrings {
   static const String categories = "Categories";
   static const String tags = "Brands";
   static const String collections = "Collections";
-  static const String favourite = "Favourite";
+  static const String favourite = "Wishlist";
   static const String customer = "customer";
 
   static const String enter_promo_code = "Enter Promo Code";

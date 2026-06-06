@@ -50,7 +50,9 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   }
 
   Future<void> _checkLoginState() async {
-    final token = await SharedPreferencesUtil().getString('access_token');
+    // Auth token is stored under 'token' app-wide (see ApiService.addToken).
+    // Earlier 'access_token' was a typo and made the strip stay in guest mode.
+    final token = await SharedPreferencesUtil().getString('token');
     if (mounted) setState(() => _isLoggedIn = (token ?? '').isNotEmpty);
   }
 
