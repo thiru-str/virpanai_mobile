@@ -81,5 +81,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Android 11+ package-visibility for UPI deep-links emitted by the
+             ICICI WebView (upi://pay?...). Without this canLaunchUrl returns
+             false and the chooser never shows. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="upi"/>
+        </intent>
     </queries>
 </manifest>
