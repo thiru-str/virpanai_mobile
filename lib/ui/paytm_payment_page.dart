@@ -26,6 +26,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
   bool _loading = true;
   bool _done = false;
   bool _checkoutOpened = false;
+  bool _showingExitPrompt = false;
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
 
             if (url.contains('/order/transaction/failed/')) {
               _done = true;
-              widget.onFailure('Paytm payment was not completed.');
+              widget.onFailure(_failureMessageFromUrl(url));
               return NavigationDecision.prevent;
             }
 
@@ -119,6 +120,53 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
             'Paytm payment was not completed.',
       );
     }
+  }
+
+  Future<void> _handleBackPressed() async {
+    if (_done || _showingExitPrompt) return;
+
+    _showingExitPrompt = true;
+    final shouldSkip = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Are you sure you want to exit?'),
+          content: const Text(
+            'You will be taken back to the previous screen',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Continue to payment'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Yes, exit'),
+            ),
+          ],
+        );
+      },
+    );
+    _showingExitPrompt = false;
+
+    if (!mounted || shouldSkip != true || _done) return;
+
+    _done = true;
+    widget.onFailure(_notifyMessage('APP_CLOSED'));
+  }
+
+  String _failureMessageFromUrl(String url) {
+    final uri = Uri.tryParse(url);
+    final params = uri?.queryParameters ?? const <String, String>{};
+    final message = params['message'] ??
+        params['error'] ??
+        params['error_message'] ??
+        params['RESPMSG'];
+
+    return message?.trim().isNotEmpty == true
+        ? message!.trim()
+        : 'Paytm payment was not completed.';
   }
 
   String _notifyMessage(String? eventName) {
@@ -238,16 +286,24 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: WebViewWidget(controller: _controller),
-          ),
-          if (_loading)
-            Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _result) {
+        if (!didPop) {
+          _handleBackPressed();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            SafeArea(
+              child: WebViewWidget(controller: _controller),
+            ),
+            if (_loading)
+              Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          ],
+        ),
       ),
     );
   }
