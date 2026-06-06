@@ -7,7 +7,7 @@ import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
-import 'package:waioz/ui/my_favorites_page.dart';
+import 'package:waioz/ui/wishlist_page.dart';
 import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
@@ -192,7 +192,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       }),
                       _buildProfileItem(AppStrings.favourites, () {
                         PageRouteUtils.pushWithSlide(
-                            context, MyFavoritesPage());
+                            context, const WishlistPage());
                       }),
                       _buildProfileItem(AppStrings.orders, () {
                         PageRouteUtils.pushWithSlide(

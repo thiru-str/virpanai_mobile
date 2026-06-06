@@ -13,7 +13,6 @@ import 'package:waioz/model/related_products_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
-import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -960,8 +959,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       setState(() {
         productInfoResponse = response;
-        isFavorite = productInfoResponse?.productOnWishlist ?? false;
-        wishlistId = productInfoResponse?.productWishlistId ?? '';
+        // wishlist saved-state is fetched separately via /store/wishlist/is-saved
         addOnProductsCount = productInfoResponse?.addOnProductCount ?? 0;
       });
 
@@ -1062,41 +1060,30 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  // Toggle wishlist using the new Simple Wishlist API.
+  // First variant of the product is saved (no variant picker on detail header for 1.6.0).
   Future<void> addFavourite() async {
-    if (!isLoggedIn) {
-      return;
-    }
+    if (!isLoggedIn) return;
+    final variantId = selectedVariantId ?? selectedVariant?.id ?? '';
+    if (variantId.isEmpty) return;
 
+    final api = ApiService();
     if (!isFavorite) {
-      try {
-        final apiService = ApiService();
-        WishlistResponse wishlistResponse =
-            await apiService.addFavourite(context, widget.productId);
+      final item = await api.addToWishlist(context, variantId, widget.productId);
+      if (item != null && mounted) {
         setState(() {
-          wishlistId = wishlistResponse.wishlistElement?.id;
+          wishlistId = item['id'] as String?;
           isFavorite = true;
         });
-      } catch (e) {
-        print(e);
       }
-    } else {
-      if (wishlistId != null && wishlistId!.isNotEmpty) {
-        removeFavourite(widget.productId, wishlistId);
-      }
-    }
-  }
-
-  void removeFavourite(String? productId, String? wishlistId) async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.deleteFavourite(context, productId, wishlistId);
-      if (mounted) {
+    } else if (wishlistId != null && wishlistId!.isNotEmpty) {
+      final ok = await api.removeFromWishlist(context, wishlistId!);
+      if (ok && mounted) {
         setState(() {
+          wishlistId = '';
           isFavorite = false;
         });
       }
-    } catch (e) {
-      print(e);
     }
   }
 

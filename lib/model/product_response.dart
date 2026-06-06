@@ -65,7 +65,6 @@ class Product {
   List<Image>? images;
   List<Variant>? variants;
   List<ProductWishlistElement>? productReview;
-  ProductWishlistElement? productWishlist;
   bool isSelected;
 
   Product({
@@ -97,7 +96,6 @@ class Product {
     this.images,
     this.variants,
     this.productReview,
-    this.productWishlist,
     this.isSelected = false,
   });
 
@@ -133,7 +131,6 @@ class Product {
     images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
     variants: json["variants"] == null ? [] : List<Variant>.from(json["variants"]!.map((x) => Variant.fromJson(x))),
     productReview: json["product_review"] == null ? [] : List<ProductWishlistElement>.from(json["product_review"]!.map((x) => ProductWishlistElement.fromJson(x))),
-    productWishlist: json["product_wishlist"] == null ? null : ProductWishlistElement.fromJson(json["product_wishlist"]),
 
   );
 
@@ -168,7 +165,6 @@ class Product {
     "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
     "variants": variants == null ? [] : List<dynamic>.from(variants!.map((x) => x.toJson())),
     "product_review": productReview == null ? [] : List<dynamic>.from(productReview!.map((x) => x.toJson())),
-    "product_wishlist": productWishlist?.toJson(),
   };
 }
 

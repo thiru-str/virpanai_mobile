@@ -8,7 +8,7 @@ import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
-import 'package:waioz/ui/my_favorites_page.dart';
+import 'package:waioz/ui/wishlist_page.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -118,7 +118,7 @@ class _BottomNavPageState extends State<BottomNavPage>
       case 2:
         return const CartPage(isFromBottomNav: true);
       case 3:
-        return const MyFavoritesPage(isFromBottomNav: true);
+        return const WishlistPage(isFromBottomNav: true);
       case 4:
         return isLoggedIn ? SettingsPage() : const HomePage();
       default:

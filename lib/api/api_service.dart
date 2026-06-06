@@ -35,7 +35,6 @@ import 'package:waioz/model/send_otp_response.dart';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
-import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
@@ -698,17 +697,56 @@ class ApiService {
     );
   }
 
-  Future<WishlistResponse> getWishList(
-      BuildContext context, String? customerID) async {
+  // Simple Wishlist — list customer's saved items. Returns variant + product details.
+  Future<List<dynamic>> listWishlist(BuildContext context) async {
     await addToken();
-    String? regionId = await SharedPreferencesUtil().getString('region_id');
-    return _makeGetRequest<WishlistResponse>(
-      'store/product-wishlist',
-      null,
-      {"region_id": regionId},
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
+    try {
+      final response = await _dio.get('/store/wishlist',
+          queryParameters: {'with': 'product'});
+      return (response.data?['items'] as List?) ?? [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // Simple Wishlist — save a variant. Idempotent.
+  Future<Map<String, dynamic>?> addToWishlist(
+      BuildContext context, String variantId, String productId) async {
+    await addToken();
+    try {
+      final response = await _dio.post('/store/wishlist',
+          data: {'variant_id': variantId, 'product_id': productId});
+      return response.data?['item'] as Map<String, dynamic>?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Simple Wishlist — remove by wishlist item id.
+  Future<bool> removeFromWishlist(BuildContext context, String itemId) async {
+    await addToken();
+    try {
+      final response = await _dio.delete('/store/wishlist/$itemId');
+      return response.data?['deleted'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Simple Wishlist — batch saved-state check for product cards.
+  // Returns map of variant_id -> wishlist_item_id for variants this customer has saved.
+  Future<Map<String, String>> wishlistIsSaved(
+      BuildContext context, List<String> variantIds) async {
+    if (variantIds.isEmpty) return {};
+    await addToken();
+    try {
+      final response = await _dio.get('/store/wishlist/is-saved',
+          queryParameters: {'variant_ids': variantIds.join(',')});
+      final saved = response.data?['saved'] as Map<String, dynamic>?;
+      return saved?.map((k, v) => MapEntry(k, v.toString())) ?? {};
+    } catch (_) {
+      return {};
+    }
   }
 
   Future<CartResponse> addCart(
@@ -776,28 +814,6 @@ class ApiService {
       (json) => CartResponse.fromJson(json),
       context,
     );
-  }
-
-  Future<WishlistResponse> addFavourite(
-      BuildContext context, String productId) async {
-    await addToken();
-    return _makePostRequest(
-      'store/product-wishlist',
-      {"product_id": productId},
-      (json) => WishlistResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<WishlistResponse> deleteFavourite(
-      BuildContext context, String? productId, String? wishlistId) async {
-    await addToken();
-    return _makeDeleteRequest(
-        'store/product-wishlist',
-        wishlistId,
-        {"product_id": productId},
-        (data) => WishlistResponse.fromJson(data),
-        context);
   }
 
   Future<CartResponse> updateAddress(
