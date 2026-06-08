@@ -11,17 +11,27 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../model/register_response.dart';
 import '../utility/page_route_utils.dart';
 import 'add_address_page.dart';
+
+/// What the user is trying to accomplish on MapPage.
+/// Decides what Confirm does:
+///  - [selectActive]: pick a location to use NOW. Saves to `selected_address`
+///    prefs and pops back to caller. No form, no permanent save.
+///  - [saveAddress]: continue to AddAddressPage to fill name/phone and save
+///    permanently. Used for "Add new" and "Edit" flows.
+enum MapPageIntent { selectActive, saveAddress }
 
 class MapPage extends StatefulWidget {
   final latitude;
   final longitude;
   final bool doublePop;
   final bool isEditAddress;
-  final Address? selectedAddress; // Optional Address parameter
+  final Address? selectedAddress;
+  final MapPageIntent intent;
 
   const MapPage(
       {super.key,
@@ -29,7 +39,8 @@ class MapPage extends StatefulWidget {
       this.longitude = 0.0,
       this.doublePop = false,
       this.isEditAddress = false,
-      this.selectedAddress});
+      this.selectedAddress,
+      this.intent = MapPageIntent.saveAddress});
 
   //ScreenFrom
   // 1-> Home page
@@ -191,8 +202,7 @@ class _MapPageState extends State<MapPage> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    padding:
-                        const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: const BorderRadius.only(
@@ -274,16 +284,7 @@ class _MapPageState extends State<MapPage> {
                                 ),
                               ),
                               onPressed: () {
-                                // Handle confirmation logic
-                                PageRouteUtils.pushWithSlide(
-                                    context,
-                                    AddAddressPage(
-                                      isFromMap: true,
-                                      place: place,
-                                      currentPosition: _currentPosition,
-                                      doublePop: widget.doublePop,
-                                      selectedAddress: widget.selectedAddress,
-                                    ));
+                                _onConfirm();
                               },
                               child: Text(
                                 AppStrings.confirm_continue,
@@ -303,6 +304,57 @@ class _MapPageState extends State<MapPage> {
               ],
             ),
     );
+  }
+
+  Future<void> _onConfirm() async {
+    if (widget.intent == MapPageIntent.selectActive) {
+      await _persistAsActive();
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+      return;
+    }
+    // saveAddress — continue to AddAddressPage form
+    PageRouteUtils.pushWithSlide(
+      context,
+      AddAddressPage(
+        isFromMap: true,
+        place: place,
+        currentPosition: _currentPosition,
+        doublePop: widget.doublePop,
+        selectedAddress: widget.selectedAddress,
+      ),
+    );
+  }
+
+  /// Persist the picked location as the active delivery address (session-level,
+  /// NOT a saved address). Home header + location-aware APIs read this from
+  /// SharedPreferences under `selected_address`.
+  Future<void> _persistAsActive() async {
+    final lat = _currentPosition?.latitude;
+    final lng = _currentPosition?.longitude;
+    if (lat == null || lng == null) return;
+
+    final address1Parts = [place?.name, place?.thoroughfare, place?.subLocality]
+        .where((e) => (e ?? '').trim().isNotEmpty)
+        .cast<String>()
+        .toList();
+    final address1 = address1Parts.isNotEmpty
+        ? address1Parts.join(', ')
+        : (place?.street ?? '');
+
+    final Map<String, dynamic> payload = {
+      'address_name': AppStrings.current_location.trim(),
+      'address_1': address1,
+      'city': place?.locality ?? '',
+      'province': place?.administrativeArea ?? '',
+      'postal_code': place?.postalCode ?? '',
+      'country_code': place?.isoCountryCode?.toLowerCase() ?? '',
+      'metadata': {
+        'latitude': lat.toString(),
+        'longitude': lng.toString(),
+      },
+    };
+    await SharedPreferencesUtil().saveMap('selected_address', payload);
   }
 
   Future<void> requestLocationPermission() async {

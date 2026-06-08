@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/address_list_response.dart';
@@ -19,17 +17,18 @@ import '../utility/shared_preferences_util.dart';
 import '../utility/ui_typography.dart';
 
 class AddressListPage extends StatefulWidget {
-
   final Function(Address address) onSelectedAddress;
   final bool isFromCheckout;
-  const AddressListPage({super.key,required this.onSelectedAddress,this.isFromCheckout = false});
+  const AddressListPage(
+      {super.key,
+      required this.onSelectedAddress,
+      this.isFromCheckout = false});
 
   @override
   State<AddressListPage> createState() => _AddressListPageState();
 }
 
 class _AddressListPageState extends State<AddressListPage> {
-  @override
   GetAddressListResponse? addressListResponse;
   bool apiLoading = true;
 
@@ -45,6 +44,7 @@ class _AddressListPageState extends State<AddressListPage> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9FB),
@@ -88,14 +88,16 @@ class _AddressListPageState extends State<AddressListPage> {
                         ),
                         child: ElevatedButton.icon(
                           onPressed: () async {
-                            bool? isGoogleMapUsage = await SharedPreferencesUtil()
-                                    .getBool('google_map_usage') ??
-                                false;
+                            bool? isGoogleMapUsage =
+                                await SharedPreferencesUtil()
+                                        .getBool('google_map_usage') ??
+                                    false;
                             final result = await PageRouteUtils.pushWithSlide(
                                 context,
                                 isGoogleMapUsage
                                     ? MapPage(
                                         doublePop: true,
+                                        intent: MapPageIntent.saveAddress,
                                       )
                                     : AddAddressPage());
                             if (result == true) {
@@ -129,10 +131,16 @@ class _AddressListPageState extends State<AddressListPage> {
                   buttonText: AppStrings.add_address,
                   iconPath: AppAssets.ic_cart_empty,
                   onButtonTap: () async {
-                    bool? isGoogleMapUsage = await SharedPreferencesUtil().getBool('google_map_usage') ?? false;
+                    bool? isGoogleMapUsage = await SharedPreferencesUtil()
+                            .getBool('google_map_usage') ??
+                        false;
                     final result = await PageRouteUtils.pushWithSlide(
                         context,
-                        isGoogleMapUsage? MapPage(doublePop: true,): AddAddressPage());
+                        isGoogleMapUsage
+                            ? MapPage(
+                                doublePop: true,
+                                intent: MapPageIntent.saveAddress)
+                            : AddAddressPage());
                     if (result == true) {
                       getAddressListApi();
                     }
@@ -227,7 +235,8 @@ class _AddressListPageState extends State<AddressListPage> {
               ),
               if (showActions) ...[
                 const SizedBox(height: 12),
-                const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EC)),
+                const Divider(
+                    height: 1, thickness: 1, color: Color(0xFFE5E7EC)),
                 const SizedBox(height: 6),
                 Row(
                   children: [
@@ -244,12 +253,14 @@ class _AddressListPageState extends State<AddressListPage> {
                                     isEditAddress: true,
                                     selectedAddress: address,
                                     latitude: double.tryParse(
-                                            address?.metadata?.latitude ?? '') ??
+                                            address?.metadata?.latitude ??
+                                                '') ??
                                         0.0,
                                     longitude: double.tryParse(
                                             address?.metadata?.longitude ??
                                                 '') ??
-                                        0.0)
+                                        0.0,
+                                    intent: MapPageIntent.saveAddress)
                                 : AddAddressPage(
                                     selectedAddress: address,
                                   ));
@@ -261,11 +272,12 @@ class _AddressListPageState extends State<AddressListPage> {
                           size: 18, color: AppColors.primary),
                       label: Text(
                         AppStrings.edit,
-                        style: UiTypography.cardAction(color: AppColors.primary),
+                        style:
+                            UiTypography.cardAction(color: AppColors.primary),
                       ),
                       style: TextButton.styleFrom(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                         minimumSize: const Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -283,8 +295,8 @@ class _AddressListPageState extends State<AddressListPage> {
                             color: const Color(0xFFE5484D)),
                       ),
                       style: TextButton.styleFrom(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                         minimumSize: const Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -327,7 +339,7 @@ class _AddressListPageState extends State<AddressListPage> {
           title: AppStrings.confirm_deletion,
           content: AppStrings.sure_delete_address,
           contentOk: AppStrings.yes,
-          contentCancel:  AppStrings.no,
+          contentCancel: AppStrings.no,
           onTapOk: () {
             print("OK");
             Navigator.pop(context);

@@ -602,11 +602,21 @@ class ApiService {
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
-      {int offset = 0, int limit = 0}) async {
+      {int offset = 0,
+      int limit = 0,
+      double? latitude,
+      double? longitude,
+      String? pincode}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-      {'limit': limit, 'offset': offset},
+      {
+        'limit': limit,
+        'offset': offset,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -1360,17 +1370,43 @@ class ApiService {
         queryParameters: {'limit': limit, 'offset': offset});
   }
 
-  Future<Response> applyReferralCode(String code) async {
+  Future<Response> applyReferralCode(String identifier) async {
     await addToken();
     await setPublishableKey();
+    // Send via `referral_identifier` (new) — backend accepts unique code OR phone.
     return _dio.post('/store/loyalty/referral/apply',
-        data: {'referral_code': code});
+        data: {'referral_identifier': identifier.trim()});
   }
 
-  /// Public endpoint — no auth required. Validates a referral code before signup.
-  Future<Response> validateReferralCode(String code) async {
+  /// Public endpoint — no auth required. Accepts EITHER a unique code OR a
+  /// phone number (when admin has enabled phone-as-referral mode).
+  Future<Response> validateReferralCode(String identifier) async {
     await setPublishableKey();
+    final raw = identifier.trim();
+    // Pass via the new `identifier` param. Backend uppercases code lookups
+    // internally and tries phone matching when the input has enough digits.
     return _dio.get('/store/loyalty/referral/validate',
-        queryParameters: {'code': code.trim().toUpperCase()});
+        queryParameters: {'identifier': raw});
+  }
+
+  // GET /store/delivery/free-delivery-info — cart-scoped progress banner data.
+  // Returns null on any failure so the widget hides silently rather than
+  // breaking the cart UI.
+  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
+    BuildContext context,
+    String cartId,
+  ) async {
+    try {
+      await addToken();
+      return _makeGetRequest<Map<String, dynamic>>(
+        'store/delivery/free-delivery-info',
+        null,
+        {'cart_id': cartId},
+        (json) => Map<String, dynamic>.from(json as Map),
+        context,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 }

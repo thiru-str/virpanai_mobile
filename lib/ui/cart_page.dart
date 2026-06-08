@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
+import 'package:waioz/model/shipping_response.dart' as PaymentSessionData;
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/paytm_payment_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
@@ -67,6 +70,7 @@ class _CartPageState extends State<CartPage>
   String? pp_id;
   String? orderId;
   String? clientSecret;
+  PaymentSessionData.Data? paytmData;
   Razorpay razorpay = Razorpay();
   bool showPriceBreakdown = false;
 
@@ -171,6 +175,8 @@ class _CartPageState extends State<CartPage>
         return 'Razorpay';
       case 'pp_payu_payu':
         return 'PayU';
+      case 'pp_paytm_paytm':
+        return 'Paytm';
       case 'pp_icici_icici':
         return 'ICICI Bank';
       case 'pp_system_default':
@@ -190,6 +196,8 @@ class _CartPageState extends State<CartPage>
         return Icons.bolt_rounded;
       case 'pp_payu_payu':
         return Icons.credit_card_rounded;
+      case 'pp_paytm_paytm':
+        return Icons.account_balance_wallet_rounded;
       case 'pp_icici_icici':
         return Icons.account_balance_rounded;
       case 'pp_neft_neft':
@@ -209,6 +217,8 @@ class _CartPageState extends State<CartPage>
         return const Color(0xFF2D81F7);
       case 'pp_payu_payu':
         return const Color(0xFF6CB33F);
+      case 'pp_paytm_paytm':
+        return const Color(0xFF00BAF2);
       case 'pp_icici_icici':
         return const Color(0xFFE87722);
       case 'pp_neft_neft':
@@ -508,7 +518,9 @@ class _CartPageState extends State<CartPage>
                                 cartTotal: cartResponse?.cart?.total ?? 0,
                                 walletAmount: _walletAmountFromMetadata(),
                                 walletApplied: _walletAmountFromMetadata() > 0,
-                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                hasActiveCoupon:
+                                    (cartResponse?.cart?.promotions ?? [])
+                                        .isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -522,6 +534,20 @@ class _CartPageState extends State<CartPage>
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
+
+                            // Free delivery progress banner — hides itself when
+                            // no shipping address or no slabs configured.
+                            if ((cartResponse?.cart?.id ?? '').isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 4),
+                                child: FreeDeliveryBannerWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  cartTotal: cartResponse?.cart?.itemSubtotal ??
+                                      cartResponse?.cart?.subtotal ??
+                                      0,
+                                ),
+                              ),
 
                             // Price Details (view only)
                             AppReveal(
@@ -560,8 +586,8 @@ class _CartPageState extends State<CartPage>
                                             const EdgeInsets.only(bottom: 12),
                                         child: Text(
                                           'Price Details',
-                                          style: UiTypography.cardTitle()
-                                              .copyWith(
+                                          style:
+                                              UiTypography.cardTitle().copyWith(
                                             fontSize: 16,
                                             height: 1.25,
                                             letterSpacing: -0.2,
@@ -654,8 +680,8 @@ class _CartPageState extends State<CartPage>
                                           valueColor: AppColors.primary,
                                         ),
                                       const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 10),
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 10),
                                         child: Divider(
                                             color: Color(0xFFE5E7EC),
                                             height: 1),
@@ -1109,6 +1135,9 @@ class _CartPageState extends State<CartPage>
             response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
         clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull
             ?.data?.clientSecret;
+        paytmData = paymentProviderId == 'pp_paytm_paytm'
+            ? response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            : null;
       });
       getCartApi();
     } catch (e) {
@@ -1169,6 +1198,39 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    // Ensure cart has a shipping method attached before placing the order.
+    // Some backends rely on a subscriber to auto-attach (distance-based etc.),
+    // but if it fails the cart stays without one and complete-cart rejects
+    // with "No shipping method selected but the cart contains items that
+    // require shipping". Fetch options here and attach the first as fallback.
+    final hasShipping =
+        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    if (!hasShipping) {
+      try {
+        setState(() => cartLoading = true);
+        final api = ApiService();
+        final shipping = await api.getShippingInfo(context);
+        final first = shipping.shippingOptions?.isNotEmpty == true
+            ? shipping.shippingOptions!.first
+            : null;
+        if (first?.id != null) {
+          await api.updateShippingMethod(context, first!.id!);
+          await getCartApi();
+        } else {
+          setState(() => cartLoading = false);
+          AppUtils.showToast('No shipping method available for this address.');
+          return;
+        }
+      } catch (e) {
+        setState(() => cartLoading = false);
+        AppUtils.showToast(
+            'Could not attach shipping method. Please try again.');
+        return;
+      } finally {
+        setState(() => cartLoading = false);
+      }
+    }
+
     if (paymentProviderId == 'pp_icici_icici') {
       _makeIciciPayment();
       return;
@@ -1189,7 +1251,46 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
+      case 'pp_paytm_paytm':
+        makePaytmCall();
+        break;
     }
+  }
+
+  void makePaytmCall() {
+    final data = paytmData ??
+        cartResponse?.cart?.paymentCollection?.paymentSessions
+            ?.where((session) => session.providerId == 'pp_paytm_paytm')
+            .firstOrNull
+            ?.data;
+    if (data == null ||
+        data.host == null ||
+        data.mid == null ||
+        (data.orderId ?? data.id) == null ||
+        (data.txnToken ?? data.token) == null ||
+        data.amount == null) {
+      AppUtils.showToast(
+          'Paytm payment session is incomplete. Please try again.');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaytmPaymentPage(
+          data: data,
+          onSuccess: () {
+            Navigator.pop(context);
+            completeCart();
+          },
+          onFailure: (message) {
+            Navigator.pop(context);
+            AppUtils.showToast(message);
+            getCartApi();
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _makeIciciPayment() async {
@@ -1755,8 +1856,7 @@ class _CartPageState extends State<CartPage>
                       children: [
                         Text(
                           'View details',
-                          style: UiTypography.cardMeta(
-                                  color: AppColors.primary)
+                          style: UiTypography.cardMeta(color: AppColors.primary)
                               .copyWith(fontWeight: FontWeight.w600),
                         ),
                         Icon(Icons.keyboard_arrow_up_rounded,
@@ -1994,9 +2094,7 @@ class _CartPageState extends State<CartPage>
           ),
         ],
         border: Border.all(
-          color: splitActive
-              ? AppColors.primary
-              : const Color(0xFFE5E7EC),
+          color: splitActive ? AppColors.primary : const Color(0xFFE5E7EC),
           width: splitActive ? 1.5 : 1,
         ),
       ),
@@ -2098,9 +2196,9 @@ class _CartPageState extends State<CartPage>
                   Expanded(
                     child: Text(
                       '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
-                      style: UiTypography.cardMeta(
-                              color: const Color(0xFF1FA971))
-                          .copyWith(fontWeight: FontWeight.w600),
+                      style:
+                          UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                              .copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
