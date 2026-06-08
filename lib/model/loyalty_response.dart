@@ -226,6 +226,13 @@ class LoyaltyReferralData {
   String? rewardMode;
   int? referrerSignupPts;
   int? referrerFirstOrderPts;
+  // Item 4 — referee mode + first_order pts (storefront uses for "Welcome bonus" tease)
+  String? refereeRewardMode;
+  int? refereeSignupPts;
+  int? refereeFirstOrderPts;
+  // Item 7 — drives Refer & Earn display + QR encoding (unique_code | phone_number)
+  String? referralPrimaryIdentifier;
+  String? customerPhone;
 
   final Map<String, dynamic> _raw;
 
@@ -239,6 +246,11 @@ class LoyaltyReferralData {
     this.rewardMode,
     this.referrerSignupPts,
     this.referrerFirstOrderPts,
+    this.refereeRewardMode,
+    this.refereeSignupPts,
+    this.refereeFirstOrderPts,
+    this.referralPrimaryIdentifier,
+    this.customerPhone,
     Map<String, dynamic>? raw,
   }) : _raw = raw ?? {};
 
@@ -253,6 +265,11 @@ class LoyaltyReferralData {
         rewardMode: json["reward_mode"],
         referrerSignupPts: json["referrer_signup_pts"],
         referrerFirstOrderPts: json["referrer_first_order_pts"],
+        refereeRewardMode: json["referee_reward_mode"],
+        refereeSignupPts: json["referee_signup_pts"],
+        refereeFirstOrderPts: json["referee_first_order_pts"],
+        referralPrimaryIdentifier: json["referral_primary_identifier"],
+        customerPhone: json["customer_phone"],
         raw: json,
       );
 

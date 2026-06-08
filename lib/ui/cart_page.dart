@@ -5,21 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
+import 'package:waioz/model/shipping_response.dart' as PaymentSessionData;
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/paytm_payment_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/model/delivery_schedule_response.dart';
 import 'package:waioz/ui/widgets/fulfillment_method_widget.dart';
-import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
@@ -69,6 +71,7 @@ class _CartPageState extends State<CartPage>
   String? pp_id;
   String? orderId;
   String? clientSecret;
+  PaymentSessionData.Data? paytmData;
   Razorpay razorpay = Razorpay();
   bool showPriceBreakdown = false;
 
@@ -173,6 +176,7 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':      return 'Wallet';
       case 'pp_razorpay_razorpay':  return 'Razorpay';
       case 'pp_payu_payu':          return 'PayU';
+      case 'pp_paytm_paytm':        return 'Paytm';
       case 'pp_icici_icici':        return 'ICICI Bank';
       case 'pp_system_default':     return 'Cash on Delivery';
       case 'pp_neft_neft':          return 'Bank Transfer (NEFT)';
@@ -185,6 +189,7 @@ class _CartPageState extends State<CartPage>
     switch (id) {
       case 'pp_razorpay_razorpay': return Icons.bolt_rounded;
       case 'pp_payu_payu':         return Icons.credit_card_rounded;
+      case 'pp_paytm_paytm':       return Icons.account_balance_wallet_rounded;
       case 'pp_icici_icici':       return Icons.account_balance_rounded;
       case 'pp_neft_neft':         return Icons.swap_horiz_rounded;
       case 'pp_wallet_wallet':     return Icons.account_balance_wallet_rounded;
@@ -197,6 +202,7 @@ class _CartPageState extends State<CartPage>
     switch (id) {
       case 'pp_razorpay_razorpay': return const Color(0xFF2D81F7);
       case 'pp_payu_payu':         return const Color(0xFF6CB33F);
+      case 'pp_paytm_paytm':       return const Color(0xFF00BAF2);
       case 'pp_icici_icici':       return const Color(0xFFE87722);
       case 'pp_neft_neft':         return const Color(0xFF1565C0);
       case 'pp_wallet_wallet':     return const Color(0xFF2E7D32);
@@ -528,13 +534,17 @@ class _CartPageState extends State<CartPage>
                             // Payment Method Card
                             _buildPaymentMethodCard(),
 
-                            // Free delivery progress banner
+                            // Free delivery progress banner — hides itself when
+                            // no shipping address or no slabs configured.
                             if ((cartResponse?.cart?.id ?? '').isNotEmpty)
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 4),
                                 child: FreeDeliveryBannerWidget(
                                   cartId: cartResponse!.cart!.id!,
-                                  cartTotal: cartResponse?.cart?.itemSubtotal ?? cartResponse?.cart?.subtotal ?? 0,
+                                  cartTotal: cartResponse?.cart?.itemSubtotal ??
+                                      cartResponse?.cart?.subtotal ??
+                                      0,
                                 ),
                               ),
 
@@ -1093,6 +1103,9 @@ class _CartPageState extends State<CartPage>
             response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
         clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull
             ?.data?.clientSecret;
+        paytmData = paymentProviderId == 'pp_paytm_paytm'
+            ? response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            : null;
       });
       getCartApi();
     } catch (e) {
@@ -1204,7 +1217,45 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
+      case 'pp_paytm_paytm':
+        makePaytmCall();
+        break;
     }
+  }
+
+  void makePaytmCall() {
+    final data = paytmData ??
+        cartResponse?.cart?.paymentCollection?.paymentSessions
+            ?.where((session) => session.providerId == 'pp_paytm_paytm')
+            .firstOrNull
+            ?.data;
+    if (data == null ||
+        data.host == null ||
+        data.mid == null ||
+        (data.orderId ?? data.id) == null ||
+        (data.txnToken ?? data.token) == null ||
+        data.amount == null) {
+      AppUtils.showToast('Paytm payment session is incomplete. Please try again.');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaytmPaymentPage(
+          data: data,
+          onSuccess: () {
+            Navigator.pop(context);
+            completeCart();
+          },
+          onFailure: (message) {
+            Navigator.pop(context);
+            AppUtils.showToast(message);
+            getCartApi();
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _makeIciciPayment() async {
