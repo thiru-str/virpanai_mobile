@@ -85,6 +85,8 @@ class StoreesService {
   Future<void> reset() async {
     await init();
 
+    await _markPushUnsubscribedIfPossible();
+
     _customerId = null;
     _customerEmail = null;
     _customerPhone = null;
@@ -97,6 +99,25 @@ class StoreesService {
     await SharedPreferencesUtil().remove(_lastTrackedCartIdKey);
     await SharedPreferencesUtil().remove(_lastSyncedFcmTokenKey);
     await SharedPreferencesUtil().remove(_lastSyncedFcmCustomerIdKey);
+  }
+
+  Future<void> _markPushUnsubscribedIfPossible() async {
+    final customerId = _normalizedValue(_customerId);
+    final fcmToken = _normalizedValue(
+      await SharedPreferencesUtil().getString('fcm_token'),
+    );
+
+    if (!_isConfigured() || customerId == null || fcmToken == null) {
+      return;
+    }
+
+    await _upsertCustomer(
+      customerId: customerId,
+      attributes: {
+        'fcm_token': fcmToken,
+        'push_subscribed': false,
+      },
+    );
   }
 
   Future<void> syncCurrentFcmTokenIfNeeded() async {

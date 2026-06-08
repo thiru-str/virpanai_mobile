@@ -1,6 +1,6 @@
 class AppConfig {
   static const String appName = 'GoWelMart';
-  static const String baseUrl = 'https://dev.api.ecommerce.gowelmart.com/';
+  static const String baseUrl = 'https://api.ecommerce.gowelmart.com/';
   //static const String baseUrl = 'https://api.ecommerce.gowelmart.com/';
   static const String storeesBaseUrl = 'https://api.storees.io/api/v1';
   static const String storeesApiKey = 'strs_pub_9734165f19af0aa7ea0a06355df644325787d51eb55b1a5e';
