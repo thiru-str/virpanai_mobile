@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../api/api_service.dart';
 import '../model/loyalty_response.dart';
@@ -169,8 +170,13 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   }
 
   void _copyCode() {
-    if (_referral?.referralCode != null) {
-      Clipboard.setData(ClipboardData(text: _referral!.referralCode!));
+    // Copy primary identifier (phone if phone-mode, else unique code)
+    final isPhoneMode = _referral?.referralPrimaryIdentifier == 'phone_number';
+    final phone = (_referral?.customerPhone ?? '').trim();
+    final code = (_referral?.referralCode ?? '').trim();
+    final identifier = isPhoneMode && phone.isNotEmpty ? phone : code;
+    if (identifier.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: identifier));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Copied!'), behavior: SnackBarBehavior.floating, duration: Duration(seconds: 1),
@@ -180,10 +186,16 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   }
 
   void _shareCode() {
-    if (_referral?.referralCode != null) {
+    final isPhoneMode = _referral?.referralPrimaryIdentifier == 'phone_number';
+    final phone = (_referral?.customerPhone ?? '').trim();
+    final code = (_referral?.referralCode ?? '').trim();
+    final primary = isPhoneMode && phone.isNotEmpty ? phone : code;
+    final secondary = isPhoneMode && phone.isNotEmpty ? code : null;
+    if (primary.isNotEmpty) {
       final box = context.findRenderObject() as RenderBox?;
+      final extra = secondary != null ? '\nOr use code: $secondary' : '';
       Share.share(
-        'Use my referral code ${_referral!.referralCode!} to earn rewards!\nDownload the app and enter my code during signup.',
+        'Use my referral identifier $primary to earn rewards!\nDownload the app and enter it during signup.$extra',
         subject: 'Join me and earn rewards!',
         sharePositionOrigin: box != null
             ? box.localToGlobal(Offset.zero) & box.size
@@ -390,16 +402,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
         ),
       ],
       const SizedBox(height: 12),
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.04), borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.primary.withOpacity(0.15)),
-        ),
-        child: Center(child: Text(_referral!.referralCode!,
-            style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 3))),
-      ),
+      _qrAndIdentifierCard(),
       const SizedBox(height: 12),
       Row(children: [
         Expanded(child: OutlinedButton.icon(
@@ -446,6 +449,68 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
         ..._referralHistory.take(3).map((ref) => _buildReferralRow(ref)),
       ],
     ]));
+  }
+
+  // Item 7 — QR code + identifier display. Primary identifier (phone or code)
+  // is shown prominently; secondary is a small "Or share: …" fallback line.
+  Widget _qrAndIdentifierCard() {
+    final isPhoneMode = _referral?.referralPrimaryIdentifier == 'phone_number';
+    final phone = (_referral?.customerPhone ?? '').trim();
+    final code = (_referral?.referralCode ?? '').trim();
+    final primary = isPhoneMode && phone.isNotEmpty ? phone : code;
+    final secondary = isPhoneMode && phone.isNotEmpty ? code : null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary.withOpacity(0.20)),
+            ),
+            child: QrImageView(
+              data: primary,
+              version: QrVersions.auto,
+              size: 160,
+              backgroundColor: Colors.white,
+              eyeStyle: const QrEyeStyle(
+                eyeShape: QrEyeShape.square,
+                color: Color(0xFF272727),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            primary,
+            style: FontUtils.primaryFontStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+              letterSpacing: isPhoneMode ? 0.5 : 3,
+            ),
+          ),
+          if (secondary != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Or share code: $secondary',
+              style: FontUtils.secondaryFontStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildReferralRow(dynamic ref) {
