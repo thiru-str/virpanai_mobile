@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Item 7 QA sprint: referral QR scan + contact picker -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <uses-feature android:name="android.hardware.location.gps"/>
     <uses-feature android:name="android.hardware.location.network"/>
@@ -77,6 +80,13 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Android 11+ package-visibility for UPI deep-links emitted by the
+             ICICI WebView (upi://pay?...). Without this canLaunchUrl returns
+             false and the chooser never shows. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="upi"/>
         </intent>
     </queries>
 </manifest>

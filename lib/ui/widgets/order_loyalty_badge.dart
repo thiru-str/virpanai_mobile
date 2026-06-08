@@ -129,57 +129,8 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
       );
     }
 
-    // Order placed before loyalty was enabled — muted chip.
-    if (_status == 'not_eligible') {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.do_not_disturb_alt_rounded,
-                    color: Colors.grey.shade600, size: 18),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Not eligible for loyalty points',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    Text(
-                      'This order was placed before loyalty rewards were enabled',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    // Item 3 (QA): ineligible orders render nothing (no negative chip).
+    if (_status == 'not_eligible') return const SizedBox.shrink();
 
     if (_points <= 0) return const SizedBox.shrink();
 
