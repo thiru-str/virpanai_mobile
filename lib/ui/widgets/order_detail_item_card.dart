@@ -22,7 +22,7 @@ class OrderDetailItemCard extends StatelessWidget {
     required this.price,
     required this.status,
     this.initialRating = 0.0,
-    this.showRating = true,
+    this.showRating = false,
     this.onRatingChanged,
   }) : super(key: key);
 

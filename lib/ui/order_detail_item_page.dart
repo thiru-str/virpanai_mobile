@@ -417,7 +417,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
             bottom: (index == visibleItems.length - 1) ? 0 : 16.0,
           ),
           child: OrderDetailItemCard(
-            showRating: itemDetail.status == 'delivered',
             imageUrl: itemDetail.thumbnail ?? '',
             variant: itemDetail.variantTitle ?? '',
             productName:
@@ -468,13 +467,72 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       '';
 
   String get _deliveryMethodName =>
-      legacyOrder?.cart?.shippingAddress == null
-          ? ''
-          : (legacyOrder?.metadata?.type == 'pickup'
-              ? 'Self Pickup'
-              : (legacyOrder?.cart?.shippingAddress?.address1?.isNotEmpty ?? false)
-                  ? 'Delivery'
-                  : '');
+      _isPickupOrder
+          ? 'Self Pickup'
+          : _hasShippingAddress
+              ? 'Delivery'
+              : '';
+
+  bool get _isPickupOrder {
+    final orderMetadata = order?.metadata;
+    if (_metadataIndicatesPickup(orderMetadata)) {
+      return true;
+    }
+
+    final orderShippingMetadata = order?.shippingAddress?.metadata;
+    if (_metadataIndicatesPickup(orderShippingMetadata)) {
+      return true;
+    }
+
+    final legacyShippingMetadata = legacyOrder?.cart?.shippingAddress?.metadata;
+    if (_metadataIndicatesPickup(legacyShippingMetadata)) {
+      return true;
+    }
+
+    return _metadataIndicatesPickup({
+      'type': legacyOrder?.metadata?.type,
+      'fulfillment_type': legacyOrder?.metadata?.type,
+      'pickup_date': null,
+    });
+  }
+
+  bool _metadataIndicatesPickup(dynamic metadata) {
+    if (metadata is! Map) return false;
+
+    final type = metadata['type']?.toString().toLowerCase();
+    final deliveryMethod =
+        metadata['delivery_method']?.toString().toLowerCase();
+    final fulfillmentType =
+        metadata['fulfillment_type']?.toString().toLowerCase();
+    final shippingMethod =
+        metadata['shipping_method']?.toString().toLowerCase();
+    final selectedMethod =
+        metadata['selected_delivery_method']?.toString().toLowerCase();
+    final pickupSlotId = metadata['pickup_slot_id'];
+    final pickupDate = metadata['pickup_date'];
+    final pickupAnyTime = metadata['pickup_any_time'] == true;
+
+    return type == 'pickup' ||
+        deliveryMethod == 'pickup' ||
+        deliveryMethod == 'self_pickup' ||
+        deliveryMethod == 'self pickup' ||
+        fulfillmentType == 'pickup' ||
+        shippingMethod == 'pickup' ||
+        shippingMethod == 'self_pickup' ||
+        shippingMethod == 'self pickup' ||
+        selectedMethod == 'pickup' ||
+        selectedMethod == 'self_pickup' ||
+        selectedMethod == 'self pickup' ||
+        pickupSlotId != null ||
+        pickupDate != null ||
+        pickupAnyTime;
+  }
+
+  bool get _hasShippingAddress {
+    final dynamic shippingAddress =
+        order?.shippingAddress ?? legacyOrder?.cart?.shippingAddress;
+    return shippingAddress?.address1?.toString().isNotEmpty == true;
+  }
 
   List<OrderStatusStep> buildOrderSteps(
       String? orderStatus, String? fulfillmentStatus) {
