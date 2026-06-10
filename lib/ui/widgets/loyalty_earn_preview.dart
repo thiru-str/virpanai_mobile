@@ -18,7 +18,17 @@ import '../../utility/shared_preferences_util.dart';
 class LoyaltyEarnPreview extends StatefulWidget {
   final num orderTotal;
   final String? cartId;
-  const LoyaltyEarnPreview({super.key, required this.orderTotal, this.cartId});
+  /// PDP-only — when present, backend short-circuits if the merchant has
+  /// restricted earning to specific products / categories and this product
+  /// isn't in the allowed set. Avoids promising points the order subscriber
+  /// will later refuse.
+  final String? productId;
+  const LoyaltyEarnPreview({
+    super.key,
+    required this.orderTotal,
+    this.cartId,
+    this.productId,
+  });
 
   @override
   State<LoyaltyEarnPreview> createState() => _LoyaltyEarnPreviewState();
@@ -35,6 +45,11 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   num _earnableAmount = 0;
   num _earnRatio = 1;
   bool _isLoggedIn = false;
+  // Backend sets status="not_eligible" when the merchant restricts earning
+  // to specific products / categories and the current product (PDP context)
+  // isn't allowed. Render nothing instead of the deceptive "Add ₹X more to
+  // earn …" copy that would otherwise still show because earn_enabled=true.
+  bool _notEligible = false;
 
   @override
   void initState() {
@@ -46,11 +61,18 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   @override
   void didUpdateWidget(LoyaltyEarnPreview old) {
     super.didUpdateWidget(old);
-    if (old.orderTotal != widget.orderTotal || old.cartId != widget.cartId) _load();
+    if (old.orderTotal != widget.orderTotal ||
+        old.cartId != widget.cartId ||
+        old.productId != widget.productId) {
+      _load();
+    }
   }
 
   Future<void> _checkLoginState() async {
-    final token = await SharedPreferencesUtil().getString('access_token');
+    // App stores the auth token under the 'token' key (see ApiService.addToken).
+    // Earlier 'access_token' was a typo and made the preview stay in guest copy
+    // ("Sign up to earn…") for users who were actually logged in.
+    final token = await SharedPreferencesUtil().getString('token');
     if (mounted) setState(() => _isLoggedIn = (token ?? '').isNotEmpty);
   }
 
@@ -61,14 +83,18 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
       return;
     }
     try {
-      final resp = await ApiService()
-          .getLoyaltyPreview(widget.orderTotal, cartId: widget.cartId);
+      final resp = await ApiService().getLoyaltyPreview(
+        widget.orderTotal,
+        cartId: widget.cartId,
+        productId: widget.productId,
+      );
       final d = resp.data;
       if (d['status'] == true && d['data'] != null) {
         final data = d['data'] as Map<String, dynamic>;
         if (mounted) {
           setState(() {
             _earnEnabled = data['earn_enabled'] == true;
+            _notEligible = data['status'] == 'not_eligible';
             _points = data['points_to_earn'] ?? 0;
             _basePoints = data['base_points'] ?? _points;
             _multiplier = double.tryParse(data['multiplier']?.toString() ?? '1') ?? 1.0;
@@ -120,6 +146,11 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   Widget build(BuildContext context) {
     if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_loading || !_earnEnabled) return const SizedBox.shrink();
+
+    // Product-restricted earn: backend told us this product isn't in the
+    // allowed list / category. Rendering the "Add ₹X more …" copy here
+    // would lie — the order subscriber would later refuse to credit pts.
+    if (_notEligible) return const SizedBox.shrink();
 
     // Pure no-op when there's nothing meaningful to say: no minimum AND no
     // points to earn yet (e.g. earn_enabled but ratio configured oddly).
