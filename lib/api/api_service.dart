@@ -1560,21 +1560,4 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
-    BuildContext context,
-    String cartId,
-  ) async {
-    try {
-      await addToken();
-      return _makeGetRequest<Map<String, dynamic>>(
-        'store/delivery/free-delivery-info',
-        null,
-        {'cart_id': cartId},
-        (json) => Map<String, dynamic>.from(json as Map),
-        context,
-      );
-    } catch (_) {
-      return null;
-    }
-  }
 }
