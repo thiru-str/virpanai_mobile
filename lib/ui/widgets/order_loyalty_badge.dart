@@ -42,6 +42,13 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
   bool get _isCancelled =>
       widget.orderStatus == 'canceled' || widget.orderStatus == 'cancelled';
 
+  // Net paid amount the customer actually paid for points-earn purposes.
+  // Negative or zero means loyalty/discounts covered the full order, in which
+  // case no points are earned — the loading skeleton would just flash orange
+  // and disappear, which read as a UI bug to QA. Compute eagerly so we can
+  // skip the skeleton entirely.
+  bool get _hasZeroEarnableTotal => widget.orderTotal <= 0;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +59,12 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
     _pulseAnimation = Tween(begin: 0.4, end: 0.9).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    // Skip the network round-trip + loading skeleton when earn is already
+    // guaranteed to be 0 from local math. Avoids the orange flash.
+    if (_hasZeroEarnableTotal) {
+      _loading = false;
+      return;
+    }
     _load();
   }
 
@@ -95,6 +108,8 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
   Widget build(BuildContext context) {
     if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_isCancelled) return const SizedBox.shrink();
+    // Pre-empt the loading flicker — earn is already 0 by local math.
+    if (_hasZeroEarnableTotal) return const SizedBox.shrink();
 
     if (_loading) {
       return AnimatedBuilder(

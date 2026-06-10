@@ -429,6 +429,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               orderTotal: num.tryParse(selectedVariant!
                       .calculatedPrice!.rawCalculatedAmount!.value!) ??
                   0,
+              // PDP: let the backend short-circuit when this product isn't in
+              // the merchant's earn-allowed list / category.
+              productId: widget.productId,
             ),
           ),
       ],

@@ -1463,6 +1463,7 @@ class ApiService {
     num orderTotal, {
     String? orderId,
     String? cartId,
+    String? productId,
   }) async {
     await setPublishableKey();
     final params = <String, dynamic>{};
@@ -1470,6 +1471,10 @@ class ApiService {
     // Prefer cart_id when available — backend computes earnable amount server-side
     // (excludes platform_fee + applies earn restriction).
     if (cartId != null && cartId.isNotEmpty) params['cart_id'] = cartId;
+    // PDP passes product_id so backend can short-circuit when the merchant
+    // has restricted earning to specific products / categories — keeps the
+    // "you'll earn …" strip honest with what the order subscriber will do.
+    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
