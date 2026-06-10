@@ -7,12 +7,6 @@ import 'dart:convert';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/ui/cart_response.dart';
 
-// To parse this JSON data, do
-//
-//     final orderHistoryResponse = orderHistoryResponseFromJson(jsonString);
-
-import 'dart:convert';
-
 OrderHistoryResponse orderHistoryResponseFromJson(String str) => OrderHistoryResponse.fromJson(json.decode(str));
 
 String orderHistoryResponseToJson(OrderHistoryResponse data) => json.encode(data.toJson());
@@ -57,9 +51,12 @@ class Order {
   DateTime? updatedAt;
   num? subtotal;
   num? taxTotal;
+  num? discountSubtotal;
+  num? shippingSubtotal;
   num? version;
   List<Item>? items;
   List<PaymentCollection>? paymentCollections;
+  List<ShippingMethod>? shippingMethods;
   Cart? cart;
   String? paymentStatus;
   String? fulfillmentStatus;
@@ -76,9 +73,12 @@ class Order {
     this.updatedAt,
     this.subtotal,
     this.taxTotal,
+    this.discountSubtotal,
+    this.shippingSubtotal,
     this.version,
     this.items,
     this.paymentCollections,
+    this.shippingMethods,
     this.cart,
     this.paymentStatus,
     this.fulfillmentStatus,
@@ -96,9 +96,12 @@ class Order {
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     subtotal: json["subtotal"],
     taxTotal: json["tax_total"],
+    discountSubtotal: json["discount_subtotal"],
+    shippingSubtotal: json["shipping_subtotal"],
     version: json["version"],
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
     paymentCollections: json["payment_collections"] == null ? [] : List<PaymentCollection>.from(json["payment_collections"]!.map((x) => PaymentCollection.fromJson(x))),
+    shippingMethods: json["shipping_methods"] == null ? [] : List<ShippingMethod>.from(json["shipping_methods"]!.map((x) => ShippingMethod.fromJson(x))),
     cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
     paymentStatus: json["payment_status"],
     fulfillmentStatus: json["fulfillment_status"],
@@ -116,9 +119,12 @@ class Order {
     "updated_at": updatedAt?.toIso8601String(),
     "subtotal": subtotal,
     "tax_total": taxTotal,
+    "discount_subtotal": discountSubtotal,
+    "shipping_subtotal": shippingSubtotal,
     "version": version,
     "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
     "payment_collections": paymentCollections == null ? [] : List<dynamic>.from(paymentCollections!.map((x) => x.toJson())),
+    "shipping_methods": shippingMethods == null ? [] : List<dynamic>.from(shippingMethods!.map((x) => x.toJson())),
     "cart": cart?.toJson(),
     "payment_status": paymentStatus,
     "fulfillment_status": fulfillmentStatus,

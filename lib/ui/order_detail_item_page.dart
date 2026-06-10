@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/order_history_reponse.dart'
-    as legacy_order_models;
+    as order_history_models;
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/order_status_widget.dart';
@@ -35,7 +35,7 @@ class OrderDetailItemPage extends StatefulWidget {
 class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   String paymentType = "Unknown"; // Default value
   Data? order;
-  legacy_order_models.Order? legacyOrder;
+  order_history_models.Order? orderHistoryOrder;
 
   double get _walletAmount {
     final meta = order?.metadata;
@@ -94,23 +94,23 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       final ApiService apiService = ApiService();
       final response =
           await apiService.getOrderDetails(context, widget.orderId ?? '');
-      legacy_order_models.Order? legacy;
+      order_history_models.Order? orderHistory;
       try {
-        final legacyResponse = await apiService.getIndividualOrderHistory(
+        final orderHistoryResponse = await apiService.getIndividualOrderHistory(
           context,
           widget.orderId ?? '',
         );
-        legacy = legacyResponse.order;
+        orderHistory = orderHistoryResponse.order;
       } catch (_) {}
 
       final paymentId = response.data?.paymentMethod ??
-          legacy?.paymentCollections?.firstOrNull?.payments?.firstOrNull
+          orderHistory?.paymentCollections?.firstOrNull?.payments?.firstOrNull
               ?.providerId ??
           '';
 
       setState(() {
         order = response.data;
-        legacyOrder = legacy;
+        orderHistoryOrder = orderHistory;
         debugPrint('order details called');
         paymentType = paymentTypeMap[paymentId] ?? "Unknown";
         apiLoading = false;
@@ -171,15 +171,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                       Center(
                         child: OrderStatusWidget(
                           currentStep: getCurrentStep(
-                            legacyOrder?.status ?? order?.status,
+                            orderHistoryOrder?.status ?? order?.status,
                             _fulfillmentStatus,
                           ),
                           steps: buildOrderSteps(
-                            legacyOrder?.status ?? order?.status,
+                            orderHistoryOrder?.status ?? order?.status,
                             _fulfillmentStatus,
                           ),
                           isCanceled:
-                              (legacyOrder?.status ?? order?.status) ==
+                              (orderHistoryOrder?.status ?? order?.status) ==
                                   'canceled',
                         ),
                       ),
@@ -434,7 +434,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   Widget _buildShippingDetailsCard() {
     final dynamic shippingAddress =
-        order?.shippingAddress ?? legacyOrder?.cart?.shippingAddress;
+        order?.shippingAddress ?? orderHistoryOrder?.cart?.shippingAddress;
     final shippingLines = [
       shippingAddress?.address1,
       shippingAddress?.city,
@@ -461,17 +461,20 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   }
 
   String get _fulfillmentStatus =>
-      legacyOrder?.metadata?.fulfillmentStatus ??
-      legacyOrder?.fulfillmentStatus ??
+      orderHistoryOrder?.metadata?.fulfillmentStatus ??
+      orderHistoryOrder?.fulfillmentStatus ??
       order?.orderStatus ??
       '';
 
   String get _deliveryMethodName =>
-      _isPickupOrder
-          ? 'Self Pickup'
-          : _hasShippingAddress
-              ? 'Delivery'
-              : '';
+      (orderHistoryOrder?.shippingMethods?.firstOrNull?.name?.isNotEmpty ??
+              false)
+          ? orderHistoryOrder!.shippingMethods!.first.name!
+          : _isPickupOrder
+              ? 'Self Pickup'
+              : _hasShippingAddress
+                  ? 'Delivery'
+                  : '';
 
   bool get _isPickupOrder {
     final orderMetadata = order?.metadata;
@@ -484,19 +487,29 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       return true;
     }
 
-    final legacyShippingMetadata = legacyOrder?.cart?.shippingAddress?.metadata;
-    if (_metadataIndicatesPickup(legacyShippingMetadata)) {
+    final orderHistoryShippingMetadata =
+        orderHistoryOrder?.cart?.shippingAddress?.metadata;
+    if (_metadataIndicatesPickup(orderHistoryShippingMetadata)) {
       return true;
     }
 
     return _metadataIndicatesPickup({
-      'type': legacyOrder?.metadata?.type,
-      'fulfillment_type': legacyOrder?.metadata?.type,
+      'type': orderHistoryOrder?.metadata?.type,
+      'fulfillment_type': orderHistoryOrder?.metadata?.type,
       'pickup_date': null,
     });
   }
 
   bool _metadataIndicatesPickup(dynamic metadata) {
+    if (metadata is String) {
+      final normalized = metadata.toLowerCase();
+      return normalized.contains('pickup') ||
+          normalized.contains('self pickup') ||
+          normalized.contains('self_pickup') ||
+          normalized.contains('"fulfillment_type":"pickup"') ||
+          normalized.contains("'fulfillment_type':'pickup'");
+    }
+
     if (metadata is! Map) return false;
 
     final type = metadata['type']?.toString().toLowerCase();
@@ -508,6 +521,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         metadata['shipping_method']?.toString().toLowerCase();
     final selectedMethod =
         metadata['selected_delivery_method']?.toString().toLowerCase();
+    final mode = metadata['mode']?.toString().toLowerCase();
+    final method = metadata['method']?.toString().toLowerCase();
+    final rawMetadata = metadata.toString().toLowerCase();
     final pickupSlotId = metadata['pickup_slot_id'];
     final pickupDate = metadata['pickup_date'];
     final pickupAnyTime = metadata['pickup_any_time'] == true;
@@ -523,14 +539,17 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         selectedMethod == 'pickup' ||
         selectedMethod == 'self_pickup' ||
         selectedMethod == 'self pickup' ||
+        mode == 'pickup' ||
+        method == 'pickup' ||
         pickupSlotId != null ||
         pickupDate != null ||
-        pickupAnyTime;
+        pickupAnyTime ||
+        rawMetadata.contains('pickup');
   }
 
   bool get _hasShippingAddress {
     final dynamic shippingAddress =
-        order?.shippingAddress ?? legacyOrder?.cart?.shippingAddress;
+        order?.shippingAddress ?? orderHistoryOrder?.cart?.shippingAddress;
     return shippingAddress?.address1?.toString().isNotEmpty == true;
   }
 
