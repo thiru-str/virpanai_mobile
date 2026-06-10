@@ -311,6 +311,7 @@ class Prices {
   num? itemSubtotal;
   num? shippingTotal;
   num? discountTotal;
+  num? physicalDiscountTotal;
   num? taxTotal;
 
   Prices({
@@ -319,6 +320,7 @@ class Prices {
     this.itemSubtotal,
     this.shippingTotal,
     this.discountTotal,
+    this.physicalDiscountTotal,
     this.taxTotal,
   });
 
@@ -328,6 +330,7 @@ class Prices {
     itemSubtotal: json["item_subtotal"],
     shippingTotal: json["shipping_total"],
     discountTotal: json["discount_total"],
+    physicalDiscountTotal: json["physical_discount_amount"] ?? json["physical_discount"],
     taxTotal: json["tax_total"],
   );
 
@@ -337,6 +340,7 @@ class Prices {
     "item_subtotal": itemSubtotal,
     "shipping_total": shippingTotal,
     "discount_total": discountTotal,
+    "physical_discount_amount": physicalDiscountTotal,
     "tax_total": taxTotal,
   };
 }
