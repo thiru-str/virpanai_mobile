@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -37,6 +38,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:lottie/lottie.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
 import '../utility/currency_util.dart';
@@ -86,7 +88,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   TopUpConfig? walletTopupConfig;
 
   // Fulfillment selection (standard by default; updated by FulfillmentMethodWidget)
-  FulfillmentSelection _fulfillment = const FulfillmentSelection(type: 'standard');
+  FulfillmentSelection _fulfillment =
+      const FulfillmentSelection(type: 'standard');
 
   @override
   void initState() {
@@ -132,156 +135,170 @@ class _CheckOutPageState extends State<CheckOutPage> {
           body: Container(
             decoration: const BoxDecoration(gradient: AppColors.linearGradient),
             child: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // CheckoutItemCard(
-                              //     title: AppStrings.shipping_address,
-                              //     subtitle: addAddress
-                              //         ? selectedAddress!.address1!
-                              //         : AppStrings.add_shipping_address,
-                              //     onTap: () {
-                              //       PageRouteUtils.pushWithSlide(
-                              //           context,
-                              //           AddressListPage(
-                              //             isFromCheckout: true,
-                              //             onSelectedAddress: (address) {
-                              //               setState(() {
-                              //                 addAddress = true;
-                              //                 selectedAddress = address;
-                              //                 apiLoading = true;
-                              //               });
-                              //               updateAddress(address);
-                              //             },
-                              //           ));
-                              //     }),
-                              // CheckoutItemCard(
-                              //     title: AppStrings.shipping_method,
-                              //     subtitle: addShippingOption
-                              //         ? shippingOption?.name ??
-                              //             AppStrings.add_shipping_method
-                              //         : AppStrings.add_shipping_method,
-                              //     onTap: () async {
-                              //       if (!addAddress) {
-                              //         AppUtils.showToast(
-                              //             AppStrings.choose_shipping_address);
-                              //         return;
-                              //       }
-                              //       showShippingBottomSheet(context,
-                              //           shippingResponse!.shippingOptions!);
-                              //     }),
-                              // Fulfillment method — delivery scheduling / self pickup
-                              FulfillmentMethodWidget(
-                                cartMetadata: cartResponse?.cart?.metadata is Map<String, dynamic>
-                                    ? cartResponse!.cart!.metadata as Map<String, dynamic>
-                                    : null,
-                                onChanged: (sel) async {
-                                  setState(() => _fulfillment = sel ?? const FulfillmentSelection(type: 'standard'));
-                                  try {
-                                    await ApiService().updateCartFulfillment(
-                                      context,
-                                      _fulfillment.toMetadata(),
-                                    );
-                                  } catch (_) {}
-                                },
-                              ),
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // CheckoutItemCard(
+                                //     title: AppStrings.shipping_address,
+                                //     subtitle: addAddress
+                                //         ? selectedAddress!.address1!
+                                //         : AppStrings.add_shipping_address,
+                                //     onTap: () {
+                                //       PageRouteUtils.pushWithSlide(
+                                //           context,
+                                //           AddressListPage(
+                                //             isFromCheckout: true,
+                                //             onSelectedAddress: (address) {
+                                //               setState(() {
+                                //                 addAddress = true;
+                                //                 selectedAddress = address;
+                                //                 apiLoading = true;
+                                //               });
+                                //               updateAddress(address);
+                                //             },
+                                //           ));
+                                //     }),
+                                // CheckoutItemCard(
+                                //     title: AppStrings.shipping_method,
+                                //     subtitle: addShippingOption
+                                //         ? shippingOption?.name ??
+                                //             AppStrings.add_shipping_method
+                                //         : AppStrings.add_shipping_method,
+                                //     onTap: () async {
+                                //       if (!addAddress) {
+                                //         AppUtils.showToast(
+                                //             AppStrings.choose_shipping_address);
+                                //         return;
+                                //       }
+                                //       showShippingBottomSheet(context,
+                                //           shippingResponse!.shippingOptions!);
+                                //     }),
+                                // Fulfillment method — delivery scheduling / self pickup
+                                FulfillmentMethodWidget(
+                                  cartMetadata: cartResponse?.cart?.metadata
+                                          is Map<String, dynamic>
+                                      ? cartResponse!.cart!.metadata
+                                          as Map<String, dynamic>
+                                      : null,
+                                  onChanged: (sel) async {
+                                    setState(() => _fulfillment = sel ??
+                                        const FulfillmentSelection(
+                                            type: 'standard'));
+                                    try {
+                                      await ApiService().updateCartFulfillment(
+                                        context,
+                                        _fulfillment.toMetadata(),
+                                      );
+                                    } catch (_) {}
+                                  },
+                                ),
 
-                              if (_fulfillment.type == 'pickup') _buildPickupNotice(),
+                                if (_fulfillment.type == 'pickup')
+                                  _buildPickupNotice(),
 
-                              const SizedBox(height: 8),
+                                const SizedBox(height: 8),
 
-                              // Wallet Split Banner — shown in split_payment mode
-                              // Payment method selection — hide if wallet covers full amount in split mode
-                              if (!(splitActive && splitFullCoverage))
-                                CheckoutItemCard(
-                                    title: splitActive
-                                        ? 'Pay Remaining'
-                                        : AppStrings.payemnt_method,
-                                    subtitle: addPaymentMethod
-                                        ? pp_title!
-                                        : AppStrings.add_payment_method,
-                                    onTap: () async {
-                                      if (!addAddress && _fulfillment.type != 'pickup') {
-                                        AppUtils.showToast(
-                                            AppStrings.choose_shipping_address);
-                                        return;
-                                      } else if (!addShippingOption) {
-                                        AppUtils.showToast(
-                                            AppStrings.choose_shipping_address);
-                                        return;
-                                      }
-                                      Global? global = await getGlobal();
-                                      if (global != null) {
-                                        // Filter out wallet from payment methods in split mode
-                                        final providers = isSplitPaymentMode
-                                            ? global.paymentProvider!
-                                                .where((p) =>
-                                                    p.id != 'pp_wallet_wallet')
-                                                .toList()
-                                            : global.paymentProvider!;
-                                        showPaymentMethodsBottomSheet(
-                                            context, providers);
-                                      }
-                                    }),
+                                // Wallet Split Banner — shown in split_payment mode
+                                // Payment method selection — hide if wallet covers full amount in split mode
+                                if (!(splitActive && splitFullCoverage))
+                                  CheckoutItemCard(
+                                      title: splitActive
+                                          ? 'Pay Remaining'
+                                          : AppStrings.payemnt_method,
+                                      subtitle: addPaymentMethod
+                                          ? pp_title!
+                                          : AppStrings.add_payment_method,
+                                      onTap: () async {
+                                        if (!addAddress &&
+                                            _fulfillment.type != 'pickup') {
+                                          AppUtils.showToast(AppStrings
+                                              .choose_shipping_address);
+                                          return;
+                                        } else if (!addShippingOption) {
+                                          AppUtils.showToast(AppStrings
+                                              .choose_shipping_address);
+                                          return;
+                                        }
+                                        Global? global = await getGlobal();
+                                        if (global != null) {
+                                          // Filter out wallet from payment methods in split mode
+                                          final providers = isSplitPaymentMode
+                                              ? global.paymentProvider!
+                                                  .where((p) =>
+                                                      p.id !=
+                                                      'pp_wallet_wallet')
+                                                  .toList()
+                                              : global.paymentProvider!;
+                                          showPaymentMethodsBottomSheet(
+                                              context, providers);
+                                        }
+                                      }),
 
-                              // Wallet Balance Info (shows when wallet is selected in full_payment mode)
-                              if (pp_id == 'pp_wallet_wallet' && !splitActive)
-                                _buildWalletInfoWidget(),
+                                // Wallet Balance Info (shows when wallet is selected in full_payment mode)
+                                if (pp_id == 'pp_wallet_wallet' && !splitActive)
+                                  _buildWalletInfoWidget(),
 
-                              const SizedBox(height: 12),
+                                const SizedBox(height: 12),
 
-                              // Loyalty earn preview — based on actual paid amount
-                              Builder(builder: (_) {
-                                final meta = cartResponse?.cart?.metadata;
-                                final loyaltyOff = (meta is Map &&
-                                        meta['loyalty_checkout_apply'] is Map &&
-                                        ((meta['loyalty_checkout_apply']
-                                                    ['points_to_apply'] ??
-                                                0) as num) >
-                                            0)
-                                    ? (meta['loyalty_checkout_apply']
-                                            ['discount_amount'] ??
-                                        0) as num
-                                    : 0;
-                                return LoyaltyEarnPreview(
-                                  cartId: cartResponse!.cart!.id,
-                                  orderTotal: 0,
-                                );
-                              }),
+                                // Loyalty earn preview — based on actual paid amount
+                                Builder(builder: (_) {
+                                  final meta = cartResponse?.cart?.metadata;
+                                  final loyaltyOff = (meta is Map &&
+                                          meta['loyalty_checkout_apply']
+                                              is Map &&
+                                          ((meta['loyalty_checkout_apply']
+                                                      ['points_to_apply'] ??
+                                                  0) as num) >
+                                              0)
+                                      ? (meta['loyalty_checkout_apply']
+                                              ['discount_amount'] ??
+                                          0) as num
+                                      : 0;
+                                  return LoyaltyEarnPreview(
+                                    cartId: cartResponse!.cart!.id,
+                                    orderTotal: 0,
+                                  );
+                                }),
 
-                              const SizedBox(height: 4),
+                                const SizedBox(height: 4),
 
-                              // Loyalty checkout apply widget
-                              LoyaltyCheckoutWidget(
-                                cartId: cartResponse!.cart!.id!,
-                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
-                                cartTotal: cartResponse?.cart?.total,
-                                walletAmount: splitActive ? splitWalletAmount : 0,
-                                walletApplied: splitActive && splitWalletAmount > 0,
-                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
-                                onApplied: () {
-                                  getCartApi();
-                                },
-                                onRemoved: () {
-                                  getCartApi();
-                                },
-                              ),
-                            ],
+                                // Loyalty checkout apply widget
+                                LoyaltyCheckoutWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  loyaltyApply: cartResponse?.cart
+                                          ?.metadata?['loyalty_checkout_apply']
+                                      as Map<String, dynamic>?,
+                                  cartTotal: cartResponse?.cart?.total,
+                                  walletAmount:
+                                      splitActive ? splitWalletAmount : 0,
+                                  walletApplied:
+                                      splitActive && splitWalletAmount > 0,
+                                  hasActiveCoupon:
+                                      (cartResponse?.cart?.promotions ?? [])
+                                          .isNotEmpty,
+                                  onApplied: () {
+                                    getCartApi();
+                                  },
+                                  onRemoved: () {
+                                    getCartApi();
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
           ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -328,13 +345,16 @@ class _CheckOutPageState extends State<CheckOutPage> {
         border: Border.all(color: Colors.orange.shade200),
       ),
       child: Row(children: [
-        Icon(Icons.storefront_outlined, size: 20, color: Colors.orange.shade700),
+        Icon(Icons.storefront_outlined,
+            size: 20, color: Colors.orange.shade700),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('Self Pickup selected',
                 style: FontUtils.primaryFontStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                     color: Colors.orange.shade800)),
             const SizedBox(height: 2),
             Text('Your saved address is used for the order record.',
@@ -844,6 +864,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void placeOrder() async {
     try {
+      final currentCart = cartResponse;
+      if (currentCart != null) {
+        unawaited(
+          StoreesService.instance.trackCheckoutStarted(
+            currentCart,
+            paymentProviderId: pp_id,
+          ),
+        );
+      }
       final ApiService apiService = ApiService();
       await apiService.placeOrder(context, pp_id!);
       setState(() {
@@ -864,6 +893,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void completeCart() async {
     try {
+      final currentCart = cartResponse;
+      if (currentCart != null) {
+        unawaited(
+          StoreesService.instance.trackCheckoutStarted(
+            currentCart,
+            paymentProviderId: pp_id,
+          ),
+        );
+      }
       final ApiService apiService = ApiService();
       final response = await apiService.completeCart(context);
       setState(() {
@@ -965,7 +1003,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() => placeOrderApiLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 

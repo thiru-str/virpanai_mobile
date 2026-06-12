@@ -17,6 +17,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_utils.dart';
@@ -262,9 +263,32 @@ class _BottomNavPageState extends State<BottomNavPage>
         final ApiService apiService = ApiService();
         CustomerResponse customerResponse =
             await apiService.getCustomer(context);
-        await SharedPreferencesUtil()
-            .saveMap('customer', customerResponse.customer!.toJson());
+        final fetchedCustomer = customerResponse.customer;
+        if (fetchedCustomer != null) {
+          await SharedPreferencesUtil()
+              .saveMap('customer', fetchedCustomer.toJson());
+          unawaited(
+            StoreesService.instance.identify(
+              fetchedCustomer.id ?? '',
+              email: fetchedCustomer.email,
+              phone: fetchedCustomer.phone,
+              name:
+                  '${fetchedCustomer.firstName ?? ''} ${fetchedCustomer.lastName ?? ''}'
+                      .trim(),
+            ),
+          );
+        }
+        return;
       }
+
+      unawaited(
+        StoreesService.instance.identify(
+          customer.id ?? '',
+          email: customer.email,
+          phone: customer.phone,
+          name: '${customer.firstName ?? ''} ${customer.lastName ?? ''}'.trim(),
+        ),
+      );
     } catch (e) {
       print("Error fetching customer: $e");
     }
@@ -294,5 +318,4 @@ class _BottomNavPageState extends State<BottomNavPage>
       print("Error fetching home page: $e");
     }
   }
-
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -49,6 +50,7 @@ import '../model/custom_page_response.dart';
 import '../model/order_history_individual_reponse.dart';
 import '../model/refresh_token_response.dart';
 import '../model/tags_response.dart';
+import '../api/storees_service.dart';
 import '../ui/bottom_nav_page.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
@@ -308,6 +310,8 @@ class ApiService {
     if (message != null) {
       AppUtils.showToast(message);
     }
+
+    await StoreesService.instance.reset();
 
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
@@ -885,24 +889,28 @@ class ApiService {
       BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+    final response = await _makePostRequest(
       'store/custom-carts/$cartId/line-items',
       {"variant_id": variantId, "quantity": qty, "metadata": {}},
       (json) => CartResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
+    return response;
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makeGetRequest(
+    final response = await _makeGetRequest(
       'store/custom-carts/$cartId?fields=*shipping_methods.shipping_option.service_zone.fulfillment_set',
       null,
       null,
       (json) => CartResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
+    return response;
   }
 
   Future<PromotionListResponse> getAvailablePromotions(
@@ -1011,12 +1019,14 @@ class ApiService {
       BuildContext context, String pp_id) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+    final response = await _makePostRequest(
       'store/place-order/$cartId',
       {"payment_provider_id": pp_id},
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackOrderCompleted(response));
+    return response;
   }
 
   Future<String?> initiateIciciPayment(BuildContext context) async {
@@ -1128,12 +1138,14 @@ class ApiService {
   Future<PlaceOrderResponse> completeCart(BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+    final response = await _makePostRequest(
       'store/custom-carts/$cartId/complete',
       null,
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
+    unawaited(StoreesService.instance.trackOrderCompleted(response));
+    return response;
   }
 
   Future<PublicDetailsResponse> getPublicDetails() async {
@@ -1474,7 +1486,8 @@ class ApiService {
     // PDP passes product_id so backend can short-circuit when the merchant
     // has restricted earning to specific products / categories — keeps the
     // "you'll earn …" strip honest with what the order subscriber will do.
-    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (productId != null && productId.isNotEmpty)
+      params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
@@ -1559,5 +1572,4 @@ class ApiService {
       return null;
     }
   }
-
 }

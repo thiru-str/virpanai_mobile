@@ -35,6 +35,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/home_page_response.dart';
 import '../model/register_response.dart' as RegisterResponse;
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
@@ -174,38 +175,60 @@ class _CartPageState extends State<CartPage>
 
     // Fallback display names for providers with empty/null names
     switch (providerId) {
-      case 'pp_wallet_wallet':      return 'Wallet';
-      case 'pp_razorpay_razorpay':  return 'Razorpay';
-      case 'pp_payu_payu':          return 'PayU';
-      case 'pp_icici_icici':        return 'ICICI Bank';
-      case 'pp_system_default':     return 'Cash on Delivery';
-      case 'pp_neft_neft':          return 'Bank Transfer (NEFT)';
-      case 'pp_stripe_stripe':      return 'Credit / Debit Card';
-      default:                      return AppStrings.cash_on_delivery;
+      case 'pp_wallet_wallet':
+        return 'Wallet';
+      case 'pp_razorpay_razorpay':
+        return 'Razorpay';
+      case 'pp_payu_payu':
+        return 'PayU';
+      case 'pp_icici_icici':
+        return 'ICICI Bank';
+      case 'pp_system_default':
+        return 'Cash on Delivery';
+      case 'pp_neft_neft':
+        return 'Bank Transfer (NEFT)';
+      case 'pp_stripe_stripe':
+        return 'Credit / Debit Card';
+      default:
+        return AppStrings.cash_on_delivery;
     }
   }
 
   IconData _providerIcon(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return Icons.bolt_rounded;
-      case 'pp_payu_payu':         return Icons.credit_card_rounded;
-      case 'pp_icici_icici':       return Icons.account_balance_rounded;
-      case 'pp_neft_neft':         return Icons.swap_horiz_rounded;
-      case 'pp_wallet_wallet':     return Icons.account_balance_wallet_rounded;
-      case 'pp_stripe_stripe':     return Icons.credit_card_rounded;
-      default:                     return Icons.local_shipping_rounded;
+      case 'pp_razorpay_razorpay':
+        return Icons.bolt_rounded;
+      case 'pp_payu_payu':
+        return Icons.credit_card_rounded;
+      case 'pp_icici_icici':
+        return Icons.account_balance_rounded;
+      case 'pp_neft_neft':
+        return Icons.swap_horiz_rounded;
+      case 'pp_wallet_wallet':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_stripe_stripe':
+        return Icons.credit_card_rounded;
+      default:
+        return Icons.local_shipping_rounded;
     }
   }
 
   Color _providerColor(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return const Color(0xFF2D81F7);
-      case 'pp_payu_payu':         return const Color(0xFF6CB33F);
-      case 'pp_icici_icici':       return const Color(0xFFE87722);
-      case 'pp_neft_neft':         return const Color(0xFF1565C0);
-      case 'pp_wallet_wallet':     return const Color(0xFF2E7D32);
-      case 'pp_stripe_stripe':     return const Color(0xFF635BFF);
-      default:                     return const Color(0xFF795548);
+      case 'pp_razorpay_razorpay':
+        return const Color(0xFF2D81F7);
+      case 'pp_payu_payu':
+        return const Color(0xFF6CB33F);
+      case 'pp_icici_icici':
+        return const Color(0xFFE87722);
+      case 'pp_neft_neft':
+        return const Color(0xFF1565C0);
+      case 'pp_wallet_wallet':
+        return const Color(0xFF2E7D32);
+      case 'pp_stripe_stripe':
+        return const Color(0xFF635BFF);
+      default:
+        return const Color(0xFF795548);
     }
   }
 
@@ -252,7 +275,8 @@ class _CartPageState extends State<CartPage>
     );
     final hasShipping = methods.any(
       (method) =>
-          method.shippingOption?.serviceZone?.fulfillmentSet?.type == 'shipping',
+          method.shippingOption?.serviceZone?.fulfillmentSet?.type ==
+          'shipping',
     );
 
     if (hasPickup && !hasShipping) return false;
@@ -313,516 +337,526 @@ class _CartPageState extends State<CartPage>
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.linearGradient),
         child: Stack(
-        children: [
-          apiLoading
-              ? const CartPageSkeleton()
-              : cartResponse?.cart?.items?.isNotEmpty ?? false
-                  ? Scaffold(
-                      backgroundColor: Colors.transparent,
-                      body: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Visibility(
-                              visible: cartResponse!.cart!.items!.isNotEmpty,
-                              child: AppReveal(
-                                child: DeliveryAddressWidget(
-                                  address: _buildShippingAddress(cartResponse),
-                                  label: null,
-                                  isLoading: addressLoading,
-                                  onAddAddress: () {
-                                    PageRouteUtils.pushWithSlide(
-                                        context,
-                                        AddressListPage(
-                                          isFromCheckout: true,
-                                          onSelectedAddress: (address) {
-                                            setState(() {
-                                              addressLoading = true;
-                                            });
-                                            updateAddress(address);
-                                          },
-                                        ));
-                                  },
-                                  onChangeAddress: () {
-                                    PageRouteUtils.pushWithSlide(
-                                        context,
-                                        AddressListPage(
-                                          isFromCheckout: true,
-                                          onSelectedAddress: (address) {
-                                            setState(() {
-                                              addressLoading = true;
-                                            });
-                                            updateAddress(address);
-                                          },
-                                        ));
-                                  },
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 10),
-                                  ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: cartResponse!.cart!.items!
-                                        .where((item) => !item.isVirtualItem)
-                                        .length,
-                                    itemBuilder: (context, index) {
-                                      final productItems = cartResponse!
-                                          .cart!.items!
-                                          .where((item) => !item.isVirtualItem)
-                                          .toList();
-                                      final cartItem = productItems[index];
-                                      final originalIndex = cartResponse!
-                                          .cart!.items!
-                                          .indexOf(cartItem);
-                                      return AppReveal(
-                                        index: index,
-                                        child: CartItemCard(
-                                          imageUrl: cartItem.thumbnail ?? '',
-                                          productName: cartItem.productTitle!,
-                                          error: cartItem.error ?? '',
-                                          size: cartItem.variantTitle! ==
-                                                  "Default variant"
-                                              ? ""
-                                              : cartItem.variantTitle!,
-                                          color: 'color',
-                                          price: CurrencyUtil.appendCurrency(
-                                              (cartItem.unitPrice! *
-                                                      cartItem.quantity!)
-                                                  .toStringAsFixed(2)),
-                                          quantity: cartItem.quantity!,
-                                          isUpdating: cartItem.isUpdating!,
-                                          onRemoveAll: () {
-                                            setState(() {
-                                              cartResponse!
-                                                  .cart!
-                                                  .items![originalIndex]
-                                                  .isUpdating = true;
-                                            });
-                                            removeCart(
-                                                cartItem.id!, originalIndex);
-                                          },
-                                          onUpdateQuantity: (newQty) async {
-                                            final item = cartResponse!
-                                                .cart!.items![originalIndex];
-                                            final stockQty =
-                                                item.inventoryQuantity ?? 0;
-
-                                            setState(
-                                                () => item.isUpdating = true);
-
-                                            if (newQty <= 0) {
-                                              removeCart(
-                                                  item.id!, originalIndex);
-                                              return;
-                                            }
-
-                                            if (stockQty == 0) {
-                                              await showDialog(
-                                                context: context,
-                                                builder: (_) => AlertDialog(
-                                                  title: Text(
-                                                    AppStrings.out_of_stock,
-                                                    style: FontUtils
-                                                        .primaryFontStyle(
-                                                      color: AppColors.primary,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  content: Text(
-                                                    AppStrings
-                                                        .product_currently_unavailable,
-                                                    style: FontUtils
-                                                        .secondaryFontStyle(),
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(context),
-                                                      child: Text(
-                                                        AppStrings.ok,
-                                                        style: FontUtils
-                                                            .primaryFontStyle(
-                                                          color: AppColors
-                                                              .primary,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                              setState(() =>
-                                                  item.isUpdating = false);
-                                              return;
-                                            }
-
-                                            if (newQty > stockQty) {
-                                              final confirmed =
-                                                  await showDialog<bool>(
-                                                context: context,
-                                                builder: (_) => AlertDialog(
-                                                  title: Text(
-                                                    AppStrings.stock_update,
-                                                    style: FontUtils
-                                                        .primaryFontStyle(
-                                                      color: AppColors.primary,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  content: Text(
-                                                    '${AppStrings.only_items_in_stock_prefix} $stockQty ${AppStrings.only_items_in_stock_suffix}\n'
-                                                    '${AppStrings.do_you_want_update_to_prefix} $stockQty?',
-                                                    style: FontUtils
-                                                        .secondaryFontStyle(),
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context, false),
-                                                      child: Text(
-                                                        AppStrings.cancel,
-                                                        style: FontUtils
-                                                            .primaryFontStyle(
-                                                          color: AppColors
-                                                              .primary,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context, true),
-                                                      child: Text(
-                                                        AppStrings.update,
-                                                        style: FontUtils
-                                                            .primaryFontStyle(
-                                                          color: AppColors
-                                                              .primary,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-
-                                              if (confirmed == true) {
-                                                updateCart(stockQty, item.id!,
-                                                    originalIndex);
-                                              } else {
-                                                setState(() =>
-                                                    item.isUpdating = false);
-                                              }
-                                              return;
-                                            }
-
-                                            updateCart(newQty, item.id!,
-                                                originalIndex);
-                                          },
-                                        ),
-                                      );
+          children: [
+            apiLoading
+                ? const CartPageSkeleton()
+                : cartResponse?.cart?.items?.isNotEmpty ?? false
+                    ? Scaffold(
+                        backgroundColor: Colors.transparent,
+                        body: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Visibility(
+                                visible: cartResponse!.cart!.items!.isNotEmpty,
+                                child: AppReveal(
+                                  child: DeliveryAddressWidget(
+                                    address:
+                                        _buildShippingAddress(cartResponse),
+                                    label: null,
+                                    isLoading: addressLoading,
+                                    onAddAddress: () {
+                                      PageRouteUtils.pushWithSlide(
+                                          context,
+                                          AddressListPage(
+                                            isFromCheckout: true,
+                                            onSelectedAddress: (address) {
+                                              setState(() {
+                                                addressLoading = true;
+                                              });
+                                              updateAddress(address);
+                                            },
+                                          ));
+                                    },
+                                    onChangeAddress: () {
+                                      PageRouteUtils.pushWithSlide(
+                                          context,
+                                          AddressListPage(
+                                            isFromCheckout: true,
+                                            onSelectedAddress: (address) {
+                                              setState(() {
+                                                addressLoading = true;
+                                              });
+                                              updateAddress(address);
+                                            },
+                                          ));
                                     },
                                   ),
-                                  if ((crossSellProductsResponse
-                                          ?.products?.isNotEmpty ??
-                                      false))
-                                    ProductRecommendationSection(
-                                      title: crossSellProductsResponse?.label ??
-                                          'Cross Selling Products',
-                                      products:
-                                          crossSellProductsResponse?.products ??
-                                              const [],
-                                      onReturnFromProductDetail: (_) async {
-                                        if (!mounted) return;
-                                        getCartApi();
-                                      },
-                                    ),
-                                  if ((upSellProductsResponse
-                                          ?.products?.isNotEmpty ??
-                                      false))
-                                    ProductRecommendationSection(
-                                      title: upSellProductsResponse?.label ??
-                                          'Up Selling Products',
-                                      products:
-                                          upSellProductsResponse?.products ??
-                                              const [],
-                                      onReturnFromProductDetail: (_) async {
-                                        if (!mounted) return;
-                                        getCartApi();
-                                      },
-                                    ),
-                                ],
+                                ),
                               ),
-                            ),
-                            // Wallet Card (Myntra style)
-                            if (isSplitPaymentMode &&
-                                isLoggedIn &&
-                                walletBalance > 0)
-                              _buildWalletCard(),
-
-                            // Loyalty Points Card (matches wallet card design,
-                            // sits right under it so wallet + loyalty are visually
-                            // grouped in the same "balance to redeem" section).
-                            if (cartResponse?.cart?.id != null)
-                              LoyaltyCheckoutWidget(
-                                cartId: cartResponse!.cart!.id!,
-                                loyaltyApply: _loyaltyApplyMetadata(),
-                                cartTotal: cartResponse?.cart?.total ?? 0,
-                                walletAmount: _walletAmountFromMetadata(),
-                                onApplied: () {
-                                  getCartApi();
-                                },
-                                onRemoved: () {
-                                  getCartApi();
-                                },
-                              ),
-
-                            // Coupon Card (Ajio style)
-                            _buildCouponCard(),
-
-                            // Payment Method Card
-                            _buildPaymentMethodCard(),
-
-                            // Delivery Method Card
-                            _buildDeliveryMethodCard(),
-                            // Free delivery progress banner — hides itself when
-                            // no shipping address or no slabs configured.
-                            if ((cartResponse?.cart?.id ?? '').isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 4),
-                                child: FreeDeliveryBannerWidget(
-                                  cartId: cartResponse!.cart!.id!,
-                                  cartTotal: cartResponse?.cart?.itemSubtotal ??
-                                      cartResponse?.cart?.subtotal ??
-                                  0,
+                                    horizontal: 16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    ListView.builder(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: cartResponse!.cart!.items!
+                                          .where((item) => !item.isVirtualItem)
+                                          .length,
+                                      itemBuilder: (context, index) {
+                                        final productItems = cartResponse!
+                                            .cart!.items!
+                                            .where(
+                                                (item) => !item.isVirtualItem)
+                                            .toList();
+                                        final cartItem = productItems[index];
+                                        final originalIndex = cartResponse!
+                                            .cart!.items!
+                                            .indexOf(cartItem);
+                                        return AppReveal(
+                                          index: index,
+                                          child: CartItemCard(
+                                            imageUrl: cartItem.thumbnail ?? '',
+                                            productName: cartItem.productTitle!,
+                                            error: cartItem.error ?? '',
+                                            size: cartItem.variantTitle! ==
+                                                    "Default variant"
+                                                ? ""
+                                                : cartItem.variantTitle!,
+                                            color: 'color',
+                                            price: CurrencyUtil.appendCurrency(
+                                                (cartItem.unitPrice! *
+                                                        cartItem.quantity!)
+                                                    .toStringAsFixed(2)),
+                                            quantity: cartItem.quantity!,
+                                            isUpdating: cartItem.isUpdating!,
+                                            onRemoveAll: () {
+                                              setState(() {
+                                                cartResponse!
+                                                    .cart!
+                                                    .items![originalIndex]
+                                                    .isUpdating = true;
+                                              });
+                                              removeCart(
+                                                  cartItem.id!, originalIndex);
+                                            },
+                                            onUpdateQuantity: (newQty) async {
+                                              final item = cartResponse!
+                                                  .cart!.items![originalIndex];
+                                              final stockQty =
+                                                  item.inventoryQuantity ?? 0;
+
+                                              setState(
+                                                  () => item.isUpdating = true);
+
+                                              if (newQty <= 0) {
+                                                removeCart(
+                                                    item.id!, originalIndex);
+                                                return;
+                                              }
+
+                                              if (stockQty == 0) {
+                                                await showDialog(
+                                                  context: context,
+                                                  builder: (_) => AlertDialog(
+                                                    title: Text(
+                                                      AppStrings.out_of_stock,
+                                                      style: FontUtils
+                                                          .primaryFontStyle(
+                                                        color:
+                                                            AppColors.primary,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    content: Text(
+                                                      AppStrings
+                                                          .product_currently_unavailable,
+                                                      style: FontUtils
+                                                          .secondaryFontStyle(),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context),
+                                                        child: Text(
+                                                          AppStrings.ok,
+                                                          style: FontUtils
+                                                              .primaryFontStyle(
+                                                            color: AppColors
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                setState(() =>
+                                                    item.isUpdating = false);
+                                                return;
+                                              }
+
+                                              if (newQty > stockQty) {
+                                                final confirmed =
+                                                    await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (_) => AlertDialog(
+                                                    title: Text(
+                                                      AppStrings.stock_update,
+                                                      style: FontUtils
+                                                          .primaryFontStyle(
+                                                        color:
+                                                            AppColors.primary,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    content: Text(
+                                                      '${AppStrings.only_items_in_stock_prefix} $stockQty ${AppStrings.only_items_in_stock_suffix}\n'
+                                                      '${AppStrings.do_you_want_update_to_prefix} $stockQty?',
+                                                      style: FontUtils
+                                                          .secondaryFontStyle(),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context, false),
+                                                        child: Text(
+                                                          AppStrings.cancel,
+                                                          style: FontUtils
+                                                              .primaryFontStyle(
+                                                            color: AppColors
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context, true),
+                                                        child: Text(
+                                                          AppStrings.update,
+                                                          style: FontUtils
+                                                              .primaryFontStyle(
+                                                            color: AppColors
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+
+                                                if (confirmed == true) {
+                                                  updateCart(stockQty, item.id!,
+                                                      originalIndex);
+                                                } else {
+                                                  setState(() =>
+                                                      item.isUpdating = false);
+                                                }
+                                                return;
+                                              }
+
+                                              updateCart(newQty, item.id!,
+                                                  originalIndex);
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    if ((crossSellProductsResponse
+                                            ?.products?.isNotEmpty ??
+                                        false))
+                                      ProductRecommendationSection(
+                                        title:
+                                            crossSellProductsResponse?.label ??
+                                                'Cross Selling Products',
+                                        products: crossSellProductsResponse
+                                                ?.products ??
+                                            const [],
+                                        onReturnFromProductDetail: (_) async {
+                                          if (!mounted) return;
+                                          getCartApi();
+                                        },
+                                      ),
+                                    if ((upSellProductsResponse
+                                            ?.products?.isNotEmpty ??
+                                        false))
+                                      ProductRecommendationSection(
+                                        title: upSellProductsResponse?.label ??
+                                            'Up Selling Products',
+                                        products:
+                                            upSellProductsResponse?.products ??
+                                                const [],
+                                        onReturnFromProductDetail: (_) async {
+                                          if (!mounted) return;
+                                          getCartApi();
+                                        },
+                                      ),
+                                  ],
                                 ),
                               ),
+                              // Wallet Card (Myntra style)
+                              if (isSplitPaymentMode &&
+                                  isLoggedIn &&
+                                  walletBalance > 0)
+                                _buildWalletCard(),
 
-                            // Price Details (view only)
-                            AppReveal(
-                              index: 3,
-                              child: AnimatedBuilder(
-                                animation: _shakeAnimation,
-                                builder: (context, child) =>
-                                    Transform.translate(
-                                  offset: Offset(_shakeAnimation.value, 0),
-                                  child: child,
+                              // Loyalty Points Card (matches wallet card design,
+                              // sits right under it so wallet + loyalty are visually
+                              // grouped in the same "balance to redeem" section).
+                              if (cartResponse?.cart?.id != null)
+                                LoyaltyCheckoutWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  loyaltyApply: _loyaltyApplyMetadata(),
+                                  cartTotal: cartResponse?.cart?.total ?? 0,
+                                  walletAmount: _walletAmountFromMetadata(),
+                                  onApplied: () {
+                                    getCartApi();
+                                  },
+                                  onRemoved: () {
+                                    getCartApi();
+                                  },
                                 ),
-                                child: Container(
-                                  key: _priceDetailsSectionKey,
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  padding: const EdgeInsets.all(16.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                    border:
-                                        Border.all(color: Colors.grey.shade200),
+
+                              // Coupon Card (Ajio style)
+                              _buildCouponCard(),
+
+                              // Payment Method Card
+                              _buildPaymentMethodCard(),
+
+                              // Delivery Method Card
+                              _buildDeliveryMethodCard(),
+                              // Free delivery progress banner — hides itself when
+                              // no shipping address or no slabs configured.
+                              if ((cartResponse?.cart?.id ?? '').isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 4),
+                                  child: FreeDeliveryBannerWidget(
+                                    cartId: cartResponse!.cart!.id!,
+                                    cartTotal:
+                                        cartResponse?.cart?.itemSubtotal ??
+                                            cartResponse?.cart?.subtotal ??
+                                            0,
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8),
-                                        child: Text(
-                                          'Price Details',
-                                          style: FontUtils.primaryFontStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textColor,
-                                            fontSize: 15,
+                                ),
+
+                              // Price Details (view only)
+                              AppReveal(
+                                index: 3,
+                                child: AnimatedBuilder(
+                                  animation: _shakeAnimation,
+                                  builder: (context, child) =>
+                                      Transform.translate(
+                                    offset: Offset(_shakeAnimation.value, 0),
+                                    child: child,
+                                  ),
+                                  child: Container(
+                                    key: _priceDetailsSectionKey,
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.all(16.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.06),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                      border: Border.all(
+                                          color: Colors.grey.shade200),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 8),
+                                          child: Text(
+                                            'Price Details',
+                                            style: FontUtils.primaryFontStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textColor,
+                                              fontSize: 15,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      _priceRow(
-                                          AppStrings.subTotal,
-                                          CurrencyUtil.appendCurrency(
-                                              (_numOrZero(cartResponse?.cart
-                                                          ?.itemSubtotal) -
-                                                      _numOrZero(cartResponse
-                                                          ?.cart?.items
-                                                          ?.where((item) => item
-                                                              .isVirtualItem)
-                                                          .fold<num>(
-                                                              0,
-                                                              (sum, item) =>
-                                                                  sum +
-                                                                  (item.total ??
-                                                                      0))))
-                                                  .toStringAsFixed(2))),
-                                      if (_numOrZero(cartResponse?.cart
-                                              ?.shippingSubtotal) >
-                                          0)
                                         _priceRow(
-                                            AppStrings.shipping,
-                                            CurrencyUtil.appendCurrency(
-                                                _numOrZero(cartResponse
-                                                        ?.cart?.shippingSubtotal)
-                                                    .toStringAsFixed(2))),
-                                      if ((cartResponse?.cart?.items?.any(
-                                                  (item) =>
-                                                      item.isPlatformFee) ??
-                                              false) &&
-                                          _platformFeeTotal() > 0)
-                                        _priceRow(
-                                            AppStrings.platform_fee,
-                                            CurrencyUtil.appendCurrency(
-                                                _platformFeeTotal()
-                                                    .toStringAsFixed(2))),
-                                      if (_numOrZero(
-                                              cartResponse?.cart?.taxTotal) >
-                                          0)
-                                        _priceRow(
-                                            AppStrings.tax,
-                                            CurrencyUtil.appendCurrency(
-                                                _numOrZero(cartResponse
-                                                        ?.cart?.taxTotal)
-                                                    .toStringAsFixed(2))),
-                                      if ((cartResponse?.cart?.promotions ?? [])
-                                              .isNotEmpty &&
-                                          _numOrZero(cartResponse
-                                                  ?.cart?.discountSubtotal) >
-                                              0)
-                                        _priceRow(
-                                          'Coupon Savings',
-                                          '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                          valueColor: Colors.green.shade700,
-                                        ),
-                                      // Loyalty points discount (negative line item added by API)
-                                      if ((cartResponse?.cart?.items?.any(
-                                              (item) =>
-                                                  item.isLoyaltyDiscount) ??
-                                          false))
-                                        Builder(builder: (_) {
-                                          final li = cartResponse!.cart!.items!
-                                              .firstWhere((item) =>
-                                                  item.isLoyaltyDiscount);
-                                          final amt = (li.total ?? 0).abs();
-                                          final pts =
-                                              li.metadata?.pointsApplied ?? 0;
-                                          return _priceRow(
-                                            'Loyalty Points ($pts pts)',
-                                            '- ${CurrencyUtil.appendCurrency(amt.toStringAsFixed(2))}',
+                                            AppStrings.subTotal,
+                                            CurrencyUtil.appendCurrency((_numOrZero(
+                                                        cartResponse?.cart
+                                                            ?.itemSubtotal) -
+                                                    _numOrZero(cartResponse
+                                                        ?.cart?.items
+                                                        ?.where((item) =>
+                                                            item.isVirtualItem)
+                                                        .fold<num>(
+                                                            0,
+                                                            (sum, item) =>
+                                                                sum +
+                                                                (item.total ??
+                                                                    0))))
+                                                .toStringAsFixed(2))),
+                                        if (_numOrZero(cartResponse
+                                                ?.cart?.shippingSubtotal) >
+                                            0)
+                                          _priceRow(
+                                              AppStrings.shipping,
+                                              CurrencyUtil.appendCurrency(
+                                                  _numOrZero(cartResponse?.cart
+                                                          ?.shippingSubtotal)
+                                                      .toStringAsFixed(2))),
+                                        if ((cartResponse?.cart?.items?.any(
+                                                    (item) =>
+                                                        item.isPlatformFee) ??
+                                                false) &&
+                                            _platformFeeTotal() > 0)
+                                          _priceRow(
+                                              AppStrings.platform_fee,
+                                              CurrencyUtil.appendCurrency(
+                                                  _platformFeeTotal()
+                                                      .toStringAsFixed(2))),
+                                        if (_numOrZero(
+                                                cartResponse?.cart?.taxTotal) >
+                                            0)
+                                          _priceRow(
+                                              AppStrings.tax,
+                                              CurrencyUtil.appendCurrency(
+                                                  _numOrZero(cartResponse
+                                                          ?.cart?.taxTotal)
+                                                      .toStringAsFixed(2))),
+                                        if ((cartResponse?.cart?.promotions ??
+                                                    [])
+                                                .isNotEmpty &&
+                                            _numOrZero(cartResponse
+                                                    ?.cart?.discountSubtotal) >
+                                                0)
+                                          _priceRow(
+                                            'Coupon Savings',
+                                            '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
+                                            valueColor: Colors.green.shade700,
+                                          ),
+                                        // Loyalty points discount (negative line item added by API)
+                                        if ((cartResponse?.cart?.items?.any(
+                                                (item) =>
+                                                    item.isLoyaltyDiscount) ??
+                                            false))
+                                          Builder(builder: (_) {
+                                            final li = cartResponse!
+                                                .cart!.items!
+                                                .firstWhere((item) =>
+                                                    item.isLoyaltyDiscount);
+                                            final amt = (li.total ?? 0).abs();
+                                            final pts =
+                                                li.metadata?.pointsApplied ?? 0;
+                                            return _priceRow(
+                                              'Loyalty Points ($pts pts)',
+                                              '- ${CurrencyUtil.appendCurrency(amt.toStringAsFixed(2))}',
+                                              valueColor: AppColors.primary,
+                                            );
+                                          }),
+                                        if (_loyaltyDiscount > 0)
+                                          _priceRow(
+                                            'Loyalty Points ($_loyaltyPointsApplied pts)',
+                                            '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
                                             valueColor: AppColors.primary,
-                                          );
-                                        }),
-                                      if (_loyaltyDiscount > 0)
-                                        _priceRow(
-                                          'Loyalty Points ($_loyaltyPointsApplied pts)',
-                                          '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
-                                          valueColor: AppColors.primary,
+                                          ),
+                                        if (splitActive &&
+                                            splitWalletAmount > 0)
+                                          _priceRow(
+                                            'Wallet',
+                                            '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
+                                            valueColor: Colors.blue.shade700,
+                                          ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 6),
+                                          child: Divider(
+                                              color: Colors.grey.shade300,
+                                              height: 1),
                                         ),
-                                      if (splitActive && splitWalletAmount > 0)
                                         _priceRow(
-                                          'Wallet',
-                                          '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
-                                          valueColor: Colors.blue.shade700,
-                                        ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 6),
-                                        child: Divider(
-                                            color: Colors.grey.shade300,
-                                            height: 1),
-                                      ),
-                                      _priceRow(
-                                          'Total Amount',
-                                          CurrencyUtil.appendCurrency(
-                                              _displayTotalAmount()
-                                                  .toStringAsFixed(2)),
-                                          isBold: true,
-                                          fontSize: 13),
-                                      const SizedBox(height: 6),
-                                    ],
+                                            'Total Amount',
+                                            CurrencyUtil.appendCurrency(
+                                                _displayTotalAmount()
+                                                    .toStringAsFixed(2)),
+                                            isBold: true,
+                                            fontSize: 13),
+                                        const SizedBox(height: 6),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            // Loyalty earn preview — based on actual paid amount (item subtotal minus loyalty discount)
-                            if ((cartResponse?.cart?.itemSubtotal ??
-                                    cartResponse?.cart?.total ??
-                                    0) >
-                                0)
-                              LoyaltyEarnPreview(
-                                cartId: cartResponse!.cart!.id,
-                                orderTotal: 0,
-                              ),
-                            const SizedBox(height: 80),
-                          ],
+                              // Loyalty earn preview — based on actual paid amount (item subtotal minus loyalty discount)
+                              if ((cartResponse?.cart?.itemSubtotal ??
+                                      cartResponse?.cart?.total ??
+                                      0) >
+                                  0)
+                                LoyaltyEarnPreview(
+                                  cartId: cartResponse!.cart!.id,
+                                  orderTotal: 0,
+                                ),
+                              const SizedBox(height: 80),
+                            ],
+                          ),
                         ),
-                      ),
-                      bottomNavigationBar: SafeArea(
-                        child: _buildAjioBottomBar(),
-                      ),
-                    )
-                  : Center(
-                      child: isLoggedIn
-                          ? NoOrdersWidget(
-                              message: AppStrings.cart_empty,
-                              buttonText: AppStrings.explore_categories,
-                              iconPath: AppAssets.ic_cart_empty,
-                              showExplore: (widget.isFromBottomNav),
-                              onButtonTap: () {
-                                eventBus.fire(TabSwitchEvent(1));
-                              })
-                          : LoginPrompt(
-                              onButtonPressed: () {
-                                PageRouteUtils.push(
-                                    context, const PhoneNumberPage());
-                              },
-                            )),
-          // Confetti overlay — full width spread
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              maxBlastForce: 20,
-              minBlastForce: 8,
-              emissionFrequency: 0.08,
-              numberOfParticles: 30,
-              gravity: 0.15,
-              shouldLoop: false,
-              minimumSize: const Size(3, 3),
-              maximumSize: const Size(8, 8),
-              colors: const [
-                Colors.green,
-                Colors.blue,
-                Colors.pink,
-                Colors.orange,
-                Colors.purple,
-                Colors.red,
-                Colors.yellow,
-                Colors.teal,
-                Colors.amber,
-              ],
+                        bottomNavigationBar: SafeArea(
+                          child: _buildAjioBottomBar(),
+                        ),
+                      )
+                    : Center(
+                        child: isLoggedIn
+                            ? NoOrdersWidget(
+                                message: AppStrings.cart_empty,
+                                buttonText: AppStrings.explore_categories,
+                                iconPath: AppAssets.ic_cart_empty,
+                                showExplore: (widget.isFromBottomNav),
+                                onButtonTap: () {
+                                  eventBus.fire(TabSwitchEvent(1));
+                                })
+                            : LoginPrompt(
+                                onButtonPressed: () {
+                                  PageRouteUtils.push(
+                                      context, const PhoneNumberPage());
+                                },
+                              )),
+            // Confetti overlay — full width spread
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                maxBlastForce: 20,
+                minBlastForce: 8,
+                emissionFrequency: 0.08,
+                numberOfParticles: 30,
+                gravity: 0.15,
+                shouldLoop: false,
+                minimumSize: const Size(3, 3),
+                maximumSize: const Size(8, 8),
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple,
+                  Colors.red,
+                  Colors.yellow,
+                  Colors.teal,
+                  Colors.amber,
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
       bottomNavigationBar: apiLoading
           ? const SafeArea(
@@ -995,16 +1029,14 @@ class _CartPageState extends State<CartPage>
       setState(() {
         shippingResponse = response;
         final delivery = shippingResponse?.shippingOptions
-            ?.where((opt) =>
-                opt.serviceZone?.fulfillmentSet?.type == 'shipping')
+            ?.where(
+                (opt) => opt.serviceZone?.fulfillmentSet?.type == 'shipping')
             .toList();
-        deliveryOption = delivery != null && delivery.isNotEmpty
-            ? delivery.first.id
-            : null;
+        deliveryOption =
+            delivery != null && delivery.isNotEmpty ? delivery.first.id : null;
 
         final pickup = shippingResponse?.shippingOptions
-            ?.where(
-                (opt) => opt.serviceZone?.fulfillmentSet?.type == 'pickup')
+            ?.where((opt) => opt.serviceZone?.fulfillmentSet?.type == 'pickup')
             .toList();
         pickupOption =
             pickup != null && pickup.isNotEmpty ? pickup.first.id : null;
@@ -1020,10 +1052,10 @@ class _CartPageState extends State<CartPage>
 
   void updateShippingMethod(String shippingId) async {
     if (shippingMethodLoading) return;
-    final currentMethodExists =
-        cartResponse?.cart?.shippingMethods?.any((method) =>
-            method.shippingOptionId == shippingId ||
-            method.shippingOption?.id == shippingId) ??
+    final currentMethodExists = cartResponse?.cart?.shippingMethods?.any(
+            (method) =>
+                method.shippingOptionId == shippingId ||
+                method.shippingOption?.id == shippingId) ??
         false;
     if (currentMethodExists) return;
 
@@ -1040,14 +1072,14 @@ class _CartPageState extends State<CartPage>
         pp_id = response.cart?.paymentCollection?.paymentSessions?.firstOrNull
                 ?.providerId ??
             pp_id;
-        orderId =
-            response.cart?.paymentCollection?.paymentSessions?.firstOrNull?.data
-                    ?.id ??
-                orderId;
+        orderId = response.cart?.paymentCollection?.paymentSessions?.firstOrNull
+                ?.data?.id ??
+            orderId;
         clientSecret = response.cart?.paymentCollection?.paymentSessions
                 ?.firstOrNull?.data?.clientSecret ??
             clientSecret;
-        isDelivery = _resolveIsDelivery(response, preferredOptionId: shippingId);
+        isDelivery =
+            _resolveIsDelivery(response, preferredOptionId: shippingId);
       });
     } catch (e) {
       debugPrint('update shipping method error: $e');
@@ -1320,6 +1352,16 @@ class _CartPageState extends State<CartPage>
   }
 
   void placeOrder(String paymentProviderId) async {
+    final currentCart = cartResponse;
+    if (currentCart != null) {
+      unawaited(
+        StoreesService.instance.trackCheckoutStarted(
+          currentCart,
+          paymentProviderId: paymentProviderId,
+        ),
+      );
+    }
+
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         makeRazorPayCall(orderId!);
@@ -1353,7 +1395,8 @@ class _CartPageState extends State<CartPage>
       setState(() => cartLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 
@@ -1928,8 +1971,7 @@ class _CartPageState extends State<CartPage>
           Expanded(
             flex: 3,
             child: ElevatedButton(
-              onPressed: cartLoading
-                  || shippingMethodLoading
+              onPressed: cartLoading || shippingMethodLoading
                   ? null
                   : () {
                       if (cartResponse?.cart?.error == true) {

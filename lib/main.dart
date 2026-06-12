@@ -22,6 +22,7 @@ import '../ui/splash_page.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
+import 'api/storees_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -47,6 +48,7 @@ Future<void> main() async {
     await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
     await Firebase.initializeApp();
+    await StoreesService.instance.init();
 
     // Render immediately using cached config (if present), then refresh in background.
     final PublicDetailsResponse? cachedPublicDetails =

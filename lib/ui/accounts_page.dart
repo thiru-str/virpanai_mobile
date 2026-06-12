@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
+import 'package:waioz/api/storees_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
@@ -105,52 +106,111 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.linearGradient),
-        child: SafeArea(
-          child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Stack(
-                  alignment: Alignment.center,
+          decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+          child: SafeArea(
+              child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Stack(
+                      alignment: Alignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: AppColors.primary,
-                          child: Text(
-                            (customer?.firstName?.isNotEmpty == true
-                                ? customer!.firstName!.substring(0, 1)
-                                : "G"),
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundColor: AppColors.primary,
+                              child: Text(
+                                (customer?.firstName?.isNotEmpty == true
+                                    ? customer!.firstName!.substring(0, 1)
+                                    : "G"),
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
+                          ],
+                        ),
+                        Positioned(
+                          right: 0,
+                          child: PopupMenuButton<String>(
+                            color: Colors.white,
+                            icon: const Icon(Icons.more_vert, size: 26),
+                            onSelected: (value) {
+                              if (value == 'delete') {
+                                _showDeleteAccount(context);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  AppStrings.deleteAccount,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    Positioned(
-                      right: 0,
-                      child: PopupMenuButton<String>(
-                        color: Colors.white,
-                        icon: const Icon(Icons.more_vert, size: 26),
-                        onSelected: (value) {
-                          if (value == 'delete') {
-                            _showDeleteAccount(context);
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'delete',
+                    const SizedBox(height: 30),
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.primary, width: 1),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  fullName,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  customer?.email ?? "",
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Edit Button
+                          TextButton(
+                            onPressed: () async {
+                              final result = await PageRouteUtils.pushWithSlide(
+                                  context, const EditProfilePage());
+                              if (result == true) {
+                                setState(() {
+                                  getCustomerInfo();
+                                });
+                              }
+                            },
                             child: Text(
-                              AppStrings.deleteAccount,
-                              style: const TextStyle(color: Colors.red),
+                              AppStrings.edit,
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                         ],
@@ -158,137 +218,81 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 30),
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.primary, width: 1),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              fullName,
-                              overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              customer?.email ?? "",
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Edit Button
-                      TextButton(
-                        onPressed: () async {
-                          final result = await PageRouteUtils.pushWithSlide(
-                              context, const EditProfilePage());
-                          if (result == true) {
-                            setState(() {
-                              getCustomerInfo();
-                            });
-                          }
-                        },
-                        child: Text(
-                          AppStrings.edit,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Profile Items Section
-          Expanded(
-            child: isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ))
-                : ListView(
-                    children: [
-                      _buildProfileItem(AppStrings.address, () {
-                        PageRouteUtils.pushWithSlide(context,
-                            AddressListPage(onSelectedAddress: (address) {}));
-                      }),
-                      if (favouriteListEnabled)
-                        _buildProfileItem(favouriteListName, () {
-                          PageRouteUtils.pushWithSlide(
-                              context, MyFavoritesPage());
-                        }),
-                      _buildProfileItem(AppStrings.orders, () {
-                        PageRouteUtils.pushWithSlide(
-                            context, OrdersHistoryPage());
-                      }),
-                      if (enabledExtensions.contains('wallet'))
-                        _buildProfileItem('My Wallet', () {
-                          PageRouteUtils.pushWithSlide(
-                              context, const WalletPage());
-                        }),
-                      if (enabledExtensions.contains('loyalty'))
-                        _buildProfileItem('Loyalty Points', () {
-                          PageRouteUtils.pushWithSlide(
-                              context, const LoyaltyPage());
-                        }),
-                      ...storeContentList.map((contentItem) =>
-                          _buildProfileItem(contentItem.name ?? "Unknown", () {
-                            if (contentItem.content?.data != null) {
-                              PageRouteUtils.pushWithSlide(
+              ),
+              const SizedBox(height: 16),
+              // Profile Items Section
+              Expanded(
+                child: isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ))
+                    : ListView(
+                        children: [
+                          _buildProfileItem(AppStrings.address, () {
+                            PageRouteUtils.pushWithSlide(
                                 context,
-                                StaticPage(
-                                    pageTitle: contentItem.name ?? "",
-                                    htmlData: contentItem.content!.data!),
-                              );
-                            }
-                          })),
-                    ],
+                                AddressListPage(
+                                    onSelectedAddress: (address) {}));
+                          }),
+                          if (favouriteListEnabled)
+                            _buildProfileItem(favouriteListName, () {
+                              PageRouteUtils.pushWithSlide(
+                                  context, MyFavoritesPage());
+                            }),
+                          _buildProfileItem(AppStrings.orders, () {
+                            PageRouteUtils.pushWithSlide(
+                                context, OrdersHistoryPage());
+                          }),
+                          if (enabledExtensions.contains('wallet'))
+                            _buildProfileItem('My Wallet', () {
+                              PageRouteUtils.pushWithSlide(
+                                  context, const WalletPage());
+                            }),
+                          if (enabledExtensions.contains('loyalty'))
+                            _buildProfileItem('Loyalty Points', () {
+                              PageRouteUtils.pushWithSlide(
+                                  context, const LoyaltyPage());
+                            }),
+                          ...storeContentList.map((contentItem) =>
+                              _buildProfileItem(contentItem.name ?? "Unknown",
+                                  () {
+                                if (contentItem.content?.data != null) {
+                                  PageRouteUtils.pushWithSlide(
+                                    context,
+                                    StaticPage(
+                                        pageTitle: contentItem.name ?? "",
+                                        htmlData: contentItem.content!.data!),
+                                  );
+                                }
+                              })),
+                        ],
+                      ),
+              ),
+              // Sign Out Button
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0),
+                child: GestureDetector(
+                  onTap: () {
+                    _showLogout(this.context);
+                  },
+                  child: Text(
+                    AppStrings.signout,
+                    style: FontUtils.primaryFontStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-          ),
-          // Sign Out Button
-          Padding(
-            padding: const EdgeInsets.only(bottom: 30.0),
-            child: GestureDetector(
-              onTap: () {
-                _showLogout(this.context);
-              },
-              child: Text(
-                AppStrings.signout,
-                style: FontUtils.primaryFontStyle(
-                  color: Colors.red,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-          ),
-          Text(
-            '${AppStrings.app_version}: $_appVersion',
-            style:
-                FontUtils.secondaryFontStyle(color: Colors.grey, fontSize: 12),
-          )
-        ],
-      ))),
+              Text(
+                '${AppStrings.app_version}: $_appVersion',
+                style: FontUtils.secondaryFontStyle(
+                    color: Colors.grey, fontSize: 12),
+              )
+            ],
+          ))),
     );
   }
 
@@ -351,6 +355,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
 
             // Handle sign out action
+            await StoreesService.instance.reset();
             await SharedPreferencesUtil().clear();
             await AppErrorReporter.instance.clearUser();
 
@@ -379,6 +384,7 @@ class _SettingsPageState extends State<SettingsPage> {
             bool skipLogin =
                 await SharedPreferencesUtil().getBool('skip_login') ?? false;
             // Handle sign out action
+            await StoreesService.instance.reset();
             await SharedPreferencesUtil().clear();
             await AppErrorReporter.instance.clearUser();
             if (mounted) {

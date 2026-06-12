@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/api_service.dart';
+import '../api/storees_service.dart';
 import '../model/refresh_token_response.dart';
 import '../model/register_response.dart';
 import '../utility/app_assets.dart';
@@ -273,7 +275,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 onUploadFailed: () => setState(() {
                   _gstImage = null;
                   _gstImagePath = null;
-                  AppUtils.showToast('GST image upload failed. Please try again');
+                  AppUtils.showToast(
+                      'GST image upload failed. Please try again');
                 }),
                 setLoading: (val) => setState(() => _isGstImageUploading = val),
               ),
@@ -299,7 +302,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               onUploadFailed: () => setState(() {
                 _shopFrontImage = null;
                 _shopFrontImagePath = null;
-                AppUtils.showToast('Shop Front Image upload failed. Please try again');
+                AppUtils.showToast(
+                    'Shop Front Image upload failed. Please try again');
               }),
               setLoading: (val) => setState(() => _isShopFrontUploading = val),
             ),
@@ -315,7 +319,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               onUploadFailed: () => setState(() {
                 _shopInteriorImage = null;
                 _shopInteriorImagePath = null;
-                AppUtils.showToast('Shop Interior Image upload failed. Please try again');
+                AppUtils.showToast(
+                    'Shop Interior Image upload failed. Please try again');
               }),
               setLoading: (val) =>
                   setState(() => _isShopInteriorUploading = val),
@@ -332,7 +337,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               onUploadFailed: () => setState(() {
                 _shopCounterImage = null;
                 _shopCounterImagePath = null;
-                AppUtils.showToast('Shop Counter Image upload failed. Please try again');
+                AppUtils.showToast(
+                    'Shop Counter Image upload failed. Please try again');
               }),
               setLoading: (val) =>
                   setState(() => _isShopCounterUploading = val),
@@ -359,7 +365,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     }
 
     if (_currentStep == 1) {
-
       if (_isGstRegistered) {
         if (_isGstImageUploading) {
           AppUtils.showToast('Please wait, GST image is uploading');
@@ -379,7 +384,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     }
 
     if (_currentStep == 2) {
-
       if (_isShopFrontUploading ||
           _isShopInteriorUploading ||
           _isShopCounterUploading) {
@@ -448,7 +452,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
       final compressedFile = await _compressImage(originalFile);
 
-
       onPick(compressedFile);
 
       final response = await ApiService()
@@ -464,7 +467,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       setLoading(false);
     }
   }
-
 
   Future<File> _compressImage(File file) async {
     final dir = await getTemporaryDirectory();
@@ -488,9 +490,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
     return File(compressed.path);
   }
-
-
-
 
   void _showConfirmationAlert(BuildContext context, PinCodeResponse response) {
     showDialog(
@@ -789,6 +788,22 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       setState(() {
         apiCalling = false;
       });
+
+      final createdCustomer = registerResponse?.customer;
+      if (createdCustomer != null && (createdCustomer.id ?? '').isNotEmpty) {
+        unawaited(
+          StoreesService.instance.identify(
+            createdCustomer.id!,
+            email: createdCustomer.email,
+            phone: createdCustomer.phone,
+            name:
+                '${createdCustomer.firstName ?? ''} ${createdCustomer.lastName ?? ''}'
+                    .trim(),
+          ),
+        );
+        unawaited(
+            StoreesService.instance.trackCustomerCreated(createdCustomer));
+      }
 
       // SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
       // SharedPreferencesUtil()
