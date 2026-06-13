@@ -1,4 +1,4 @@
-package com.waioz.cartel
+package com.tryfresh.user
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import android.os.Bundle
@@ -8,4 +8,3 @@ class MainActivity: FlutterFragmentActivity() {
         super.onCreate(savedInstanceState)
     }
 }
-
