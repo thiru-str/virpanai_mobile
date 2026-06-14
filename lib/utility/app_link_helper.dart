@@ -71,7 +71,7 @@ I think you'll love this. Here's the link: $link
 
       await Share.share(
         message,
-        subject: 'Look what I found on GoWelMart!',
+        subject: 'Look what I found on virpanai!',
       );
     } catch (e, stack) {
       debugPrint('❌ Failed to share booking invite: $e');

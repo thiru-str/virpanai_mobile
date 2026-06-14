@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = waioz
+PRODUCT_NAME = virpanai
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = com.waioz.cartel
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2024 com.waioz. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2024 virpanai. All rights reserved.

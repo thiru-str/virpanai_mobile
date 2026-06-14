@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
@@ -13,20 +12,16 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
-import '../../product_detail_page.dart';
-import '../../product_page.dart';
+
+typedef CartQuantityChangeHandler = Future<void> Function(
+    CartQuantityChangeRequest request);
 
 class Item9 extends StatefulWidget {
   final Content content;
-  final void Function(int delta, String variantId)? onCartQtyChanged;
+  final CartQuantityChangeHandler? onCartQtyChanged;
 
-  const Item9({
-    Key? key,
-    required this.content,
-    this.onCartQtyChanged,
-  }) : super(key: key);
+  const Item9({super.key, required this.content, this.onCartQtyChanged});
 
   @override
   State<Item9> createState() => _Item9State();
@@ -35,6 +30,8 @@ class Item9 extends StatefulWidget {
 class _Item9State extends State<Item9> {
   late Map<String, int> variantQtyMap;
   late StreamSubscription<ViewCartModel> _cartSubscription;
+  final Set<String> _updatingVariantIds = <String>{};
+  final Map<String, int> _pendingQtyMap = <String, int>{};
 
   @override
   void initState() {
@@ -44,6 +41,21 @@ class _Item9State extends State<Item9> {
     _cartSubscription = eventBus.on<ViewCartModel>().listen((event) {
       setState(() {
         variantQtyMap = event.variantQtyMap;
+        _updatingVariantIds.removeWhere(
+          (variantId) => !_pendingQtyMap.containsKey(variantId),
+        );
+
+        final confirmedVariantIds = <String>[];
+        for (final entry in _pendingQtyMap.entries) {
+          if (variantQtyMap[entry.key] == entry.value) {
+            confirmedVariantIds.add(entry.key);
+          }
+        }
+
+        for (final variantId in confirmedVariantIds) {
+          _pendingQtyMap.remove(variantId);
+          _updatingVariantIds.remove(variantId);
+        }
       });
     });
   }
@@ -123,20 +135,55 @@ class _Item9State extends State<Item9> {
                   for (int i = 0;
                       i < (content.layoutData?.length ?? 0);
                       i++) ...[
-                    _Item9Card(
-                      layoutData: content.layoutData![i],
-                      cartQty: variantQtyMap[content
-                              .layoutData![i].variantDetails?.variantId] ??
-                          content.layoutData![i].cartDetails?.quantity ??
-                          0,
-                      onCartQtyChanged: widget.onCartQtyChanged,
-                      onTap: () {
-                        // Navigate to product detail when the card body is
-                        // tapped — matches the pattern used by Item11/Item12.
-                        RedirectUtils.handleContentRedirect(
-                          context: context,
-                          layoutOption: content.layoutOption ?? '',
-                          layoutData: content.layoutData![i],
+                    Builder(
+                      builder: (context) {
+                        final item = content.layoutData![i];
+                        final variantId = item.variantDetails?.variantId ?? '';
+                        final resolvedQty = _pendingQtyMap[variantId] ??
+                            variantQtyMap[variantId] ??
+                            item.cartDetails?.quantity ??
+                            0;
+
+                        return _Item9Card(
+                          layoutData: item,
+                          cartQty: resolvedQty,
+                          isUpdating: _updatingVariantIds.contains(variantId),
+                          onCartQtyChanged: (request) async {
+                            if (request.variantId.isEmpty ||
+                                _updatingVariantIds.contains(
+                                  request.variantId,
+                                )) {
+                              return;
+                            }
+
+                            setState(() {
+                              _updatingVariantIds.add(request.variantId);
+                              _pendingQtyMap[request.variantId] =
+                                  request.targetQty;
+                            });
+
+                            try {
+                              await widget.onCartQtyChanged?.call(request);
+                            } finally {
+                              if (mounted) {
+                                setState(() {
+                                  if (_pendingQtyMap[request.variantId] ==
+                                      request.targetQty) {
+                                    _pendingQtyMap.remove(request.variantId);
+                                    _updatingVariantIds
+                                        .remove(request.variantId);
+                                  }
+                                });
+                              }
+                            }
+                          },
+                          onTap: () {
+                            RedirectUtils.handleContentRedirect(
+                              context: context,
+                              layoutOption: content.layoutOption ?? '',
+                              layoutData: item,
+                            );
+                          },
                         );
                       },
                     ),
@@ -153,160 +200,213 @@ class _Item9State extends State<Item9> {
   }
 }
 
+class CartQuantityChangeRequest {
+  final String variantId;
+  final String? cartItemId;
+  final int currentQty;
+  final int targetQty;
+
+  const CartQuantityChangeRequest({
+    required this.variantId,
+    required this.currentQty,
+    required this.targetQty,
+    this.cartItemId,
+  });
+}
+
 class _Item9Card extends StatelessWidget {
   final dynamic layoutData;
   final int cartQty;
-  final void Function(int delta, String variantId)? onCartQtyChanged;
+  final bool isUpdating;
+  final CartQuantityChangeHandler? onCartQtyChanged;
   final VoidCallback? onTap;
 
   const _Item9Card({
-    Key? key,
     required this.layoutData,
     required this.cartQty,
+    required this.isUpdating,
     required this.onCartQtyChanged,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final prices = layoutData.prices ?? {};
     final variantId = layoutData.variantDetails?.variantId ?? '';
+    final cartItemId = layoutData.cartDetails?.lineItemId as String?;
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-      width: 180,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 🔹 Image & Discount
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
-                child: CachedNetworkImage(
-                  imageUrl: layoutData.image ?? '',
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => ImageFallbackWidget(
-                    h: 150,
-                    w: double.infinity,
-                  ),
-                ),
-              ),
-              if (prices.discountPercentage != null &&
-                  prices.discountPercentage!.isNotEmpty)
-                Positioned(
-                  top: 6,
-                  left: 6,
-                  child: _DiscountBurstBadge(
-                    discountText: prices.discountPercentage!,
-                  ),
-                ),
-              Positioned(
-                top: 6,
-                right: 6,
-                child:
-                    Icon(Icons.favorite_border, size: 20, color: Colors.grey),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // 🔹 Title
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              layoutData.title ?? "Untitled",
-              style: FontUtils.primaryFontStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // 🔹 Price
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              CurrencyUtil.appendCurrency(prices.sellingPrice ?? "0"),
-              style: FontUtils.primaryFontStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
-              ),
-            ),
-          ),
-
-          // 🔹 Rating
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            child: Row(
-              children: List.generate(5, (i) {
-                return Icon(
-                  i < (layoutData.rating ?? 0) ? Icons.star : Icons.star_border,
-                  color: Colors.amber,
-                  size: 16,
-                );
-              }),
-            ),
-          ),
-
-          // 🔹 Add to Cart / Quantity
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-            child: cartQty > 0
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _qtyButton(Icons.remove, () {
-                        if (cartQty > 0) {
-                          onCartQtyChanged?.call(-1, variantId);
-                        }
-                      }),
-                      Text(
-                        '$cartQty',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      _qtyButton(Icons.add, () {
-                        onCartQtyChanged?.call(1, variantId);
-                      }),
-                    ],
-                  )
-                : SizedBox(
+        width: 180,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 🔹 Image & Discount
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: CachedNetworkImage(
+                    imageUrl: layoutData.image ?? '',
+                    height: 150,
                     width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        onCartQtyChanged?.call(1, variantId);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey.shade400),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(AppStrings.add_to_cart),
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => ImageFallbackWidget(
+                      h: 150,
+                      w: double.infinity,
                     ),
                   ),
-          ),
-        ],
-      ),
+                ),
+                if (prices.discountPercentage != null &&
+                    prices.discountPercentage!.isNotEmpty)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: _DiscountBurstBadge(
+                      discountText: prices.discountPercentage!,
+                    ),
+                  ),
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child:
+                      Icon(Icons.favorite_border, size: 20, color: Colors.grey),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // 🔹 Title
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                layoutData.title ?? "Untitled",
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textColor,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            // 🔹 Price
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                CurrencyUtil.appendCurrency(prices.sellingPrice ?? "0"),
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textColor,
+                ),
+              ),
+            ),
+
+            // 🔹 Rating
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Row(
+                children: List.generate(5, (i) {
+                  return Icon(
+                    i < (layoutData.rating ?? 0)
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: Colors.amber,
+                    size: 16,
+                  );
+                }),
+              ),
+            ),
+
+            // 🔹 Add to Cart / Quantity
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+              child: isUpdating
+                  ? const SizedBox(
+                      height: 36,
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2.2),
+                        ),
+                      ),
+                    )
+                  : cartQty > 0
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _qtyButton(Icons.remove, () {
+                              if (cartQty > 0) {
+                                onCartQtyChanged?.call(
+                                  CartQuantityChangeRequest(
+                                    variantId: variantId,
+                                    cartItemId: cartItemId,
+                                    currentQty: cartQty,
+                                    targetQty: cartQty - 1,
+                                  ),
+                                );
+                              }
+                            }),
+                            Text(
+                              '$cartQty',
+                              style: FontUtils.primaryFontStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            _qtyButton(Icons.add, () {
+                              onCartQtyChanged?.call(
+                                CartQuantityChangeRequest(
+                                  variantId: variantId,
+                                  cartItemId: cartItemId,
+                                  currentQty: cartQty,
+                                  targetQty: cartQty + 1,
+                                ),
+                              );
+                            }),
+                          ],
+                        )
+                      : SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: variantId.isEmpty
+                                ? null
+                                : () {
+                                    onCartQtyChanged?.call(
+                                      CartQuantityChangeRequest(
+                                        variantId: variantId,
+                                        cartItemId: cartItemId,
+                                        currentQty: cartQty,
+                                        targetQty: 1,
+                                      ),
+                                    );
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.shade400),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(AppStrings.add_to_cart),
+                          ),
+                        ),
+            ),
+          ],
+        ),
       ),
     );
   }

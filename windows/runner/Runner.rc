@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.waioz" "\0"
-            VALUE "FileDescription", "waioz" "\0"
+            VALUE "CompanyName", "virpanai" "\0"
+            VALUE "FileDescription", "virpanai" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "waioz" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.waioz. All rights reserved." "\0"
-            VALUE "OriginalFilename", "waioz.exe" "\0"
-            VALUE "ProductName", "waioz" "\0"
+            VALUE "InternalName", "virpanai" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 virpanai. All rights reserved." "\0"
+            VALUE "OriginalFilename", "virpanai.exe" "\0"
+            VALUE "ProductName", "virpanai" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

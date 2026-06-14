@@ -23,6 +23,10 @@ class Banner2 extends StatefulWidget {
 }
 
 class _Banner2State extends State<Banner2> {
+  static const double _maxCarouselHeight = 250;
+  static const double _imageTileHeight = 178;
+  static const double _videoTileHeight = 250;
+
   late PageController _pageController;
   int _currentPage = 0;
   Timer? _autoScrollTimer;
@@ -84,6 +88,16 @@ class _Banner2State extends State<Banner2> {
   Widget build(BuildContext context) {
     final content = widget.content;
     final items = content.layoutData ?? [];
+    final hasVideo = items.any(
+      (item) => (item.image ?? '').toLowerCase().endsWith('.mp4'),
+    );
+    final double carouselHeight =
+        (hasVideo ? _videoTileHeight : _imageTileHeight)
+            .clamp(
+              0,
+              _maxCarouselHeight,
+            )
+            .toDouble();
     final backgroundDecoration = AppUtils.buildLayoutBackground(content);
     final containerPadding = backgroundDecoration == null
         ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
@@ -144,7 +158,7 @@ class _Banner2State extends State<Banner2> {
 
                 /// Carousel
                 SizedBox(
-                  height: 260,
+                  height: carouselHeight,
                   child: PageView.builder(
                     controller: _pageController,
                     padEnds: false,

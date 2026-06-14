@@ -39,7 +39,9 @@ import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
+import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
+import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -173,6 +175,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final visibleContent = _visibleComponents;
+
     late final PreferredSizeWidget homeAppBar;
     if (apiLoading) {
       homeAppBar = HomeHeaderSkeleton(
@@ -190,7 +194,8 @@ class _HomePageState extends State<HomePage> {
           const ProductPage(),
         ),
         onLocationTap: () async {
-          await PageRouteUtils.pushWithSlide(context, const SearchAddressPage());
+          await PageRouteUtils.pushWithSlide(
+              context, const SearchAddressPage());
           initializePages();
         },
         onProfileTap: () => eventBus.fire(TabSwitchEvent(4)),
@@ -226,47 +231,66 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: SingleChildScrollView(
                       controller: _scrollController,
-                      physics: AlwaysScrollableScrollPhysics(),
+                      physics: const AlwaysScrollableScrollPhysics(),
                       child: Column(
                         children: [
-                          // Main UI Components
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 0.0, right: 0.0, top: 14.0, bottom: 12.0),
-                            child: buildComponentList(),
-                          ),
-
-                          // Load More Indicator
-                          if (_isLoadingMore)
+                          if (visibleContent.isEmpty)
                             Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: SizedBox(
-                                width: 26,
-                                height: 26,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                  strokeWidth: 2.6,
+                              padding: const EdgeInsets.fromLTRB(
+                                  20.0, 32.0, 20.0, 28.0),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight:
+                                      MediaQuery.of(context).size.height * 0.55,
+                                ),
+                                child: NoOrdersWidget(
+                                  message: AppStrings.components_empty,
+                                  buttonText: AppStrings.explore_categories,
+                                  iconPath: AppAssets.ic_cart_empty,
+                                  onButtonTap: () {
+                                    eventBus.fire(TabSwitchEvent(1));
+                                  },
                                 ),
                               ),
-                            ),
-
-                          if (!_hasMore)
+                            )
+                          else ...[
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 18.0),
-                              child: Text(
-                                AppStrings.end_of_page,
-                                style: UiTypography.cardMeta(
-                                  color: AppColors.textColor50,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
+                              padding: const EdgeInsets.only(
+                                  left: 0.0,
+                                  right: 0.0,
+                                  top: 14.0,
+                                  bottom: 12.0),
+                              child: buildComponentList(visibleContent),
                             ),
-
+                            if (_isLoadingMore)
+                              Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: SizedBox(
+                                  width: 26,
+                                  height: 26,
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                    strokeWidth: 2.6,
+                                  ),
+                                ),
+                              ),
+                            if (!_hasMore)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 18.0),
+                                child: Text(
+                                  AppStrings.end_of_page,
+                                  style: UiTypography.cardMeta(
+                                    color: AppColors.textColor50,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                          ],
                           SizedBox(
                             height:
                                 cartItems != null && cartItems != 0 ? 112 : 28,
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -275,14 +299,58 @@ class _HomePageState extends State<HomePage> {
         ));
   }
 
-  ListView buildComponentList() {
+  List<Content> get _visibleComponents {
+    final content = homePageResponse?.content ?? const <Content>[];
+    return content.where(_shouldRenderComponent).toList();
+  }
+
+  bool _shouldRenderComponent(Content content) {
+    const supportedLayouts = {
+      "item1",
+      "Slider2",
+      "item2",
+      "item3",
+      "item4",
+      "item5",
+      "item6",
+      "item7",
+      "item8",
+      "Slider3",
+      "Grid1",
+      "Grid2",
+      "Grid3",
+      "Grid5",
+      "Grid6",
+      "Grid7",
+      "Grid8",
+      "Grid10",
+      "Grid11",
+      "Banner2",
+      "Slider1",
+      "Slider6",
+      "Slider7",
+      "Slider9",
+      "Banner1",
+      "Banner3",
+      "Banner4",
+      "item9",
+      "item11",
+      "item12",
+      "item13",
+      "item14",
+    };
+
+    return supportedLayouts.contains(content.layoutName) &&
+        (content.layoutData?.isNotEmpty ?? false);
+  }
+
+  ListView buildComponentList(List<Content> content) {
     return ListView.builder(
       scrollDirection: Axis.vertical,
-      itemCount: homePageResponse?.content?.length ?? 0,
+      itemCount: content.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
-        final content = homePageResponse?.content ?? [];
         if (index < content.length) {
           final homePageContent = content[index];
           return AppReveal(
@@ -454,8 +522,8 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item9(
                   content: homePageContent!,
-                  onCartQtyChanged: (deltaQty, variantId) async {
-                    await addCart(deltaQty, variantId);
+                  onCartQtyChanged: (request) async {
+                    await updateItem9Cart(request);
                   },
                 ),
               );
@@ -592,6 +660,33 @@ class _HomePageState extends State<HomePage> {
       getCartApi();
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<void> updateItem9Cart(CartQuantityChangeRequest request) async {
+    try {
+      final apiService = ApiService();
+
+      if (request.targetQty <= 0) {
+        if ((request.cartItemId ?? '').isEmpty) {
+          return;
+        }
+        await apiService.removeCart(context, request.cartItemId!);
+      } else if (request.currentQty <= 0 ||
+          (request.cartItemId ?? '').isEmpty) {
+        await apiService.addCart(context, request.targetQty, request.variantId);
+      } else {
+        await apiService.updateCart(
+          context,
+          request.targetQty,
+          request.cartItemId!,
+        );
+      }
+
+      getCartApi();
+    } catch (e) {
+      print(e);
+      rethrow;
     }
   }
 }
