@@ -472,6 +472,8 @@ class ApiService {
     String searchString, {
     int offset = 0,
     int limit = 10,
+    double? latitude,
+    double? longitude,
   }) async {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
@@ -527,6 +529,13 @@ class ApiService {
 
     if (searchString.isNotEmpty) {
       queryParams['q'] = searchString;
+    }
+
+    if (latitude != null) {
+      queryParams['latitude'] = latitude;
+    }
+    if (longitude != null) {
+      queryParams['longitude'] = longitude;
     }
 
     queryParams['offset'] = offset.toString();
