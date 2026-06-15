@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
-  static const String appName = 'virpanai';
+  static const String appName = 'CBM One Mart';
   // static const String baseUrl = 'http://localhost:9000/';
   // iOS Simulator: http://localhost:9000/
   // Android Emulator: http://10.0.2.2:9000/
