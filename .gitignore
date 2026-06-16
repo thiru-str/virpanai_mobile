@@ -59,3 +59,7 @@ macos/Flutter/Flutter-Debug.xcconfig
 macos/Flutter/Flutter-Release.xcconfig
 macos/Podfile
 android/app/.cxx/
+android/keys/
+android/*.properties
+android/app/*.jks
+android/app/*.keystore
