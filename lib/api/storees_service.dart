@@ -204,9 +204,6 @@ class StoreesService {
     };
 
     try {
-      AppLogger.print('Storees Event', eventName);
-      AppLogger.logFullJson(payload);
-
       final response = await _dio.post(
         '/events',
         data: payload,
@@ -216,16 +213,28 @@ class StoreesService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.logFullJson(response.data);
+        _logStoreesResult(
+          title: 'Storees Event',
+          method: 'POST',
+          endpoint: '/events',
+          statusCode: response.statusCode,
+          requestBody: payload,
+          responseBody: response.data,
+        );
         return;
       }
 
       AppLogger.warning(
         'Storees event "$eventName" failed with status ${response.statusCode}.',
       );
-      if (response.data != null) {
-        AppLogger.logFullJson(response.data);
-      }
+      _logStoreesResult(
+        title: 'Storees Event Failed',
+        method: 'POST',
+        endpoint: '/events',
+        statusCode: response.statusCode,
+        requestBody: payload,
+        responseBody: response.data,
+      );
     } catch (error, stackTrace) {
       AppLogger.error('Storees event "$eventName" failed', error, stackTrace);
     }
@@ -370,9 +379,6 @@ class StoreesService {
     };
 
     try {
-      AppLogger.print('Storees Customer Upsert', customerId);
-      AppLogger.logFullJson(payload);
-
       final response = await _dio.post(
         '/customers',
         data: payload,
@@ -382,16 +388,28 @@ class StoreesService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.logFullJson(response.data);
+        _logStoreesResult(
+          title: 'Storees Customer Upsert',
+          method: 'POST',
+          endpoint: '/customers',
+          statusCode: response.statusCode,
+          requestBody: payload,
+          responseBody: response.data,
+        );
         return;
       }
 
       AppLogger.warning(
         'Storees customer upsert failed with status ${response.statusCode}.',
       );
-      if (response.data != null) {
-        AppLogger.logFullJson(response.data);
-      }
+      _logStoreesResult(
+        title: 'Storees Customer Upsert Failed',
+        method: 'POST',
+        endpoint: '/customers',
+        statusCode: response.statusCode,
+        requestBody: payload,
+        responseBody: response.data,
+      );
     } catch (error, stackTrace) {
       AppLogger.error('Storees customer upsert failed', error, stackTrace);
     }
@@ -508,5 +526,23 @@ class StoreesService {
   bool _isConfigured() {
     return AppConfig.storeesApiKey.trim().isNotEmpty &&
         AppConfig.storeesApiSecret.trim().isNotEmpty;
+  }
+
+  void _logStoreesResult({
+    required String title,
+    required String method,
+    required String endpoint,
+    int? statusCode,
+    dynamic requestBody,
+    dynamic responseBody,
+  }) {
+    AppLogger.logApiResult(
+      title: title,
+      method: method,
+      url: '${_dio.options.baseUrl}$endpoint',
+      statusCode: statusCode,
+      requestBody: requestBody,
+      responseBody: responseBody,
+    );
   }
 }

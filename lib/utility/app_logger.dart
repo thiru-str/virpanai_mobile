@@ -1,8 +1,7 @@
 import 'dart:developer' as developer;
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import 'dart:convert';
-
 
 class AppLogger {
   static final Logger _logger = Logger(
@@ -12,12 +11,11 @@ class AppLogger {
       lineLength: 200,
       colors: true,
       printEmojis: false,
-      printTime: false,
+      dateTimeFormat: DateTimeFormat.none,
     ),
   );
 
   static const bool _isDebugMode = kDebugMode;
-
 
   static void print(String title, dynamic message) {
     if (!_isDebugMode) return;
@@ -54,13 +52,35 @@ class AppLogger {
     }
   }
 
+  static void logApiResult({
+    required String title,
+    required String method,
+    required String url,
+    int? statusCode,
+    dynamic requestBody,
+    dynamic responseBody,
+  }) {
+    if (!_isDebugMode) return;
+
+    final payload = <String, dynamic>{
+      'title': title,
+      'method': method,
+      'url': url,
+      if (statusCode != null) 'status_code': statusCode,
+      if (requestBody != null) 'request_body': _normalizeLogValue(requestBody),
+      if (responseBody != null)
+        'response_body': _normalizeLogValue(responseBody),
+    };
+
+    logFullJson(payload);
+  }
 
   static void logFullJson(dynamic data) {
     if (!_isDebugMode) return;
 
     try {
       if (data is Map || data is List) {
-        final pretty = JsonEncoder.withIndent('  ').convert(data);
+        final pretty = const JsonEncoder.withIndent('  ').convert(data);
         _logger.i(pretty);
         return;
       }
@@ -68,12 +88,11 @@ class AppLogger {
       if (data is String) {
         final parsed = _tryParseJson(data);
         if (parsed != null) {
-          final pretty = JsonEncoder.withIndent('  ').convert(parsed);
+          final pretty = const JsonEncoder.withIndent('  ').convert(parsed);
           _logger.i(pretty);
           return;
         }
       }
-
 
       _logger.i(data.toString());
     } catch (_) {
@@ -81,6 +100,13 @@ class AppLogger {
     }
   }
 
+  static dynamic _normalizeLogValue(dynamic value) {
+    if (value is String) {
+      return _tryParseJson(value) ?? value;
+    }
+
+    return value;
+  }
 
   static dynamic _tryParseJson(String input) {
     try {
@@ -90,5 +116,3 @@ class AppLogger {
     }
   }
 }
-
-
