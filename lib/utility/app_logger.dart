@@ -1,6 +1,7 @@
+import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import 'dart:convert';
 
 class AppLogger {
   static final Logger _logger = Logger(
@@ -10,7 +11,7 @@ class AppLogger {
       lineLength: 200,
       colors: true,
       printEmojis: false,
-      printTime: false,
+      dateTimeFormat: DateTimeFormat.none,
     ),
   );
 
@@ -34,13 +35,44 @@ class AppLogger {
   }
 
   static void warning(String message) {
+    developer.log(message, name: 'AppLogger.warning');
     if (_isDebugMode) _logger.w(message);
   }
 
   static void error(String message, [Object? error, StackTrace? stackTrace]) {
+    developer.log(
+      message,
+      name: 'AppLogger.error',
+      error: error,
+      stackTrace: stackTrace,
+      level: 1000,
+    );
     if (_isDebugMode) {
       _logger.e(message, error: error, stackTrace: stackTrace);
     }
+  }
+
+  static void logApiResult({
+    required String title,
+    required String method,
+    required String url,
+    int? statusCode,
+    dynamic requestBody,
+    dynamic responseBody,
+  }) {
+    if (!_isDebugMode) return;
+
+    final payload = <String, dynamic>{
+      'title': title,
+      'method': method,
+      'url': url,
+      if (statusCode != null) 'status_code': statusCode,
+      if (requestBody != null) 'request_body': _normalizeLogValue(requestBody),
+      if (responseBody != null)
+        'response_body': _normalizeLogValue(responseBody),
+    };
+
+    logFullJson(payload);
   }
 
   static void logFullJson(dynamic data) {
@@ -48,7 +80,7 @@ class AppLogger {
 
     try {
       if (data is Map || data is List) {
-        final pretty = JsonEncoder.withIndent('  ').convert(data);
+        final pretty = const JsonEncoder.withIndent('  ').convert(data);
         _logger.i(pretty);
         return;
       }
@@ -56,7 +88,7 @@ class AppLogger {
       if (data is String) {
         final parsed = _tryParseJson(data);
         if (parsed != null) {
-          final pretty = JsonEncoder.withIndent('  ').convert(parsed);
+          final pretty = const JsonEncoder.withIndent('  ').convert(parsed);
           _logger.i(pretty);
           return;
         }
@@ -66,6 +98,14 @@ class AppLogger {
     } catch (_) {
       _logger.i(data.toString());
     }
+  }
+
+  static dynamic _normalizeLogValue(dynamic value) {
+    if (value is String) {
+      return _tryParseJson(value) ?? value;
+    }
+
+    return value;
   }
 
   static dynamic _tryParseJson(String input) {
