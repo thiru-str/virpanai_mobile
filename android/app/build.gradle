@@ -14,6 +14,20 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+def resolvedKeyPropertiesPath = null
+if (project.hasProperty('keyProperties')) {
+    resolvedKeyPropertiesPath = project.property('keyProperties')
+} else {
+    def signingDir = localProperties.getProperty('signingDir')
+    def signingProfile = project.hasProperty('signingProfile') ? project.property('signingProfile') : localProperties.getProperty('signingProfile')
+
+    if (signingDir && signingProfile) {
+        resolvedKeyPropertiesPath = "${signingDir}/${signingProfile}.properties"
+    } else {
+        resolvedKeyPropertiesPath = localProperties.getProperty('keyProperties')
+    }
+}
+
 
 def flutterVersionCode = project.hasProperty('flutter.versionCode') ? project['flutter.versionCode'].toInteger() : 1
 def flutterVersionName = project.hasProperty('flutter.versionName') ? project['flutter.versionName'] : "1.0.0"
@@ -55,10 +69,13 @@ android {
 
     signingConfigs {
         release {
-            if (project.hasProperty('keyProperties')) {
+            if (resolvedKeyPropertiesPath != null) {
+                def keyPropertiesFile = file(resolvedKeyPropertiesPath)
                 def keyProps = new Properties()
-                keyProps.load(new FileInputStream(file(project.property('keyProperties'))))
-                storeFile file(keyProps['storeFile'])
+                keyProps.load(new FileInputStream(keyPropertiesFile))
+
+                def storePathFile = new File(keyProps['storeFile'])
+                storeFile storePathFile.isAbsolute() ? storePathFile : new File(keyPropertiesFile.parentFile, keyProps['storeFile'])
                 storePassword keyProps['storePassword']
                 keyAlias keyProps['keyAlias']
                 keyPassword keyProps['keyPassword']
