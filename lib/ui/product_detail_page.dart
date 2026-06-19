@@ -1012,11 +1012,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final response =
           await apiService.addOnProducts(context, widget.productId);
       if (!mounted || selectedVariantId != requestVariantId) return;
+      final products = response.products ?? [];
       setState(() {
         addOnProductsResponse = response;
+        // All addon products are out of stock — skip the popup
+        if (products.isEmpty) addOnProductsCount = 0;
       });
     } catch (e) {
       // Add-on load is non-blocking for primary PDP render.
+      if (mounted) setState(() => addOnProductsCount = 0);
     }
   }
 
