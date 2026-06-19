@@ -190,13 +190,22 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                         color: Colors.green.shade800,
                       ),
                     ),
-                    Text(
-                      'Credited to your loyalty wallet',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 11,
-                        color: Colors.green.shade600,
+                    if (hasMultiplier)
+                      Text(
+                        '$_basePoints base pts × ${multiplierDisplay}× bonus',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Credited to your loyalty wallet',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
