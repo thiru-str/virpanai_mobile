@@ -677,7 +677,10 @@ class _CartPageState extends State<CartPage>
                                 0)
                               LoyaltyEarnPreview(
                                 cartId: cartResponse!.cart!.id,
-                                orderTotal: 0,
+                                orderTotal: cartResponse?.cart?.itemSubtotal ??
+                                    cartResponse?.cart?.subtotal ??
+                                    cartResponse?.cart?.total ??
+                                    0,
                               ),
                             const SizedBox(height: 80),
                           ],
