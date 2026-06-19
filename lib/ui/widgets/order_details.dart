@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/widgets/common_app_bar.dart';
-import 'package:waioz/ui/widgets/order_item_card.dart';
-import 'package:waioz/ui/widgets/past_order_card.dart';
-import 'package:waioz/ui/widgets/product_card.dart';
 import 'package:waioz/ui/widgets/products_card.dart';
-import 'package:waioz/ui/widgets/store_location_widget.dart';
 import 'package:waioz/ui/widgets/store_summary_card.dart';
-import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_utils.dart';
 
 import '../../api/api_service.dart';
 import '../../model/live_order_detail_response.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/font_utils.dart';
-import '../../utility/page_route_utils.dart';
 import 'common_alert_dialog.dart';
 
 class OrderDetailsPage extends StatefulWidget {
@@ -125,6 +118,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             ]),
                       ),
                     ),
+                    if (_liveOrderDetailResponse?.data?.orderSummary != null)
+                      _buildOrderSummaryCard(
+                        _liveOrderDetailResponse!.data!.orderSummary!,
+                      ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24.0, vertical: 16),
@@ -274,6 +271,113 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             ),
     );
   }
+
+  Widget _buildOrderSummaryCard(OrderSummary summary) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Order Summary',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildSummaryRow('Item Total', summary.itemTotal ?? ''),
+          if (_hasAmount(summary.rawShippingTotal))
+            _buildSummaryRow('Shipping', summary.shippingTotal ?? ''),
+          if (_hasAmount(summary.rawTaxTotal))
+            _buildSummaryRow('Tax', summary.taxTotal ?? ''),
+          if (_hasAmount(summary.rawWalletAmount))
+            _buildSummaryRow(
+              'Wallet Deduction',
+              _deductionValue(summary.walletAmount, summary.rawWalletAmount),
+              valueColor: AppColors.primary,
+            ),
+          if (_hasAmount(summary.rawLoyaltyAmount))
+            _buildSummaryRow(
+              'Loyalty Deduction',
+              _deductionValue(summary.loyaltyAmount, summary.rawLoyaltyAmount),
+              valueColor: AppColors.primary,
+            ),
+          if (_hasAmount(summary.rawDiscountAmount))
+            _buildSummaryRow(
+              'Discount',
+              _deductionValue(
+                  summary.discountAmount, summary.rawDiscountAmount),
+              valueColor: AppColors.primary,
+            ),
+          if (_hasAmount(summary.rawPlatformFee))
+            _buildSummaryRow('Platform Fee', summary.platformFee ?? ''),
+          const Divider(height: 20),
+          _buildSummaryRow(
+            'Total',
+            summary.finalTotal ?? '',
+            isBold: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isBold ? 15 : 13,
+              color: Colors.grey.shade700,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isBold ? 15 : 13,
+              color: valueColor ?? Colors.black,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _deductionValue(String? value, num? rawValue) {
+    if ((rawValue ?? 0) <= 0) {
+      return value ?? '';
+    }
+
+    return '- ${value ?? ''}';
+  }
+
+  bool _hasAmount(num? value) => (value ?? 0) > 0;
 
   Future<void> markAsComplete(BuildContext context) async {
     setState(() {
