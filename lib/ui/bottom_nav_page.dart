@@ -179,7 +179,9 @@ class _BottomNavPageState extends State<BottomNavPage>
                     child: _getPage(),
                   ),
           ),
-          bottomNavigationBar: SafeArea(
+          bottomNavigationBar: ColoredBox(
+            color: Colors.white,
+            child: SafeArea(
             top: false,
             child: SlideTransition(
             position: _slideAnimation,
@@ -215,12 +217,16 @@ class _BottomNavPageState extends State<BottomNavPage>
                   ),
                   BottomNavigationBarItem(
                     icon: Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 3, right: 4),
+                          child: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                        ),
                         if ((cartItems ?? 0) > 0)
                           Positioned(
-                            right: -4,
-                            top: -3,
+                            right: 0,
+                            top: 0,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 5, vertical: 2),
@@ -276,7 +282,7 @@ class _BottomNavPageState extends State<BottomNavPage>
                 ),
               ),
             ),
-          )),
+          ))),
         ));
   }
 
