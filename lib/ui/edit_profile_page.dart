@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -46,11 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         },
       ),
       body: apiCalling
-          ? Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+          ? const AppLoader()
           : Form(
               key: _formKey,
               child: ListView(

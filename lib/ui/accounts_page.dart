@@ -108,10 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: const Color(0xFFF9F9FB),
       body: SafeArea(
         child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ))
+            ? const AppLoader()
             : Column(
                 children: [
                   Expanded(

@@ -68,6 +68,12 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
 
   @override
   Widget build(BuildContext context) {
+    if (apiLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: AppLoader(),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9FB),
       appBar: CommonHeaderAppBar(
@@ -76,12 +82,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           Navigator.of(context).pop();
         },
       ),
-      body:  apiLoading
-          ?  Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-        ),
-      ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
+      body: orderHistoryResponse?.orders?.isNotEmpty ?? false ?
       Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
           children: [
