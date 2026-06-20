@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/mobile_frame_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class SoftUpdateBottomSheet extends StatelessWidget {
   final VoidCallback onUpdateNow;
@@ -47,34 +49,35 @@ class SoftUpdateBottomSheet extends StatelessWidget {
           /// Small header
           Text(
             "NEW UPDATE IS AVAILABLE",
-            style: TextStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+              letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 12),
 
           /// Bold title
-          const Text(
+          Text(
             "Update To The Latest\nVersion Now!",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            style: UiTypography.cardTitle().copyWith(
+              fontSize: 20,
+              height: 1.2,
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 12),
 
           /// Description
-          const Text(
+          Text(
             "New features added and dispute bugs fixed for a smoother experience",
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: FontUtils.secondaryFontStyle(
               fontSize: 14,
-              color: Colors.black87,
-              height: 1.4,
-            ),
+              color: AppColors.textColor50,
+            ).copyWith(height: 1.5),
           ),
           const SizedBox(height: 28),
 
@@ -84,28 +87,37 @@ class SoftUpdateBottomSheet extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               onPressed: onUpdateNow,
-              child: const Text(
+              child: Text(
                 "Update now",
-                style: TextStyle(fontSize: 16, color: Colors.white),
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           /// Continue button (text only)
           GestureDetector(
             onTap: onContinue,
-            child: const Text(
-              "Continue to app",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                "Continue to app",
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textColor50,
+                ),
               ),
             ),
           ),

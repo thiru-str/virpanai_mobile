@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -81,8 +81,15 @@ class _ProductCard4State extends State<ProductCard4> {
         width: 160,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,10 +98,10 @@ class _ProductCard4State extends State<ProductCard4> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Container(
                     height: 140,
-                    color: Colors.grey[100],
+                    color: AppColors.secondary,
                     child: images.isEmpty
                         ? const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain)
                         : PageView.builder(
@@ -156,7 +163,7 @@ class _ProductCard4State extends State<ProductCard4> {
                       ),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       padding: MaterialStateProperty.all<EdgeInsets>(
@@ -168,11 +175,8 @@ class _ProductCard4State extends State<ProductCard4> {
                     ),
                     child: Text(
                       "ADD",
-                      style: FontUtils.primaryFontStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
+                      style: UiTypography.cardAction(color: AppColors.primary)
+                          .copyWith(fontSize: 12.5, fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -190,19 +194,13 @@ class _ProductCard4State extends State<ProductCard4> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -215,11 +213,8 @@ class _ProductCard4State extends State<ProductCard4> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "SAVE ₹${(orig! - calc!).toStringAsFixed(0)}",
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green,
-                  ),
+                  style: UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                      .copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
 
@@ -228,10 +223,9 @@ class _ProductCard4State extends State<ProductCard4> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
               child: Text(
                 product.title ?? '',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 12,
+                style: UiTypography.cardTitle().copyWith(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -245,10 +239,7 @@ class _ProductCard4State extends State<ProductCard4> {
                 const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   product.description ?? "Add a short section",
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
+                  style: UiTypography.cardSubtitle(color: Colors.black54),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -283,6 +274,4 @@ class _ProductCard4State extends State<ProductCard4> {
     );
   }
 }
-
-
 

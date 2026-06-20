@@ -1,7 +1,7 @@
 // lib/assets.dart
 
 class AppStrings {
-  static const String welcome_to_store = 'Welcome to \n our store';
+  static const String welcome_to_store = 'virpanai';
   static const String get_your_product = 'Get your product as fast as one hour';
 
   static const String transation_details = 'Transaction details';
@@ -245,6 +245,7 @@ class AppStrings {
   static const String items_suffix = 'items.';
   static const String add_ons = 'Add-ons';
   static const String no_subcategories_found = 'No subcategories found';
+  static const String no_categories_found = 'No categories found';
   static const String write_a_reason = 'Write a reason';
   static const String download_invoice = 'Download Invoice';
   static const String cancel_order = 'Cancel Order';

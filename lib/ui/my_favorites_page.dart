@@ -9,6 +9,8 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../utility/app_strings.dart';
+
 Future<Customer?> getCustomerResponse() async {
   final dynamic userData = await SharedPreferencesUtil().getMap('customer');
   if (userData != null) return Customer.fromJson(userData);

@@ -30,9 +30,16 @@ class OrderWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.secondary)
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EC)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: IntrinsicHeight( // Ensures the Row matches the content height for vertical alignment
             child: Row(
@@ -41,10 +48,17 @@ class OrderWidget extends StatelessWidget {
                 // Vertically centered icon
                 Align(
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.receipt,
-                    size: 28,
-                    color: AppColors.primary,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.receipt,
+                      size: 24,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

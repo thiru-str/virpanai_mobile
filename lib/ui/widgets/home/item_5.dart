@@ -196,10 +196,11 @@ class _Item5Card extends StatelessWidget {
                         quarterTurns: -1,
                         child: Text(
                           '${layoutData.prices!.discountPercentage ?? ''} OFF',
-                          style: const TextStyle(
+                          style: FontUtils.primaryFontStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                             fontSize: 12,
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),
