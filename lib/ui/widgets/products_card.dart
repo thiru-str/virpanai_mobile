@@ -56,7 +56,7 @@ class ProductsCard extends StatelessWidget {
           // Title and Right-side content
           Expanded(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Column(
@@ -66,7 +66,7 @@ class ProductsCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        maxLines: 2,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
@@ -78,8 +78,7 @@ class ProductsCard extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             variantTitle!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            softWrap: true,
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey.shade600,
