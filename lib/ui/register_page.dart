@@ -17,6 +17,7 @@ import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
+import '../utility/ui_typography.dart';
 import 'bottom_nav_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -43,9 +44,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final TextEditingController referralCodeController = TextEditingController();
-
 
   bool apiCalling = false;
   RegisterResponse? registerResponse;
@@ -64,7 +65,8 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> getLoginType() async {
-    final loginType = await SharedPreferencesUtil().getBool('email_login')?? false;
+    final loginType =
+        await SharedPreferencesUtil().getBool('email_login') ?? false;
     setState(() {
       isEmailLogin = loginType;
     });
@@ -73,14 +75,15 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           elevation: 0,
           leading: IconButton(
-            icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
+            icon:
+                SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -90,185 +93,242 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Form(
             key: _formKey,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     AppStrings.register_msg,
-                    style: FontUtils.secondaryFontStyle(
+                    style: UiTypography.cardTitle().copyWith(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      height: 1.2,
+                      letterSpacing: -0.3,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          hintText: AppStrings.firstname,
-                          controller: firstNameController,
+                  const SizedBox(height: 8),
+                  Text(
+                    'Create your account to start shopping',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 14,
+                      color: AppColors.textColor50,
+                    ).copyWith(height: 1.5),
+                  ),
+                  const SizedBox(height: 24),
+                  // Grouped fields card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomTextField(
+                                hintText: AppStrings.firstname,
+                                controller: firstNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppStrings.firstname_required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: CustomTextField(
+                                hintText: AppStrings.lastname,
+                                controller: lastNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return AppStrings.lastname_required;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: AppStrings.email,
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textCapitalization: TextCapitalization.none,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppStrings.firstname_required;
+                              return AppStrings.email_required;
+                            }
+                            if (!RegExp(
+                                    r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                .hasMatch(value)) {
+                              return AppStrings.enter_valid_email;
                             }
                             return null;
                           },
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: CustomTextField(
-                          hintText: AppStrings.lastname,
-                          controller: lastNameController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppStrings.lastname_required;
+                        if (isEmailLogin) ...[
+                          const SizedBox(height: 16),
+                          IntlPhoneField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            dropdownTextStyle: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textColor,
+                            ),
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textColor,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: AppStrings.mobile_number,
+                              hintStyle: UiTypography.searchHint(),
+                              fillColor: Colors.white,
+                              filled: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                    color: AppColors.primary, width: 1.5),
+                              ),
+                            ),
+                            initialCountryCode: AppStrings.country_code,
+                            onChanged: (phone) {
+                              _phoneNo = phone.number;
+                              _countryCode = phone.countryCode;
+                            },
+                            validator: (value) {
+                              if (value == null || value.number.isEmpty) {
+                                return AppStrings.enter_valid_mob_no;
+                              }
+                              if (value.number.length < 10 ||
+                                  value.number.length > 15) {
+                                return AppStrings.digit_range;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          CustomTextField(
+                            hintText: AppStrings.password,
+                            controller: passwordController,
+                            textCapitalization: TextCapitalization.none,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(
+                                    r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
+                              )
+                            ],
+                            isPassword: true,
+                            validator: (value) {
+                              if (!isEmailLogin) return null;
+
+                              if (value == null || value.isEmpty) {
+                                return AppStrings.password_required;
+                              }
+                              if (value.length < 5) {
+                                return AppStrings.password_min_length;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          CustomTextField(
+                            hintText: AppStrings.confirm_password,
+                            controller: confirmPasswordController,
+                            textCapitalization: TextCapitalization.none,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(
+                                    r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
+                              )
+                            ],
+                            isPassword: true,
+                            validator: (value) {
+                              if (!isEmailLogin) return null;
+
+                              if (value == null || value.isEmpty) {
+                                return AppStrings.confirm_password_required;
+                              }
+                              if (value != passwordController.text) {
+                                return AppStrings.password_mismatch;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          newToAppRegisterText(onRegisterTap: () {
+                            Navigator.pop(context);
+                          }),
+                        ],
+                        const SizedBox(height: 16),
+                        _buildReferralField(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  apiCalling
+                      ? SizedBox(
+                          height: 54,
+                          child: Center(
+                            child: SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              register();
                             }
-                            return null;
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary, // Button color
+                            elevation: 0,
+                            minimumSize: const Size(double.infinity, 54),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            AppStrings.register,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: AppStrings.email,
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textCapitalization: TextCapitalization.none,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppStrings.email_required;
-                      }
-                      if (!RegExp(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                          .hasMatch(value)) {
-                        return AppStrings.enter_valid_email;
-                      }
-                      return null;
-                    },
-                  ),
-                  if (isEmailLogin) ...[
-                    const SizedBox(height: 16),
-
-                    IntlPhoneField(
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        fillColor: AppColors.secondary,
-                        filled: true,
-                        contentPadding:
-                        const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                          BorderSide(color: AppColors.secondary, width: 1.5),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                          BorderSide(color: AppColors.secondary, width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                          BorderSide(color: AppColors.secondary, width: 1.5),
-                        ),
-                      ),
-                      initialCountryCode: AppStrings.country_code,
-                      onChanged: (phone) {
-                        _phoneNo = phone.number;
-                        _countryCode = phone.countryCode;
-                      },
-                      validator: (value) {
-                        if (value == null || value.number.isEmpty) {
-                          return AppStrings.enter_valid_mob_no;
-                        }
-                        if (value.number.length < 10 ||
-                            value.number.length > 15) {
-                          return AppStrings.digit_range;
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    CustomTextField(
-                      hintText: AppStrings.password,
-                      controller: passwordController,
-                      textCapitalization: TextCapitalization.none,
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),)],
-                      isPassword: true,
-                      validator: (value) {
-                        if (!isEmailLogin) return null;
-
-                        if (value == null || value.isEmpty) {
-                          return AppStrings.password_required;
-                        }
-                        if (value.length < 5) {
-                          return AppStrings.password_min_length;
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    CustomTextField(
-                      hintText: AppStrings.confirm_password,
-                      controller: confirmPasswordController,
-                      textCapitalization: TextCapitalization.none,
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),)],
-                      isPassword: true,
-                      validator: (value) {
-                        if (!isEmailLogin) return null;
-
-                        if (value == null || value.isEmpty) {
-                          return AppStrings.confirm_password_required;
-                        }
-                        if (value != passwordController.text) {
-                          return AppStrings.password_mismatch;
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    newToAppRegisterText(onRegisterTap: () {
-                      Navigator.pop(context);
-                    }),
-                  ],
-
-
-
-
-                  const SizedBox(height: 16),
-                  _buildReferralField(),
-                  const SizedBox(height: 16),
-                  apiCalling?Center(child: CircularProgressIndicator(color: AppColors.primary,),):ElevatedButton(
-                    onPressed:() {
-                      if (_formKey.currentState!.validate()) {
-                        register();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary, // Button color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      minimumSize: const Size(double.infinity, 60),
-                    ),
-                    child: Text(
-                      AppStrings.register,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -443,27 +503,32 @@ class _RegisterPageState extends State<RegisterPage> {
       final referralCode = referralCodeController.text.trim();
       if (referralCode.isNotEmpty) {
         try {
-          final validateResp = await apiService.validateReferralCode(referralCode);
+          final validateResp =
+              await apiService.validateReferralCode(referralCode);
           final validateData = validateResp.data as Map<String, dynamic>?;
           if (validateData?['valid'] != true) {
-            final msg = validateData?['message'] as String? ?? 'Invalid referral code. Please check and try again.';
+            final msg = validateData?['message'] as String? ??
+                'Invalid referral code. Please check and try again.';
             if (mounted) {
               setState(() => apiCalling = false);
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(msg),
                 backgroundColor: Colors.red.shade700,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ));
             }
             return;
           }
         } catch (e) {
           // If validate endpoint fails (e.g. loyalty extension not installed), skip and proceed
-          final isNotFound = e.toString().contains('404') || e.toString().contains('DioExceptionType');
+          final isNotFound = e.toString().contains('404') ||
+              e.toString().contains('DioExceptionType');
           if (!isNotFound) {
             // For 400 errors — code is invalid
-            String errMsg = 'Invalid referral code. Please check and try again.';
+            String errMsg =
+                'Invalid referral code. Please check and try again.';
             try {
               final dioErr = e as dynamic;
               final data = dioErr.response?.data as Map<String, dynamic>?;
@@ -475,7 +540,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 content: Text(errMsg),
                 backgroundColor: Colors.red.shade700,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ));
             }
             return;
@@ -483,38 +549,38 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       }
 
-      if(!isEmailLogin) {
+      if (!isEmailLogin) {
         registerResponse = await apiService.register(
             context,
             emailController.text,
             companyController.text,
             firstNameController.text,
             lastNameController.text,
-            _countryCode??'',
-            _phoneNo??'',
+            _countryCode ?? '',
+            _phoneNo ?? '',
             widget.token);
 
         RefreshTokenResponse refreshTokenResponse =
-        await apiService.refreshToken(context, widget.token);
-        SharedPreferencesUtil().saveString('token', refreshTokenResponse.token!);
+            await apiService.refreshToken(context, widget.token);
+        SharedPreferencesUtil()
+            .saveString('token', refreshTokenResponse.token!);
         SharedPreferencesUtil()
             .saveMap('customer', registerResponse?.customer?.toJson() ?? {});
-      }
-      else{
+      } else {
         emailRegisterResponse = await apiService.registerEmail(
             context,
             emailController.text,
             companyController.text,
             firstNameController.text,
             lastNameController.text,
-            _countryCode??'',
-            _phoneNo??'',
+            _countryCode ?? '',
+            _phoneNo ?? '',
             passwordController.text);
-        SharedPreferencesUtil().saveString('token', emailRegisterResponse?.token??'');
         SharedPreferencesUtil()
-            .saveMap('customer', emailRegisterResponse?.customer?.toJson() ?? {});
+            .saveString('token', emailRegisterResponse?.token ?? '');
+        SharedPreferencesUtil().saveMap(
+            'customer', emailRegisterResponse?.customer?.toJson() ?? {});
       }
-
 
       // Apply referral code — already validated above, should always succeed
       if (referralCode.isNotEmpty) {
@@ -523,10 +589,12 @@ class _RegisterPageState extends State<RegisterPage> {
           final refData = refResp.data as Map<String, dynamic>?;
           if (mounted && refData?['status'] == true) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text('Referral code applied! Welcome bonus points added.'),
+              content: const Text(
+                  'Referral code applied! Welcome bonus points added.'),
               backgroundColor: Colors.green.shade700,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ));
           }
         } catch (_) {}
@@ -588,8 +656,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = onRegisterTap,
+                recognizer: TapGestureRecognizer()..onTap = onRegisterTap,
               ),
             ],
           ),
@@ -597,7 +664,6 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
-
 }
 
 // Item 7 — Full-screen QR scanner used by the referral input.

@@ -32,6 +32,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
@@ -168,41 +169,66 @@ class _CartPageState extends State<CartPage>
 
     // Fallback display names for providers with empty/null names
     switch (providerId) {
-      case 'pp_wallet_wallet':      return 'Wallet';
-      case 'pp_razorpay_razorpay':  return 'Razorpay';
-      case 'pp_payu_payu':          return 'PayU';
-      case 'pp_paytm_paytm':        return 'Paytm';
-      case 'pp_icici_icici':        return 'ICICI Bank';
-      case 'pp_system_default':     return 'Cash on Delivery';
-      case 'pp_neft_neft':          return 'Bank Transfer (NEFT)';
-      case 'pp_stripe_stripe':      return 'Credit / Debit Card';
-      default:                      return AppStrings.cash_on_delivery;
+      case 'pp_wallet_wallet':
+        return 'Wallet';
+      case 'pp_razorpay_razorpay':
+        return 'Razorpay';
+      case 'pp_payu_payu':
+        return 'PayU';
+      case 'pp_paytm_paytm':
+        return 'Paytm';
+      case 'pp_icici_icici':
+        return 'ICICI Bank';
+      case 'pp_system_default':
+        return 'Cash on Delivery';
+      case 'pp_neft_neft':
+        return 'Bank Transfer (NEFT)';
+      case 'pp_stripe_stripe':
+        return 'Credit / Debit Card';
+      default:
+        return AppStrings.cash_on_delivery;
     }
   }
 
   IconData _providerIcon(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return Icons.bolt_rounded;
-      case 'pp_payu_payu':         return Icons.credit_card_rounded;
-      case 'pp_paytm_paytm':       return Icons.account_balance_wallet_rounded;
-      case 'pp_icici_icici':       return Icons.account_balance_rounded;
-      case 'pp_neft_neft':         return Icons.swap_horiz_rounded;
-      case 'pp_wallet_wallet':     return Icons.account_balance_wallet_rounded;
-      case 'pp_stripe_stripe':     return Icons.credit_card_rounded;
-      default:                     return Icons.local_shipping_rounded;
+      case 'pp_razorpay_razorpay':
+        return Icons.bolt_rounded;
+      case 'pp_payu_payu':
+        return Icons.credit_card_rounded;
+      case 'pp_paytm_paytm':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_icici_icici':
+        return Icons.account_balance_rounded;
+      case 'pp_neft_neft':
+        return Icons.swap_horiz_rounded;
+      case 'pp_wallet_wallet':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_stripe_stripe':
+        return Icons.credit_card_rounded;
+      default:
+        return Icons.local_shipping_rounded;
     }
   }
 
   Color _providerColor(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return const Color(0xFF2D81F7);
-      case 'pp_payu_payu':         return const Color(0xFF6CB33F);
-      case 'pp_paytm_paytm':       return const Color(0xFF00BAF2);
-      case 'pp_icici_icici':       return const Color(0xFFE87722);
-      case 'pp_neft_neft':         return const Color(0xFF1565C0);
-      case 'pp_wallet_wallet':     return const Color(0xFF2E7D32);
-      case 'pp_stripe_stripe':     return const Color(0xFF635BFF);
-      default:                     return const Color(0xFF795548);
+      case 'pp_razorpay_razorpay':
+        return const Color(0xFF2D81F7);
+      case 'pp_payu_payu':
+        return const Color(0xFF6CB33F);
+      case 'pp_paytm_paytm':
+        return const Color(0xFF00BAF2);
+      case 'pp_icici_icici':
+        return const Color(0xFFE87722);
+      case 'pp_neft_neft':
+        return const Color(0xFF1565C0);
+      case 'pp_wallet_wallet':
+        return const Color(0xFF2E7D32);
+      case 'pp_stripe_stripe':
+        return const Color(0xFF635BFF);
+      default:
+        return const Color(0xFF795548);
     }
   }
 
@@ -254,14 +280,14 @@ class _CartPageState extends State<CartPage>
           Navigator.pop(context, true);
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       body: Stack(
         children: [
           apiLoading
               ? const CartPageSkeleton()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
-                      backgroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFF9F9FB),
                       body: SingleChildScrollView(
                         child: Column(
                           children: [
@@ -492,7 +518,9 @@ class _CartPageState extends State<CartPage>
                                 cartTotal: cartResponse?.cart?.total ?? 0,
                                 walletAmount: _walletAmountFromMetadata(),
                                 walletApplied: _walletAmountFromMetadata() > 0,
-                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                hasActiveCoupon:
+                                    (cartResponse?.cart?.promotions ?? [])
+                                        .isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -535,19 +563,19 @@ class _CartPageState extends State<CartPage>
                                   key: _priceDetailsSectionKey,
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
-                                  padding: const EdgeInsets.all(16.0),
+                                  padding: const EdgeInsets.all(18.0),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 18,
+                                        offset: const Offset(0, 8),
                                       ),
                                     ],
-                                    border:
-                                        Border.all(color: Colors.grey.shade200),
+                                    border: Border.all(
+                                        color: const Color(0xFFE5E7EC)),
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
@@ -555,13 +583,14 @@ class _CartPageState extends State<CartPage>
                                     children: [
                                       Padding(
                                         padding:
-                                            const EdgeInsets.only(bottom: 8),
+                                            const EdgeInsets.only(bottom: 12),
                                         child: Text(
                                           'Price Details',
-                                          style: FontUtils.primaryFontStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textColor,
-                                            fontSize: 15,
+                                          style:
+                                              UiTypography.cardTitle().copyWith(
+                                            fontSize: 16,
+                                            height: 1.25,
+                                            letterSpacing: -0.2,
                                           ),
                                         ),
                                       ),
@@ -618,7 +647,7 @@ class _CartPageState extends State<CartPage>
                                         _priceRow(
                                           'Coupon Savings',
                                           '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                          valueColor: Colors.green.shade700,
+                                          valueColor: const Color(0xFF1FA971),
                                         ),
                                       // Loyalty points discount (negative line item added by API)
                                       if ((cartResponse?.cart?.items?.any(
@@ -648,23 +677,46 @@ class _CartPageState extends State<CartPage>
                                         _priceRow(
                                           'Wallet',
                                           '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
-                                          valueColor: Colors.blue.shade700,
+                                          valueColor: AppColors.primary,
                                         ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 6),
+                                      const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 10),
                                         child: Divider(
-                                            color: Colors.grey.shade300,
+                                            color: Color(0xFFE5E7EC),
                                             height: 1),
                                       ),
-                                      _priceRow(
-                                          'Total Amount',
-                                          CurrencyUtil.appendCurrency(
-                                              _displayTotalAmount()
-                                                  .toStringAsFixed(2)),
-                                          isBold: true,
-                                          fontSize: 13),
-                                      const SizedBox(height: 6),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Total Amount',
+                                            style: UiTypography.cardTitle()
+                                                .copyWith(
+                                              fontSize: 16,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Flexible(
+                                            child: Text(
+                                              CurrencyUtil.appendCurrency(
+                                                  _displayTotalAmount()
+                                                      .toStringAsFixed(2)),
+                                              maxLines: 1,
+                                              textAlign: TextAlign.right,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: UiTypography.cardPrice(
+                                                      color: AppColors.primary)
+                                                  .copyWith(fontSize: 20),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
                                     ],
                                   ),
                                 ),
@@ -1151,7 +1203,8 @@ class _CartPageState extends State<CartPage>
     // but if it fails the cart stays without one and complete-cart rejects
     // with "No shipping method selected but the cart contains items that
     // require shipping". Fetch options here and attach the first as fallback.
-    final hasShipping = (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    final hasShipping =
+        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
     if (!hasShipping) {
       try {
         setState(() => cartLoading = true);
@@ -1170,7 +1223,8 @@ class _CartPageState extends State<CartPage>
         }
       } catch (e) {
         setState(() => cartLoading = false);
-        AppUtils.showToast('Could not attach shipping method. Please try again.');
+        AppUtils.showToast(
+            'Could not attach shipping method. Please try again.');
         return;
       } finally {
         setState(() => cartLoading = false);
@@ -1215,7 +1269,8 @@ class _CartPageState extends State<CartPage>
         (data.orderId ?? data.id) == null ||
         (data.txnToken ?? data.token) == null ||
         data.amount == null) {
-      AppUtils.showToast('Paytm payment session is incomplete. Please try again.');
+      AppUtils.showToast(
+          'Paytm payment session is incomplete. Please try again.');
       return;
     }
 
@@ -1247,7 +1302,8 @@ class _CartPageState extends State<CartPage>
       setState(() => cartLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 
@@ -1315,7 +1371,14 @@ class _CartPageState extends State<CartPage>
           children: [
             Icon(Icons.account_balance_wallet, color: AppColors.primary),
             const SizedBox(width: 8),
-            const Text('Insufficient Balance', style: TextStyle(fontSize: 16)),
+            const Expanded(
+              child: Text(
+                'Insufficient Balance',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -1678,58 +1741,62 @@ class _CartPageState extends State<CartPage>
         : paymentProviders;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: InkWell(
         onTap: () => showPaymentMethodsBottomSheet(context, providers),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: _providerColor(pp_id).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(_providerIcon(pp_id),
-                    color: _providerColor(pp_id), size: 18),
+                    color: _providerColor(pp_id), size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Payment Method',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                      style: UiTypography.cardTitle().copyWith(
+                        fontSize: 15,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       providerName,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: UiTypography.cardMeta(),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Text(
+                'Change',
+                style: UiTypography.cardAction(color: AppColors.primary),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded,
+                  color: AppColors.primary, size: 20),
             ],
           ),
         ),
@@ -1747,18 +1814,20 @@ class _CartPageState extends State<CartPage>
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EC))),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, -2),
-            blurRadius: 8,
+            color: Color(0x14000000),
+            offset: Offset(0, -4),
+            blurRadius: 18,
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Amount + View details
+          // Left: Total amount + View details
           Expanded(
             flex: 2,
             child: Column(
@@ -1766,29 +1835,41 @@ class _CartPageState extends State<CartPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  'Total',
+                  style: UiTypography.cardMeta(),
+                ),
+                const SizedBox(height: 1),
+                Text(
                   amount,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: UiTypography.cardPrice(color: AppColors.textColor)
+                      .copyWith(fontSize: 22, letterSpacing: -0.3),
                 ),
                 GestureDetector(
                   onTap: _scrollToPriceDetails,
-                  child: Text(
-                    'View details',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View details',
+                          style: UiTypography.cardMeta(color: AppColors.primary)
+                              .copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        Icon(Icons.keyboard_arrow_up_rounded,
+                            color: AppColors.primary, size: 16),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Right: Place Order button with payment method
+          const SizedBox(width: 14),
+          // Right: dominant Checkout CTA with payment method
           Expanded(
             flex: 3,
             child: ElevatedButton(
@@ -1811,9 +1892,12 @@ class _CartPageState extends State<CartPage>
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 54),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: AnimatedSwitcher(
@@ -1821,15 +1905,14 @@ class _CartPageState extends State<CartPage>
                 child: cartLoading
                     ? const SizedBox(
                         key: ValueKey('loader'),
-                        height: 36,
+                        height: 38,
                         child: Center(
                           child: SizedBox(
-                            height: 18,
-                            width: 18,
+                            height: 22,
+                            width: 22,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              color: Colors.white,
+                              strokeWidth: 2.5,
                             ),
                           ),
                         ),
@@ -1838,18 +1921,28 @@ class _CartPageState extends State<CartPage>
                         key: const ValueKey('text'),
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Place Order',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Checkout',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white, size: 18),
+                            ],
                           ),
                           Text(
                             providerName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 10,
+                              fontSize: 11,
                               color: Colors.white70,
                               height: 1.3,
                             ),
@@ -1865,24 +1958,34 @@ class _CartPageState extends State<CartPage>
   }
 
   Widget _priceRow(String label, String value,
-      {Color? valueColor, bool isBold = false, double fontSize = 13}) {
+      {Color? valueColor, bool isBold = false, double fontSize = 14}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
-          Text(value,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: valueColor ?? AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
+          Expanded(
+            child: Text(label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: fontSize,
+                  color: AppColors.textColor.withOpacity(0.65),
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
+                ).copyWith(height: 1.5)),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value,
+                maxLines: 2,
+                textAlign: TextAlign.right,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: fontSize,
+                  color: valueColor ?? AppColors.textColor,
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+                )),
+          ),
         ],
       ),
     );
@@ -1896,72 +1999,76 @@ class _CartPageState extends State<CartPage>
     final canUseCoupon = allowCouponWithWallet || !splitActive;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: InkWell(
         onTap: canUseCoupon ? () => showPromoCodeBottomSheet(context) : null,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color:
-                      isApplied ? Colors.green.shade50 : Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isApplied
+                      ? const Color(0xFFE7F7F0)
+                      : AppColors.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  Icons.local_offer_outlined,
-                  color: isApplied
-                      ? Colors.green.shade600
-                      : Colors.orange.shade700,
-                  size: 18,
+                  Icons.local_offer_rounded,
+                  color:
+                      isApplied ? const Color(0xFF1FA971) : AppColors.primary,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Coupon',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                      isApplied ? 'Coupon Applied' : 'Apply Coupon',
+                      style: UiTypography.cardTitle().copyWith(
+                        fontSize: 15,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     isApplied
                         ? Text(
                             '${coupon!.code} · Save ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.green.shade600),
+                            style: UiTypography.cardMeta(
+                                color: const Color(0xFF1FA971)),
                           )
                         : Text(
                             canUseCoupon
-                                ? 'Apply coupon code'
+                                ? 'Have a code? Tap to add and save'
                                 : 'Remove wallet to apply coupon',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600),
+                            style: UiTypography.cardMeta(),
                           ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Text(
+                isApplied ? 'Change' : 'Add',
+                style: UiTypography.cardAction(color: AppColors.primary),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded,
+                  color: AppColors.primary, size: 20),
             ],
           ),
         ),
@@ -1975,63 +2082,58 @@ class _CartPageState extends State<CartPage>
     final canUseWallet = allowCouponWithWallet || !couponApplied;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
         border: Border.all(
-          color: splitActive
-              ? AppColors.primary.withOpacity(0.4)
-              : Colors.grey.shade200,
+          color: splitActive ? AppColors.primary : const Color(0xFFE5E7EC),
           width: splitActive ? 1.5 : 1,
         ),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: canUseWallet
                         ? AppColors.primary.withOpacity(0.1)
                         : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.account_balance_wallet_outlined,
+                    Icons.account_balance_wallet_rounded,
                     color: canUseWallet ? AppColors.primary : Colors.grey,
-                    size: 18,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Use Wallet Balance',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                        style: UiTypography.cardTitle(
                           color:
                               canUseWallet ? AppColors.textColor : Colors.grey,
-                        ),
+                        ).copyWith(fontSize: 15, letterSpacing: -0.2),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         'Available: ${CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(2))}',
-                        style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                        style: UiTypography.cardMeta(),
                       ),
                       if (walletUsageLimit != null &&
                           walletUsageLimit!.enabled &&
@@ -2077,26 +2179,27 @@ class _CartPageState extends State<CartPage>
             ),
           ),
           if (splitActive && splitWalletAmount > 0) ...[
-            Divider(height: 1, color: Colors.grey.shade100),
+            const Divider(height: 1, color: Color(0xFFE5E7EC)),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE7F7F0),
                 borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                    BorderRadius.vertical(bottom: Radius.circular(15)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline,
-                      color: Colors.green.shade600, size: 14),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.w500),
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF1FA971), size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
+                      style:
+                          UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                              .copyWith(fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ],
               ),

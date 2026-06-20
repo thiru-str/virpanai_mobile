@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class CommonHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -31,7 +31,8 @@ class CommonHeaderAppBar extends StatelessWidget
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
-      elevation: 0,
+      elevation: 0.5,
+      shadowColor: Colors.black.withOpacity(0.05),
       centerTitle: true,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
@@ -42,7 +43,8 @@ class CommonHeaderAppBar extends StatelessWidget
                 margin: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary, // Background color
+                  color: AppColors.secondary,
+                  border: Border.all(color: Colors.black.withOpacity(0.05)),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -57,17 +59,23 @@ class CommonHeaderAppBar extends StatelessWidget
           : null,
       title: Text(
         title,
-        style: FontUtils.primaryFontStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
+        style: UiTypography.cardTitle(color: Colors.black87).copyWith(
+          fontSize: 18,
         ),
       ),
       actions: [
         if (onShareTap != null)
-          IconButton(
-            icon: Icon(Icons.share, color: AppColors.primary),
-            onPressed: onShareTap,
+          Container(
+            margin: const EdgeInsets.only(top: 8, bottom: 8, right: 4),
+            decoration: BoxDecoration(
+              color: AppColors.secondary,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black.withOpacity(0.05)),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.share, color: AppColors.primary, size: 20),
+              onPressed: onShareTap,
+            ),
           ),
         if (onCartTap != null)
           GestureDetector(
@@ -75,10 +83,16 @@ class CommonHeaderAppBar extends StatelessWidget
             child: Container(
               width: 48,
               height: 48,
+              margin: const EdgeInsets.only(top: 8, bottom: 8, right: 4),
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black.withOpacity(0.05)),
+              ),
               child: IconButton(
                   onPressed: onCartTap,
                   icon: Icon(Icons.shopping_cart,
-                      color: AppColors.primary, size: 24)),
+                      color: AppColors.primary, size: 22)),
             ),
           ),
         if (onFavTap != null)
@@ -91,7 +105,8 @@ class CommonHeaderAppBar extends StatelessWidget
                 width: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary, // Background color
+                  color: AppColors.secondary,
+                  border: Border.all(color: Colors.black.withOpacity(0.05)),
                 ),
                 child: Center(
                     child: Icon(

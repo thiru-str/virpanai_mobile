@@ -352,10 +352,9 @@ class _DiscountBurstBadge extends StatelessWidget {
         child: Text(
           '$normalized',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: FontUtils.primaryFontStyle(
             color: Colors.white,
             fontSize: 8,
-            height: 1.0,
             fontWeight: FontWeight.w700,
           ),
         ),

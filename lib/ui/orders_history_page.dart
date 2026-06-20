@@ -68,7 +68,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       appBar: CommonHeaderAppBar(
         title: AppStrings.orders,
         onBackTap: () {
@@ -81,7 +81,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
           color: AppColors.primary,
         ),
       ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
-      Padding(padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
           children: [
             Expanded(
