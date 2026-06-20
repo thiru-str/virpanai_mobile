@@ -66,9 +66,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
       ),
       backgroundColor: const Color(0xFFF9F9FB),
       body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? const AppLoader()
           : _categories.isEmpty
               ? NoOrdersWidget(
                   message: AppStrings.no_categories_found,

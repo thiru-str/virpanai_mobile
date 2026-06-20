@@ -226,11 +226,9 @@ class _WalletPageState extends State<WalletPage> {
 
             // Transaction List
             if (loading)
-              SliverFillRemaining(
+              const SliverFillRemaining(
                 hasScrollBody: false,
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                child: AppLoader(),
               )
             else if (transactions.isEmpty)
               SliverFillRemaining(
