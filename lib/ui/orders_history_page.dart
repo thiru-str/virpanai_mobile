@@ -120,7 +120,16 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
             createdAt: toIST(order.createdAt ?? DateTime.now()),
             itemPrice: (order.status ?? '').toLowerCase() == 'canceled'
                 ? (order.subtotal ?? 0)
-                : ((order.total ?? 0) - (order.metadata?.walletAmount ?? 0)).clamp(0, double.infinity),
+                // order.total is the pre-discount total; wallet split and
+                // loyalty checkout-apply (deferred debit) both live on
+                // order.metadata and must be subtracted manually so the
+                // list shows what the customer actually paid. Without the
+                // loyalty leg a wallet+points order rendered the cart
+                // total here while the detail page showed ₹0 owed.
+                : ((order.total ?? 0)
+                        - (order.metadata?.walletAmount ?? 0)
+                        - (order.metadata?.loyaltyDiscountAmount ?? 0))
+                    .clamp(0, double.infinity),
             onTap: () {
               PageRouteUtils.pushWithSlide(
                 context,

@@ -18,7 +18,17 @@ import '../../utility/shared_preferences_util.dart';
 class LoyaltyEarnPreview extends StatefulWidget {
   final num orderTotal;
   final String? cartId;
-  const LoyaltyEarnPreview({super.key, required this.orderTotal, this.cartId});
+  /// PDP-only — when present, backend short-circuits if the merchant has
+  /// restricted earning to specific products / categories and this product
+  /// isn't in the allowed set. Avoids promising points the order subscriber
+  /// will later refuse.
+  final String? productId;
+  const LoyaltyEarnPreview({
+    super.key,
+    required this.orderTotal,
+    this.cartId,
+    this.productId,
+  });
 
   @override
   State<LoyaltyEarnPreview> createState() => _LoyaltyEarnPreviewState();
@@ -35,6 +45,13 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   num _earnableAmount = 0;
   num _earnRatio = 1;
   bool _isLoggedIn = false;
+  // Backend sets status="not_eligible" when the merchant restricts earning
+  // to specific products / categories and the current product (PDP context)
+  // isn't allowed. Render nothing instead of the deceptive "Add ₹X more to
+  // earn …" copy that would otherwise still show because earn_enabled=true.
+  bool _notEligible = false;
+  int _orderNumber = 0;
+  Map<String, dynamic>? _nextMilestone;
 
   @override
   void initState() {
@@ -46,11 +63,18 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   @override
   void didUpdateWidget(LoyaltyEarnPreview old) {
     super.didUpdateWidget(old);
-    if (old.orderTotal != widget.orderTotal || old.cartId != widget.cartId) _load();
+    if (old.orderTotal != widget.orderTotal ||
+        old.cartId != widget.cartId ||
+        old.productId != widget.productId) {
+      _load();
+    }
   }
 
   Future<void> _checkLoginState() async {
-    final token = await SharedPreferencesUtil().getString('access_token');
+    // App stores the auth token under the 'token' key (see ApiService.addToken).
+    // Earlier 'access_token' was a typo and made the preview stay in guest copy
+    // ("Sign up to earn…") for users who were actually logged in.
+    final token = await SharedPreferencesUtil().getString('token');
     if (mounted) setState(() => _isLoggedIn = (token ?? '').isNotEmpty);
   }
 
@@ -61,21 +85,27 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
       return;
     }
     try {
-      final resp = await ApiService()
-          .getLoyaltyPreview(widget.orderTotal, cartId: widget.cartId);
+      final resp = await ApiService().getLoyaltyPreview(
+        widget.orderTotal,
+        cartId: widget.cartId,
+        productId: widget.productId,
+      );
       final d = resp.data;
       if (d['status'] == true && d['data'] != null) {
         final data = d['data'] as Map<String, dynamic>;
         if (mounted) {
           setState(() {
             _earnEnabled = data['earn_enabled'] == true;
+            _notEligible = data['status'] == 'not_eligible';
             _points = data['points_to_earn'] ?? 0;
             _basePoints = data['base_points'] ?? _points;
             _multiplier = double.tryParse(data['multiplier']?.toString() ?? '1') ?? 1.0;
             _hasBonus = (data['rule_applied'] == true) && _multiplier > 1.01;
-            _minOrderValue = (data['minimum_order_value'] ?? 0) as num;
-            _earnableAmount = (data['earnable_amount'] ?? widget.orderTotal) as num;
-            _earnRatio = (data['earn_ratio'] ?? 1) as num;
+            _minOrderValue = double.tryParse(data['minimum_order_value']?.toString() ?? '0') ?? 0;
+            _earnableAmount = double.tryParse(data['earnable_amount']?.toString() ?? '0') ?? widget.orderTotal.toDouble();
+            _earnRatio = double.tryParse(data['earn_ratio']?.toString() ?? '1') ?? 1;
+            _orderNumber = (data['order_number'] as num?)?.toInt() ?? 0;
+            _nextMilestone = data['next_milestone'] as Map<String, dynamic>?;
             _loading = false;
           });
         }
@@ -103,6 +133,33 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   bool get _isAboveMin => _earnableAmount >= _minOrderValue;
   bool get _hasMinOrderValue => _minOrderValue > 0;
 
+  String _ordinalSuffix(int n) {
+    if (n >= 11 && n <= 13) return '${n}th';
+    switch (n % 10) {
+      case 1: return '${n}st';
+      case 2: return '${n}nd';
+      case 3: return '${n}rd';
+      default: return '${n}th';
+    }
+  }
+
+  String _multStr(double m) =>
+      m.toStringAsFixed(m == m.roundToDouble() ? 0 : 1);
+
+  String _bonusCopy() {
+    final mult = _multStr(_multiplier);
+    if (_orderNumber > 0) return 'Your ${_ordinalSuffix(_orderNumber)} order! ${mult}× bonus';
+    return '${mult}× bonus applied!';
+  }
+
+  String? _milestoneCopy() {
+    final m = _nextMilestone;
+    if (m == null) return null;
+    final away = (m['orders_away'] as num?)?.toInt() ?? 0;
+    final mult = _multStr(double.tryParse(m['multiplier']?.toString() ?? '1') ?? 1.0);
+    return '${away == 1 ? '1 more order' : '$away more orders'} → ${mult}× bonus!';
+  }
+
   // Builds the inline copy for the 4 states. Never returns a negative string —
   // when loyalty is off or earn fails, we render nothing (caller decides).
   String _copy() {
@@ -120,6 +177,11 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   Widget build(BuildContext context) {
     if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_loading || !_earnEnabled) return const SizedBox.shrink();
+
+    // Product-restricted earn: backend told us this product isn't in the
+    // allowed list / category. Rendering the "Add ₹X more …" copy here
+    // would lie — the order subscriber would later refuse to credit pts.
+    if (_notEligible) return const SizedBox.shrink();
 
     // Pure no-op when there's nothing meaningful to say: no minimum AND no
     // points to earn yet (e.g. earn_enabled but ratio configured oddly).
@@ -162,10 +224,21 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
                   Padding(
                     padding: const EdgeInsets.only(top: 1),
                     child: Text(
-                      '${_multiplier.toStringAsFixed(_multiplier == _multiplier.toInt() ? 0 : 1)}× bonus applied!',
+                      _bonusCopy(),
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 10,
-                        color: accentColor.withOpacity(0.7),
+                        color: accentColor.withOpacity(0.8),
+                      ),
+                    ),
+                  ),
+                if (_milestoneCopy() != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Text(
+                      _milestoneCopy()!,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 10,
+                        color: Colors.orange.shade700.withOpacity(0.85),
                       ),
                     ),
                   ),

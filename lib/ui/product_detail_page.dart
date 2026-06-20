@@ -505,6 +505,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               orderTotal: num.tryParse(
                       selectedVariant!.calculatedPrice!.rawCalculatedAmount!.value!) ??
                   0,
+              // PDP: let the backend short-circuit when this product isn't in
+              // the merchant's earn-allowed list / category.
+              productId: widget.productId,
             ),
           ),
       ],
@@ -1209,11 +1212,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final response =
           await apiService.addOnProducts(context, widget.productId);
       if (!mounted || selectedVariantId != requestVariantId) return;
+      final products = response.products ?? [];
       setState(() {
         addOnProductsResponse = response;
+        // All addon products are out of stock — skip the popup
+        if (products.isEmpty) addOnProductsCount = 0;
       });
     } catch (e) {
       // Add-on load is non-blocking for primary PDP render.
+      if (mounted) setState(() => addOnProductsCount = 0);
     }
   }
 

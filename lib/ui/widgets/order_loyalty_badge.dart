@@ -34,6 +34,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
   int _basePoints = 0;
   double _multiplier = 1.0;
   bool _ruleApplied = false;
+  bool _isEstimated = false;
   bool _loading = true;
 
   late AnimationController _pulseController;
@@ -41,6 +42,13 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
 
   bool get _isCancelled =>
       widget.orderStatus == 'canceled' || widget.orderStatus == 'cancelled';
+
+  // Net paid amount the customer actually paid for points-earn purposes.
+  // Negative or zero means loyalty/discounts covered the full order, in which
+  // case no points are earned — the loading skeleton would just flash orange
+  // and disappear, which read as a UI bug to QA. Compute eagerly so we can
+  // skip the skeleton entirely.
+  bool get _hasZeroEarnableTotal => widget.orderTotal <= 0;
 
   @override
   void initState() {
@@ -52,6 +60,12 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
     _pulseAnimation = Tween(begin: 0.4, end: 0.9).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    // Skip the network round-trip + loading skeleton when earn is already
+    // guaranteed to be 0 from local math. Avoids the orange flash.
+    if (_hasZeroEarnableTotal) {
+      _loading = false;
+      return;
+    }
     _load();
   }
 
@@ -74,6 +88,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
             _multiplier =
                 double.tryParse(d['multiplier']?.toString() ?? '1') ?? 1.0;
             _ruleApplied = d['rule_applied'] == true;
+            _isEstimated = d['is_estimated'] == true;
             _loading = false;
           });
         }
@@ -95,6 +110,8 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
   Widget build(BuildContext context) {
     if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_isCancelled) return const SizedBox.shrink();
+    // Pre-empt the loading flicker — earn is already 0 by local math.
+    if (_hasZeroEarnableTotal) return const SizedBox.shrink();
 
     if (_loading) {
       return AnimatedBuilder(
@@ -175,13 +192,22 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                         color: Colors.green.shade800,
                       ),
                     ),
-                    Text(
-                      'Credited to your loyalty wallet',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 11,
-                        color: Colors.green.shade600,
+                    if (hasMultiplier)
+                      Text(
+                        '$_basePoints base pts × ${multiplierDisplay}× bonus',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Credited to your loyalty wallet',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -239,7 +265,9 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'You\'ll earn $_points pts on delivery',
+                    _isEstimated
+                        ? '~$_points pts on delivery'
+                        : 'You\'ll earn $_points pts on delivery',
                     style: FontUtils.primaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -248,7 +276,9 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                   ),
                   if (hasMultiplier)
                     Text(
-                      '$_basePoints base pts × ${multiplierDisplay}× bonus rule',
+                      _isEstimated
+                          ? '${multiplierDisplay}× order bonus · confirmed at delivery'
+                          : '$_basePoints base pts × ${multiplierDisplay}× bonus rule',
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 11,
                         color: Colors.orange.shade600,
@@ -273,7 +303,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                '+$_points',
+                _isEstimated ? '~$_points' : '+$_points',
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
