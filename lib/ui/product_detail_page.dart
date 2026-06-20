@@ -242,10 +242,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         .where((url) => url.toLowerCase().endsWith('.mp4'))
         .toList();
 
-    final allMedia = [...variantImageUrls, ...videoUrls];
+    final commonImageUrls = (product?.images ?? [])
+        .map((img) => img.url ?? '')
+        .where((url) => url.isNotEmpty && !variantImageUrls.contains(url))
+        .toList();
+
+    final allMedia = [...variantImageUrls, ...commonImageUrls, ...videoUrls];
     final displayUrls = allMedia.isNotEmpty
         ? allMedia
-        : (product?.images ?? []).map((img) => img.url ?? '').toList();
+        : <String>[];
 
     if (displayUrls.isEmpty) {
       return ClipRRect(
