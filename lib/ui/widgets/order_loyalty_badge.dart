@@ -34,6 +34,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
   int _basePoints = 0;
   double _multiplier = 1.0;
   bool _ruleApplied = false;
+  bool _isEstimated = false;
   bool _loading = true;
 
   late AnimationController _pulseController;
@@ -87,6 +88,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
             _multiplier =
                 double.tryParse(d['multiplier']?.toString() ?? '1') ?? 1.0;
             _ruleApplied = d['rule_applied'] == true;
+            _isEstimated = d['is_estimated'] == true;
             _loading = false;
           });
         }
@@ -190,13 +192,22 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                         color: Colors.green.shade800,
                       ),
                     ),
-                    Text(
-                      'Credited to your loyalty wallet',
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 11,
-                        color: Colors.green.shade600,
+                    if (hasMultiplier)
+                      Text(
+                        '$_basePoints base pts × ${multiplierDisplay}× bonus',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Credited to your loyalty wallet',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -254,7 +265,9 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'You\'ll earn $_points pts on delivery',
+                    _isEstimated
+                        ? '~$_points pts on delivery'
+                        : 'You\'ll earn $_points pts on delivery',
                     style: FontUtils.primaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -263,7 +276,9 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                   ),
                   if (hasMultiplier)
                     Text(
-                      '$_basePoints base pts × ${multiplierDisplay}× bonus rule',
+                      _isEstimated
+                          ? '${multiplierDisplay}× order bonus · confirmed at delivery'
+                          : '$_basePoints base pts × ${multiplierDisplay}× bonus rule',
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 11,
                         color: Colors.orange.shade600,
@@ -288,7 +303,7 @@ class _OrderLoyaltyBadgeState extends State<OrderLoyaltyBadge>
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                '+$_points',
+                _isEstimated ? '~$_points' : '+$_points',
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,

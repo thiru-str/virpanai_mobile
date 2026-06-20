@@ -50,6 +50,8 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
   // isn't allowed. Render nothing instead of the deceptive "Add ₹X more to
   // earn …" copy that would otherwise still show because earn_enabled=true.
   bool _notEligible = false;
+  int _orderNumber = 0;
+  Map<String, dynamic>? _nextMilestone;
 
   @override
   void initState() {
@@ -99,9 +101,11 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
             _basePoints = data['base_points'] ?? _points;
             _multiplier = double.tryParse(data['multiplier']?.toString() ?? '1') ?? 1.0;
             _hasBonus = (data['rule_applied'] == true) && _multiplier > 1.01;
-            _minOrderValue = (data['minimum_order_value'] ?? 0) as num;
-            _earnableAmount = (data['earnable_amount'] ?? widget.orderTotal) as num;
-            _earnRatio = (data['earn_ratio'] ?? 1) as num;
+            _minOrderValue = double.tryParse(data['minimum_order_value']?.toString() ?? '0') ?? 0;
+            _earnableAmount = double.tryParse(data['earnable_amount']?.toString() ?? '0') ?? widget.orderTotal.toDouble();
+            _earnRatio = double.tryParse(data['earn_ratio']?.toString() ?? '1') ?? 1;
+            _orderNumber = (data['order_number'] as num?)?.toInt() ?? 0;
+            _nextMilestone = data['next_milestone'] as Map<String, dynamic>?;
             _loading = false;
           });
         }
@@ -128,6 +132,33 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
 
   bool get _isAboveMin => _earnableAmount >= _minOrderValue;
   bool get _hasMinOrderValue => _minOrderValue > 0;
+
+  String _ordinalSuffix(int n) {
+    if (n >= 11 && n <= 13) return '${n}th';
+    switch (n % 10) {
+      case 1: return '${n}st';
+      case 2: return '${n}nd';
+      case 3: return '${n}rd';
+      default: return '${n}th';
+    }
+  }
+
+  String _multStr(double m) =>
+      m.toStringAsFixed(m == m.roundToDouble() ? 0 : 1);
+
+  String _bonusCopy() {
+    final mult = _multStr(_multiplier);
+    if (_orderNumber > 0) return 'Your ${_ordinalSuffix(_orderNumber)} order! ${mult}× bonus';
+    return '${mult}× bonus applied!';
+  }
+
+  String? _milestoneCopy() {
+    final m = _nextMilestone;
+    if (m == null) return null;
+    final away = (m['orders_away'] as num?)?.toInt() ?? 0;
+    final mult = _multStr(double.tryParse(m['multiplier']?.toString() ?? '1') ?? 1.0);
+    return '${away == 1 ? '1 more order' : '$away more orders'} → ${mult}× bonus!';
+  }
 
   // Builds the inline copy for the 4 states. Never returns a negative string —
   // when loyalty is off or earn fails, we render nothing (caller decides).
@@ -193,10 +224,21 @@ class _LoyaltyEarnPreviewState extends State<LoyaltyEarnPreview> {
                   Padding(
                     padding: const EdgeInsets.only(top: 1),
                     child: Text(
-                      '${_multiplier.toStringAsFixed(_multiplier == _multiplier.toInt() ? 0 : 1)}× bonus applied!',
+                      _bonusCopy(),
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 10,
-                        color: accentColor.withOpacity(0.7),
+                        color: accentColor.withOpacity(0.8),
+                      ),
+                    ),
+                  ),
+                if (_milestoneCopy() != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Text(
+                      _milestoneCopy()!,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 10,
+                        color: Colors.orange.shade700.withOpacity(0.85),
                       ),
                     ),
                   ),

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -81,8 +81,15 @@ class _ProductCard2State extends State<ProductCard2> {
         width: 180,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,10 +99,11 @@ class _ProductCard2State extends State<ProductCard2> {
                 // ---- Image / Carousel ----
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
+                    top: Radius.circular(16),
                   ),
-                  child: SizedBox(
+                  child: Container(
                     height: 160,
+                    color: AppColors.secondary,
                     child: PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
@@ -117,28 +125,23 @@ class _ProductCard2State extends State<ProductCard2> {
                 ),
 
                 // ---- Discount Badge ----
-                // ---- Discount Badge ----
                 if (percentOff != null)
                   Positioned(
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      decoration: const ShapeDecoration(
-                        color: Colors.indigo,
-                        shape: StarBorder.polygon(
-                          sides: 10, // makes a scalloped/seal-like shape
-                          pointRounding: 0.1, // controls curve softness
-                        ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7F7F0),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        "$percentOff%\nOFF",
+                        "$percentOff% OFF",
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: UiTypography.cardMeta(
+                          color: const Color(0xFF1FA971),
+                        ).copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -168,12 +171,11 @@ class _ProductCard2State extends State<ProductCard2> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? "Write A Title Here",
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                style: UiTypography.cardTitle().copyWith(
+                  fontSize: 15,
+                  height: 1.2,
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -184,10 +186,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
               child: Text(
                 product.description ?? "Add a short section",
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black54,
-                ),
+                style: UiTypography.cardSubtitle(color: Colors.black54),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -199,11 +198,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
               child: Text(
                 _fmt(calc ?? orig ?? 0),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
+                style: UiTypography.cardPrice(color: AppColors.primary),
               ),
             ),
 
@@ -234,17 +229,16 @@ class _ProductCard2State extends State<ProductCard2> {
                 child: OutlinedButton(
                   onPressed: widget.onAddToCart,
                   style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: AppColors.primary, width: 1.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Add To Cart",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
+                    style: UiTypography.cardAction(color: AppColors.primary)
+                        .copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -257,4 +251,3 @@ class _ProductCard2State extends State<ProductCard2> {
     );
   }
 }
-

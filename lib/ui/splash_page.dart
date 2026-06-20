@@ -67,15 +67,33 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: Center(
-        child: ScaleTransition(
-          scale: _animation,
-          child: SvgPicture.asset(
-            AppAssets.app_logo,
-            height: 120,
-            width: 158,
+      body: Stack(
+        children: [
+          Center(
+            child: ScaleTransition(
+              scale: _animation,
+              child: SvgPicture.asset(
+                AppAssets.app_logo,
+                height: 120,
+                width: 158,
+              ),
+            ),
           ),
-        ),
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 56),
+              child: SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
