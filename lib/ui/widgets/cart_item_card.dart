@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
@@ -14,10 +16,11 @@ class CartItemCard extends StatelessWidget {
   final String price;
   final String error;
   final int quantity;
-  final bool isUpdating; // New field
+  final bool isUpdating;
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
   final VoidCallback onRemoveAll;
+  final Function(int newQty)? onUpdateQuantity;
 
   const CartItemCard({
     super.key,
@@ -32,6 +35,7 @@ class CartItemCard extends StatelessWidget {
     required this.onIncrease,
     required this.onDecrease,
     required this.onRemoveAll,
+    this.onUpdateQuantity,
   });
 
   @override
@@ -163,10 +167,22 @@ class CartItemCard extends StatelessWidget {
                                           ),
                                         ),
                                         const SizedBox(width: 10),
-                                        Text(
-                                          '$quantity',
-                                          style: UiTypography.cardAction(
-                                            color: AppColors.textColor,
+                                        GestureDetector(
+                                          onTap: onUpdateQuantity == null
+                                              ? null
+                                              : () async {
+                                                  final result =
+                                                      await _showQuantityDialog(
+                                                          context, quantity);
+                                                  if (result == null ||
+                                                      result == quantity) return;
+                                                  onUpdateQuantity!(result);
+                                                },
+                                          child: Text(
+                                            '$quantity',
+                                            style: UiTypography.cardAction(
+                                              color: AppColors.textColor,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 10),
@@ -247,6 +263,70 @@ class CartItemCard extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Future<int?> _showQuantityDialog(
+      BuildContext context, int currentQty) async {
+    final controller =
+        TextEditingController(text: currentQty.toString());
+
+    return showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(
+          AppStrings.enter_quantity,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(3),
+            FilteringTextInputFormatter.digitsOnly,
+          ],
+          decoration: InputDecoration(
+            hintText: AppStrings.quantity_hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.0),
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.0),
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.0),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppStrings.cancel,
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
+            ),
+            onPressed: () {
+              final value =
+                  int.tryParse(controller.text.trim()) ?? currentQty;
+              Navigator.pop(context, value);
+            },
+            child: const Text(AppStrings.ok,
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 }
