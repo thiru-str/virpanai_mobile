@@ -481,6 +481,92 @@ class _CartPageState extends State<CartPage>
                                             updateCart(currentQty - 1, item.id!,
                                                 originalIndex);
                                           },
+                                          onUpdateQuantity:
+                                              (newQty) async {
+                                            final item = cartResponse!
+                                                .cart!.items![originalIndex];
+                                            final stockQty =
+                                                item.inventoryQuantity ?? 0;
+
+                                            setState(
+                                                () => item.isUpdating = true);
+
+                                            if (newQty <= 0) {
+                                              removeCart(
+                                                  item.id!, originalIndex);
+                                              return;
+                                            }
+
+                                            if (stockQty > 0 &&
+                                                newQty > stockQty) {
+                                              final confirmed =
+                                                  await showDialog<bool>(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                  title: Text(
+                                                    AppStrings.stock_update,
+                                                    style: FontUtils
+                                                        .primaryFontStyle(
+                                                            color: AppColors
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                  ),
+                                                  content: Text(
+                                                    '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
+                                                    '${AppStrings.stock_update_message_suffix} $stockQty?',
+                                                    style: FontUtils
+                                                        .secondaryFontStyle(),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      child: Text(
+                                                        AppStrings.cancel,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                                color: AppColors
+                                                                    .primary,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      child: Text(
+                                                        AppStrings.yes_update,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                                color: AppColors
+                                                                    .primary,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirmed == true) {
+                                                updateCart(stockQty, item.id!,
+                                                    originalIndex);
+                                              } else {
+                                                setState(() =>
+                                                    item.isUpdating = false);
+                                              }
+                                              return;
+                                            }
+
+                                            updateCart(
+                                                newQty, item.id!, originalIndex);
+                                          },
                                         ),
                                       );
                                     },

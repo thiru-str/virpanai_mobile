@@ -270,4 +270,9 @@ class AppStrings {
   static const String current_orders = 'Current Orders';
   static const String return_orders = 'Return Orders';
   static const String platform_fee = 'Platform Fee';
+  static const String enter_quantity = 'Enter Quantity';
+  static const String quantity_hint = 'e.g. 3';
+  static const String please_enter_quantity = 'Please enter a quantity';
+  static const String please_enter_valid_quantity =
+      'Please enter a valid quantity';
 }

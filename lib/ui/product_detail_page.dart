@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:waioz/model/add_on_products_response.dart';
@@ -78,6 +79,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   ProductResponse.Variant? selectedVariant;
   String? selectedVariantId;
   int selectedQuantity = 1;
+  final TextEditingController _quantityController = TextEditingController();
   bool stockNotAvailable = false;
 
   bool showVariantSelection = false;
@@ -96,6 +98,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   void initState() {
     super.initState();
+
+    _quantityController.text = selectedQuantity.toString();
 
     AppUtils.isLoggedIn().then((value) {
       setState(() {
@@ -119,8 +123,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   @override
   void dispose() {
-    _eventSubscription
-        .cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription.cancel();
+    _quantityController.dispose();
     _galleryController.dispose();
     super.dispose();
   }
@@ -864,29 +868,50 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 enabled: selectedQuantity > 1,
                 onTap: () {
                   if (selectedQuantity > 1) {
-                    setState(() => selectedQuantity--);
+                    setState(() {
+                      selectedQuantity--;
+                      _quantityController.text = selectedQuantity.toString();
+                    });
                   }
                 },
               ),
               SizedBox(
-                width: 36,
-                child: Text(
-                  selectedQuantity.toString(),
+                width: 48,
+                child: TextField(
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(3),
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Qty',
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textColor,
                   ),
+                  onChanged: (value) {
+                    final parsed = int.tryParse(value);
+                    if (parsed != null && parsed > 0) {
+                      setState(() => selectedQuantity = parsed);
+                    }
+                  },
                 ),
               ),
               _buildStepperButton(
                 icon: Icons.add_rounded,
-                enabled: selectedQuantity < 10,
+                enabled: true,
                 onTap: () {
-                  if (selectedQuantity < 10) {
-                    setState(() => selectedQuantity++);
-                  }
+                  setState(() {
+                    selectedQuantity++;
+                    _quantityController.text = selectedQuantity.toString();
+                  });
                 },
               ),
             ],
@@ -908,6 +933,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
+                    if (_quantityController.text.trim().isEmpty) {
+                      AppUtils.showToast(AppStrings.please_enter_quantity);
+                      return;
+                    }
+                    final parsedQty =
+                        int.tryParse(_quantityController.text.trim());
+                    if (parsedQty == null || parsedQty <= 0) {
+                      AppUtils.showToast(
+                          AppStrings.please_enter_valid_quantity);
+                      return;
+                    }
+                    selectedQuantity = parsedQty;
                     final enteredQty = selectedQuantity;
                     final maxQty = getMaxQuantity(
                         selectedVariant, cartResponse?.cart?.items ?? []);
