@@ -206,7 +206,7 @@ class _SplashPageState extends State<SplashPage>
         await SharedPreferencesUtil().getBool('skip_login') ?? widget.skipLogin;
     Widget nextPage = token == null
         ? skipLogin
-            ? const WelcomePage()
+            ? const BottomNavPage()
             : WelcomePage()
         : const BottomNavPage();
 
