@@ -14,6 +14,7 @@ import '../model/view_cart_model.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
 import '../utility/currency_util.dart';
+import '../utility/font_utils.dart';
 import 'product_detail_page.dart';
 import 'widgets/no_orders_widget.dart';
 
@@ -48,7 +49,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       appBar:CommonHeaderAppBar(
               title: AppStrings.my_favorites,
               leading: widget.isFromBottomNav ?? false ? false : true,
@@ -67,7 +68,20 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: MasonryGridView.count(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 14.0),
+                          child: Text(
+                            '${wishListResponse?.products?.length ?? 0} ${(wishListResponse?.products?.length ?? 0) == 1 ? 'item' : 'items'} saved',
+                            style: FontUtils.secondaryFontStyle(
+                              fontSize: 14,
+                              color: AppColors.textColor50,
+                            ),
+                          ),
+                        ),
+                        MasonryGridView.count(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16, // Space between columns
                       mainAxisSpacing: 16, // Space between rows
@@ -112,6 +126,8 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               }),
                         );
                       },
+                    ),
+                      ],
                     ),
                   ),
                 ))

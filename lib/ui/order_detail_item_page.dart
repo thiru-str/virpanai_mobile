@@ -14,6 +14,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../utility/shared_preferences_util.dart';
@@ -21,6 +22,7 @@ import 'bottom_nav_page.dart';
 import 'widgets/cart_calculation.dart';
 import 'widgets/common_header_app_bar.dart';
 import 'widgets/order_detail_item_card.dart';
+import 'widgets/order_loyalty_badge.dart';
 
 class OrderDetailItemPage extends StatefulWidget {
   final String? orderId;
@@ -42,12 +44,34 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     }
     return 0;
   }
+
+  num get _loyaltyDiscount {
+    final meta = order?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      final amt = apply['discount_amount'];
+      final pts = apply['points_to_apply'] ?? apply['points_applied'];
+      if (amt != null && pts != null && (pts as num) > 0) return amt as num;
+    }
+    return 0;
+  }
+
+  int get _loyaltyPointsApplied {
+    final meta = order?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      final pts = apply['points_to_apply'] ?? apply['points_applied'];
+      if (pts != null && (pts as num) > 0) return pts.toInt();
+    }
+    return 0;
+  }
   Map<String, String> paymentTypeMap = {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
     "pp_razorpay_razorpay": "Razorpay",
     "pp_neft_neft": "NEFT",
     "pp_payu_payu": "PayU",
+    "pp_paytm_paytm": "Paytm",
     "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;
@@ -131,7 +155,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           appBar: CommonHeaderAppBar(
             title: AppStrings.orders,
             onBackTap: () {
@@ -152,19 +176,27 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
               : SingleChildScrollView(
                   // Wrap the body with SingleChildScrollView for scrolling
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Column(
                     // Use a Column to arrange the widgets vertically
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildOrdersList(),
-                      const SizedBox(height: 10), // List of order items
+                      const SizedBox(height: 16), // List of order items
                       _buildSectionTitle(AppStrings.billing_details),
-                      const SizedBox(height: 10), // List of order items
+                      const SizedBox(height: 12), // List of order items
                       Container(
-                        padding: const EdgeInsets.all(0.0),
-                        decoration: const BoxDecoration(
+                        padding: const EdgeInsets.all(18.0),
+                        decoration: BoxDecoration(
                           color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,6 +261,13 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                     (order?.prices?.taxTotal ?? 0).toString()),
                               ),
                             ),
+                            if (_loyaltyDiscount > 0)
+                              CartCalculation(
+                                keyText: 'Loyalty ($_loyaltyPointsApplied pts):',
+                                valueText: '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                keyStyle: TextStyle(fontSize: 16, color: AppColors.primary),
+                                valueStyle: TextStyle(fontSize: 16, color: AppColors.primary),
+                              ),
                             if (_walletAmount > 0)
                               CartCalculation(
                                 keyText: 'Wallet:',
@@ -241,28 +280,46 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                               child: CartCalculation(
                                   keyText: '${AppStrings.total}:',
                                   valueText: CurrencyUtil.appendCurrency(
-                                      (((order?.prices?.total ?? 0) - _walletAmount).clamp(0, double.infinity)).toStringAsFixed(2))),
+                                      (((order?.prices?.total ?? 0) - _walletAmount - _loyaltyDiscount).clamp(0, double.infinity)).toStringAsFixed(2))),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 20),
+                      if ((order?.prices?.itemSubtotal ?? order?.prices?.total ?? 0) > 0)
+                        OrderLoyaltyBadge(
+                          orderTotal: (order!.prices!.itemSubtotal ?? order!.prices!.total!) - _loyaltyDiscount,
+                          orderStatus: order?.status ?? '',
+                          paymentStatus: order?.paymentStatus ?? '',
+                          orderId: order?.id,
+                        ),
                       _buildSectionTitle(AppStrings.shipping_details),
-                      const SizedBox(height: 20), // List of order items
+                      const SizedBox(height: 12), // List of order items
                       _buildShippingDetailsCard(), // Shipping details card
                       const SizedBox(height: 20),
                       Visibility(
                         visible: (order?.paymentStatus ?? '') == 'pending',
-                        child: GestureDetector(
-                          onTap: () {
+                        child: OutlinedButton.icon(
+                          onPressed: () {
                             _showCancellation(context, order?.id ?? '');
                           },
-                          child: Text(
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 54),
+                            side: const BorderSide(
+                                color: Color(0xFFE5484D), width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          icon: const Icon(Icons.close_rounded,
+                              color: Color(0xFFE5484D), size: 20),
+                          label: Text(
                             AppStrings.cancel_order,
                             style: FontUtils.primaryFontStyle(
-                              fontSize: 15,
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: const Color(0xFFE5484D),
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -299,9 +356,10 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: FontUtils.primaryFontStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.bold,
+      style: UiTypography.cardTitle().copyWith(
+        fontSize: 18,
+        height: 1.25,
+        letterSpacing: -0.2,
       ),
     );
   }
@@ -435,25 +493,56 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
 
   Widget _buildShippingDetailsCard() {
     return Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         width: double.infinity, // Full width
         decoration: BoxDecoration(
-          color: AppColors.secondary, // Background color
-          borderRadius:
-              BorderRadius.circular(8), // Border radius for rounded corners
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //
-            Text(
-              '${order?.shippingAddress?.address1}, '
-              '${order?.shippingAddress?.city}, '
-              '${order?.shippingAddress?.postalCode}, '
-              '${order?.shippingAddress?.province ?? ''}.',
+            Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.location_on_outlined,
+                  color: AppColors.primary, size: 20),
             ),
-            const SizedBox(height: 8),
-            Text('${order?.shippingAddress?.phone ?? ''}'),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${order?.shippingAddress?.address1}, '
+                    '${order?.shippingAddress?.city}, '
+                    '${order?.shippingAddress?.postalCode}, '
+                    '${order?.shippingAddress?.province ?? ''}.',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 14,
+                      color: AppColors.textColor,
+                    ).copyWith(height: 1.5),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${order?.shippingAddress?.phone ?? ''}',
+                    style:
+                        UiTypography.cardMeta(color: AppColors.textColor50),
+                  ),
+                ],
+              ),
+            ),
           ],
         ));
   }

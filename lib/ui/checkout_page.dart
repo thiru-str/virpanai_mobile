@@ -11,11 +11,13 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/order_placed_page.dart';
-import 'package:waioz/ui/widgets/cart_button.dart';
+import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
+import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
+import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
-import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/utility/ui_typography.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
@@ -72,7 +74,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   double splitWalletAmount = 0;
   double splitGatewayAmount = 0;
   bool splitFullCoverage = false;
-  bool isSplitPaymentMode = false; // true when wallet extension is enabled with split_payment mode
+  bool isSplitPaymentMode =
+      false; // true when wallet extension is enabled with split_payment mode
 
   // Wallet state
   double walletBalance = 0;
@@ -84,10 +87,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
     super.initState();
     cartResponse = widget.cartResponse;
     getShippingInfo();
+    _loadWalletBalance();
   }
+
+  // Premium recipe helpers (styling only)
+  static const Color _kScaffoldBg = Color(0xFFF9F9FB);
+  static const Color _kHairline = Color(0xFFE5E7EC);
 
   @override
   Widget build(BuildContext context) {
+    final num cartTotal = cartResponse?.cart?.total ?? 0;
+    final num payableAmount =
+        splitActive ? splitGatewayAmount : cartTotal;
     return Scaffold(
         appBar: CommonHeaderAppBar(
           title: AppStrings.check_out,
@@ -95,94 +106,73 @@ class _CheckOutPageState extends State<CheckOutPage> {
             Navigator.of(context).pop();
           },
         ),
-        backgroundColor: Colors.white,
-        /*body: Center(child: NoOrdersWidget(message: 'Your Cart is Empty', buttonText: 'Explore Categories', iconPath: AppAssets.ic_cart_empty, onButtonTap: (){})),);*/
+        backgroundColor: _kScaffoldBg,
         body: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: _kScaffoldBg,
           body: apiLoading
               ? Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 )
               : Column(
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // CheckoutItemCard(
-                              //     title: AppStrings.shipping_address,
-                              //     subtitle: addAddress
-                              //         ? selectedAddress!.address1!
-                              //         : AppStrings.add_shipping_address,
-                              //     onTap: () {
-                              //       PageRouteUtils.pushWithSlide(
-                              //           context,
-                              //           AddressListPage(
-                              //             isFromCheckout: true,
-                              //             onSelectedAddress: (address) {
-                              //               setState(() {
-                              //                 addAddress = true;
-                              //                 selectedAddress = address;
-                              //                 apiLoading = true;
-                              //               });
-                              //               updateAddress(address);
-                              //             },
-                              //           ));
-                              //     }),
-                              // CheckoutItemCard(
-                              //     title: AppStrings.shipping_method,
-                              //     subtitle: addShippingOption
-                              //         ? shippingOption?.name ??
-                              //             AppStrings.add_shipping_method
-                              //         : AppStrings.add_shipping_method,
-                              //     onTap: () async {
-                              //       if (!addAddress) {
-                              //         AppUtils.showToast(
-                              //             AppStrings.choose_shipping_address);
-                              //         return;
-                              //       }
-                              //       showShippingBottomSheet(context,
-                              //           shippingResponse!.shippingOptions!);
-                              //     }),
-                              // Wallet Split Banner — shown in split_payment mode
                               // Payment method selection — hide if wallet covers full amount in split mode
-                              if (!(splitActive && splitFullCoverage))
-                                CheckoutItemCard(
-                                    title: splitActive
-                                        ? 'Pay Remaining'
-                                        : AppStrings.payemnt_method,
-                                    subtitle: addPaymentMethod
-                                        ? pp_title!
-                                        : AppStrings.add_payment_method,
-                                    onTap: () async {
-                                      if (!addAddress) {
-                                        AppUtils.showToast(
-                                            AppStrings.choose_shipping_address);
-                                        return;
-                                      } else if (!addShippingOption) {
-                                        AppUtils.showToast(
-                                            AppStrings.choose_shipping_address);
-                                        return;
-                                      }
-                                      Global? global = await getGlobal();
-                                      if (global != null) {
-                                        // Filter out wallet from payment methods in split mode
-                                        final providers = isSplitPaymentMode
-                                            ? global.paymentProvider!
-                                                .where((p) => p.id != 'pp_wallet_wallet')
-                                                .toList()
-                                            : global.paymentProvider!;
-                                        showPaymentMethodsBottomSheet(
-                                            context, providers);
-                                      }
-                                    }),
+                              if (!(splitActive && splitFullCoverage)) ...[
+                                _sectionLabel(splitActive
+                                    ? 'Pay Remaining'
+                                    : AppStrings.payemnt_method),
+                                const SizedBox(height: 10),
+                                _buildPaymentSelectorCard(),
+                              ],
 
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
                                 _buildWalletInfoWidget(),
+
+                              const SizedBox(height: 16),
+
+                              // Loyalty earn preview — based on actual paid amount
+                              Builder(builder: (_) {
+                                final meta = cartResponse?.cart?.metadata;
+                                final loyaltyOff = (meta is Map &&
+                                        meta['loyalty_checkout_apply'] is Map &&
+                                        ((meta['loyalty_checkout_apply']
+                                                    ['points_to_apply'] ??
+                                                0) as num) >
+                                            0)
+                                    ? (meta['loyalty_checkout_apply']
+                                            ['discount_amount'] ??
+                                        0) as num
+                                    : 0;
+                                return LoyaltyEarnPreview(
+                                  cartId: cartResponse!.cart!.id,
+                                  orderTotal: 0,
+                                );
+                              }),
+
+                              const SizedBox(height: 4),
+
+                              // Loyalty checkout apply widget
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
+                                cartTotal: cartResponse?.cart?.total,
+                                walletAmount: splitActive ? splitWalletAmount : 0,
+                                walletApplied: splitActive && splitWalletAmount > 0,
+                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                onApplied: () {
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  getCartApi();
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -190,40 +180,206 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     ),
                   ],
                 ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: placeOrderApiLoading
-                ? Center(
-                    child: Lottie.asset(AppAssets.place_order_lottie,
-                        fit: BoxFit.cover))
-                : CartButton(
-                    amount: CurrencyUtil.appendCurrency(
-                        (splitActive
-                            ? splitGatewayAmount
-                            : (cartResponse?.cart?.total ?? 0))
-                            .toStringAsFixed(2)),
-                    title: splitActive && splitFullCoverage
-                        ? 'Pay from Wallet'
-                        : AppStrings.place_order,
-                    onPressed: () {
-                      if (!addAddress) {
-                        AppUtils.showToast(AppStrings.add_shipping_address);
-                      } else if (!addShippingOption) {
-                        AppUtils.showToast(AppStrings.add_shipping_method);
-                      } else if (splitActive && splitFullCoverage) {
-                        // Split mode: wallet covers full amount — complete directly
-                        setState(() => placeOrderApiLoading = true);
-                        // Set wallet as payment method then complete
-                        updatePaymentMethod('pp_wallet_wallet');
-                      } else if (!addPaymentMethod) {
-                        AppUtils.showToast(AppStrings.add_payment_method);
-                      } else {
-                        // validations done proceed to place order
-                        updatePaymentMethod(pp_id!);
-                      }
-                    }),
-          ),
+          bottomNavigationBar: apiLoading
+              ? null
+              : Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 18,
+                        offset: const Offset(0, -8),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                      child: placeOrderApiLoading
+                          ? SizedBox(
+                              height: 54,
+                              child: Center(
+                                child: Lottie.asset(AppAssets.place_order_lottie,
+                                    height: 54, fit: BoxFit.contain),
+                              ),
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppStrings.total,
+                                      style: UiTypography.cardMeta(
+                                          color: AppColors.textColor50),
+                                    ),
+                                    Text(
+                                      CurrencyUtil.appendCurrency(
+                                          payableAmount.toStringAsFixed(2)),
+                                      style: UiTypography.cardPrice(
+                                              color: AppColors.primary)
+                                          .copyWith(fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    elevation: 0,
+                                    minimumSize:
+                                        const Size(double.infinity, 54),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (!addAddress) {
+                                      AppUtils.showToast(
+                                          AppStrings.add_shipping_address);
+                                    } else if (!addShippingOption) {
+                                      AppUtils.showToast(
+                                          AppStrings.add_shipping_method);
+                                    } else if (splitActive &&
+                                        splitFullCoverage) {
+                                      // Split mode: wallet covers full amount — complete directly
+                                      setState(
+                                          () => placeOrderApiLoading = true);
+                                      // Set wallet as payment method then complete
+                                      updatePaymentMethod('pp_wallet_wallet');
+                                    } else if (!addPaymentMethod) {
+                                      AppUtils.showToast(
+                                          AppStrings.add_payment_method);
+                                    } else {
+                                      // validations done proceed to place order
+                                      updatePaymentMethod(pp_id!);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                      Icons.lock_outline_rounded,
+                                      color: Colors.white,
+                                      size: 20),
+                                  label: Text(
+                                    splitActive && splitFullCoverage
+                                        ? 'Pay from Wallet'
+                                        : AppStrings.place_order,
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
         ));
+  }
+
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: UiTypography.cardTitle().copyWith(
+        fontSize: 18,
+        height: 1.25,
+        letterSpacing: -0.2,
+      ),
+    );
+  }
+
+  Widget _buildPaymentSelectorCard() {
+    final bool selected = addPaymentMethod;
+    return GestureDetector(
+      onTap: () async {
+        if (!addAddress) {
+          AppUtils.showToast(AppStrings.choose_shipping_address);
+          return;
+        } else if (!addShippingOption) {
+          AppUtils.showToast(AppStrings.choose_shipping_address);
+          return;
+        }
+        Global? global = await getGlobal();
+        if (global != null) {
+          // Filter out wallet from payment methods in split mode
+          final providers = isSplitPaymentMode
+              ? global.paymentProvider!
+                  .where((p) => p.id != 'pp_wallet_wallet')
+                  .toList()
+              : global.paymentProvider!;
+          showPaymentMethodsBottomSheet(context, providers);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? AppColors.primary : Colors.grey.shade300,
+            width: selected ? 1.5 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              height: 44,
+              width: 44,
+              decoration: BoxDecoration(
+                color: selected
+                    ? AppColors.primary.withOpacity(0.12)
+                    : AppColors.secondary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.account_balance_wallet_outlined,
+                color: selected ? AppColors.primary : Colors.grey.shade500,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    selected
+                        ? (pp_title ?? AppStrings.payemnt_method)
+                        : AppStrings.add_payment_method,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: UiTypography.cardTitle().copyWith(fontSize: 16),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    selected ? 'Tap to change' : 'Choose how you want to pay',
+                    style: UiTypography.cardMeta(color: AppColors.textColor50),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: selected ? AppColors.primary : Colors.grey.shade500,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void makeRazorPayCall(String orderId) {
@@ -348,15 +504,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
     if (walletLoading) {
       return Container(
         margin: const EdgeInsets.only(top: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade200),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          border: Border.all(color: _kHairline),
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: const Center(
+        child: Center(
           child: SizedBox(
-            width: 20, height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+                strokeWidth: 2, color: AppColors.primary),
           ),
         ),
       );
@@ -366,22 +525,31 @@ class _CheckOutPageState extends State<CheckOutPage> {
     final hasSufficientBalance = walletBalance >= cartTotal;
     final shortfall = cartTotal - walletBalance;
 
+    // Premium status colors
+    const Color successText = Color(0xFF1FA971);
+    const Color successBg = Color(0xFFE7F7F0);
+    final Color warnText = Colors.orange.shade800;
+    final Color warnBg = Colors.orange.shade50;
+
     return Container(
       margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
+        color: hasSufficientBalance ? successBg : warnBg,
         border: Border.all(
-          color: hasSufficientBalance ? Colors.green.shade200 : Colors.orange.shade200,
+          color: hasSufficientBalance
+              ? successText.withOpacity(0.25)
+              : Colors.orange.shade200,
         ),
-        borderRadius: BorderRadius.circular(12),
-        color: hasSufficientBalance ? Colors.green.shade50 : Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+              Icon(Icons.account_balance_wallet,
+                  color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Row(
@@ -390,20 +558,31 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Available Balance', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text('Available Balance',
+                            style: UiTypography.cardMeta(
+                                color: AppColors.textColor50)),
+                        const SizedBox(height: 2),
                         Text(
-                          '₹${walletBalance.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          CurrencyUtil.appendCurrency(
+                              walletBalance.toStringAsFixed(2)),
+                          style: UiTypography.cardPrice(
+                                  color: AppColors.textColor)
+                              .copyWith(fontSize: 18),
                         ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text('Order Total', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text('Order Total',
+                            style: UiTypography.cardMeta(
+                                color: AppColors.textColor50)),
+                        const SizedBox(height: 2),
                         Text(
-                          '₹${cartTotal.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          CurrencyUtil.appendCurrency(
+                              cartTotal.toStringAsFixed(2)),
+                          style: UiTypography.cardAction(
+                              color: AppColors.textColor),
                         ),
                       ],
                     ),
@@ -412,19 +591,21 @@ class _CheckOutPageState extends State<CheckOutPage> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (hasSufficientBalance)
             Text(
               'Your wallet balance covers the full order amount.',
-              style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+              style: UiTypography.cardMeta(color: successText)
+                  .copyWith(height: 1.5),
             )
           else ...[
             Text(
-              'Insufficient balance. You need ₹${shortfall.toStringAsFixed(2)} more.',
-              style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
+              'Insufficient balance. You need ${CurrencyUtil.appendCurrency(shortfall.toStringAsFixed(2))} more.',
+              style:
+                  UiTypography.cardMeta(color: warnText).copyWith(height: 1.5),
             ),
             if (walletTopupConfig?.canTopUp == true) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -432,10 +613,19 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    elevation: 0,
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Text('Add ₹${shortfall.toStringAsFixed(0)} to Wallet'),
+                  child: Text(
+                    'Add ${CurrencyUtil.appendCurrency(shortfall.toStringAsFixed(0))} to Wallet',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -618,15 +808,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
       final ApiService apiService = ApiService();
       var response = await apiService.getShippingInfo(context);
       if (mounted) {
+        final options = response.shippingOptions ?? [];
+        final first = options.isNotEmpty ? options.first : null;
         setState(() {
           apiLoading = false;
           shippingResponse = response;
+          if (first != null) {
+            shippingOption = first;
+            addShippingOption = true;
+          } else {
+            addShippingOption = false;
+          }
         });
+        if (first != null) updateShippingMethod();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           apiLoading = false;
+          addShippingOption = false;
         });
       }
       print(e);
@@ -653,6 +853,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
           providerId: pp_id,
+          walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
             setState(() {
               addPaymentMethod = true;
@@ -786,6 +987,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — place-order handles the full session creation.
+    // Skip update-payment-method to avoid duplicate payment sessions.
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
+
     final ApiService apiService = ApiService();
     dynamic apiResponse = await apiService.updatePaymentMethod(
         context, paymentProviderId, cartResponse!);
@@ -818,10 +1026,50 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
+  Future<void> _makeIciciPayment() async {
+    setState(() => placeOrderApiLoading = true);
+    try {
+      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
+      if (!mounted) return;
+      setState(() => placeOrderApiLoading = false);
+
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IciciPaymentPage(
+            redirectUrl: redirectUrl,
+            onSuccess: (orderId) {
+              Navigator.pop(context);
+              PageRouteUtils.pushAndRemoveUntil(
+                context,
+                OrderPlacedPage(orderId: orderId),
+              );
+            },
+            onFailure: () {
+              Navigator.pop(context);
+              AppUtils.showToast('ICICI payment failed or was cancelled.');
+              getCartApi();
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() => placeOrderApiLoading = false);
+      AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+    }
+  }
+
   String? extractOrderId(dynamic response) {
     try {
       if (response is PaymentMethodResponse) {
-        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
+        return response
+            .paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
       }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["id"];
@@ -834,7 +1082,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   String? extractClientSecret(dynamic response) {
     try {
       if (response is PaymentMethodResponse) {
-        return response.paymentCollection?.paymentSessions?.firstOrNull?.data?.clientSecret;
+        return response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            ?.clientSecret;
       }
       return response["payment_collection"]["payment_sessions"]?[0]["data"]
           ["client_secret"];
