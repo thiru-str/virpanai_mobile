@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "177578656637",
-    "project_id": "virpanai-8c709",
-    "storage_bucket": "virpanai-8c709.firebasestorage.app"
+    "project_number": "131346125641",
+    "project_id": "tryfresh-afe0a",
+    "storage_bucket": "tryfresh-afe0a.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:a5a9e4d350833f9bee0214",
+        "mobilesdk_app_id": "1:131346125641:android:551f04aeeefed9a1dc4098",
         "android_client_info": {
-          "package_name": "com.gowelmart.user"
+          "package_name": "com.tryfresh.delivery"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
+          "current_key": "AIzaSyD1kYMOQ74eW76HsVC1vhSoKA6NXL-9L7c"
         }
       ],
       "services": {
@@ -26,15 +26,15 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:177578656637:android:1ce87d25319951c7ee0214",
+        "mobilesdk_app_id": "1:131346125641:android:65cc401d0de7ddb6dc4098",
         "android_client_info": {
-          "package_name": "com.waioz.cartel"
+          "package_name": "com.tryfresh.user"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB8c-ToPP2WSeZI4n_Bc9g7b1wrnqCb7Rw"
+          "current_key": "AIzaSyD1kYMOQ74eW76HsVC1vhSoKA6NXL-9L7c"
         }
       ],
       "services": {

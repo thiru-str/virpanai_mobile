@@ -169,6 +169,15 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
+  double? _extractAddressCoordinate(
+    Map<String, dynamic>? address,
+    String key,
+  ) {
+    final metadata = address?['metadata'];
+    if (metadata is! Map) return null;
+    return double.tryParse(metadata[key]?.toString() ?? '');
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -431,6 +440,10 @@ class _ProductPageState extends State<ProductPage> {
 
     try {
       final ApiService apiService = ApiService();
+      final selectedAddress =
+          await SharedPreferencesUtil().getMap('selected_address');
+      final latitude = _extractAddressCoordinate(selectedAddress, 'latitude');
+      final longitude = _extractAddressCoordinate(selectedAddress, 'longitude');
       final response = await apiService.listProducts(
         context,
         categoryIds ?? '',
@@ -442,6 +455,8 @@ class _ProductPageState extends State<ProductPage> {
         searchString ?? '',
         offset: currentPage * pageSize,
         limit: pageSize,
+        latitude: latitude,
+        longitude: longitude,
       );
 
       // Check if this is the most recent search request

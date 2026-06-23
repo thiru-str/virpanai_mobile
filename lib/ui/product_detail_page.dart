@@ -77,6 +77,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   ProductResponse.Variant? selectedVariant;
   String? selectedVariantId;
+  int? selectedUnitQuantity;
   int selectedQuantity = 1;
   bool stockNotAvailable = false;
 
@@ -154,7 +155,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false, // Disable default back button
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         if (Navigator.of(context).canPop()) {
           Navigator.pop(context); // Normal back navigation
@@ -414,105 +415,60 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildProductDetails() {
+    final originalPrice = getDisplayedOriginalPrice();
+    final hasDiscount = originalPrice != null &&
+        originalPrice > 0 &&
+        originalPrice != getDisplayedCalculatedAmount();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
+        Text(
+          product?.title ?? '',
+          style: FontUtils.secondaryFontStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textColor,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                product?.title ?? '',
-                style: UiTypography.cardTitle(
-                  color: AppColors.textColor,
-                ).copyWith(
-                  fontSize: 22,
-                  height: 1.25,
-                  letterSpacing: -0.3,
+        ),
+        const SizedBox(height: 15),
+        Row(
+          children: [
+            Text(
+              getDisplayedPrice(),
+              style: FontUtils.secondaryFontStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: AppColors.primary,
+              ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Visibility(
+              visible: hasDiscount,
+              child: Text(
+                CurrencyUtil.appendCurrency(originalPrice!.toStringAsFixed(0)),
+                style: FontUtils.secondaryFontStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey,
+                  decoration: TextDecoration.lineThrough,
                 ),
               ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 10,
-                runSpacing: 6,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(
-                    getDisplayedPrice(),
-                    style: UiTypography.cardPrice(
-                      color: AppColors.primary,
-                    ).copyWith(
-                      fontSize: 22,
-                    ),
-                  ),
-                  Visibility(
-                    visible: selectedVariant != null &&
-                        selectedVariant!
-                                .calculatedPrice?.rawCalculatedAmount?.value !=
-                            selectedVariant!
-                                .calculatedPrice?.rawOriginalAmount?.value,
-                    child: Text(
-                      CurrencyUtil.appendCurrency(selectedVariant
-                              ?.calculatedPrice?.rawOriginalAmount?.value ??
-                          '0'),
-                      style: UiTypography.cardMeta(
-                        color: Colors.grey,
-                      ).copyWith(
-                        fontSize: 14,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                  ),
-                  if (getDiscountPercent() != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE7F7F0),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${getDiscountPercent()}% OFF',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1FA971),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
+            )
+          ],
         ),
         // Loyalty earn preview — points this product earns
         if ((num.tryParse(selectedVariant
-                    ?.calculatedPrice?.rawCalculatedAmount?.value ??
-                '') ??
-            0) >
+                        ?.calculatedPrice?.rawCalculatedAmount?.value ??
+                    '') ??
+                0) >
             0)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: LoyaltyEarnPreview(
-              orderTotal: num.tryParse(
-                      selectedVariant!.calculatedPrice!.rawCalculatedAmount!.value!) ??
-                  0,
-              // PDP: let the backend short-circuit when this product isn't in
-              // the merchant's earn-allowed list / category.
-              productId: widget.productId,
+              orderTotal: getDisplayedCalculatedAmount(),
             ),
           ),
       ],
@@ -522,7 +478,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   String getDisplayedPrice() {
     if (selectedVariant != null) {
       return CurrencyUtil.appendCurrency(
-          selectedVariant!.calculatedPrice?.rawCalculatedAmount?.value ?? '0');
+          getDisplayedCalculatedAmount().toStringAsFixed(0));
     }
 
     // fallback: show lowest variant price if product is loaded
@@ -543,19 +499,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return '';
   }
 
-  /// Returns the discount percentage when the variant's original amount is
-  /// greater than the calculated amount, otherwise null.
-  int? getDiscountPercent() {
-    final calculated = double.tryParse(
-        selectedVariant?.calculatedPrice?.rawCalculatedAmount?.value ?? '');
-    final original = double.tryParse(
-        selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '');
+  double getDisplayedCalculatedAmount() {
+    if (selectedVariant == null) return 0;
 
-    if (calculated == null || original == null) return null;
-    if (original <= calculated || original <= 0) return null;
+    if (isUnitBasedVariant(selectedVariant) && selectedUnitQuantity != null) {
+      final presetPrice =
+          calculatePresetPrice(selectedVariant!, selectedUnitQuantity!);
+      if (presetPrice != null) {
+        return presetPrice.toDouble();
+      }
+    }
 
-    final percent = ((original - calculated) / original * 100).round();
-    return percent > 0 ? percent : null;
+    return num.tryParse(
+          selectedVariant?.calculatedPrice?.rawCalculatedAmount?.value ?? '',
+        )?.toDouble() ??
+        0;
+  }
+
+  double? getDisplayedOriginalPrice() {
+    if (selectedVariant == null) return null;
+
+    if (isUnitBasedVariant(selectedVariant) && selectedUnitQuantity != null) {
+      final presetOriginalPrice =
+          calculatePresetOriginalPrice(selectedVariant!, selectedUnitQuantity!);
+      if (presetOriginalPrice != null) {
+        return presetOriginalPrice.toDouble();
+      }
+    }
+
+    return num.tryParse(
+      selectedVariant?.calculatedPrice?.rawOriginalAmount?.value ?? '',
+    )?.toDouble();
   }
 
   ProductResponse.Variant? getSelectedVariant() {
@@ -586,6 +560,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       children: [
         const SizedBox(height: 18),
         if (showVariantSelection) buildDynamicVariantSelection(),
+        if (isUnitBasedVariant(selectedVariant)) buildUnitPresetSection(),
         Text(
           AppStrings.select_qty,
           style: UiTypography.cardTitle().copyWith(fontSize: 16),
@@ -663,9 +638,103 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(children: sections);
   }
 
+  Widget buildUnitPresetSection() {
+    final variant = selectedVariant;
+    final presetOptions = getPresetOptions(variant);
+
+    if (variant == null || presetOptions.isEmpty) {
+      return const SizedBox();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Select unit',
+          style: FontUtils.secondaryFontStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 50,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: presetOptions.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final preset = presetOptions[index];
+              final isSelected = selectedUnitQuantity == preset;
+              final inStock = isPresetInStock(variant, preset);
+
+              return GestureDetector(
+                onTap: inStock
+                    ? () {
+                        setState(() {
+                          selectedUnitQuantity = preset;
+                          stockNotAvailable = !isStockAvailable(selectedVariant);
+                          final maxQty = getMaxQuantity(
+                            selectedVariant,
+                            cartResponse?.cart?.items ?? [],
+                          );
+                          if (maxQty > 0 && selectedQuantity > maxQty) {
+                            selectedQuantity = maxQty;
+                          } else if (maxQty <= 0) {
+                            selectedQuantity = 1;
+                          }
+                        });
+                      }
+                    : null,
+                child: Opacity(
+                  opacity: inStock ? 1 : 0.45,
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.grey.shade400,
+                        width: isSelected ? 1.6 : 1.2,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.08)
+                          : Colors.white,
+                    ),
+                    child: Text(
+                      formatUnitLabel(variant, preset),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textColor,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
   void updateVariant() {
     if (selectedOptions.values.any((v) => v == null)) {
-      setState(() => selectedVariant = null);
+      setState(() {
+        selectedVariant = null;
+        selectedUnitQuantity = null;
+      });
       return;
     }
 
@@ -674,7 +743,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() {
       selectedVariant = matchedVariant;
       selectedVariantId = matchedVariant?.id;
+      selectedUnitQuantity = getDefaultUnitQuantity(matchedVariant);
       stockNotAvailable = !isStockAvailable(selectedVariant);
+      selectedQuantity = 1;
     });
 
     print("Selected Variant ID: ${selectedVariant?.id}");
@@ -683,6 +754,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   bool isStockAvailable(ProductResponse.Variant? variant) {
     if (variant == null) return false;
+
+    if (isUnitBasedVariant(variant)) {
+      final preset = selectedUnitQuantity ?? getDefaultUnitQuantity(variant);
+      if (preset == null) {
+        return false;
+      }
+
+      final availableUnits = getRemainingBaseUnitsForVariant(
+        variant,
+        cartResponse?.cart?.items ?? [],
+      );
+
+      return availableUnits >= preset;
+    }
 
     // If we don't manage inventory
     if (variant.manageInventory == false) {
@@ -711,6 +796,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int getMaxQuantity(ProductResponse.Variant? variant, List<Item> cartItems) {
     if (variant == null) return 10;
 
+    if (isUnitBasedVariant(variant)) {
+      final preset = selectedUnitQuantity ?? getDefaultUnitQuantity(variant);
+      if (preset == null || preset <= 0) {
+        return 0;
+      }
+
+      final remainingUnits =
+          getRemainingBaseUnitsForVariant(variant, cartItems);
+      return (remainingUnits ~/ preset).clamp(0, 9999);
+    }
+
     // how many of this variant already in cart
     final cartQuantity = cartItems.fold<int>(0, (sum, item) {
       if (item.variantId == variant.id) {
@@ -728,13 +824,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return (10 - cartQuantity).clamp(0, 10);
   }
 
+  void _clampSelectedQuantity() {
+    final maxQty = getMaxQuantity(
+      selectedVariant,
+      cartResponse?.cart?.items ?? const [],
+    );
+
+    final normalizedQty = maxQty <= 0
+        ? 1
+        : selectedQuantity.clamp(1, maxQty).toInt();
+
+    if (selectedQuantity != normalizedQty) {
+      selectedQuantity = normalizedQty;
+    }
+  }
+
   Widget buildProductDescription() {
     final variantDesc = selectedVariant?.metadata?.description ?? '';
     final productDesc =
         product?.metadata?.additionalDescription ?? product?.description ?? '';
 
     final descriptionToShow =
-        (variantDesc?.isNotEmpty == true) ? variantDesc : productDesc;
+        variantDesc.isNotEmpty ? variantDesc : productDesc;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,7 +855,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           style: UiTypography.cardTitle().copyWith(fontSize: 18),
         ),
         const SizedBox(height: 10),
-        CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
+        CommonHtmlWidget(htmlContent: descriptionToShow),
       ],
     );
   }
@@ -1036,8 +1147,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           setState(() {
             selectedVariantId = product!.variants!.first.id;
             selectedVariant = product!.variants!.first;
+            selectedUnitQuantity =
+                getDefaultUnitQuantity(product!.variants!.first);
             showVariantSelection = false;
             stockNotAvailable = !isStockAvailable(product!.variants!.first);
+            _clampSelectedQuantity();
           });
         } else {
           final cheapestAvailable = getCheapestAvailableVariant(product!);
@@ -1046,6 +1160,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             setState(() {
               selectedVariant = cheapestAvailable;
               selectedVariantId = cheapestAvailable.id;
+              selectedUnitQuantity = getDefaultUnitQuantity(cheapestAvailable);
               stockNotAvailable = !isStockAvailable(cheapestAvailable);
 
               // fill selectedOptions for UI highlighting
@@ -1069,6 +1184,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               }
 
               showVariantSelection = true;
+              _clampSelectedQuantity();
             });
           }
         }
@@ -1076,6 +1192,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         setState(() {
           selectedVariantId = product?.id;
           showVariantSelection = false;
+          _clampSelectedQuantity();
         });
       }
     } catch (e) {
@@ -1253,8 +1370,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final apiService = ApiService();
       setState(() => quantityLoading = true);
 
-      // Add main product
-      await apiService.addCart(context, mainQty, mainVariantId);
+      final isUnitBased = isUnitBasedVariant(selectedVariant) &&
+          selectedVariantId == mainVariantId &&
+          selectedUnitQuantity != null;
+
+      if (isUnitBased) {
+        await apiService.addUnitBasedCart(
+          context,
+          qty: mainQty,
+          variantId: mainVariantId,
+          unitQuantity: selectedUnitQuantity!,
+        );
+      } else {
+        await apiService.addCart(context, mainQty, mainVariantId);
+      }
 
       // Add each add-on (with default quantity 1)
       for (final product in addOns) {
@@ -1324,6 +1453,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         productPresentInCart = cartResponse?.cart?.items
                 ?.any((item) => item.variantId == selectedVariantId) ??
             false;
+        _clampSelectedQuantity();
         emitEvent(cartResponse!);
       });
     } catch (e) {
@@ -1441,25 +1571,159 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void emitEvent(CartResponse cartResponse) {
+    final productItems = (cartResponse.cart?.items ?? [])
+        .where((item) => !item.isVirtualItem)
+        .toList();
+    final totalQty = productItems
+        .map((item) => item.quantity ?? 0)
+        .fold<int>(0, (sum, qty) => sum + qty);
+
     setState(() {
-      cartItems =
-          cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
-      cartItemImages = cartResponse.cart?.items
-          ?.where((item) => !item.isPlatformFee)
-          .map((item) => item.thumbnail ?? "")
-          .toList();
+      cartItems = totalQty;
+      cartItemImages = productItems.map((item) => item.thumbnail ?? "").toList();
     });
-    if ((cartResponse.cart?.items
-                ?.where((item) => !item.isPlatformFee)
-                .length ??
-            0) >
-        0) {
-      final qtyMap = <String, int>{};
-      for (var item in cartResponse.cart?.items ?? []) {
-        qtyMap[item.variantId] = item.quantity;
+    final qtyMap = <String, int>{};
+    final unitLineQtyMap = <String, int>{};
+    final unitLineIdMap = <String, String>{};
+    for (var item in productItems) {
+      final variantId = item.variantId;
+      if (variantId == null) continue;
+      qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
+      final metadata = item.metadata;
+      if (metadata?.unitBasedInventory == true &&
+          metadata?.unitQuantity != null &&
+          metadata!.unitQuantity! > 0 &&
+          item.id != null) {
+        final key = '${variantId}::${metadata.unitQuantity!}';
+        unitLineQtyMap[key] = item.quantity ?? 0;
+        unitLineIdMap[key] = item.id!;
       }
-      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
     }
+    eventBus.fire(
+      ViewCartModel(
+        cartItems,
+        cartItemImages,
+        qtyMap,
+        unitLineQtyMap,
+        unitLineIdMap,
+      ),
+    );
+  }
+
+  bool isUnitBasedVariant(ProductResponse.Variant? variant) {
+    return variant?.metadata?.unitBasedInventory == true;
+  }
+
+  List<int> getPresetOptions(ProductResponse.Variant? variant) {
+    return variant?.metadata?.presetOptions ?? const [];
+  }
+
+  int? getDefaultUnitQuantity(ProductResponse.Variant? variant) {
+    if (!isUnitBasedVariant(variant)) {
+      return null;
+    }
+
+    final presets = getPresetOptions(variant);
+    if (presets.isEmpty) {
+      return null;
+    }
+
+    for (final preset in presets) {
+      if (isPresetInStock(variant, preset)) {
+        return preset;
+      }
+    }
+
+    return presets.first;
+  }
+
+  int? calculatePresetPrice(ProductResponse.Variant variant, int unitQuantity) {
+    final basePrice = num.tryParse(
+      variant.calculatedPrice?.rawCalculatedAmount?.value ?? '',
+    )?.round();
+    final baseUnits = variant.metadata?.baseUnitGrams;
+
+    if (basePrice == null || baseUnits == null || baseUnits <= 0) {
+      return null;
+    }
+
+    return ((unitQuantity * basePrice) / baseUnits).round();
+  }
+
+  int? calculatePresetOriginalPrice(
+      ProductResponse.Variant variant, int unitQuantity) {
+    final baseOriginalPrice = num.tryParse(
+      variant.calculatedPrice?.rawOriginalAmount?.value ?? '',
+    )?.round();
+    final baseUnits = variant.metadata?.baseUnitGrams;
+
+    if (baseOriginalPrice == null || baseUnits == null || baseUnits <= 0) {
+      return null;
+    }
+
+    return ((unitQuantity * baseOriginalPrice) / baseUnits).round();
+  }
+
+  bool isPresetInStock(ProductResponse.Variant? variant, int unitQuantity) {
+    if (variant == null) return false;
+    final availableUnits = getRemainingBaseUnitsForVariant(
+      variant,
+      cartResponse?.cart?.items ?? [],
+    );
+    return unitQuantity > 0 && availableUnits >= unitQuantity;
+  }
+
+  int getRemainingBaseUnitsForVariant(
+      ProductResponse.Variant variant, List<Item> cartItems) {
+    final inventory = variant.inventoryQuantity ?? 0;
+
+    if (inventory <= 0) {
+      return 0;
+    }
+
+    final usedUnits = cartItems.fold<int>(0, (sum, item) {
+      if (item.variantId != variant.id) {
+        return sum;
+      }
+
+      final itemUnitQuantity = item.metadata?.unitQuantity;
+      if (item.metadata?.unitBasedInventory == true &&
+          itemUnitQuantity != null &&
+          itemUnitQuantity > 0) {
+        return sum + (itemUnitQuantity * (item.quantity ?? 0));
+      }
+
+      return sum + (item.quantity ?? 0);
+    });
+
+    final remaining = inventory - usedUnits;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  String formatUnitLabel(ProductResponse.Variant variant, int unitQuantity) {
+    final normalizedDisplayUnit =
+        (variant.metadata?.displayUnit ?? '').toLowerCase();
+    final normalizedUnitType = (variant.metadata?.unitType ?? '').toLowerCase();
+
+    if (normalizedUnitType == 'gram') {
+      if (normalizedDisplayUnit == 'kg' &&
+          unitQuantity >= 1000 &&
+          unitQuantity % 1000 == 0) {
+        return '${unitQuantity ~/ 1000}kg';
+      }
+      return '${unitQuantity}g';
+    }
+
+    if (normalizedUnitType == 'milliliter') {
+      if (normalizedDisplayUnit == 'l' &&
+          unitQuantity >= 1000 &&
+          unitQuantity % 1000 == 0) {
+        return '${unitQuantity ~/ 1000}l';
+      }
+      return '$unitQuantity${normalizedDisplayUnit.isNotEmpty ? normalizedDisplayUnit : 'ml'}';
+    }
+
+    return '$unitQuantity${normalizedDisplayUnit.isNotEmpty ? normalizedDisplayUnit : ''}';
   }
 
   Future<Map<String, File?>> generateVideoThumbnails(

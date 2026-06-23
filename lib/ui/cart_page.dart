@@ -156,6 +156,52 @@ class _CartPageState extends State<CartPage>
     return null;
   }
 
+  String _buildCartItemSize(Item item) {
+    final variantTitle = item.variantTitle ?? '';
+    final metadata = item.metadata;
+
+    if (metadata?.unitBasedInventory == true &&
+        metadata?.unitQuantity != null &&
+        metadata!.unitQuantity! > 0) {
+      final unit = (metadata.displayUnit ?? metadata.unitType ?? '')
+          .trim()
+          .toLowerCase();
+      final value = metadata.unitQuantity!;
+      late final String formattedUnit;
+
+      if (unit == 'kg') {
+        formattedUnit = value % 1000 == 0
+            ? '${value ~/ 1000} kg'
+            : '${(value / 1000).toStringAsFixed(value % 100 == 0 ? 1 : 2)} kg';
+      } else if (unit == 'g' || unit == 'gram' || unit == 'grams') {
+        formattedUnit = '$value g';
+      } else if (unit == 'ml') {
+        formattedUnit = '$value ml';
+      } else if (unit == 'l' ||
+          unit == 'ltr' ||
+          unit == 'litre' ||
+          unit == 'liter') {
+        formattedUnit = value % 1000 == 0
+            ? '${value ~/ 1000} L'
+            : '${(value / 1000).toStringAsFixed(value % 100 == 0 ? 1 : 2)} L';
+      } else {
+        formattedUnit = '$value${unit.isNotEmpty ? ' $unit' : ''}';
+      }
+
+      if (variantTitle.isEmpty || variantTitle == 'Default variant') {
+        return formattedUnit;
+      }
+
+      return '$variantTitle • $formattedUnit';
+    }
+
+    if (variantTitle == 'Default variant') {
+      return '';
+    }
+
+    return variantTitle;
+  }
+
   String _getProviderName(String? providerId, List<PaymentProvider> providers) {
     if (providerId == null) return AppStrings.cash_on_delivery;
 
@@ -356,10 +402,7 @@ class _CartPageState extends State<CartPage>
                                           imageUrl: cartItem.thumbnail ?? '',
                                           productName: cartItem.productTitle!,
                                           error: cartItem.error ?? '',
-                                          size: cartItem.variantTitle! ==
-                                                  "Default variant"
-                                              ? ""
-                                              : cartItem.variantTitle!,
+                                          size: _buildCartItemSize(cartItem),
                                           color: 'color',
                                           price: CurrencyUtil.appendCurrency(
                                               (cartItem.unitPrice! *
@@ -940,9 +983,30 @@ class _CartPageState extends State<CartPage>
     final totalQty = productItems
         .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
-    print('total qty ${totalQty}');
+    final qtyMap = <String, int>{};
+    final unitLineQtyMap = <String, int>{};
+    final unitLineIdMap = <String, String>{};
+    for (final item in productItems) {
+      final variantId = item.variantId;
+      if (variantId == null) continue;
+      qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
+      final metadata = item.metadata;
+      if (metadata?.unitBasedInventory == true &&
+          metadata?.unitQuantity != null &&
+          metadata!.unitQuantity! > 0 &&
+          item.id != null) {
+        final key = '${variantId}::${metadata.unitQuantity!}';
+        unitLineQtyMap[key] = item.quantity ?? 0;
+        unitLineIdMap[key] = item.id!;
+      }
+    }
     eventBus.fire(ViewCartModel(
-        totalQty, productItems.map((item) => item.thumbnail ?? '').toList()));
+      totalQty,
+      productItems.map((item) => item.thumbnail ?? '').toList(),
+      qtyMap,
+      unitLineQtyMap,
+      unitLineIdMap,
+    ));
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
