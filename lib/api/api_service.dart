@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/cross_sell_products_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/payment_method_response.dart';
@@ -38,6 +39,7 @@ import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
@@ -71,6 +73,26 @@ class ApiService {
     );
   }
 
+  // Pull a human-readable error message from response.data without assuming
+  // it's a Map. Some upstreams return plain text or HTML, in which case
+  // response.data['message'] threw "type 'String' is not a subtype of type
+  // 'int' of 'index'" and masked the real failure.
+  String _extractErrorMessage(dynamic data) {
+    if (data is Map) {
+      final m = data['message'];
+      if (m is String && m.isNotEmpty) return m;
+      final err = data['error'];
+      if (err is Map) {
+        final em = err['message'];
+        if (em is String && em.isNotEmpty) return em;
+      }
+      if (err is String && err.isNotEmpty) return err;
+    } else if (data is String && data.isNotEmpty) {
+      return data;
+    }
+    return 'An error occurred';
+  }
+
   Future<T> _makePostRequest<T>(
     String endpoint,
     Map<String, dynamic>? data,
@@ -95,17 +117,25 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'POST request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -141,19 +171,28 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context!, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context!, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'GET request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'GET',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -188,9 +227,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -198,6 +235,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'DELETE request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'DELETE',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -233,9 +280,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -243,6 +288,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'File upload failed',
+        attributes: {
+          'endpoint': apiUrl,
+          'file_path': file.path,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -255,6 +310,7 @@ class ApiService {
 
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
+    await AppErrorReporter.instance.clearUser();
 
     bool skipLogin =
         await SharedPreferencesUtil().getBool('skip_login') ?? false;
@@ -335,7 +391,7 @@ class ApiService {
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers",
         {
           "email": email,
@@ -347,6 +403,14 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'otp',
+      },
+    );
+    return response;
   }
 
   Future<EmailRegisterResponse> registerEmail(
@@ -359,7 +423,7 @@ class ApiService {
       String phone,
       String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-register",
         {
           "email": email,
@@ -372,6 +436,21 @@ class ApiService {
         },
         (data) => EmailRegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.setUser(
+      id: response.customer?.id,
+      email: response.customer?.email,
+      phone: response.customer?.phone,
+      firstName: response.customer?.firstName,
+      lastName: response.customer?.lastName,
+      companyName: response.customer?.companyName,
+    );
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'email',
+      },
+    );
+    return response;
   }
 
   Future<RefreshTokenResponse> refreshToken(
@@ -511,21 +590,33 @@ class ApiService {
 
   Future<CustomerResponse> getCustomer(BuildContext context) async {
     await addToken();
-    return _makeGetRequest<CustomerResponse>(
+    final response = await _makeGetRequest<CustomerResponse>(
       'store/customers/me',
       null,
       null,
       (json) => CustomerResponse.fromJson(json),
       context,
     );
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    return response;
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
-      {int offset = 0, int limit = 0}) async {
+      {int offset = 0,
+      int limit = 0,
+      double? latitude,
+      double? longitude,
+      String? pincode}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-      {'limit': limit, 'offset': offset},
+      {
+        'limit': limit,
+        'offset': offset,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -657,14 +748,18 @@ class ApiService {
   }
 
   Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode) async {
+      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = <String, dynamic>{
+      "promo_codes": [promoCode],
+    };
+    if (removeCodes != null && removeCodes.isNotEmpty) {
+      body["remove_codes"] = removeCodes;
+    }
     return _makePostRequest(
       'store/custom-carts/$cartId/promotions',
-      {
-        "promo_codes": [promoCode]
-      },
+      body,
       (json) => CartResponse.fromJson(json),
       context,
     );
@@ -754,6 +849,20 @@ class ApiService {
     );
   }
 
+  Future<String?> initiateIciciPayment(BuildContext context) async {
+    await setPublishableKey();
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final response = await _dio.post(
+      'store/place-order/$cartId',
+      data: {"payment_provider_id": "pp_icici_icici"},
+    );
+    if (response.statusCode == 200) {
+      return response.data?['icici_redirect_url'] as String?;
+    }
+    throw Exception('Failed to initiate ICICI payment');
+  }
+
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
   //   await addToken();
   //   return _makeGetRequest<WishlistResponse>(
@@ -795,7 +904,7 @@ class ApiService {
     String lastName,
   ) async {
     await addToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/me",
         {
           "phone": phone,
@@ -806,6 +915,9 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb('customer_profile_updated');
+    return response;
   }
 
   Future<ShippingResponse> getShippingInfo(BuildContext context) async {
@@ -860,6 +972,34 @@ class ApiService {
       null,
       null,
       (json) => PublicDetailsResponse.fromJson(json),
+      null,
+    );
+  }
+
+  Future<bool> getCouponListVisibility() async {
+    return _makeGetRequest<bool>(
+      'store/web/global_settings',
+      null,
+      null,
+      (json) {
+        final value = json['globalSettings']?['coupon_list_enabled'];
+
+        if (value is bool) {
+          return value;
+        }
+
+        if (value is String) {
+          final normalized = value.trim().toLowerCase();
+          if (['false', '0', 'off', 'no'].contains(normalized)) {
+            return false;
+          }
+          if (['true', '1', 'on', 'yes'].contains(normalized)) {
+            return true;
+          }
+        }
+
+        return true;
+      },
       null,
     );
   }
@@ -950,11 +1090,22 @@ class ApiService {
     );
   }
 
-  Future<UpSellProductsResponse> upSellingProducts(BuildContext context) async {
+  Future<CrossSellProductsResponse> crossSellingProducts(
+      BuildContext context, String cartId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest<CrossSellProductsResponse>(
+      'store/cross-selling-product/$cartId',
+      {"region_id": regionId},
+      (json) => CrossSellProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<UpSellProductsResponse> upSellingProducts(
+      BuildContext context, String id) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<UpSellProductsResponse>(
-      'store/up-selling-product/$cartId',
+      'store/up-selling-product/$id',
       {"region_id": regionId},
       (json) => UpSellProductsResponse.fromJson(json),
       context,
@@ -1058,28 +1209,31 @@ class ApiService {
   Future<VerifyOtpResponse> loginWithEmail(
       BuildContext context, String email, String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-login",
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_login',
+      attributes: {
+        'auth_type': 'email',
+        'new_user': response.newUser ?? false,
+      },
+    );
+    return response;
   }
 
   // ==================== WALLET ====================
 
   Future<WalletResponse> getWalletBalance(BuildContext context) async {
     await addToken();
-    return _makeGetRequest(
-        "store/wallet", null, null,
+    return _makeGetRequest("store/wallet", null, null,
         (data) => WalletResponse.fromJson(data), context);
   }
 
-  Future<WalletTransactionsResponse> getWalletTransactions(
-      BuildContext context,
-      {int limit = 20,
-      int offset = 0,
-      String? type,
-      String? direction}) async {
+  Future<WalletTransactionsResponse> getWalletTransactions(BuildContext context,
+      {int limit = 20, int offset = 0, String? type, String? direction}) async {
     await addToken();
     final params = <String, dynamic>{
       'limit': limit,
@@ -1088,8 +1242,7 @@ class ApiService {
     if (type != null) params['type'] = type;
     if (direction != null) params['direction'] = direction;
 
-    return _makeGetRequest(
-        "store/wallet/transactions", null, params,
+    return _makeGetRequest("store/wallet/transactions", null, params,
         (data) => WalletTransactionsResponse.fromJson(data), context);
   }
 
@@ -1125,15 +1278,11 @@ class ApiService {
   Future<WalletSplitResponse> applyWalletSplit(
       BuildContext context, String cartId) async {
     await addToken();
-    return _makePostRequest(
-        "store/wallet/apply-split",
-        {"cart_id": cartId},
-        (data) => WalletSplitResponse.fromJson(data),
-        context);
+    return _makePostRequest("store/wallet/apply-split", {"cart_id": cartId},
+        (data) => WalletSplitResponse.fromJson(data), context);
   }
 
-  Future<dynamic> removeWalletSplit(
-      BuildContext context, String cartId) async {
+  Future<dynamic> removeWalletSplit(BuildContext context, String cartId) async {
     await addToken();
     await setPublishableKey();
     try {
@@ -1148,6 +1297,121 @@ class ApiService {
     } catch (e) {
       debugPrint('removeWalletSplit error: $e');
       rethrow;
+    }
+  }
+
+  // ─── Loyalty ──────────────────────────────────────────────
+
+  Future<Response> getLoyaltyAccount() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty');
+  }
+
+  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/transactions',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> getLoyaltyPreview(
+    num orderTotal, {
+    String? orderId,
+    String? cartId,
+    String? productId,
+  }) async {
+    await setPublishableKey();
+    final params = <String, dynamic>{};
+    if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    // Prefer cart_id when available — backend computes earnable amount server-side
+    // (excludes platform_fee + applies earn restriction).
+    if (cartId != null && cartId.isNotEmpty) params['cart_id'] = cartId;
+    // PDP passes product_id so backend can short-circuit when the merchant
+    // has restricted earning to specific products / categories — keeps the
+    // "you'll earn …" strip honest with what the order subscriber will do.
+    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (orderTotal > 0) params['order_total'] = orderTotal;
+    return _dio.get('/store/loyalty/preview', queryParameters: params);
+  }
+
+  Future<Response> redeemLoyaltyPoints(int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/redeem', data: {'points': points});
+  }
+
+  Future<Response> applyLoyaltyCheckout(String cartId, int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId, 'points': points});
+  }
+
+  Future<Response> getLoyaltyCheckoutStatus(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/checkout-apply',
+        queryParameters: {'cart_id': cartId});
+  }
+
+  Future<Response> removeLoyaltyCheckout(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.delete('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId});
+  }
+
+  Future<Response> getLoyaltyReferral() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral');
+  }
+
+  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/history',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> applyReferralCode(String identifier) async {
+    await addToken();
+    await setPublishableKey();
+    // Send via `referral_identifier` (new) — backend accepts unique code OR phone.
+    return _dio.post('/store/loyalty/referral/apply',
+        data: {'referral_identifier': identifier.trim()});
+  }
+
+  /// Public endpoint — no auth required. Accepts EITHER a unique code OR a
+  /// phone number (when admin has enabled phone-as-referral mode).
+  Future<Response> validateReferralCode(String identifier) async {
+    await setPublishableKey();
+    final raw = identifier.trim();
+    // Pass via the new `identifier` param. Backend uppercases code lookups
+    // internally and tries phone matching when the input has enough digits.
+    return _dio.get('/store/loyalty/referral/validate',
+        queryParameters: {'identifier': raw});
+  }
+
+  // GET /store/delivery/free-delivery-info — cart-scoped progress banner data.
+  // Returns null on any failure so the widget hides silently rather than
+  // breaking the cart UI.
+  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
+    BuildContext context,
+    String cartId,
+  ) async {
+    try {
+      await addToken();
+      return _makeGetRequest<Map<String, dynamic>>(
+        'store/delivery/free-delivery-info',
+        null,
+        {'cart_id': cartId},
+        (json) => Map<String, dynamic>.from(json as Map),
+        context,
+      );
+    } catch (_) {
+      return null;
     }
   }
 }

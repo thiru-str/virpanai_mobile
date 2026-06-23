@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
@@ -55,11 +56,22 @@ class _CustomTextFieldState extends State<CustomTextField> {
       textCapitalization: widget.textCapitalization,
       decoration: InputDecoration(
         hintText: widget.hintText,
+        hintStyle: UiTypography.searchHint(),
         filled: true,
-        fillColor: AppColors.secondary,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(14.0),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EC)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.0),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EC)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.0),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
         suffixIcon: widget.isPassword
             ? IconButton(
