@@ -20,6 +20,8 @@ class PublicDetailsResponse {
   BankDetails? bankDetails;
   UpiDetails? upiDetails;
   StoreDetails? storeDetails;
+  String? salesChannelId;
+  String? storeId;
   List<String> enabledExtensions;
 
   PublicDetailsResponse({
@@ -34,6 +36,8 @@ class PublicDetailsResponse {
     this.bankDetails,
     this.upiDetails,
     this.storeDetails,
+    this.salesChannelId,
+    this.storeId,
     this.enabledExtensions = const [],
   });
 
@@ -49,6 +53,8 @@ class PublicDetailsResponse {
       bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
       upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
       storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"]),
+      salesChannelId: json["sales_channel_id"],
+      storeId: json["store_id"],
       enabledExtensions: json["enabled_extensions"] != null
           ? List<String>.from(json["enabled_extensions"])
           : [],
@@ -66,6 +72,8 @@ class PublicDetailsResponse {
     "bankDetails": bankDetails?.toJson(),
     "upiDetails": upiDetails?.toJson(),
     "storeDetails": storeDetails?.toJson(),
+    "sales_channel_id": salesChannelId,
+    "store_id": storeId,
     "enabled_extensions": enabledExtensions,
   };
 

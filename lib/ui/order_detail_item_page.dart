@@ -235,6 +235,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                 valueText: '- ${CurrencyUtil.appendCurrency((order?.prices?.discountTotal ?? 0).toStringAsFixed(2))}',
                                 valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
                               ),
+                            if ((order?.prices?.physicalDiscountTotal ?? 0) > 0)
+                              CartCalculation(
+                                keyText: 'Physical Discount:',
+                                valueText: '- ${CurrencyUtil.appendCurrency((order?.prices?.physicalDiscountTotal ?? 0).toStringAsFixed(2))}',
+                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
+                              ),
                             Visibility(
                               visible: (order?.prices?.shippingTotal ?? 0) > 0,
                               child: CartCalculation(

@@ -11,7 +11,6 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
-import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../model/register_response.dart';
 import '../utility/page_route_utils.dart';
@@ -19,8 +18,8 @@ import 'add_address_page.dart';
 
 /// What the user is trying to accomplish on MapPage.
 /// Decides what Confirm does:
-///  - [selectActive]: pick a location to use NOW. Saves to `selected_address`
-///    prefs and pops back to caller. No form, no permanent save.
+///  - [selectActive]: pick a location to use NOW and return it to the caller.
+///    The caller decides whether to persist or discard it.
 ///  - [saveAddress]: continue to AddAddressPage to fill name/phone and save
 ///    permanently. Used for "Add new" and "Edit" flows.
 enum MapPageIntent { selectActive, saveAddress }
@@ -211,9 +210,9 @@ class _MapPageState extends State<MapPage> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
@@ -308,9 +307,10 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _onConfirm() async {
     if (widget.intent == MapPageIntent.selectActive) {
-      await _persistAsActive();
+      final payload = _buildActiveSelectionPayload();
+      if (payload == null || !mounted) return;
+      Navigator.of(context).pop(payload);
       if (!mounted) return;
-      Navigator.of(context).pop(true);
       return;
     }
     // saveAddress — continue to AddAddressPage form
@@ -326,13 +326,11 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  /// Persist the picked location as the active delivery address (session-level,
-  /// NOT a saved address). Home header + location-aware APIs read this from
-  /// SharedPreferences under `selected_address`.
-  Future<void> _persistAsActive() async {
+  /// Build the selected active location payload and return it to the caller.
+  Map<String, dynamic>? _buildActiveSelectionPayload() {
     final lat = _currentPosition?.latitude;
     final lng = _currentPosition?.longitude;
-    if (lat == null || lng == null) return;
+    if (lat == null || lng == null) return null;
 
     final address1Parts = [place?.name, place?.thoroughfare, place?.subLocality]
         .where((e) => (e ?? '').trim().isNotEmpty)
@@ -342,7 +340,7 @@ class _MapPageState extends State<MapPage> {
         ? address1Parts.join(', ')
         : (place?.street ?? '');
 
-    final Map<String, dynamic> payload = {
+    return {
       'address_name': AppStrings.current_location.trim(),
       'address_1': address1,
       'city': place?.locality ?? '',
@@ -354,7 +352,6 @@ class _MapPageState extends State<MapPage> {
         'longitude': lng.toString(),
       },
     };
-    await SharedPreferencesUtil().saveMap('selected_address', payload);
   }
 
   Future<void> requestLocationPermission() async {

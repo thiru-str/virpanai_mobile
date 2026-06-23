@@ -21,6 +21,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   final VoidCallback? onProfileTap;
   final String title;
   final String addressType;
+  final String deliveryEta;
   final int cartCount;
   final bool showBack;
 
@@ -35,6 +36,7 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.onProfileTap,
     this.title = "",
     this.addressType = "",
+    this.deliveryEta = "",
     this.cartCount = 0,
     this.showBack = false,
   }) : super(key: key);
@@ -199,6 +201,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   /// it to false because it already has a profile icon there.
   Widget _locationRow({bool showLeadingIcon = true}) {
     final bool hasAddress = title.trim().isNotEmpty;
+    final String eta = deliveryEta.trim();
     final String label =
         addressType.trim().isNotEmpty ? addressType : AppStrings.fast_delivery;
 
@@ -229,6 +232,30 @@ class CombinedHeaderAppBar extends StatelessWidget
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (hasAddress && eta.isNotEmpty && eta != "0") ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.bolt_rounded,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          eta,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.secondaryFontStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                  ],
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -346,6 +373,11 @@ class CombinedHeaderAppBar extends StatelessWidget
   }
 
   double _getHeaderHeight() {
+    if ((headerType == "header-6" || headerType == "header-7") &&
+        deliveryEta.trim().isNotEmpty &&
+        deliveryEta.trim() != "0") {
+      return resolveHeaderHeight(headerType) + 12;
+    }
     return resolveHeaderHeight(headerType);
   }
 

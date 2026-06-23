@@ -198,7 +198,7 @@ class AppStrings {
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
 
-  static const String androidPackage = 'com.rodeodigital.wellmartmas';
+  static const String androidPackage = 'com.tryfresh.user';
   static const String appId = '1611964854';
 
   static const String login = 'Login';
