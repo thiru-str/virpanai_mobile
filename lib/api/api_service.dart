@@ -16,6 +16,7 @@ import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
+import 'package:waioz/model/delivery_schedule_model.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/wallet_response.dart';
@@ -880,25 +881,32 @@ class ApiService {
     );
   }
 
-  Future<PlaceOrderResponse> placeOrder(
-      BuildContext context, String pp_id) async {
+  Future<PlaceOrderResponse> placeOrder(BuildContext context, String pp_id,
+      {DeliveryScheduleSelection? deliverySchedule}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/place-order/$cartId',
-      {"payment_provider_id": pp_id},
+      {
+        "payment_provider_id": pp_id,
+        ...?deliverySchedule?.toPayload(),
+      },
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }
 
-  Future<String?> initiateIciciPayment(BuildContext context) async {
+  Future<String?> initiateIciciPayment(BuildContext context,
+      {DeliveryScheduleSelection? deliverySchedule}) async {
     await setPublishableKey();
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final response = await _dio.post(
       'store/place-order/$cartId',
-      data: {"payment_provider_id": "pp_icici_icici"},
+      data: {
+        "payment_provider_id": "pp_icici_icici",
+        ...?deliverySchedule?.toPayload(),
+      },
     );
     if (response.statusCode == 200) {
       return response.data?['icici_redirect_url'] as String?;
@@ -986,6 +994,30 @@ class ApiService {
     );
   }
 
+  Future<DeliveryScheduleResponse> getDeliveryScheduleSlots(
+      BuildContext context, String date) async {
+    await addToken();
+    return _makeGetRequest(
+      'store/delivery-scheduling/slots',
+      null,
+      {'date': date},
+      (json) => DeliveryScheduleResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> updateDeliverySchedule(
+      BuildContext context, DeliveryScheduleSelection selection) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/custom-carts/$cartId/delivery-schedule',
+      selection.toPayload(),
+      (json) => json,
+      context,
+    );
+  }
+
   Future<PaymentMethodResponse> updatePaymentMethod(BuildContext context,
       String paymentProviderId, CartResponse cartResponse) async {
     await addToken();
@@ -998,12 +1030,13 @@ class ApiService {
     );
   }
 
-  Future<PlaceOrderResponse> completeCart(BuildContext context) async {
+  Future<PlaceOrderResponse> completeCart(BuildContext context,
+      {DeliveryScheduleSelection? deliverySchedule}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/custom-carts/$cartId/complete',
-      null,
+      deliverySchedule?.toPayload(),
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
