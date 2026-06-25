@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -32,7 +33,11 @@ class CustomSearchAppBar extends StatelessWidget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildIcon(null,assetPath: AppAssets.app_icon,size: 50),
+              SvgPicture.asset(
+                AppAssets.app_logo,
+                height: 36,
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
               _buildIcon(Icons.shopping_cart, color:Colors.white,onPressed: onCartClick,cartCount: cartCount),
             ],
           ),
@@ -80,7 +85,7 @@ Widget _buildIcon(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: Colors.red,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
             ),
             constraints: const BoxConstraints(
@@ -88,8 +93,8 @@ Widget _buildIcon(
               minHeight: 16,
             ),
             child: Text(
-              cartCount > 99 ? '99+' : '$cartCount', // clamp big numbers
-              style: UiTypography.cardMeta(color: Colors.white).copyWith(
+              cartCount > 99 ? '99+' : '$cartCount',
+              style: UiTypography.cardMeta(color: AppColors.primary).copyWith(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
               ),
