@@ -32,7 +32,7 @@ int _deliverySlotStartMinutes(DeliveryTimeSlot slot) {
 
 class DeliveryScheduleSettings {
   final bool scheduledDeliveryEnabled;
-  final int leadTimeHours;
+  final double leadTimeHours;
   final int maxDaysAdvance;
   final bool deliveryInstructionsEnabled;
 
@@ -48,7 +48,8 @@ class DeliveryScheduleSettings {
         scheduledDeliveryEnabled:
             json?['scheduled_delivery_enabled'] == true ||
                 json?['scheduled_delivery_enabled'] == 'true',
-        leadTimeHours: int.tryParse('${json?['lead_time_hours'] ?? 0}') ?? 0,
+        leadTimeHours:
+            double.tryParse('${json?['lead_time_hours'] ?? 0}') ?? 0,
         maxDaysAdvance: int.tryParse('${json?['max_days_advance'] ?? 7}') ?? 7,
         deliveryInstructionsEnabled:
             json?['delivery_instructions_enabled'] == true ||
