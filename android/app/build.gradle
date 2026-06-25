@@ -22,7 +22,7 @@ def flutterTargetSdkVersion = project.hasProperty('flutter.targetSdkVersion') ? 
 def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? project['flutter.minSdkVersion'] : 21
 
 android {
-    namespace "com.waioz.cartel"
+    namespace "com.waioz.svrcashews"
     compileSdk flutterCompileSdkVersion.toInteger()
     ndkVersion "27.0.12077973"
 
@@ -42,7 +42,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.waioz.cartel"
+        applicationId "com.waioz.svrcashews"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 24
