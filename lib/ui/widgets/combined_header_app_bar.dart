@@ -303,8 +303,12 @@ class CombinedHeaderAppBar extends StatelessWidget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildIcon(null,
-                  assetPath: AppAssets.app_icon, size: 50, color: Colors.white),
+              Image.asset(
+                AppAssets.app_icon,
+                height: 44,
+                width: 44,
+                fit: BoxFit.contain,
+              ),
               _buildIcon(Icons.shopping_cart,
                   color: Colors.white,
                   onPressed: onCartClick,
@@ -409,14 +413,14 @@ class CombinedHeaderAppBar extends StatelessWidget
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
               ),
               constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
               child: Text(
                 cartCount > 99 ? '99+' : '$cartCount',
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppColors.primary,
                     fontSize: 10,
                     fontWeight: FontWeight.bold),
               ),
