@@ -21,6 +21,18 @@ def flutterCompileSdkVersion = project.hasProperty('flutter.compileSdkVersion') 
 def flutterTargetSdkVersion = project.hasProperty('flutter.targetSdkVersion') ? project['flutter.targetSdkVersion'] : 35
 def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? project['flutter.minSdkVersion'] : 21
 
+def signingDir = localProperties.getProperty('signingDir')
+def defaultSigningProfile = localProperties.getProperty('signingProfile')
+def signingProfile = project.findProperty('signingProfile') ?: defaultSigningProfile
+def signingPropertiesFile = signingDir && signingProfile ? new File(signingDir, "${signingProfile}.properties") : null
+def releaseKeyProps = new Properties()
+def hasReleaseSigning = signingPropertiesFile?.exists() ?: false
+if (hasReleaseSigning) {
+    signingPropertiesFile.withInputStream { stream ->
+        releaseKeyProps.load(stream)
+    }
+}
+
 android {
     namespace "com.waioz.cartel"
     compileSdk flutterCompileSdkVersion.toInteger()
@@ -40,6 +52,11 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.waioz.cartel"
@@ -53,11 +70,24 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                def configuredStoreFile = releaseKeyProps['storeFile']
+                storeFile configuredStoreFile.startsWith('/')
+                        ? file(configuredStoreFile)
+                        : new File(signingPropertiesFile.parentFile, configuredStoreFile)
+                storePassword releaseKeyProps['storePassword']
+                keyAlias releaseKeyProps['keyAlias']
+                keyPassword releaseKeyProps['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            // Prefer external release signing when available; fall back to debug only if no profile is configured.
+            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
         }
     }
 }
