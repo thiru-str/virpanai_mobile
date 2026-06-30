@@ -78,7 +78,7 @@ dependencies:
   newrelic_mobile: ^1.2.0
   # Referral (Item 7 QA sprint)
   qr_flutter: ^4.1.0
-  mobile_scanner: ^5.2.3
+  mobile_scanner: ^6.0.11
   flutter_contacts: ^1.1.9+2
 
 
