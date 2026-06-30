@@ -1,4 +1,4 @@
-package com.waioz.cartel
+package com.cbm.onemart
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import android.os.Bundle
