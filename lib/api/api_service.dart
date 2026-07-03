@@ -41,6 +41,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
@@ -315,8 +316,14 @@ class ApiService {
     bool skipLogin =
         await SharedPreferencesUtil().getBool('skip_login') ?? false;
 
-    PageRouteUtils.pushAndRemoveUntil(
-        context, skipLogin ? const BottomNavPage() : WelcomePage());
+    if (skipLogin) {
+      LoginRedirectUtils.redirectAfterLogin(
+        context,
+        redirectPage: const BottomNavPage(),
+      );
+    } else {
+      PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+    }
   }
 
   Future<SendOtpResponse> sendOtp(

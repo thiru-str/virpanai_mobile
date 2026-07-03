@@ -15,10 +15,9 @@ import '../api/api_service.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
-import '../utility/page_route_utils.dart';
+import '../utility/login_redirect_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import '../utility/ui_typography.dart';
-import 'bottom_nav_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final String countryCode;
@@ -122,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 18,
                           offset: const Offset(0, 8),
                         ),
@@ -603,9 +602,12 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) {
         if (widget.redirectPage != null) {
           getHomePageApi();
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+          LoginRedirectUtils.redirectAfterLogin(
+            context,
+            redirectPage: widget.redirectPage,
+          );
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          LoginRedirectUtils.redirectAfterLogin(context);
         }
       }
     } catch (e) {
