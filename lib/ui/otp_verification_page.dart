@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:waioz/model/verify_otp_response.dart';
-import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/register_page.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -313,9 +313,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           setState(() {
             apiCalling = false;
           });
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+          LoginRedirectUtils.redirectAfterLogin(
+            context,
+            redirectPage: widget.redirectPage,
+          );
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          LoginRedirectUtils.redirectAfterLogin(context);
         }
       }
     } catch (e) {

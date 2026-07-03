@@ -5,9 +5,11 @@ import 'package:geolocator/geolocator.dart';
 import '../../api/api_service.dart';
 import '../../model/address_list_response.dart';
 import '../../model/register_response.dart';
+import '../../ui/bottom_nav_page.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/app_config.dart';
 import '../../utility/app_strings.dart';
+import '../../utility/app_utils.dart';
 import '../../utility/font_utils.dart';
 import '../../utility/location_util.dart';
 import '../../utility/page_route_utils.dart';
@@ -26,10 +28,14 @@ class SearchAddressPage extends StatefulWidget {
   /// If provided, picking a saved address triggers this callback and pops.
   /// If null, picking a saved address is a no-op (browsing only).
   final Function(Address selectedAddress)? onTapAddress;
+  final bool isMandatory;
+  final Widget? redirectPage;
 
   const SearchAddressPage({
     super.key,
     this.onTapAddress,
+    this.isMandatory = false,
+    this.redirectPage,
   });
 
   @override
@@ -44,6 +50,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
   List<dynamic> _predictions = [];
   bool _isSearching = false;
   bool _useMapPicker = false;
+  bool _isLoggedIn = false;
 
   GetAddressListResponse? _addressList;
   bool _loading = true;
@@ -69,10 +76,21 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
   }
 
   Future<void> _fetchSavedAddresses() async {
+    final isLoggedIn = await AppUtils.isLoggedIn();
+    if (!isLoggedIn) {
+      if (!mounted) return;
+      setState(() {
+        _isLoggedIn = false;
+        _loading = false;
+      });
+      return;
+    }
+
     try {
       final response = await _api.getAddressList(context);
       if (!mounted) return;
       setState(() {
+        _isLoggedIn = true;
         _addressList = response;
         _loading = false;
       });
@@ -136,7 +154,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
         ),
       );
       if (result is Map<String, dynamic> && mounted) {
-        Navigator.of(context).pop(result);
+        _completeLocationSelection(result);
       }
     } catch (_) {/* ignore */}
   }
@@ -160,7 +178,7 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
       MapPage(intent: MapPageIntent.selectActive),
     );
     if (result is Map<String, dynamic> && mounted) {
-      Navigator.of(context).pop(result);
+      _completeLocationSelection(result);
     }
   }
 
@@ -182,26 +200,46 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
     if (widget.onTapAddress != null) {
       widget.onTapAddress!(address);
     }
-    Navigator.of(context).pop(address.toJson());
+    _completeLocationSelection(address.toJson());
+  }
+
+  Future<void> _completeLocationSelection(Map<String, dynamic> address) async {
+    if (!mounted) return;
+
+    if (!widget.isMandatory) {
+      Navigator.of(context).pop(address);
+      return;
+    }
+
+    await SharedPreferencesUtil().saveMap('selected_address', address);
+    if (!mounted) return;
+    PageRouteUtils.pushAndRemoveUntil(
+      context,
+      widget.redirectPage ?? const BottomNavPage(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: CommonHeaderAppBar(
-          title: AppStrings.your_location,
-          onBackTap: () => Navigator.of(context).pop(),
-        ),
-        body: Column(
-          children: [
-            _searchBar(),
-            Expanded(
-              child: _isSearching ? _searchResults() : _defaultBody(),
-            ),
-          ],
+    return PopScope(
+      canPop: !widget.isMandatory,
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: CommonHeaderAppBar(
+            title: AppStrings.your_location,
+            leading: !widget.isMandatory,
+            onBackTap: () => Navigator.of(context).pop(),
+          ),
+          body: Column(
+            children: [
+              _searchBar(),
+              Expanded(
+                child: _isSearching ? _searchResults() : _defaultBody(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -265,28 +303,30 @@ class _SearchAddressPageState extends State<SearchAddressPage> {
           accent: AppColors.primary,
           onTap: _useCurrentLocation,
         ),
-        const SizedBox(height: 10),
-        _ActionTile(
-          icon: Icons.add_location_alt_rounded,
-          title: 'Add new address',
-          subtitle: _useMapPicker ? 'Pin on map' : 'Type address details',
-          accent: AppColors.primary,
-          onTap: _addNewManually,
-        ),
-        const SizedBox(height: 22),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            AppStrings.saved_location,
-            style: FontUtils.primaryFontStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
+        if (_isLoggedIn) ...[
+          const SizedBox(height: 10),
+          _ActionTile(
+            icon: Icons.add_location_alt_rounded,
+            title: 'Add new address',
+            subtitle: _useMapPicker ? 'Pin on map' : 'Type address details',
+            accent: AppColors.primary,
+            onTap: _addNewManually,
+          ),
+          const SizedBox(height: 22),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              AppStrings.saved_location,
+              style: FontUtils.primaryFontStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        _savedAddressList(),
+          const SizedBox(height: 10),
+          _savedAddressList(),
+        ],
       ],
     );
   }

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,13 +11,13 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
-import 'bottom_nav_page.dart';
 
 class PhoneNumberPage extends StatefulWidget {
   final Widget? redirectPage;
@@ -364,9 +363,12 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
           setState(() {
             apiCalling = false;
           });
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+          LoginRedirectUtils.redirectAfterLogin(
+            context,
+            redirectPage: widget.redirectPage,
+          );
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          LoginRedirectUtils.redirectAfterLogin(context);
         }
       }
     } catch (e) {

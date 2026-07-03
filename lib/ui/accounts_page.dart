@@ -11,15 +11,14 @@ import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
-import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -243,7 +242,7 @@ class _SettingsPageState extends State<SettingsPage> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -291,7 +290,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(width: 8),
           // Edit pill
           Material(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(30),
             child: InkWell(
               borderRadius: BorderRadius.circular(30),
@@ -332,7 +331,7 @@ class _SettingsPageState extends State<SettingsPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -359,7 +358,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 20, color: AppColors.primary),
@@ -404,7 +403,7 @@ class _SettingsPageState extends State<SettingsPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _danger.withOpacity(0.25), width: 1),
+            border: Border.all(color: _danger.withValues(alpha: 0.25), width: 1),
           ),
           child: Material(
             color: Colors.transparent,
@@ -420,7 +419,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: _danger.withOpacity(0.1),
+                        color: _danger.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.delete_outline,
@@ -501,8 +500,14 @@ class _SettingsPageState extends State<SettingsPage> {
             await AppErrorReporter.instance.clearUser();
 
             if (mounted) {
-              PageRouteUtils.pushAndRemoveUntil(
-                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+              if (skipLogin) {
+                LoginRedirectUtils.redirectAfterLogin(
+                  context,
+                  redirectPage: const BottomNavPage(),
+                );
+              } else {
+                PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+              }
             }
           },
         );
@@ -528,8 +533,14 @@ class _SettingsPageState extends State<SettingsPage> {
             await SharedPreferencesUtil().clear();
             await AppErrorReporter.instance.clearUser();
             if (mounted) {
-              PageRouteUtils.pushAndRemoveUntil(
-                  context, skipLogin ? const BottomNavPage() : WelcomePage());
+              if (skipLogin) {
+                LoginRedirectUtils.redirectAfterLogin(
+                  context,
+                  redirectPage: const BottomNavPage(),
+                );
+              } else {
+                PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+              }
             }
           },
         );
