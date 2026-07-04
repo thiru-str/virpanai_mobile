@@ -130,102 +130,67 @@ class _Slider2Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = layoutData.image ?? '';
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: isSmallScreen ? 80 : 90,
-        margin: const EdgeInsets.only(top: 8, bottom: 4),
-        child: Stack(
-          alignment: Alignment.topCenter,
-          clipBehavior: Clip.none,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: _hasDiscount ? 10 : 0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // ✅ Fixed image section (all aligned)
-                  Container(
-                    width: isSmallScreen ? 80 : 90,
-                    height: isSmallScreen ? 80 : 90,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: (imageUrl.isNotEmpty)
-                          ? CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) =>
-                                  const ImageFallbackWidget(h: 80),
-                            )
-                          : const ImageFallbackWidget(h: 80),
-                    ),
-                  ),
-          
-                  const SizedBox(height: 6),
-          
-                  // ✅ Text section (auto height but doesn’t affect image line)
-                  Visibility(
-                    visible: layoutData.title?.isNotEmpty == true,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: isSmallScreen ? 32 : 34,
-                        maxHeight: isSmallScreen ? 40 : 44,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Text(
-                          layoutData.title ?? '',
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: isSmallScreen ? 11 : 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.secondary,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.contain,
+                          errorWidget: (_, __, ___) =>
+                              const ImageFallbackWidget(h: 70),
+                        )
+                      : const ImageFallbackWidget(h: 70),
+                ),
               ),
-            ),
-
-            // Keep discount badge on top/front with half overlap
-            if (_hasDiscount)
-              Positioned(
-                top: 0,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    layoutData.prices?.discountPercentage ?? '',
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 10,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 70,
+                child: Text(
+                  layoutData.title ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: FontUtils.primaryFontStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+          if (_hasDiscount)
+            Positioned(
+              top: 1,
+              right: 0,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey.shade800,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  layoutData.prices?.discountPercentage ?? '',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

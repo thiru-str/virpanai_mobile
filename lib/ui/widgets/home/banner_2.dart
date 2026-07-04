@@ -140,11 +140,11 @@ class _Banner2State extends State<Banner2> {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
                 /// Carousel
                 SizedBox(
-                  height: 260,
+                  height: 190,
                   child: PageView.builder(
                     controller: _pageController,
                     padEnds: false,
@@ -167,9 +167,7 @@ class _Banner2State extends State<Banner2> {
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                          ),
+                          padding: const EdgeInsets.only(right: 8.0),
                           child: isVideo
                               ? ItemVideoTile(
                                   key: ValueKey(mediaUrl),
