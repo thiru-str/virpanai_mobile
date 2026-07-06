@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/order_history_reponse.dart' as order_history_models;
 import 'package:waioz/ui/transaction_detail_page.dart';
+import 'package:waioz/ui/cart_response.dart' show ShippingMethod;
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/order_status_widget.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
@@ -556,6 +557,12 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                   : '';
 
   bool get _isPickupOrder {
+    final shippingMethods =
+        orderHistoryOrder?.shippingMethods ?? const <ShippingMethod>[];
+    if (shippingMethods.isNotEmpty) {
+      return shippingMethods.any(_shippingMethodIndicatesPickup);
+    }
+
     final orderMetadata = order?.metadata;
     if (_metadataIndicatesPickup(orderMetadata)) {
       return true;
@@ -577,6 +584,21 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       'fulfillment_type': orderHistoryOrder?.metadata?.type,
       'pickup_date': null,
     });
+  }
+
+  bool _shippingMethodIndicatesPickup(ShippingMethod method) {
+    final type =
+        method.shippingOption?.serviceZone?.fulfillmentSet?.type?.toLowerCase();
+    if (type == 'pickup') return true;
+    if (type == 'shipping') return false;
+
+    final labels = [
+      method.name,
+      method.shippingOption?.name,
+    ].whereType<String>().map((value) => value.trim().toLowerCase());
+
+    return labels.any((value) =>
+        value == 'pickup' || value == 'self pickup' || value == 'self_pickup');
   }
 
   bool _metadataIndicatesPickup(dynamic metadata) {
@@ -602,7 +624,6 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         metadata['selected_delivery_method']?.toString().toLowerCase();
     final mode = metadata['mode']?.toString().toLowerCase();
     final method = metadata['method']?.toString().toLowerCase();
-    final rawMetadata = metadata.toString().toLowerCase();
     final pickupSlotId = metadata['pickup_slot_id'];
     final pickupDate = metadata['pickup_date'];
     final pickupAnyTime = metadata['pickup_any_time'] == true;
@@ -622,8 +643,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         method == 'pickup' ||
         pickupSlotId != null ||
         pickupDate != null ||
-        pickupAnyTime ||
-        rawMetadata.contains('pickup');
+        pickupAnyTime;
   }
 
   bool get _hasShippingAddress {
