@@ -93,7 +93,7 @@ class WelcomePage extends StatelessWidget {
                             context, const PhoneNumberPage());
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary, // Button color
+                        backgroundColor: const Color(0xFF8E6CEF),
                         elevation: 0,
                         minimumSize: const Size(double.infinity, 54),
                         shape: RoundedRectangleBorder(
