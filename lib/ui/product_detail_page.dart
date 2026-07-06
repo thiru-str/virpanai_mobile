@@ -204,7 +204,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               productId: product?.id ?? widget.productId,
               productHandle: product?.handle ?? '',
               selectedVariantId: selectedVariantId,
-              variants: product?.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
+              variants: product?.variants
+                      ?.map((v) => {'id': v.id, 'title': v.title})
+                      .toList() ??
+                  [],
               isLoggedIn: isLoggedIn,
               config: _favConfig,
               initialSaved: isFavorite,
@@ -215,42 +218,43 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           body: Container(
             decoration: const BoxDecoration(gradient: AppColors.linearGradient),
             child: apiLoading
-              ? const ProductDetailSkeleton()
-              : SafeArea(
-                  child: Stack(children: [
-                    Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AppReveal(child: buildProductImages()),
-                                  const SizedBox(height: 25),
-                                  AppReveal(
-                                      index: 1, child: buildProductDetails()),
-                                  AppReveal(
-                                      index: 2, child: buildCartSection()),
-                                  const SizedBox(height: 15),
-                                  AppReveal(
-                                      index: 3,
-                                      child: buildProductDescription()),
-                                  AppReveal(
-                                      index: 4, child: buildRelatedProducts()),
-                                  AppReveal(index: 5, child: buildReviews()),
-                                  const SizedBox(height: 90),
-                                ],
+                ? const ProductDetailSkeleton()
+                : SafeArea(
+                    child: Stack(children: [
+                      Column(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AppReveal(child: buildProductImages()),
+                                    const SizedBox(height: 25),
+                                    AppReveal(
+                                        index: 1, child: buildProductDetails()),
+                                    AppReveal(
+                                        index: 2, child: buildCartSection()),
+                                    const SizedBox(height: 15),
+                                    AppReveal(
+                                        index: 3,
+                                        child: buildProductDescription()),
+                                    AppReveal(
+                                        index: 4,
+                                        child: buildRelatedProducts()),
+                                    AppReveal(index: 5, child: buildReviews()),
+                                    const SizedBox(height: 90),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    buildBottomButton()
-                  ]),
-                ),
+                        ],
+                      ),
+                      buildBottomButton()
+                    ]),
+                  ),
           ),
         ),
       ),
@@ -371,39 +375,40 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
         ],
         const SizedBox(height: 15),
-        Row(
-          children: [
-            Text(
-              getDisplayedPrice(),
-              style: FontUtils.secondaryFontStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppColors.primary,
-              ),
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Visibility(
-              visible: selectedVariant != null &&
-                  selectedVariant!
-                          .calculatedPrice?.rawCalculatedAmount?.value !=
-                      selectedVariant!
-                          .calculatedPrice?.rawOriginalAmount?.value,
-              child: Text(
-                CurrencyUtil.appendCurrency(selectedVariant
-                        ?.calculatedPrice?.rawOriginalAmount?.value ??
-                    '0'),
+        if (!stockNotAvailable && getDisplayedPrice().isNotEmpty)
+          Row(
+            children: [
+              Text(
+                getDisplayedPrice(),
                 style: FontUtils.secondaryFontStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.grey,
-                  decoration: TextDecoration.lineThrough,
+                  color: AppColors.primary,
                 ),
               ),
-            )
-          ],
-        ),
+              SizedBox(
+                width: 10,
+              ),
+              Visibility(
+                visible: selectedVariant != null &&
+                    selectedVariant!
+                            .calculatedPrice?.rawCalculatedAmount?.value !=
+                        selectedVariant!
+                            .calculatedPrice?.rawOriginalAmount?.value,
+                child: Text(
+                  CurrencyUtil.appendCurrency(selectedVariant
+                          ?.calculatedPrice?.rawOriginalAmount?.value ??
+                      '0'),
+                  style: FontUtils.secondaryFontStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.grey,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+              )
+            ],
+          ),
         Visibility(
           visible:
               product?.metadata?.warrantyDetails?.isWarrantyAvailable ?? false,
@@ -412,8 +417,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: WarrantyInfoCard(
               isGwmWarranty:
                   product?.metadata?.warrantyDetails?.isGwmWarranty ?? false,
-              description:
-                  product?.metadata?.warrantyDetails?.warranty ?? '',
+              description: product?.metadata?.warrantyDetails?.warranty ?? '',
             ),
           ),
         ),
@@ -527,15 +531,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               spacing: 10,
               runSpacing: 10,
               children: option.values!.where((optionValue) {
-                return product?.variants?.any((v) {
-                      final hasOption = v.options
-                              ?.any((o) => o.id == optionValue.id) ??
-                          false;
-                      final inStock = v.inventoryQuantity == null ||
-                          (v.inventoryQuantity ?? 0) > 0;
-                      return hasOption && inStock;
-                    }) ??
-                    false;
+                return isOptionValueAvailable(option.id!, optionValue.id!);
               }).map((optionValue) {
                 final isSelected =
                     selectedOptions[option.id!]?.id == optionValue.id;
@@ -579,7 +575,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   void updateVariant() {
     if (selectedOptions.values.any((v) => v == null)) {
-      setState(() => selectedVariant = null);
+      setState(() {
+        selectedVariant = null;
+        selectedVariantId = null;
+        stockNotAvailable = false;
+      });
       return;
     }
 
@@ -783,7 +783,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         Expanded(
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: selectedVariantId == null && stockNotAvailable
+              backgroundColor: selectedVariantId == null || stockNotAvailable
                   ? Colors.grey
                   : AppColors.primary,
               shape: RoundedRectangleBorder(
@@ -801,7 +801,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                     final parsedQty = int.tryParse(quantityController.text);
                     if (parsedQty == null || parsedQty <= 0) {
-                      AppUtils.showToast(AppStrings.please_enter_valid_quantity);
+                      AppUtils.showToast(
+                          AppStrings.please_enter_valid_quantity);
                       return;
                     }
 
@@ -983,6 +984,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return sortedVariants.first;
   }
 
+  bool isOptionValueAvailable(String optionId, String valueId) {
+    final variants = product?.variants;
+    if (variants == null || variants.isEmpty) return false;
+
+    return variants.any((variant) {
+      if (!isStockAvailable(variant)) {
+        return false;
+      }
+
+      return variant.options?.any((option) {
+            return option.optionId == optionId && option.id == valueId;
+          }) ??
+          false;
+    });
+  }
+
   Future<void> getRelatedProductsApi() async {
     try {
       if ((productInfoResponse?.relatedProductCount ?? 1) == 0) {
@@ -1036,7 +1053,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         // isFavorite and _favConfig are set by _loadFavouriteState() which uses
         // the real config API + saved-items. Only fall back to productInfo if
         // _loadFavouriteState hasn't completed yet.
-        if (!_favConfig.enabled && (productInfoResponse?.favouriteListEnabled ?? false)) {
+        if (!_favConfig.enabled &&
+            (productInfoResponse?.favouriteListEnabled ?? false)) {
           _favConfig = FavouriteListConfig(
             enabled: productInfoResponse?.favouriteListEnabled ?? false,
             displayName: productInfoResponse?.displayName?.isNotEmpty == true

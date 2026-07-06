@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-PublicDetailsResponse publicDetailsResponseFromJson(String str) => PublicDetailsResponse.fromJson(json.decode(str));
+PublicDetailsResponse publicDetailsResponseFromJson(String str) =>
+    PublicDetailsResponse.fromJson(json.decode(str));
 
-String publicDetailsResponseToJson(PublicDetailsResponse data) => json.encode(data.toJson());
+String publicDetailsResponseToJson(PublicDetailsResponse data) =>
+    json.encode(data.toJson());
 
 class PublicDetailsResponse {
   bool? maintainance;
@@ -37,37 +39,44 @@ class PublicDetailsResponse {
     this.enabledExtensions = const [],
   });
 
-  factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
-      maintainance: json["maintainance"],
-      token: json["token"],
-      theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
-      googleMapUsage: json["googleMapUsage"],
-      showLocationAtStart: json["showLocationAtStart"],
-      restrictLocation: json["restrictLocation"],
-      singleShippingAddress: json["singleShippingAddress"],
-      restrictLocationBy: json["restrictLocationBy"],
-      bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
-      upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
-      storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"]),
-      enabledExtensions: json["enabled_extensions"] != null
-          ? List<String>.from(json["enabled_extensions"])
-          : [],
-  );
+  factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) =>
+      PublicDetailsResponse(
+        maintainance: json["maintainance"],
+        token: json["token"],
+        theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
+        googleMapUsage: json["googleMapUsage"],
+        showLocationAtStart: json["showLocationAtStart"],
+        restrictLocation: json["restrictLocation"],
+        singleShippingAddress: json["singleShippingAddress"],
+        restrictLocationBy: json["restrictLocationBy"],
+        bankDetails: json["bankDetails"] == null
+            ? null
+            : BankDetails.fromJson(json["bankDetails"]),
+        upiDetails: json["upiDetails"] == null
+            ? null
+            : UpiDetails.fromJson(json["upiDetails"]),
+        storeDetails: json["storeDetails"] == null
+            ? null
+            : StoreDetails.fromJson(json["storeDetails"]),
+        enabledExtensions: json["enabled_extensions"] != null
+            ? List<String>.from(json["enabled_extensions"])
+            : [],
+      );
 
   Map<String, dynamic> toJson() => {
-    "maintainance": maintainance,
-    "token": token,
-    "theme": theme?.toJson(),
-    "googleMapUsage": googleMapUsage,
-    "showLocationAtStart": showLocationAtStart,
-    "restrictLocation": restrictLocation,
-    "singleShippingAddress": singleShippingAddress,
-    "restrictLocationBy": restrictLocationBy,
-    "bankDetails": bankDetails?.toJson(),
-    "upiDetails": upiDetails?.toJson(),
-    "storeDetails": storeDetails?.toJson(),
-    "enabled_extensions": enabledExtensions,
-  };
+        "maintainance": maintainance,
+        "token": token,
+        "theme": theme?.toJson(),
+        "googleMapUsage": googleMapUsage,
+        "showLocationAtStart": showLocationAtStart,
+        "restrictLocation": restrictLocation,
+        "singleShippingAddress": singleShippingAddress,
+        "restrictLocationBy": restrictLocationBy,
+        "bankDetails": bankDetails?.toJson(),
+        "upiDetails": upiDetails?.toJson(),
+        "storeDetails": storeDetails?.toJson(),
+        "enabled_extensions": enabledExtensions,
+      };
 
   bool hasExtension(String slug) => enabledExtensions.contains(slug);
 }
@@ -82,14 +91,16 @@ class StoreDetails {
   });
 
   factory StoreDetails.fromJson(Map<String, dynamic> json) => StoreDetails(
-    storeMetadata: json["storeMetadata"] == null ? null : StoreMetadata.fromJson(json["storeMetadata"]),
-    loginType: json["loginType"],
-  );
+        storeMetadata: json["storeMetadata"] == null
+            ? null
+            : StoreMetadata.fromJson(json["storeMetadata"]),
+        loginType: json["loginType"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "storeMetadata": storeMetadata?.toJson(),
-    "loginType": loginType,
-  };
+        "storeMetadata": storeMetadata?.toJson(),
+        "loginType": loginType,
+      };
 }
 
 class StoreMetadata {
@@ -97,27 +108,31 @@ class StoreMetadata {
   String? versionCheck;
   String? invoiceUrl;
   num? minimumOrderValue;
+  String? selfPickupAddress;
 
   StoreMetadata({
     this.skipLogin,
     this.versionCheck,
     this.invoiceUrl,
     this.minimumOrderValue,
+    this.selfPickupAddress,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
-    skipLogin: json["skip_login"],
-    versionCheck: json["version_check"],
-    invoiceUrl: json["invoice_url"],
-    minimumOrderValue: json["minimum_order_value"],
-  );
+        skipLogin: json["skip_login"],
+        versionCheck: json["version_check"],
+        invoiceUrl: json["invoice_url"],
+        minimumOrderValue: json["minimum_order_value"],
+        selfPickupAddress: json["self_pickup_address"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "skip_login": skipLogin,
-    "version_check": versionCheck,
-    "invoice_url": invoiceUrl,
-    "minimum_order_value": minimumOrderValue,
-  };
+        "skip_login": skipLogin,
+        "version_check": versionCheck,
+        "invoice_url": invoiceUrl,
+        "minimum_order_value": minimumOrderValue,
+        "self_pickup_address": selfPickupAddress,
+      };
 }
 
 class BankDetails {
@@ -138,22 +153,22 @@ class BankDetails {
   });
 
   factory BankDetails.fromJson(Map<String, dynamic> json) => BankDetails(
-    bankName: json["bankName"],
-    branchName: json["branchName"],
-    accountHolderName: json["accountHolderName"],
-    accountNumber: json["accountNumber"],
-    ifscCode: json["ifscCode"],
-    bankNotes: json["bankNotes"],
-  );
+        bankName: json["bankName"],
+        branchName: json["branchName"],
+        accountHolderName: json["accountHolderName"],
+        accountNumber: json["accountNumber"],
+        ifscCode: json["ifscCode"],
+        bankNotes: json["bankNotes"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "bankName": bankName,
-    "branchName": branchName,
-    "accountHolderName": accountHolderName,
-    "accountNumber": accountNumber,
-    "ifscCode": ifscCode,
-    "bankNotes": bankNotes,
-  };
+        "bankName": bankName,
+        "branchName": branchName,
+        "accountHolderName": accountHolderName,
+        "accountNumber": accountNumber,
+        "ifscCode": ifscCode,
+        "bankNotes": bankNotes,
+      };
 }
 
 class Theme {
@@ -176,24 +191,24 @@ class Theme {
   });
 
   factory Theme.fromJson(Map<String, dynamic> json) => Theme(
-    fontFamily: json["fontFamily"],
-    primaryColor: json["primaryColor"],
-    secondaryColor: json["secondaryColor"],
-    header: json["header"],
-    productView: json["productView"],
-    titleFont: json["titleFont"],
-    contentFont: json["contentFont"],
-  );
+        fontFamily: json["fontFamily"],
+        primaryColor: json["primaryColor"],
+        secondaryColor: json["secondaryColor"],
+        header: json["header"],
+        productView: json["productView"],
+        titleFont: json["titleFont"],
+        contentFont: json["contentFont"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "fontFamily": fontFamily,
-    "primaryColor": primaryColor,
-    "secondaryColor": secondaryColor,
-    "header": header,
-    "productView": productView,
-    "titleFont": titleFont,
-    "contentFont": contentFont,
-  };
+        "fontFamily": fontFamily,
+        "primaryColor": primaryColor,
+        "secondaryColor": secondaryColor,
+        "header": header,
+        "productView": productView,
+        "titleFont": titleFont,
+        "contentFont": contentFont,
+      };
 }
 
 class UpiDetails {
@@ -208,14 +223,14 @@ class UpiDetails {
   });
 
   factory UpiDetails.fromJson(Map<String, dynamic> json) => UpiDetails(
-    upiId: json["upiId"],
-    qrCode: json["qrCode"],
-    upiNotes: json["upiNotes"],
-  );
+        upiId: json["upiId"],
+        qrCode: json["qrCode"],
+        upiNotes: json["upiNotes"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "upiId": upiId,
-    "qrCode": qrCode,
-    "upiNotes": upiNotes,
-  };
+        "upiId": upiId,
+        "qrCode": qrCode,
+        "upiNotes": upiNotes,
+      };
 }

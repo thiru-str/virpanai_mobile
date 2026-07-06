@@ -134,6 +134,8 @@ Future<void> _savePublicDetailsToPrefs(PublicDetailsResponse details) async {
   await prefs.saveString('product_view', details.theme?.productView ?? '');
   await prefs.saveString(
       'invoice_url', details.storeDetails?.storeMetadata?.invoiceUrl ?? '');
+  await prefs.saveString('self_pickup_address',
+      details.storeDetails?.storeMetadata?.selfPickupAddress ?? '');
   final bool skipLogin =
       details.storeDetails?.storeMetadata?.skipLogin ?? false;
   await prefs.saveBool('skip_login', skipLogin);

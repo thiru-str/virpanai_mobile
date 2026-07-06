@@ -70,6 +70,7 @@ class _CartPageState extends State<CartPage>
   bool isDelivery = true;
   String? deliveryOption;
   String? pickupOption;
+  String selfPickupAddress = '';
   ShippingResponse? shippingResponse;
 
   Global? global;
@@ -127,6 +128,8 @@ class _CartPageState extends State<CartPage>
 
   Future<void> initGlobal() async {
     var global = await getGlobal();
+    selfPickupAddress =
+        (await SharedPreferencesUtil().getString('self_pickup_address')) ?? '';
 
     if (global?.paymentProvider != null) {
       setState(() {
@@ -629,6 +632,9 @@ class _CartPageState extends State<CartPage>
 
                               // Delivery Method Card
                               _buildDeliveryMethodCard(),
+                              if (!isDelivery &&
+                                  selfPickupAddress.trim().isNotEmpty)
+                                _buildSelfPickupAddressCard(),
                               // Free delivery progress banner — hides itself when
                               // no shipping address or no slabs configured.
                               if ((cartResponse?.cart?.id ?? '').isNotEmpty)
@@ -1912,6 +1918,67 @@ class _CartPageState extends State<CartPage>
             updateShippingMethod(selectedId);
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildSelfPickupAddressCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.store_mall_directory_outlined,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pickup Address',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  selfPickupAddress,
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 13,
+                    color: AppColors.textColor50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

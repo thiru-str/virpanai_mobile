@@ -78,7 +78,7 @@ class _ItemVideoTileState extends State<ItemVideoTile> {
             padding: const EdgeInsets.only(top: 6),
             child: Text(
               widget.title,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),

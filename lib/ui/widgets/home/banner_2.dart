@@ -73,9 +73,9 @@ class _Banner2State extends State<Banner2> {
       setState(() => _isVisible = isVisible);
 
       if (!isVisible) {
-        _autoScrollTimer?.cancel(); // stop timer
+        _autoScrollTimer?.cancel();
       } else {
-        _startAutoScroll(); // resume timer
+        _startAutoScroll();
       }
     }
   }
@@ -102,7 +102,6 @@ class _Banner2State extends State<Banner2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Title Row
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
@@ -139,12 +138,9 @@ class _Banner2State extends State<Banner2> {
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 16),
-
-                /// Carousel
+                const SizedBox(height: 12),
                 SizedBox(
-                  height: 190,
+                  height: 260,
                   child: PageView.builder(
                     controller: _pageController,
                     padEnds: false,
@@ -167,7 +163,7 @@ class _Banner2State extends State<Banner2> {
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           child: isVideo
                               ? ItemVideoTile(
                                   key: ValueKey(mediaUrl),
@@ -203,7 +199,12 @@ class _Banner2State extends State<Banner2> {
           ),
         ),
         const SizedBox(height: 6),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }

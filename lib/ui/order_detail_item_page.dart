@@ -2,8 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/order_detail_response.dart';
-import 'package:waioz/model/order_history_reponse.dart'
-    as order_history_models;
+import 'package:waioz/model/order_history_reponse.dart' as order_history_models;
 import 'package:waioz/ui/transaction_detail_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/order_status_widget.dart';
@@ -40,7 +39,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   double get _walletAmount {
     final meta = order?.metadata;
     if (meta is Map && meta['wallet_split'] is Map) {
-      return double.tryParse(meta['wallet_split']['wallet_amount']?.toString() ?? '0') ?? 0;
+      return double.tryParse(
+              meta['wallet_split']['wallet_amount']?.toString() ?? '0') ??
+          0;
     }
     return 0;
   }
@@ -65,6 +66,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     }
     return 0;
   }
+
   Map<String, String> paymentTypeMap = {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
@@ -76,6 +78,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   bool apiLoading = true;
   String invoiceUrl = "";
   String token = "";
+  String selfPickupAddress = '';
 
   @override
   void initState() {
@@ -87,6 +90,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     getOrderHistoryAPI();
     invoiceUrl = (await SharedPreferencesUtil().getString('invoice_url')) ?? '';
     token = (await SharedPreferencesUtil().getString('token')) ?? '';
+    selfPickupAddress =
+        (await SharedPreferencesUtil().getString('self_pickup_address')) ?? '';
   }
 
   void getOrderHistoryAPI() async {
@@ -140,198 +145,247 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
-          appBar: CommonHeaderAppBar(
-            title: AppStrings.orders,
-            onBackTap: () {
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
-              } else {
-                PageRouteUtils.pushAndRemoveUntil(
-                    context, const BottomNavPage());
-              }
-            },
-          ),
-          body: Container(
-            decoration: const BoxDecoration(gradient: AppColors.linearGradient),
-            child: apiLoading
-              ? Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
-                )
-              : SingleChildScrollView(
-                  // Wrap the body with SingleChildScrollView for scrolling
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  child: Column(
-                    // Use a Column to arrange the widgets vertically
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: OrderStatusWidget(
-                          currentStep: getCurrentStep(
-                            orderHistoryOrder?.status ?? order?.status,
-                            _fulfillmentStatus,
-                          ),
-                          steps: buildOrderSteps(
-                            orderHistoryOrder?.status ?? order?.status,
-                            _fulfillmentStatus,
-                          ),
-                          isCanceled:
-                              (orderHistoryOrder?.status ?? order?.status) ==
-                                  'canceled',
-                        ),
+            backgroundColor: Colors.white,
+            appBar: CommonHeaderAppBar(
+              title: AppStrings.orders,
+              onBackTap: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  PageRouteUtils.pushAndRemoveUntil(
+                      context, const BottomNavPage());
+                }
+              },
+            ),
+            body: Container(
+              decoration:
+                  const BoxDecoration(gradient: AppColors.linearGradient),
+              child: apiLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(height: 10),
-                      _buildOrdersList(),
-                      const SizedBox(height: 10), // List of order items
-                      _buildSectionTitle(AppStrings.billing_details),
-                      const SizedBox(height: 10), // List of order items
-                      Container(
-                        padding: const EdgeInsets.all(0.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CartPaymentMethodWidget(
-                              paymentMethod: paymentType,
-                              // Or any other payment method
-                              onTap: () {
-                                PageRouteUtils.pushWithSlide(
-                                    context,
-                                    TransactionDetailsScreen(
-                                      orderID: order?.id ?? "",
-                                ));
-                              },
+                    )
+                  : SingleChildScrollView(
+                      // Wrap the body with SingleChildScrollView for scrolling
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 15),
+                      child: Column(
+                        // Use a Column to arrange the widgets vertically
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: OrderStatusWidget(
+                              currentStep: getCurrentStep(
+                                orderHistoryOrder?.status ?? order?.status,
+                                _fulfillmentStatus,
+                              ),
+                              steps: buildOrderSteps(
+                                orderHistoryOrder?.status ?? order?.status,
+                                _fulfillmentStatus,
+                              ),
+                              isCanceled: (orderHistoryOrder?.status ??
+                                      order?.status) ==
+                                  'canceled',
                             ),
-                            if (_deliveryMethodName.isNotEmpty)
-                              CartCalculation(
-                                keyText: 'Delivery Method:',
-                                valueText: _deliveryMethodName,
-                                valueStyle: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.primary,
+                          ),
+                          const SizedBox(height: 10),
+                          _buildOrdersList(),
+                          const SizedBox(height: 10), // List of order items
+                          _buildSectionTitle(AppStrings.billing_details),
+                          const SizedBox(height: 10), // List of order items
+                          Container(
+                            padding: const EdgeInsets.all(0.0),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CartPaymentMethodWidget(
+                                  paymentMethod: paymentType,
+                                  // Or any other payment method
+                                  onTap: () {
+                                    PageRouteUtils.pushWithSlide(
+                                        context,
+                                        TransactionDetailsScreen(
+                                          orderID: order?.id ?? "",
+                                        ));
+                                  },
+                                ),
+                                if (_deliveryMethodName.isNotEmpty)
+                                  CartCalculation(
+                                    keyText: 'Delivery Method:',
+                                    valueText: _deliveryMethodName,
+                                    valueStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Visibility(
+                                  visible:
+                                      (order?.prices?.itemSubtotal ?? 0) > 0,
+                                  child: CartCalculation(
+                                    keyText: '${AppStrings.subTotal}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                        ((order?.prices?.itemSubtotal ?? 0) -
+                                                ((order?.items ?? [])
+                                                    .where((item) =>
+                                                        item.isPlatformFee)
+                                                    .fold<num>(
+                                                        0,
+                                                        (sum, item) =>
+                                                            sum +
+                                                            ((item.unitPrice ??
+                                                                    0) *
+                                                                (item.quantity ??
+                                                                    0)))))
+                                            .toString()),
+                                  ),
+                                ),
+                                if ((order?.prices?.discountTotal ?? 0) > 0)
+                                  CartCalculation(
+                                    keyText: order?.couponCode != null
+                                        ? 'Coupon (${order!.couponCode}):'
+                                        : 'Coupon Discount:',
+                                    valueText:
+                                        '- ${CurrencyUtil.appendCurrency((order?.prices?.discountTotal ?? 0).toStringAsFixed(2))}',
+                                    valueStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.green.shade700),
+                                  ),
+                                Visibility(
+                                  visible:
+                                      (order?.prices?.shippingTotal ?? 0) > 0,
+                                  child: CartCalculation(
+                                    keyText: '${AppStrings.shipping}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                        (order?.prices?.shippingTotal ?? 0)
+                                            .toString()),
+                                  ),
+                                ),
+                                if ((order?.items ?? [])
+                                        .any((item) => item.isPlatformFee) &&
+                                    (order!.items!
+                                            .where((item) => item.isPlatformFee)
+                                            .fold<num>(
+                                                0,
+                                                (sum, item) =>
+                                                    sum +
+                                                    ((item.unitPrice ?? 0) *
+                                                        (item.quantity ??
+                                                            0)))) >
+                                        0)
+                                  CartCalculation(
+                                    keyText: '${AppStrings.platform_fee}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                        ((order?.items ?? [])
+                                            .where((item) => item.isPlatformFee)
+                                            .fold<num>(
+                                                0,
+                                                (sum, item) =>
+                                                    sum +
+                                                    ((item.unitPrice ?? 0) *
+                                                        (item.quantity ??
+                                                            0)))).toString()),
+                                  ),
+                                Visibility(
+                                  visible: (order?.prices?.taxTotal ?? 0) > 0,
+                                  child: CartCalculation(
+                                    keyText: '${AppStrings.tax}:',
+                                    valueText: CurrencyUtil.appendCurrency(
+                                        (order?.prices?.taxTotal ?? 0)
+                                            .toString()),
+                                  ),
+                                ),
+                                if (_loyaltyDiscount > 0)
+                                  CartCalculation(
+                                    keyText:
+                                        'Loyalty ($_loyaltyPointsApplied pts):',
+                                    valueText:
+                                        '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                    keyStyle: TextStyle(
+                                        fontSize: 16, color: AppColors.primary),
+                                    valueStyle: TextStyle(
+                                        fontSize: 16, color: AppColors.primary),
+                                  ),
+                                if (_walletAmount > 0)
+                                  CartCalculation(
+                                    keyText: 'Wallet:',
+                                    valueText:
+                                        '- ${CurrencyUtil.appendCurrency(_walletAmount.toStringAsFixed(2))}',
+                                    keyStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.green.shade700),
+                                    valueStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.green.shade700),
+                                  ),
+                                Visibility(
+                                  visible: (order?.prices?.total ?? 0) > 0,
+                                  child: CartCalculation(
+                                      keyText: '${AppStrings.total}:',
+                                      valueText: CurrencyUtil.appendCurrency(
+                                          (((order?.prices?.total ?? 0) -
+                                                      _walletAmount -
+                                                      _loyaltyDiscount)
+                                                  .clamp(0, double.infinity))
+                                              .toStringAsFixed(2))),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          if ((order?.prices?.itemSubtotal ??
+                                  order?.prices?.total ??
+                                  0) >
+                              0)
+                            OrderLoyaltyBadge(
+                              orderTotal: (order!.prices!.itemSubtotal ??
+                                      order!.prices!.total!) -
+                                  _loyaltyDiscount,
+                              orderStatus: order?.status ?? '',
+                              paymentStatus: order?.paymentStatus ?? '',
+                              orderId: order?.id,
+                            ),
+                          _buildSectionTitle(AppStrings.shipping_details),
+                          const SizedBox(height: 20), // List of order items
+                          _buildShippingDetailsCard(), // Shipping details card
+                          const SizedBox(height: 20),
+                          Visibility(
+                            visible: (order?.paymentStatus ?? '') == 'pending',
+                            child: GestureDetector(
+                              onTap: () {
+                                _showCancellation(context, order?.id ?? '');
+                              },
+                              child: Text(
+                                AppStrings.cancel_order,
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 15,
+                                  color: Colors.red,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Visibility(
-                              visible: (order?.prices?.itemSubtotal ?? 0) > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.subTotal}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    ((order?.prices?.itemSubtotal ?? 0) -
-                                        ((order?.items ?? [])
-                                            .where((item) => item.isPlatformFee)
-                                            .fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))))
-                                        .toString()),
-                              ),
-                            ),
-                            if ((order?.prices?.discountTotal ?? 0) > 0)
-                              CartCalculation(
-                                keyText: order?.couponCode != null
-                                    ? 'Coupon (${order!.couponCode}):'
-                                    : 'Coupon Discount:',
-                                valueText: '- ${CurrencyUtil.appendCurrency((order?.prices?.discountTotal ?? 0).toStringAsFixed(2))}',
-                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
-                              ),
-                            Visibility(
-                              visible: (order?.prices?.shippingTotal ?? 0) > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.shipping}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    (order?.prices?.shippingTotal ?? 0).toString()),
-                              ),
-                            ),
-                            if ((order?.items ?? []).any((item) => item.isPlatformFee) &&
-                                (order!.items!.where((item) => item.isPlatformFee).fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))) > 0)
-                              CartCalculation(
-                                keyText: '${AppStrings.platform_fee}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    ((order?.items ?? [])
-                                        .where((item) => item.isPlatformFee)
-                                        .fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0))))
-                                        .toString()),
-                              ),
-                            Visibility(
-                              visible: (order?.prices?.taxTotal ?? 0) > 0,
-                              child: CartCalculation(
-                                keyText: '${AppStrings.tax}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    (order?.prices?.taxTotal ?? 0).toString()),
-                              ),
-                            ),
-                            if (_loyaltyDiscount > 0)
-                              CartCalculation(
-                                keyText: 'Loyalty ($_loyaltyPointsApplied pts):',
-                                valueText: '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
-                                keyStyle: TextStyle(fontSize: 16, color: AppColors.primary),
-                                valueStyle: TextStyle(fontSize: 16, color: AppColors.primary),
-                              ),
-                            if (_walletAmount > 0)
-                              CartCalculation(
-                                keyText: 'Wallet:',
-                                valueText: '- ${CurrencyUtil.appendCurrency(_walletAmount.toStringAsFixed(2))}',
-                                keyStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
-                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
-                              ),
-                            Visibility(
-                              visible: (order?.prices?.total ?? 0) > 0,
-                              child: CartCalculation(
-                                  keyText: '${AppStrings.total}:',
-                                  valueText: CurrencyUtil.appendCurrency(
-                                      (((order?.prices?.total ?? 0) - _walletAmount - _loyaltyDiscount).clamp(0, double.infinity)).toStringAsFixed(2))),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      if ((order?.prices?.itemSubtotal ?? order?.prices?.total ?? 0) > 0)
-                        OrderLoyaltyBadge(
-                          orderTotal: (order!.prices!.itemSubtotal ?? order!.prices!.total!) - _loyaltyDiscount,
-                          orderStatus: order?.status ?? '',
-                          paymentStatus: order?.paymentStatus ?? '',
-                          orderId: order?.id,
-                        ),
-                      _buildSectionTitle(AppStrings.shipping_details),
-                      const SizedBox(height: 20), // List of order items
-                      _buildShippingDetailsCard(), // Shipping details card
-                      const SizedBox(height: 20),
-                      Visibility(
-                        visible: (order?.paymentStatus ?? '') == 'pending',
-                        child: GestureDetector(
-                          onTap: () {
-                            _showCancellation(context, order?.id ?? '');
-                          },
-                          child: Text(
-                            AppStrings.cancel_order,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 15,
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
+                          Visibility(
+                            visible: _fulfillmentStatus == 'delivered',
+                            child: ProfileItemWidget(
+                              title: AppStrings.download_invoice,
+                              onTap: () {
+                                _launchURL(
+                                    '$invoiceUrl/${order?.id ?? ''}?token=${token}&isdownload=true');
+                              },
+                            ),
+                          )
+                        ],
                       ),
-                      Visibility(
-                        visible: _fulfillmentStatus == 'delivered',
-                        child: ProfileItemWidget(
-                          title: AppStrings.download_invoice,
-                          onTap: () {
-                            _launchURL(
-                                '$invoiceUrl/${order?.id ?? ''}?token=${token}&isdownload=true');
-                          },
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-        )));
+                    ),
+            )));
   }
 
   void _launchURL(String url) async {
@@ -433,6 +487,31 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   }
 
   Widget _buildShippingDetailsCard() {
+    if (_isPickupOrder && selfPickupAddress.trim().isNotEmpty) {
+      return Container(
+          padding: const EdgeInsets.all(20),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.secondary,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Pickup Address',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(selfPickupAddress),
+            ],
+          ));
+    }
+
     final dynamic shippingAddress =
         order?.shippingAddress ?? orderHistoryOrder?.cart?.shippingAddress;
     final shippingLines = [
