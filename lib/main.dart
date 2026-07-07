@@ -50,20 +50,8 @@ Future<void> main() async {
     await Firebase.initializeApp();
 
     // Render immediately using cached config (if present), then refresh in background.
-    PublicDetailsResponse? cachedPublicDetails =
+    final PublicDetailsResponse? cachedPublicDetails =
         await SharedPreferencesUtil().getPublicDetails();
-
-    // On fresh install there is no cache, so skip_login would default to false
-    // even when the store has it enabled. Block on the API once so the correct
-    // value is available before we decide which screen to show.
-    if (cachedPublicDetails == null) {
-      try {
-        cachedPublicDetails = await ApiService().getPublicDetails();
-        await _savePublicDetailsToPrefs(cachedPublicDetails);
-      } catch (_) {
-        // Network unavailable on first launch — proceed with defaults.
-      }
-    }
 
     await ExtensionsUtil.refresh();
     _applyThemeFromPublicDetails(cachedPublicDetails);
