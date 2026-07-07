@@ -259,18 +259,47 @@ class Item {
 class ItemMetadata {
   String? type;
   num? percentage;
+  bool unitBasedInventory;
+  int? unitQuantity;
+  int? baseUnitGrams;
+  String? unitType;
+  String? displayUnit;
 
-  ItemMetadata({this.type, this.percentage});
+  ItemMetadata({
+    this.type,
+    this.percentage,
+    this.unitBasedInventory = false,
+    this.unitQuantity,
+    this.baseUnitGrams,
+    this.unitType,
+    this.displayUnit,
+  });
 
   factory ItemMetadata.fromJson(Map<String, dynamic> json) => ItemMetadata(
     type: json["type"],
     percentage: json["percentage"],
+    unitBasedInventory: json["unit_based_inventory"] == true ||
+        json["unit_based_inventory"] == "true",
+    unitQuantity: _toInt(json["unit_quantity"]),
+    baseUnitGrams: _toInt(json["base_unit_grams"]),
+    unitType: json["unit_type"]?.toString(),
+    displayUnit: json["display_unit"]?.toString(),
   );
 
   Map<String, dynamic> toJson() => {
     "type": type,
     "percentage": percentage,
+    "unit_based_inventory": unitBasedInventory,
+    "unit_quantity": unitQuantity,
+    "base_unit_grams": baseUnitGrams,
+    "unit_type": unitType,
+    "display_unit": displayUnit,
   };
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    return int.tryParse(value.toString());
+  }
 }
 
 class Detail {

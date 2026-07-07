@@ -463,7 +463,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 showReturnButton: itemDetail.isReturnable ?? false,
                 showRating: itemDetail.status == 'delivered',
                 imageUrl: itemDetail.thumbnail ?? '',
-                variant: itemDetail.variantTitle ?? '',
+                variant: _buildOrderItemVariant(itemDetail),
                 productName:
                     '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
                 status: itemDetail.status ?? '',
@@ -495,6 +495,52 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
         ),
       ],
     );
+  }
+
+  String _buildOrderItemVariant(Item item) {
+    final variantTitle = item.variantTitle ?? '';
+    final metadata = item.metadata;
+
+    if (metadata?.unitBasedInventory == true &&
+        metadata?.unitQuantity != null &&
+        metadata!.unitQuantity! > 0) {
+      final unit = (metadata.displayUnit ?? metadata.unitType ?? '')
+          .trim()
+          .toLowerCase();
+      final value = metadata.unitQuantity!;
+      late final String formattedUnit;
+
+      if (unit == 'kg') {
+        formattedUnit = value % 1000 == 0
+            ? '${value ~/ 1000} kg'
+            : '${(value / 1000).toStringAsFixed(value % 100 == 0 ? 1 : 2)} kg';
+      } else if (unit == 'g' || unit == 'gram' || unit == 'grams') {
+        formattedUnit = '$value g';
+      } else if (unit == 'ml') {
+        formattedUnit = '$value ml';
+      } else if (unit == 'l' ||
+          unit == 'ltr' ||
+          unit == 'litre' ||
+          unit == 'liter') {
+        formattedUnit = value % 1000 == 0
+            ? '${value ~/ 1000} L'
+            : '${(value / 1000).toStringAsFixed(value % 100 == 0 ? 1 : 2)} L';
+      } else {
+        formattedUnit = '$value${unit.isNotEmpty ? ' $unit' : ''}';
+      }
+
+      if (variantTitle.isEmpty || variantTitle == 'Default variant') {
+        return formattedUnit;
+      }
+
+      return '$variantTitle • $formattedUnit';
+    }
+
+    if (variantTitle == 'Default variant') {
+      return '';
+    }
+
+    return variantTitle;
   }
 
   Widget _buildShippingDetailsCard() {
