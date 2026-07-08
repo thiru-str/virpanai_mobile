@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-RegisterResponse registerResponseFromJson(String str) => RegisterResponse.fromJson(json.decode(str));
+RegisterResponse registerResponseFromJson(String str) =>
+    RegisterResponse.fromJson(json.decode(str));
 
-String registerResponseToJson(RegisterResponse data) => json.encode(data.toJson());
+String registerResponseToJson(RegisterResponse data) =>
+    json.encode(data.toJson());
 
 class RegisterResponse {
   Customer? customer;
@@ -15,13 +17,16 @@ class RegisterResponse {
     this.customer,
   });
 
-  factory RegisterResponse.fromJson(Map<String, dynamic> json) => RegisterResponse(
-    customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
-  );
+  factory RegisterResponse.fromJson(Map<String, dynamic> json) =>
+      RegisterResponse(
+        customer: json["customer"] == null
+            ? null
+            : Customer.fromJson(json["customer"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "customer": customer?.toJson(),
-  };
+        "customer": customer?.toJson(),
+      };
 }
 
 class Customer {
@@ -54,34 +59,45 @@ class Customer {
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
-    id: json["id"],
-    email: json["email"],
-    companyName: json["company_name"],
-    firstName: json["first_name"],
-    lastName: json["last_name"],
-    phone: json["phone"],
-    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
-    hasAccount: json["has_account"],
-    deletedAt: json["deleted_at"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    addresses: json["addresses"] == null ? [] : List<Address>.from(json["addresses"]!.map((x) => Address.fromJson(x))),
-  );
+        id: json["id"],
+        email: json["email"],
+        companyName: json["company_name"],
+        firstName: json["first_name"],
+        lastName: json["last_name"],
+        phone: json["phone"],
+        metadata: json["metadata"] == null
+            ? null
+            : Metadata.fromJson(json["metadata"]),
+        hasAccount: json["has_account"],
+        deletedAt: json["deleted_at"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        addresses: json["addresses"] == null
+            ? []
+            : List<Address>.from(
+                json["addresses"]!.map((x) => Address.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "email": email,
-    "company_name": companyName,
-    "first_name": firstName,
-    "last_name": lastName,
-    "phone": phone,
-    "metadata": metadata?.toJson(),
-    "has_account": hasAccount,
-    "deleted_at": deletedAt,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "addresses": addresses == null ? [] : List<dynamic>.from(addresses!.map((x) => x.toJson())),
-  };
+        "id": id,
+        "email": email,
+        "company_name": companyName,
+        "first_name": firstName,
+        "last_name": lastName,
+        "phone": phone,
+        "metadata": metadata?.toJson(),
+        "has_account": hasAccount,
+        "deleted_at": deletedAt,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "addresses": addresses == null
+            ? []
+            : List<dynamic>.from(addresses!.map((x) => x.toJson())),
+      };
 }
 
 class Address {
@@ -128,67 +144,92 @@ class Address {
   });
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
-    id: json["id"],
-    addressName: json["address_name"],
-    isDefaultShipping: json["is_default_shipping"],
-    isDefaultBilling: json["is_default_billing"],
-    company: json["company"],
-    firstName: json["first_name"],
-    lastName: json["last_name"],
-    address1: json["address_1"],
-    address2: json["address_2"],
-    city: json["city"],
-    countryCode: json["country_code"],
-    province: json["province"],
-    postalCode: json["postal_code"],
-    phone: json["phone"],
-    metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
-    customerId: json["customer_id"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    deletedAt: json["deleted_at"],
-  );
+        id: json["id"],
+        addressName: json["address_name"],
+        isDefaultShipping: json["is_default_shipping"],
+        isDefaultBilling: json["is_default_billing"],
+        company: json["company"],
+        firstName: json["first_name"],
+        lastName: json["last_name"],
+        address1: json["address_1"],
+        address2: json["address_2"],
+        city: json["city"],
+        countryCode: json["country_code"],
+        province: json["province"],
+        postalCode: json["postal_code"],
+        phone: json["phone"],
+        metadata: json["metadata"] == null
+            ? null
+            : Metadata.fromJson(json["metadata"]),
+        customerId: json["customer_id"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        deletedAt: json["deleted_at"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "address_name": addressName,
-    "is_default_shipping": isDefaultShipping,
-    "is_default_billing": isDefaultBilling,
-    "company": company,
-    "first_name": firstName,
-    "last_name": lastName,
-    "address_1": address1,
-    "address_2": address2,
-    "city": city,
-    "country_code": countryCode,
-    "province": province,
-    "postal_code": postalCode,
-    "phone": phone,
-    "metadata": metadata?.toJson(),
-    "customer_id": customerId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "deleted_at": deletedAt,
-  };
+        "id": id,
+        "address_name": addressName,
+        "is_default_shipping": isDefaultShipping,
+        "is_default_billing": isDefaultBilling,
+        "company": company,
+        "first_name": firstName,
+        "last_name": lastName,
+        "address_1": address1,
+        "address_2": address2,
+        "city": city,
+        "country_code": countryCode,
+        "province": province,
+        "postal_code": postalCode,
+        "phone": phone,
+        "metadata": metadata?.toJson(),
+        "customer_id": customerId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "deleted_at": deletedAt,
+      };
 }
 
 class Metadata {
   String? latitude;
   String? longitude;
+  String? countryCode;
+  String? deviceId;
+  String? status;
+  String? shopName;
+  String? shopImage;
 
   Metadata({
     this.latitude,
     this.longitude,
+    this.countryCode,
+    this.deviceId,
+    this.status,
+    this.shopName,
+    this.shopImage,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
-    latitude: json["latitude"],
-    longitude: json["longitude"],
-  );
+        latitude: json["latitude"],
+        longitude: json["longitude"],
+        countryCode: json["country_code"],
+        deviceId: json["device_id"],
+        status: json["status"],
+        shopName: json["shop_name"],
+        shopImage: json["shop_image"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "latitude": latitude,
-    "longitude": longitude,
-  };
+        "latitude": latitude,
+        "longitude": longitude,
+        "country_code": countryCode,
+        "device_id": deviceId,
+        "status": status,
+        "shop_name": shopName,
+        "shop_image": shopImage,
+      };
 }
-

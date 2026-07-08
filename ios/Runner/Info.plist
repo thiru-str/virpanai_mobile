@@ -51,9 +51,11 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>We access camera permission for take and upload a photo of your payment proof for verification, and to scan referral QR codes during signup.</string>
+	<string>We access the camera to take and upload payment proof, shop photos during signup, and scan referral QR codes.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>We use your contacts to help you find your referrer easily during signup. Your contacts are not stored or shared.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We access your photo library so you can choose and upload a shop image during signup.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We use your location to ensure accurate delivery to your current address.</string>
 	<key>NSLocationUsageDescription</key>

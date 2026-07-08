@@ -388,7 +388,9 @@ class ApiService {
       String lastName,
       String countryCode,
       String phone,
-      String token) async {
+      String token,
+      String shopName,
+      String shopImage) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await _updateToken();
     final response = await _makePostRequest(
@@ -399,7 +401,12 @@ class ApiService {
           "first_name": firstName,
           "last_name": lastName,
           "phone": phone,
-          "metadata": {"country_code": countryCode, "device_id": deviceId}
+          "metadata": {
+            "country_code": countryCode,
+            "device_id": deviceId,
+            "shop_name": shopName,
+            "shop_image": shopImage,
+          }
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -421,7 +428,9 @@ class ApiService {
       String lastName,
       String countryCode,
       String phone,
-      String password) async {
+      String password,
+      String shopName,
+      String shopImage) async {
     String? deviceId = await _updateToken();
     final response = await _makePostRequest(
         "store/customers/email-register",
@@ -432,7 +441,12 @@ class ApiService {
           "last_name": lastName,
           "phone": phone,
           "password": password,
-          "metadata": {"country_code": countryCode, "device_id": deviceId}
+          "metadata": {
+            "country_code": countryCode,
+            "device_id": deviceId,
+            "shop_name": shopName,
+            "shop_image": shopImage,
+          }
         },
         (data) => EmailRegisterResponse.fromJson(data),
         context);
@@ -591,7 +605,7 @@ class ApiService {
   Future<CustomerResponse> getCustomer(BuildContext context) async {
     await addToken();
     final response = await _makeGetRequest<CustomerResponse>(
-      'store/customers/me',
+      'store/customers/me?fields=+metadata',
       null,
       null,
       (json) => CustomerResponse.fromJson(json),
@@ -902,6 +916,9 @@ class ApiService {
     String companyName,
     String firstName,
     String lastName,
+    String shopName,
+    String shopImage,
+    Map<String, dynamic>? existingMetadata,
   ) async {
     await addToken();
     final response = await _makePostRequest(
@@ -911,7 +928,11 @@ class ApiService {
           "company_name": companyName,
           "first_name": firstName,
           "last_name": lastName,
-          "metadata": {}
+          "metadata": {
+            ...?existingMetadata,
+            "shop_name": shopName,
+            "shop_image": shopImage,
+          }
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -1004,8 +1025,20 @@ class ApiService {
     );
   }
 
-  Future<dynamic> uploadImage(BuildContext context, File file) async {
-    await addToken();
+  Future<dynamic> uploadImage(
+    BuildContext context,
+    File file, {
+    String? token,
+    bool requireAuth = true,
+  }) async {
+    if (token != null && token.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+    } else if (requireAuth) {
+      await addToken();
+    } else {
+      _dio.options.headers.remove('Authorization');
+    }
+
     return _uploadFile(
       file: file,
       apiUrl: 'store/uploads',

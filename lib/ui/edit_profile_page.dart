@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
@@ -17,21 +20,32 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  @override
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController phoneNoController = TextEditingController();
-  final TextEditingController companyController = TextEditingController();
+  final TextEditingController shopNameController = TextEditingController();
   RegisterResponse? registerResponse;
   bool apiCalling = true;
+  bool uploadingShopImage = false;
   Customer? customer;
+  File? selectedShopImage;
+  String? uploadedShopImage;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCustomerInfo();
+  }
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    phoneNoController.dispose();
+    shopNameController.dispose();
+    super.dispose();
   }
 
   static const Color _hairline = Color(0xFFE5E7EC);
@@ -92,6 +106,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 16),
+                      _buildField(
+                        label: 'Shop Name',
+                        controller: shopNameController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Shop Name is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildShopImageField(),
                     ],
                   ),
                 ],
@@ -186,8 +213,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             filled: true,
             fillColor: enabled ? Colors.white : const Color(0xFFF4F4F4),
             hintText: label,
-            hintStyle:
-                UiTypography.cardSubtitle(color: Colors.grey.shade600),
+            hintStyle: UiTypography.cardSubtitle(color: Colors.grey.shade600),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             enabledBorder: OutlineInputBorder(
@@ -208,7 +234,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE5484D), width: 1.5),
+              borderSide:
+                  const BorderSide(color: Color(0xFFE5484D), width: 1.5),
             ),
           ),
         ),
@@ -216,15 +243,305 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  Widget _buildShopImageField() {
+    final localImage = selectedShopImage;
+    final remoteImage = uploadedShopImage ?? '';
+    final hasImage = localImage != null || remoteImage.isNotEmpty;
+
+    return FormField<String>(
+      validator: (_) {
+        if ((uploadedShopImage ?? '').isEmpty) {
+          return 'Shop Image is required';
+        }
+        return null;
+      },
+      builder: (field) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Shop Image',
+              style: UiTypography.cardMeta(color: AppColors.textColor)
+                  .copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: uploadingShopImage ? null : _showShopImageSourceSheet,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(minHeight: 154),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFAFAFB),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: field.hasError
+                        ? Colors.red.shade700
+                        : const Color(0xFFE5E7EC),
+                  ),
+                ),
+                child: hasImage
+                    ? Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(13),
+                            child: localImage != null
+                                ? Image.file(
+                                    localImage,
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.network(
+                                    remoteImage,
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => _emptyImage(),
+                                  ),
+                          ),
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Row(
+                              children: [
+                                _imageActionButton(
+                                  icon: Icons.photo_camera_outlined,
+                                  onTap: _showShopImageSourceSheet,
+                                ),
+                                const SizedBox(width: 8),
+                                _imageActionButton(
+                                  icon: Icons.close_rounded,
+                                  onTap: _removeShopImage,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (uploadingShopImage)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.35),
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      )
+                    : _emptyImage(),
+              ),
+            ),
+            if (field.hasError) ...[
+              const SizedBox(height: 6),
+              Text(
+                field.errorText ?? '',
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 12,
+                  color: Colors.red.shade700,
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _emptyImage() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_photo_alternate_outlined,
+            color: AppColors.primary,
+            size: 36,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            uploadingShopImage
+                ? 'Uploading shop image...'
+                : 'Upload shop image',
+            style: FontUtils.primaryFontStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Take a photo or choose from gallery',
+            textAlign: TextAlign.center,
+            style: FontUtils.secondaryFontStyle(
+              fontSize: 13,
+              color: AppColors.textColor50,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imageActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: uploadingShopImage ? null : onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(icon, size: 20, color: AppColors.textColor),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showShopImageSourceSheet() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading:
+                    Icon(Icons.photo_camera_outlined, color: AppColors.primary),
+                title: const Text('Take photo'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library_outlined,
+                    color: AppColors.primary),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (source != null) {
+      await _pickShopImage(source);
+    }
+  }
+
+  Future<void> _pickShopImage(ImageSource source) async {
+    final previousShopImage = uploadedShopImage;
+
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: source,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      final file = File(pickedFile.path);
+      final validationMessage = await _validateShopImage(file);
+      if (validationMessage != null) {
+        AppUtils.showToast(validationMessage);
+        return;
+      }
+
+      setState(() {
+        selectedShopImage = file;
+        uploadedShopImage = null;
+        uploadingShopImage = true;
+      });
+
+      final response = await ApiService().uploadImage(context, file);
+      final imagePath = response?['file']?['path'] as String?;
+      if (imagePath == null || imagePath.isEmpty) {
+        throw Exception('Invalid upload response');
+      }
+
+      if (!mounted) return;
+      setState(() {
+        uploadedShopImage = imagePath;
+        uploadingShopImage = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        uploadingShopImage = false;
+        selectedShopImage = null;
+        uploadedShopImage = previousShopImage;
+      });
+      AppUtils.showToast('Unable to upload shop image');
+    }
+  }
+
+  Future<String?> _validateShopImage(File file) async {
+    final extension = file.path.split('.').last.toLowerCase();
+    const supportedExtensions = {'jpg', 'jpeg', 'png', 'webp'};
+    const maxImageSizeBytes = 5 * 1024 * 1024;
+
+    if (!supportedExtensions.contains(extension)) {
+      return 'Please upload a JPG, PNG, or WEBP image';
+    }
+
+    final fileSize = await file.length();
+    if (fileSize > maxImageSizeBytes) {
+      return 'Shop image must be 5 MB or smaller';
+    }
+
+    return null;
+  }
+
+  void _removeShopImage() {
+    setState(() {
+      selectedShopImage = null;
+      uploadedShopImage = null;
+    });
+  }
+
   Future<void> getCustomerInfo() async {
     try {
-      customer = await getCustomerResponse();
+      try {
+        final response = await ApiService().getCustomer(context);
+        customer = response.customer;
+        if (customer != null) {
+          await SharedPreferencesUtil().saveMap('customer', customer!.toJson());
+        }
+      } catch (_) {
+        customer = await getCustomerResponse();
+      }
+
       if (customer != null) {
         setState(() {
           firstNameController.text = customer?.firstName ?? "";
           lastNameController.text = customer?.lastName ?? "";
           phoneNoController.text = customer?.phone ?? "";
-          companyController.text = customer?.companyName ?? "";
+          shopNameController.text =
+              customer?.metadata?.shopName ?? customer?.companyName ?? "";
+          uploadedShopImage = customer?.metadata?.shopImage;
         });
       }
     } catch (e) {
@@ -246,13 +563,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   void updateUser() async {
     try {
+      final shopName = shopNameController.text.trim();
+      final shopImage = uploadedShopImage ?? '';
+
+      if (uploadingShopImage) {
+        AppUtils.showToast('Please wait for shop image upload');
+        return;
+      }
+
+      if (shopImage.isEmpty) {
+        AppUtils.showToast('Shop Image is required');
+        return;
+      }
+
+      setState(() {
+        apiCalling = true;
+      });
+
       final ApiService apiService = ApiService();
       registerResponse = await apiService.updateProfile(
           context,
           phoneNoController.text,
-          companyController.text,
+          shopName,
           firstNameController.text,
-          lastNameController.text);
+          lastNameController.text,
+          shopName,
+          shopImage,
+          customer?.metadata?.toJson());
+
+      final updatedCustomer = registerResponse!.customer;
+      if (updatedCustomer != null) {
+        updatedCustomer.metadata = Metadata.fromJson({
+          ...?customer?.metadata?.toJson(),
+          ...?updatedCustomer.metadata?.toJson(),
+          "shop_name": shopName,
+          "shop_image": shopImage,
+        });
+        updatedCustomer.companyName = shopName;
+      }
+
       setState(() {
         apiCalling = false;
       });
