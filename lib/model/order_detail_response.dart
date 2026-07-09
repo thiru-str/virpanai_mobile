@@ -40,6 +40,8 @@ class Data {
   String? currencyCode;
   String? status;
   bool? isCanceled;
+  String? orderCustomStatus;
+  String? orderDisplayStatus;
   String? orderStatus;
   String? paymentStatus;
   String? paymentMethod;
@@ -58,6 +60,8 @@ class Data {
     this.currencyCode,
     this.status,
     this.isCanceled,
+    this.orderCustomStatus,
+    this.orderDisplayStatus,
     this.orderStatus,
     this.paymentStatus,
     this.paymentMethod,
@@ -77,6 +81,8 @@ class Data {
     currencyCode: json["currency_code"],
     status: json["status"],
     isCanceled: json["is_canceled"],
+    orderCustomStatus: json["order_custom_status"],
+    orderDisplayStatus: json["order_display_status"],
     orderStatus: json["order_status"],
     paymentStatus: json["payment_status"],
     paymentMethod: json["payment_method"],
@@ -96,6 +102,8 @@ class Data {
     "currency_code": currencyCode,
     "status": status,
     "is_canceled": isCanceled,
+    "order_custom_status": orderCustomStatus,
+    "order_display_status": orderDisplayStatus,
     "order_status": orderStatus,
     "payment_status": paymentStatus,
     "payment_method": paymentMethod,

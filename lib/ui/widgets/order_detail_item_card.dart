@@ -223,9 +223,7 @@ class OrderDetailItemCard extends StatelessWidget {
                 SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    status.isNotEmpty
-                        ? status[0].toUpperCase() + status.substring(1)
-                        : '',
+                    status,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: UiTypography.cardMeta(color: Colors.black87)
@@ -255,6 +253,13 @@ class OrderDetailItemCard extends StatelessWidget {
       case 'pending':
         return Colors.orange;
 
+      case 'confirmed':
+        return AppColors.primary;
+
+      case 'waiting':
+      case 'processing':
+        return Colors.blueGrey;
+
       case 'packed':
         return Colors.blue;
 
@@ -265,6 +270,8 @@ class OrderDetailItemCard extends StatelessWidget {
         return Colors.green;
 
       case 'returned':
+      case 'canceled':
+      case 'cancelled':
         return Colors.red;
 
       default:
