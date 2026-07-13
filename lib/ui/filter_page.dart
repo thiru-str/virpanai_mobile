@@ -39,7 +39,7 @@ class FilterPage extends StatefulWidget {
     this.preMinPrice,
     this.preMaxPrice,
     this.preSortBy,
-    this.preSelectedSection = FilterSection.collections,
+    this.preSelectedSection = FilterSection.price,
   });
 
   @override
@@ -57,7 +57,7 @@ class _FilterPageState extends State<FilterPage> {
   TextEditingController categorySearchController = TextEditingController();
   String categorySearchQuery = '';
 
-  FilterSection selectedSection = FilterSection.collections;
+  FilterSection selectedSection = FilterSection.price;
   bool isLoadingCollections = true;
   bool isLoadingCategories = true;
   bool isTagsLoading = true;
@@ -72,9 +72,6 @@ class _FilterPageState extends State<FilterPage> {
   static const sortOptions = [AppStrings.low_high, AppStrings.high_low];
 
   final sidebarItems = [
-    {'label': AppStrings.collections, 'section': FilterSection.collections},
-    {'label': AppStrings.categories, 'section': FilterSection.categories},
-    {'label': AppStrings.tags, 'section': FilterSection.tags},
     {'label': AppStrings.price, 'section': FilterSection.price},
     {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
   ];
@@ -94,8 +91,28 @@ class _FilterPageState extends State<FilterPage> {
     if (widget.preSortBy != null) {
       sortBy = widget.preSortBy!;
     }
-    selectedSection = widget.preSelectedSection;
+    selectedSection = _visibleSectionOrPrice(widget.preSelectedSection);
     _fetchInitialData();
+  }
+
+  @override
+  void dispose() {
+    categorySearchController.dispose();
+    minPriceController.dispose();
+    maxPriceController.dispose();
+    super.dispose();
+  }
+
+  FilterSection _visibleSectionOrPrice(FilterSection section) {
+    switch (section) {
+      case FilterSection.price:
+      case FilterSection.sortBy:
+        return section;
+      case FilterSection.collections:
+      case FilterSection.categories:
+      case FilterSection.tags:
+        return FilterSection.price;
+    }
   }
 
   void _fetchInitialData() {
@@ -610,7 +627,7 @@ class _FilterPageState extends State<FilterPage> {
       maxPrice = null;
       maxPriceController.text = '';
       minPriceController.text = '';
-      sortBy = '';
+      sortBy = null;
     });
   }
 }
@@ -716,8 +733,7 @@ class _SelectableRow extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 15,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  color:
-                      selected ? AppColors.primary : AppColors.textColor,
+                  color: selected ? AppColors.primary : AppColors.textColor,
                 ),
               ),
             ),

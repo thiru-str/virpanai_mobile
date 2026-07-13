@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/ui/filter_page.dart';
 import 'package:waioz/ui/product_detail_page.dart';
@@ -48,7 +49,7 @@ class _ProductPageState extends State<ProductPage> {
   double? minPrice;
   double? maxPrice;
   String? sortBy;
-  FilterSection selectedSection = FilterSection.collections;
+  FilterSection selectedSection = FilterSection.price;
 
   int currentPage = 0;
   final int pageSize = 20;
@@ -58,10 +59,21 @@ class _ProductPageState extends State<ProductPage> {
   ScrollController scrollController = ScrollController();
   String? productViewType = ProductCardType.productView1.name;
 
+  List<ProductCategory> _mainCategories = [];
+  List<ProductCategory> _allSubs = [];
+  String? _selectedMainId;
+  String? _selectedSubId;
+  bool _chipSelectionControlsCategory = false;
+  final GlobalKey _selectedMainKey = GlobalKey();
+  final GlobalKey _selectedSubKey = GlobalKey();
+  final ScrollController _mainRowController = ScrollController();
+  final ScrollController _subRowController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _loadProductViewType();
+    _loadCategories();
     getProductsApi(
         categoryIds: widget.categoryId,
         collectionIds: widget.collectionId,
@@ -94,9 +106,7 @@ class _ProductPageState extends State<ProductPage> {
     isPaginating = true;
     currentPage++;
     getProductsApi(
-      categoryIds: selectedCategoriesList.isNotEmpty
-          ? selectedCategoriesList.join(',')
-          : widget.categoryId,
+      categoryIds: _effectiveCategoryIds(),
       collectionIds: selectedCollectionsList.isNotEmpty
           ? selectedCollectionsList.join(',')
           : widget.collectionId,
@@ -131,9 +141,7 @@ class _ProductPageState extends State<ProductPage> {
       final currentToken = ++_searchToken;
 
       getProductsApi(
-        categoryIds: selectedCategoriesList.isNotEmpty
-            ? selectedCategoriesList.join(',')
-            : widget.categoryId,
+        categoryIds: _effectiveCategoryIds(),
         tagIds: selectedTagsList.isNotEmpty
             ? selectedTagsList.join(',')
             : widget.tagId,
@@ -151,6 +159,8 @@ class _ProductPageState extends State<ProductPage> {
     _debounce?.cancel();
     scrollController.dispose();
     searchController.dispose();
+    _mainRowController.dispose();
+    _subRowController.dispose();
     super.dispose();
   }
 
@@ -176,6 +186,349 @@ class _ProductPageState extends State<ProductPage> {
     final metadata = address?['metadata'];
     if (metadata is! Map) return null;
     return double.tryParse(metadata[key]?.toString() ?? '');
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final response = await ApiService().productCategories(context);
+      if (!mounted) return;
+
+      final allCategories = response.productCategories ?? [];
+      final mainCategories = allCategories
+          .where((category) =>
+              category.parentCategoryId == null ||
+              category.parentCategoryId!.isEmpty)
+          .toList();
+      final subCategories = <ProductCategory>[];
+
+      for (final category in allCategories) {
+        if (category.parentCategoryId != null &&
+            category.parentCategoryId!.isNotEmpty) {
+          subCategories.add(category);
+        }
+
+        for (final child in category.categoryChildren ?? <ProductCategory>[]) {
+          child.parentCategoryId ??= category.id;
+          if (child.parentCategoryId!.isEmpty) {
+            child.parentCategoryId = category.id;
+          }
+          if (!subCategories.any((sub) => sub.id == child.id)) {
+            subCategories.add(child);
+          }
+        }
+      }
+
+      String? selectedMainId;
+      String? selectedSubId;
+      final seedIds = <String>[
+        if (selectedCategoriesList.isNotEmpty) ...selectedCategoriesList,
+        if (widget.categoryId.isNotEmpty) widget.categoryId,
+      ];
+      final lookupPool = [...mainCategories, ...subCategories];
+
+      for (final id in seedIds) {
+        final match = lookupPool.where((category) => category.id == id);
+        if (match.isEmpty) continue;
+
+        final category = match.first;
+        if (category.parentCategoryId == null ||
+            category.parentCategoryId!.isEmpty) {
+          selectedMainId = category.id;
+        } else {
+          selectedSubId = category.id;
+          selectedMainId = category.parentCategoryId;
+        }
+      }
+
+      setState(() {
+        _mainCategories = mainCategories;
+        _allSubs = subCategories;
+        _selectedMainId = selectedMainId;
+        _selectedSubId = selectedSubId;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _ensureSelectedChipVisible();
+      });
+    } catch (_) {}
+  }
+
+  List<ProductCategory> get _visibleSubCategories {
+    if (_selectedMainId == null) return _allSubs;
+    return _allSubs
+        .where((category) => category.parentCategoryId == _selectedMainId)
+        .toList();
+  }
+
+  String _effectiveCategoryIds() {
+    if (selectedCategoriesList.isNotEmpty) {
+      return selectedCategoriesList.join(',');
+    }
+    return _chipSelectionControlsCategory ? '' : widget.categoryId;
+  }
+
+  void _ensureSelectedChipVisible({bool main = true, bool sub = true}) {
+    if (!mounted) return;
+
+    if (main) {
+      _scrollRowToSelected(
+        controller: _mainRowController,
+        selectedKey: _selectedMainKey,
+        selectedId: _selectedMainId,
+        items: _mainCategories,
+        averageChipWidth: 110,
+      );
+    }
+
+    if (sub) {
+      _scrollRowToSelected(
+        controller: _subRowController,
+        selectedKey: _selectedSubKey,
+        selectedId: _selectedSubId,
+        items: _visibleSubCategories,
+        averageChipWidth: 90,
+      );
+    }
+  }
+
+  void _scrollRowToSelected({
+    required ScrollController controller,
+    required GlobalKey selectedKey,
+    required String? selectedId,
+    required List<ProductCategory> items,
+    required double averageChipWidth,
+  }) {
+    if (selectedId == null || !controller.hasClients) return;
+
+    final index = items.indexWhere((category) => category.id == selectedId);
+    if (index < 0) return;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final estimatedOffset = (index + 1) * averageChipWidth - screenWidth / 2;
+    controller.jumpTo(
+      estimatedOffset.clamp(0.0, controller.position.maxScrollExtent),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final selectedContext = selectedKey.currentContext;
+      if (selectedContext == null) return;
+      Scrollable.ensureVisible(
+        selectedContext,
+        alignment: 0.5,
+        duration: Duration.zero,
+      );
+    });
+  }
+
+  void _onMainCategoryTap(String? id) {
+    setState(() {
+      _selectedMainId = id;
+      _selectedSubId = null;
+    });
+    _refetchForSelectedChip();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureSelectedChipVisible(main: true, sub: false);
+    });
+  }
+
+  void _onSubCategoryTap(String? id) {
+    setState(() {
+      _selectedSubId = id;
+    });
+    _refetchForSelectedChip();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureSelectedChipVisible(main: false, sub: true);
+    });
+  }
+
+  void _refetchForSelectedChip() {
+    final categoryIds = <String>[];
+    if (_selectedSubId != null) {
+      categoryIds.add(_selectedSubId!);
+    } else if (_selectedMainId != null) {
+      categoryIds.add(_selectedMainId!);
+    }
+
+    setState(() {
+      selectedCategoriesList = categoryIds;
+      _chipSelectionControlsCategory = true;
+      currentPage = 0;
+      hasMore = true;
+      filteredProducts.clear();
+      apiLoading = true;
+      isFilterApplied = categoryIds.isNotEmpty ||
+          selectedCollectionsList.isNotEmpty ||
+          selectedTagsList.isNotEmpty ||
+          minPrice != null ||
+          maxPrice != null ||
+          sortBy != null;
+    });
+
+    getProductsApi(
+      categoryIds: categoryIds.isNotEmpty ? categoryIds.join(',') : null,
+      collectionIds: selectedCollectionsList.isNotEmpty
+          ? selectedCollectionsList.join(',')
+          : widget.collectionId,
+      tagIds: selectedTagsList.isNotEmpty
+          ? selectedTagsList.join(',')
+          : widget.tagId,
+      searchString: searchController.text,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      sortBy: sortBy,
+    );
+  }
+
+  Widget _mainCategoryChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        alignment: Alignment.center,
+        color: selected ? const Color(0xFFD5E5C5) : Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Text(
+          label,
+          style: FontUtils.primaryFontStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _subCategoryChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: IntrinsicWidth(
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textColor,
+                  ),
+                ),
+              ),
+              Container(
+                height: 3,
+                color: selected ? AppColors.primary : Colors.transparent,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChipRows() {
+    if (_mainCategories.isEmpty) return const SizedBox.shrink();
+
+    final subCategories = _visibleSubCategories;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            color: const Color(0xFFF5F5F7),
+            height: 38,
+            child: ListView.separated(
+              controller: _mainRowController,
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.zero,
+              itemCount: _mainCategories.length + 1,
+              separatorBuilder: (_, __) => const SizedBox.shrink(),
+              itemBuilder: (_, index) {
+                if (index == 0) {
+                  return KeyedSubtree(
+                    key: _selectedMainId == null ? _selectedMainKey : null,
+                    child: _mainCategoryChip(
+                      label: 'All',
+                      selected: _selectedMainId == null,
+                      onTap: () => _onMainCategoryTap(null),
+                    ),
+                  );
+                }
+
+                final category = _mainCategories[index - 1];
+                return KeyedSubtree(
+                  key: _selectedMainId == category.id ? _selectedMainKey : null,
+                  child: _mainCategoryChip(
+                    label: category.name ?? '',
+                    selected: _selectedMainId == category.id,
+                    onTap: () => _onMainCategoryTap(category.id),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (subCategories.isNotEmpty) ...[
+            Container(
+              height: 1,
+              color: const Color(0xFFEEEFF1),
+            ),
+            Container(
+              color: Colors.white,
+              height: 38,
+              child: ListView.separated(
+                controller: _subRowController,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(left: 4),
+                itemCount: subCategories.length + 1,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (_, index) {
+                  if (index == 0) {
+                    return KeyedSubtree(
+                      key: _selectedSubId == null ? _selectedSubKey : null,
+                      child: _subCategoryChip(
+                        label: 'All',
+                        selected: _selectedSubId == null,
+                        onTap: () => _onSubCategoryTap(null),
+                      ),
+                    );
+                  }
+
+                  final category = subCategories[index - 1];
+                  return KeyedSubtree(
+                    key: _selectedSubId == category.id ? _selectedSubKey : null,
+                    child: _subCategoryChip(
+                      label: category.name ?? '',
+                      selected: _selectedSubId == category.id,
+                      onTap: () => _onSubCategoryTap(category.id),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Container(
+              height: 1,
+              color: const Color(0xFFEEEFF1),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -263,9 +616,7 @@ class _ProductPageState extends State<ProductPage> {
                         debugPrint('max Price product ${maxPrice}');
                         selectedSection =
                             data['selectedSection'] ?? selectedSection;
-                        final categoryIds = selectedCategoriesList.isNotEmpty
-                            ? selectedCategoriesList.join(',')
-                            : widget.categoryId;
+                        final categoryIds = _effectiveCategoryIds();
                         final collectionIds = selectedCollectionsList.join(',');
                         final tagIds = selectedTagsList.isNotEmpty
                             ? selectedTagsList.join(',')
@@ -273,9 +624,7 @@ class _ProductPageState extends State<ProductPage> {
                         currentPage = 0;
                         filteredProducts.clear();
                         getProductsApi(
-                          categoryIds: categoryIds.isNotEmpty
-                              ? categoryIds
-                              : widget.categoryId,
+                          categoryIds: categoryIds,
                           collectionIds: collectionIds.isNotEmpty
                               ? collectionIds
                               : widget.collectionId,
@@ -290,7 +639,7 @@ class _ProductPageState extends State<ProductPage> {
                               selectedCollectionsList.isNotEmpty ||
                               selectedTagsList.isNotEmpty ||
                               (minPrice != null || maxPrice != null) ||
-                              sortBy != AppStrings.low_high;
+                              (sortBy != null && sortBy!.isNotEmpty);
                         });
                       }
                     },
@@ -334,6 +683,7 @@ class _ProductPageState extends State<ProductPage> {
                   ),
                 ],
               ),
+              _buildCategoryChipRows(),
               const SizedBox(height: 20),
 
               // Title
