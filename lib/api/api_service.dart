@@ -32,6 +32,7 @@ import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
+import 'package:waioz/model/serviceability_response.dart';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
@@ -985,6 +986,19 @@ class ApiService {
       null,
       {"cart_id": cartId},
       (json) => ShippingResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ServiceabilityResponse> checkCartServiceability(
+      BuildContext context) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeGetRequest<ServiceabilityResponse>(
+      'store/carts/$cartId/serviceability-check',
+      null,
+      null,
+      (json) => ServiceabilityResponse.fromJson(json),
       context,
     );
   }
