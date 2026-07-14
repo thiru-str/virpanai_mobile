@@ -183,9 +183,6 @@ class _SettingsPageState extends State<SettingsPage> {
                                 .toList(),
                           ),
                         ],
-                        const SizedBox(height: 28),
-                        // Danger zone
-                        _buildDangerZone(context),
                       ],
                     ),
                   ),
@@ -212,7 +209,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 54),
                               backgroundColor: Colors.white,
-                              side: const BorderSide(color: _danger, width: 1.5),
+                              side:
+                                  const BorderSide(color: _danger, width: 1.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -304,7 +302,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                 child: Text(
                   AppStrings.edit,
                   style: UiTypography.cardAction(color: AppColors.primary),
@@ -385,68 +384,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildDangerZone(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text(
-            'Danger Zone',
-            style: UiTypography.cardMeta(color: _danger).copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _danger.withValues(alpha: 0.25), width: 1),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _showDeleteAccount(context),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: _danger.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.delete_outline,
-                          size: 20, color: _danger),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        AppStrings.deleteAccount,
-                        style: UiTypography.cardTitle(color: _danger).copyWith(
-                          fontSize: 15,
-                          height: 1.25,
-                        ),
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios,
-                        size: 15, color: _danger),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Future<void> getCustomerInfo() async {
     customer = await getCustomerResponse();
     if (customer != null) {
@@ -499,39 +436,6 @@ class _SettingsPageState extends State<SettingsPage> {
             await SharedPreferencesUtil().clear();
             await AppErrorReporter.instance.clearUser();
 
-            if (mounted) {
-              if (skipLogin) {
-                LoginRedirectUtils.redirectAfterLogin(
-                  context,
-                  redirectPage: const BottomNavPage(),
-                );
-              } else {
-                PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
-              }
-            }
-          },
-        );
-      },
-    );
-  }
-
-  void _showDeleteAccount(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CommonAlertDialog(
-          title: AppStrings.deleteAccount,
-          content: AppStrings.delete_account_confirmation,
-          contentOk: AppStrings.yes,
-          contentCancel: AppStrings.no,
-          onTapOk: () async {
-            await ApiService().deleteAccount(context);
-
-            bool skipLogin =
-                await SharedPreferencesUtil().getBool('skip_login') ?? false;
-            // Handle sign out action
-            await SharedPreferencesUtil().clear();
-            await AppErrorReporter.instance.clearUser();
             if (mounted) {
               if (skipLogin) {
                 LoginRedirectUtils.redirectAfterLogin(
