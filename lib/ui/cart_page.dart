@@ -5,14 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
+import 'package:waioz/model/delivery_schedule_model.dart';
+import 'package:waioz/model/shipping_response.dart' as PaymentSessionData;
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/paytm_payment_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
@@ -29,6 +33,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
@@ -40,6 +45,502 @@ import '../utility/currency_util.dart';
 import '../utility/shared_preferences_util.dart';
 import 'address_list_page.dart';
 import 'order_placed_page.dart';
+
+class DeliveryScheduleBottomSheet extends StatefulWidget {
+  final DeliveryScheduleSelection initialSelection;
+
+  const DeliveryScheduleBottomSheet({
+    super.key,
+    required this.initialSelection,
+  });
+
+  @override
+  State<DeliveryScheduleBottomSheet> createState() =>
+      _DeliveryScheduleBottomSheetState();
+}
+
+class _DeliveryScheduleBottomSheetState
+    extends State<DeliveryScheduleBottomSheet> {
+  late bool _scheduledMode;
+  late String _selectedDate;
+  DeliveryTimeSlot? _selectedSlot;
+  DeliveryScheduleResponse? _slotsData;
+  bool _loading = false;
+  final _instructionsCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduledMode = widget.initialSelection.isScheduled;
+    _selectedDate = widget.initialSelection.date ?? _fmtLocalDate(DateTime.now());
+    _selectedSlot = widget.initialSelection.slot;
+    _instructionsCtrl.text = widget.initialSelection.instructions ?? '';
+    _fetchSlots(_selectedDate);
+  }
+
+  @override
+  void dispose() {
+    _instructionsCtrl.dispose();
+    super.dispose();
+  }
+
+  static String _fmtLocalDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  String _dateLabel(String value) {
+    final today = _fmtLocalDate(DateTime.now());
+    final tomorrow = _fmtLocalDate(DateTime.now().add(const Duration(days: 1)));
+    if (value == today) return 'Today';
+    if (value == tomorrow) return 'Tomorrow';
+    final date = DateTime.tryParse('${value}T00:00:00');
+    if (date == null) return value;
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return '${weekdays[date.weekday - 1]}, ${date.day}/${date.month}';
+  }
+
+  Future<void> _fetchSlots(String date) async {
+    setState(() => _loading = true);
+    try {
+      final data = await ApiService().getDeliveryScheduleSlots(context, date);
+      if (!mounted) return;
+      setState(() {
+        _slotsData = data;
+        if (_selectedSlot != null &&
+            !data.slots.any((slot) => slot.id == _selectedSlot!.id)) {
+          _selectedSlot = null;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _slotsData = DeliveryScheduleResponse(
+          date: date,
+          error: e.toString().replaceFirst('Exception: ', ''),
+        );
+        _selectedSlot = null;
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  List<String> _dateOptions() {
+    final maxDays = (_slotsData?.settings.maxDaysAdvance ?? 1).clamp(1, 30);
+    final today = DateTime.now();
+    return List.generate(
+      maxDays + 1,
+      (i) => _fmtLocalDate(today.add(Duration(days: i))),
+    );
+  }
+
+  void _selectDate(String date) {
+    setState(() {
+      _selectedDate = date;
+      _selectedSlot = null;
+    });
+    _fetchSlots(date);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final slots = _slotsData?.slots.where((slot) => slot.available).toList() ??
+        const <DeliveryTimeSlot>[];
+    final allowInstructions =
+        _slotsData?.settings.deliveryInstructionsEnabled == true;
+    final blocked = _slotsData?.blocked == true;
+    final error = _slotsData?.error;
+
+    return SafeArea(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.88,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF9F9FB),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 44,
+              height: 5,
+              margin: const EdgeInsets.only(top: 12, bottom: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD9D9D9),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Text(
+                    'Delivery',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textColor,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFF2F2F2),
+                    ),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(height: 1, color: const Color(0xFFEDEDED)),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _deliveryModeCard(
+                          title: 'Instant Delivery',
+                          subtitle: 'Deliver any time',
+                          icon: Icons.flash_on_rounded,
+                          selected: !_scheduledMode,
+                          onTap: () => setState(() => _scheduledMode = false),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _deliveryModeCard(
+                          title: 'Schedule',
+                          subtitle: _selectedSlot?.label ?? 'Select a slot',
+                          icon: Icons.event_available_rounded,
+                          selected: _scheduledMode,
+                          onTap: () => setState(() => _scheduledMode = true),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  if (!_scheduledMode)
+                    _instantDeliveryInfo()
+                  else ...[
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _dateOptions().map((date) {
+                          final selected = date == _selectedDate;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: ChoiceChip(
+                              label: Text(_dateLabel(date)),
+                              selected: selected,
+                              onSelected: (_) => _selectDate(date),
+                              selectedColor:
+                                  AppColors.primary.withValues(alpha: 0.10),
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                                side: BorderSide(
+                                  color: selected
+                                      ? AppColors.primary
+                                      : const Color(0xFFE5E7EC),
+                                  width: selected ? 1.5 : 1,
+                                ),
+                              ),
+                              labelStyle: FontUtils.primaryFontStyle(
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? AppColors.primary
+                                    : AppColors.textColor50,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    if (_loading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 36),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (blocked)
+                      _scheduleMessage(
+                        _slotsData?.reason?.isNotEmpty == true
+                            ? 'Delivery not available: ${_slotsData!.reason}'
+                            : 'Delivery not available on this date',
+                      )
+                    else if (error != null && error.isNotEmpty)
+                      _scheduleMessage(error)
+                    else if (slots.isEmpty)
+                      _scheduleMessage('No slots available for this date')
+                    else ...[
+                      Text(
+                        '${slots.length} slots available',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 14,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: slots.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisExtent: 56,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                        itemBuilder: (_, index) {
+                          final slot = slots[index];
+                          final selected = _selectedSlot?.id == slot.id;
+                          return InkWell(
+                            onTap: () => setState(() => _selectedSlot = slot),
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? AppColors.primary.withValues(alpha: 0.08)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: selected
+                                      ? AppColors.primary
+                                      : const Color(0xFFE5E7EC),
+                                  width: selected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Text(
+                                slot.label,
+                                textAlign: TextAlign.center,
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 14,
+                                  fontWeight: selected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: selected
+                                      ? AppColors.primary
+                                      : AppColors.textColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                    if (allowInstructions) ...[
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _instructionsCtrl,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          hintText: 'Delivery instructions (optional)',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFE5E7EC)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFE5E7EC)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide:
+                                BorderSide(color: AppColors.primary, width: 1.5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _scheduledMode && _selectedSlot == null
+                      ? null
+                      : () => Navigator.pop(
+                            context,
+                            DeliveryScheduleSelection(
+                              mode: _scheduledMode ? 'scheduled' : 'instant',
+                              date: _scheduledMode ? _selectedDate : null,
+                              slot: _scheduledMode ? _selectedSlot : null,
+                              instructions:
+                                  _instructionsCtrl.text.trim().isEmpty
+                                      ? null
+                                      : _instructionsCtrl.text.trim(),
+                            ),
+                          ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    disabledBackgroundColor:
+                        AppColors.primary.withValues(alpha: 0.35),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    _scheduledMode
+                        ? (_selectedSlot == null
+                            ? 'Pick a time slot'
+                            : 'Confirm - ${_selectedSlot!.label}')
+                        : 'Confirm - Instant Delivery',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _deliveryModeCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final color = selected ? AppColors.primary : AppColors.textColor50;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.04)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? AppColors.primary : const Color(0xFFE5E7EC),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 13,
+                      color: color.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(icon, color: color, size: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _instantDeliveryInfo() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(Icons.local_shipping_rounded, color: AppColors.primary),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Instant Delivery',
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "We'll deliver as soon as possible - no specific time needed.",
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 14,
+                    color: AppColors.textColor50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _scheduleMessage(String text) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
+      ),
+      child: Text(
+        text,
+        style: FontUtils.secondaryFontStyle(
+          fontSize: 14,
+          color: AppColors.textColor50,
+        ),
+      ),
+    );
+  }
+}
 
 class CartPage extends StatefulWidget {
   final bool isFromBottomNav;
@@ -57,6 +558,9 @@ class _CartPageState extends State<CartPage>
   bool apiLoading = true;
   bool cartLoading = false;
   bool addressLoading = false;
+  bool serviceabilityChecking = false;
+  String? serviceabilityError;
+  String? _lastServiceabilitySignature;
   bool isAnimating = false;
 
   bool isLoggedIn = false;
@@ -66,6 +570,7 @@ class _CartPageState extends State<CartPage>
   String? pp_id;
   String? orderId;
   String? clientSecret;
+  PaymentSessionData.Data? paytmData;
   Razorpay razorpay = Razorpay();
   bool showPriceBreakdown = false;
 
@@ -80,6 +585,9 @@ class _CartPageState extends State<CartPage>
   bool walletAutoApply = true;
   bool allowCouponWithWallet = true;
   WalletUsageLimit? walletUsageLimit;
+  bool? deliverySchedulingEnabled;
+  DeliveryScheduleSelection deliverySchedule =
+      DeliveryScheduleSelection(mode: 'instant');
 
   late ConfettiController _confettiController;
   late AnimationController _shakeController;
@@ -112,6 +620,7 @@ class _CartPageState extends State<CartPage>
 
     initGlobal();
     getCartApi();
+    _loadDeliveryScheduleSettings();
   }
 
   Future<void> initGlobal() async {
@@ -149,6 +658,107 @@ class _CartPageState extends State<CartPage>
       return RegisterResponse.Customer.fromJson(userData);
     }
     return null;
+  }
+
+  static String _fmtLocalDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  Future<void> _loadDeliveryScheduleSettings() async {
+    try {
+      final data = await ApiService().getDeliveryScheduleSlots(
+        context,
+        _fmtLocalDate(DateTime.now()),
+      );
+      if (!mounted) return;
+      setState(() {
+        deliverySchedulingEnabled = data.settings.scheduledDeliveryEnabled;
+        if (deliverySchedulingEnabled == false) {
+          deliverySchedule = DeliveryScheduleSelection(mode: 'instant');
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        deliverySchedulingEnabled = false;
+        deliverySchedule = DeliveryScheduleSelection(mode: 'instant');
+      });
+    }
+  }
+
+  void _syncDeliveryScheduleFromCart() {
+    final metadata = _cartMetadataMap();
+    if (deliverySchedulingEnabled == false) {
+      deliverySchedule = DeliveryScheduleSelection(mode: 'instant');
+      return;
+    }
+    final mode = metadata['delivery_mode']?.toString();
+    final date = metadata['delivery_date']?.toString();
+    if (mode == 'scheduled' && date != null && date.isNotEmpty) {
+      deliverySchedule = DeliveryScheduleSelection(
+        mode: 'scheduled',
+        date: date,
+        slot: DeliveryTimeSlot(
+          id: metadata['delivery_time_slot_id']?.toString() ?? '',
+          label: metadata['delivery_time_slot_label']?.toString() ?? '',
+          startTime: '',
+          endTime: '',
+          available: true,
+        ),
+        instructions: metadata['delivery_instructions']?.toString(),
+      );
+    } else {
+      deliverySchedule = DeliveryScheduleSelection(mode: 'instant');
+    }
+  }
+
+  String _formatDeliveryScheduleSummary() {
+    if (!deliverySchedule.isScheduled) return 'Delivered as soon as possible';
+    final date = DateTime.tryParse('${deliverySchedule.date}T00:00:00');
+    final today = _fmtLocalDate(DateTime.now());
+    final tomorrow = _fmtLocalDate(DateTime.now().add(const Duration(days: 1)));
+    String dateLabel;
+    if (deliverySchedule.date == today) {
+      dateLabel = 'Today';
+    } else if (deliverySchedule.date == tomorrow) {
+      dateLabel = 'Tomorrow';
+    } else if (date != null) {
+      dateLabel = '${date.day}/${date.month}/${date.year}';
+    } else {
+      dateLabel = deliverySchedule.date ?? '';
+    }
+    final slot = deliverySchedule.slotLabel;
+    return slot.isEmpty ? dateLabel : '$dateLabel, $slot';
+  }
+
+  Future<void> _showDeliveryScheduleSheet() async {
+    final result = await showModalBottomSheet<DeliveryScheduleSelection>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DeliveryScheduleBottomSheet(
+        initialSelection: deliverySchedule,
+      ),
+    );
+    if (!mounted || result == null) return;
+    await _persistDeliverySchedule(result);
+  }
+
+  Future<bool> _persistDeliverySchedule(
+      DeliveryScheduleSelection selection) async {
+    try {
+      setState(() => cartLoading = true);
+      await ApiService().updateDeliverySchedule(context, selection);
+      if (!mounted) return false;
+      setState(() {
+        deliverySchedule = selection;
+      });
+      return true;
+    } catch (e) {
+      AppUtils.showToast('Could not update delivery schedule. Try again.');
+      return false;
+    } finally {
+      if (mounted) setState(() => cartLoading = false);
+    }
   }
 
   String _buildCartItemSize(Item item) {
@@ -210,38 +820,66 @@ class _CartPageState extends State<CartPage>
 
     // Fallback display names for providers with empty/null names
     switch (providerId) {
-      case 'pp_wallet_wallet':      return 'Wallet';
-      case 'pp_razorpay_razorpay':  return 'Razorpay';
-      case 'pp_payu_payu':          return 'PayU';
-      case 'pp_icici_icici':        return 'ICICI Bank';
-      case 'pp_system_default':     return 'Cash on Delivery';
-      case 'pp_neft_neft':          return 'Bank Transfer (NEFT)';
-      case 'pp_stripe_stripe':      return 'Credit / Debit Card';
-      default:                      return AppStrings.cash_on_delivery;
+      case 'pp_wallet_wallet':
+        return 'Wallet';
+      case 'pp_razorpay_razorpay':
+        return 'Razorpay';
+      case 'pp_payu_payu':
+        return 'PayU';
+      case 'pp_paytm_paytm':
+        return 'Paytm';
+      case 'pp_icici_icici':
+        return 'ICICI Bank';
+      case 'pp_system_default':
+        return 'Cash on Delivery';
+      case 'pp_neft_neft':
+        return 'Bank Transfer (NEFT)';
+      case 'pp_stripe_stripe':
+        return 'Credit / Debit Card';
+      default:
+        return AppStrings.cash_on_delivery;
     }
   }
 
   IconData _providerIcon(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return Icons.bolt_rounded;
-      case 'pp_payu_payu':         return Icons.credit_card_rounded;
-      case 'pp_icici_icici':       return Icons.account_balance_rounded;
-      case 'pp_neft_neft':         return Icons.swap_horiz_rounded;
-      case 'pp_wallet_wallet':     return Icons.account_balance_wallet_rounded;
-      case 'pp_stripe_stripe':     return Icons.credit_card_rounded;
-      default:                     return Icons.local_shipping_rounded;
+      case 'pp_razorpay_razorpay':
+        return Icons.bolt_rounded;
+      case 'pp_payu_payu':
+        return Icons.credit_card_rounded;
+      case 'pp_paytm_paytm':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_icici_icici':
+        return Icons.account_balance_rounded;
+      case 'pp_neft_neft':
+        return Icons.swap_horiz_rounded;
+      case 'pp_wallet_wallet':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_stripe_stripe':
+        return Icons.credit_card_rounded;
+      default:
+        return Icons.local_shipping_rounded;
     }
   }
 
   Color _providerColor(String? id) {
     switch (id) {
-      case 'pp_razorpay_razorpay': return const Color(0xFF2D81F7);
-      case 'pp_payu_payu':         return const Color(0xFF6CB33F);
-      case 'pp_icici_icici':       return const Color(0xFFE87722);
-      case 'pp_neft_neft':         return const Color(0xFF1565C0);
-      case 'pp_wallet_wallet':     return const Color(0xFF2E7D32);
-      case 'pp_stripe_stripe':     return const Color(0xFF635BFF);
-      default:                     return const Color(0xFF795548);
+      case 'pp_razorpay_razorpay':
+        return const Color(0xFF2D81F7);
+      case 'pp_payu_payu':
+        return const Color(0xFF6CB33F);
+      case 'pp_paytm_paytm':
+        return const Color(0xFF00BAF2);
+      case 'pp_icici_icici':
+        return const Color(0xFFE87722);
+      case 'pp_neft_neft':
+        return const Color(0xFF1565C0);
+      case 'pp_wallet_wallet':
+        return const Color(0xFF2E7D32);
+      case 'pp_stripe_stripe':
+        return const Color(0xFF635BFF);
+      default:
+        return const Color(0xFF795548);
     }
   }
 
@@ -293,17 +931,19 @@ class _CartPageState extends State<CartPage>
           Navigator.pop(context, true);
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       body: Stack(
         children: [
           apiLoading
               ? const CartPageSkeleton()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
-                      backgroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFF9F9FB),
                       body: SingleChildScrollView(
                         child: Column(
                           children: [
+                            if (deliverySchedulingEnabled == true)
+                              _buildDeliveryModeCard(),
                             Visibility(
                               visible: cartResponse!.cart!.items!.isNotEmpty,
                               child: AppReveal(
@@ -311,6 +951,9 @@ class _CartPageState extends State<CartPage>
                                   address: _buildShippingAddress(cartResponse),
                                   label: null,
                                   isLoading: addressLoading,
+                                  isCheckingServiceability:
+                                      serviceabilityChecking,
+                                  serviceabilityError: serviceabilityError,
                                   onAddAddress: () {
                                     PageRouteUtils.pushWithSlide(
                                         context,
@@ -528,7 +1171,9 @@ class _CartPageState extends State<CartPage>
                                 cartTotal: cartResponse?.cart?.total ?? 0,
                                 walletAmount: _walletAmountFromMetadata(),
                                 walletApplied: _walletAmountFromMetadata() > 0,
-                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                hasActiveCoupon:
+                                    (cartResponse?.cart?.promotions ?? [])
+                                        .isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -542,6 +1187,20 @@ class _CartPageState extends State<CartPage>
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
+
+                            // Free delivery progress banner — hides itself when
+                            // no shipping address or no slabs configured.
+                            if ((cartResponse?.cart?.id ?? '').isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 4),
+                                child: FreeDeliveryBannerWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  cartTotal: cartResponse?.cart?.itemSubtotal ??
+                                      cartResponse?.cart?.subtotal ??
+                                      0,
+                                ),
+                              ),
 
                             // Price Details (view only)
                             AppReveal(
@@ -557,19 +1216,19 @@ class _CartPageState extends State<CartPage>
                                   key: _priceDetailsSectionKey,
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
-                                  padding: const EdgeInsets.all(16.0),
+                                  padding: const EdgeInsets.all(18.0),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 18,
+                                        offset: const Offset(0, 8),
                                       ),
                                     ],
-                                    border:
-                                        Border.all(color: Colors.grey.shade200),
+                                    border: Border.all(
+                                        color: const Color(0xFFE5E7EC)),
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
@@ -577,13 +1236,14 @@ class _CartPageState extends State<CartPage>
                                     children: [
                                       Padding(
                                         padding:
-                                            const EdgeInsets.only(bottom: 8),
+                                            const EdgeInsets.only(bottom: 12),
                                         child: Text(
                                           'Price Details',
-                                          style: FontUtils.primaryFontStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textColor,
-                                            fontSize: 15,
+                                          style:
+                                              UiTypography.cardTitle().copyWith(
+                                            fontSize: 16,
+                                            height: 1.25,
+                                            letterSpacing: -0.2,
                                           ),
                                         ),
                                       ),
@@ -640,7 +1300,7 @@ class _CartPageState extends State<CartPage>
                                         _priceRow(
                                           'Coupon Savings',
                                           '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                          valueColor: Colors.green.shade700,
+                                          valueColor: const Color(0xFF1FA971),
                                         ),
                                       // Loyalty points discount (negative line item added by API)
                                       if ((cartResponse?.cart?.items?.any(
@@ -670,23 +1330,46 @@ class _CartPageState extends State<CartPage>
                                         _priceRow(
                                           'Wallet',
                                           '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
-                                          valueColor: Colors.blue.shade700,
+                                          valueColor: AppColors.primary,
                                         ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 6),
+                                      const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 10),
                                         child: Divider(
-                                            color: Colors.grey.shade300,
+                                            color: Color(0xFFE5E7EC),
                                             height: 1),
                                       ),
-                                      _priceRow(
-                                          'Total Amount',
-                                          CurrencyUtil.appendCurrency(
-                                              _displayTotalAmount()
-                                                  .toStringAsFixed(2)),
-                                          isBold: true,
-                                          fontSize: 13),
-                                      const SizedBox(height: 6),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Total Amount',
+                                            style: UiTypography.cardTitle()
+                                                .copyWith(
+                                              fontSize: 16,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Flexible(
+                                            child: Text(
+                                              CurrencyUtil.appendCurrency(
+                                                  _displayTotalAmount()
+                                                      .toStringAsFixed(2)),
+                                              maxLines: 1,
+                                              textAlign: TextAlign.right,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: UiTypography.cardPrice(
+                                                      color: AppColors.primary)
+                                                  .copyWith(fontSize: 20),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
                                     ],
                                   ),
                                 ),
@@ -699,7 +1382,10 @@ class _CartPageState extends State<CartPage>
                                 0)
                               LoyaltyEarnPreview(
                                 cartId: cartResponse!.cart!.id,
-                                orderTotal: 0,
+                                orderTotal: cartResponse?.cart?.itemSubtotal ??
+                                    cartResponse?.cart?.subtotal ??
+                                    cartResponse?.cart?.total ??
+                                    0,
                               ),
                             const SizedBox(height: 80),
                           ],
@@ -875,9 +1561,11 @@ class _CartPageState extends State<CartPage>
         clientSecret = cartResponse?.cart?.paymentCollection?.paymentSessions
                 ?.firstOrNull?.data?.clientSecret ??
             '';
+        _syncDeliveryScheduleFromCart();
         apiLoading = false;
       });
       _syncPricingStateFromCart();
+      unawaited(_checkCartServiceabilityIfNeeded());
       // Load wallet info after cart is ready
       await _loadWalletInfo();
     } catch (e) {
@@ -885,6 +1573,74 @@ class _CartPageState extends State<CartPage>
         apiLoading = false;
       });
       debugPrint(' error in cart $e');
+    }
+  }
+
+  String _cartStoreId() {
+    final metadata = cartResponse?.cart?.metadata;
+    if (metadata is Map) {
+      return metadata['storeId']?.toString() ?? '';
+    }
+    return '';
+  }
+
+  String _serviceabilitySignature() {
+    final cart = cartResponse?.cart;
+    final address = cart?.shippingAddress;
+    return [
+      cart?.id ?? '',
+      _cartStoreId(),
+      address?.address1 ?? '',
+      address?.address2 ?? '',
+      address?.city ?? '',
+      address?.province ?? '',
+      address?.postalCode ?? '',
+      address?.countryCode ?? '',
+    ].join('|');
+  }
+
+  Future<void> _checkCartServiceabilityIfNeeded({bool force = false}) async {
+    final cartId = cartResponse?.cart?.id;
+    final address = cartResponse?.cart?.shippingAddress;
+
+    if (cartId == null ||
+        cartId.isEmpty ||
+        (address?.address1 ?? '').isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        serviceabilityChecking = false;
+        serviceabilityError = null;
+        _lastServiceabilitySignature = null;
+      });
+      return;
+    }
+
+    final signature = _serviceabilitySignature();
+    if (!force && signature == _lastServiceabilitySignature) {
+      return;
+    }
+
+    _lastServiceabilitySignature = signature;
+    if (!mounted) return;
+    setState(() {
+      serviceabilityChecking = true;
+      serviceabilityError = null;
+    });
+
+    try {
+      final response = await ApiService().checkCartServiceability(context);
+      if (!mounted || signature != _lastServiceabilitySignature) return;
+      setState(() {
+        serviceabilityChecking = false;
+        serviceabilityError =
+            response.serviceable ? null : response.message;
+      });
+    } catch (e) {
+      if (!mounted || signature != _lastServiceabilitySignature) return;
+      setState(() {
+        serviceabilityChecking = false;
+        serviceabilityError = 'Unable to verify address serviceability.';
+      });
     }
   }
 
@@ -907,9 +1663,30 @@ class _CartPageState extends State<CartPage>
     final totalQty = productItems
         .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
-    print('total qty ${totalQty}');
+    final qtyMap = <String, int>{};
+    final unitLineQtyMap = <String, int>{};
+    final unitLineIdMap = <String, String>{};
+    for (final item in productItems) {
+      final variantId = item.variantId;
+      if (variantId == null) continue;
+      qtyMap[variantId] = (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
+      final metadata = item.metadata;
+      if (metadata?.unitBasedInventory == true &&
+          metadata?.unitQuantity != null &&
+          metadata!.unitQuantity! > 0 &&
+          item.id != null) {
+        final key = '${variantId}::${metadata.unitQuantity!}';
+        unitLineQtyMap[key] = item.quantity ?? 0;
+        unitLineIdMap[key] = item.id!;
+      }
+    }
     eventBus.fire(ViewCartModel(
-        totalQty, productItems.map((item) => item.thumbnail ?? '').toList()));
+      totalQty,
+      productItems.map((item) => item.thumbnail ?? '').toList(),
+      qtyMap,
+      unitLineQtyMap,
+      unitLineIdMap,
+    ));
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
@@ -1105,6 +1882,9 @@ class _CartPageState extends State<CartPage>
             response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
         clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull
             ?.data?.clientSecret;
+        paytmData = paymentProviderId == 'pp_paytm_paytm'
+            ? response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            : null;
       });
       getCartApi();
     } catch (e) {
@@ -1170,7 +1950,8 @@ class _CartPageState extends State<CartPage>
     // but if it fails the cart stays without one and complete-cart rejects
     // with "No shipping method selected but the cart contains items that
     // require shipping". Fetch options here and attach the first as fallback.
-    final hasShipping = (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    final hasShipping =
+        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
     if (!hasShipping) {
       try {
         setState(() => cartLoading = true);
@@ -1189,12 +1970,16 @@ class _CartPageState extends State<CartPage>
         }
       } catch (e) {
         setState(() => cartLoading = false);
-        AppUtils.showToast('Could not attach shipping method. Please try again.');
+        AppUtils.showToast(
+            'Could not attach shipping method. Please try again.');
         return;
       } finally {
         setState(() => cartLoading = false);
       }
     }
+
+    final scheduleSaved = await _persistDeliverySchedule(deliverySchedule);
+    if (!scheduleSaved) return;
 
     if (paymentProviderId == 'pp_icici_icici') {
       _makeIciciPayment();
@@ -1216,19 +2001,62 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
+      case 'pp_paytm_paytm':
+        makePaytmCall();
+        break;
     }
+  }
+
+  void makePaytmCall() {
+    final data = paytmData ??
+        cartResponse?.cart?.paymentCollection?.paymentSessions
+            ?.where((session) => session.providerId == 'pp_paytm_paytm')
+            .firstOrNull
+            ?.data;
+    if (data == null ||
+        data.host == null ||
+        data.mid == null ||
+        (data.orderId ?? data.id) == null ||
+        (data.txnToken ?? data.token) == null ||
+        data.amount == null) {
+      AppUtils.showToast(
+          'Paytm payment session is incomplete. Please try again.');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaytmPaymentPage(
+          data: data,
+          onSuccess: () {
+            Navigator.pop(context);
+            completeCart();
+          },
+          onFailure: (message) {
+            Navigator.pop(context);
+            AppUtils.showToast(message);
+            getCartApi();
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _makeIciciPayment() async {
     setState(() => cartLoading = true);
     try {
-      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      final redirectUrl = await ApiService().initiateIciciPayment(
+        context,
+        deliverySchedule: deliverySchedule,
+      );
       debugPrint('ICICI redirect URL: $redirectUrl');
       if (!mounted) return;
       setState(() => cartLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 
@@ -1296,7 +2124,14 @@ class _CartPageState extends State<CartPage>
           children: [
             Icon(Icons.account_balance_wallet, color: AppColors.primary),
             const SizedBox(width: 8),
-            const Text('Insufficient Balance', style: TextStyle(fontSize: 16)),
+            const Expanded(
+              child: Text(
+                'Insufficient Balance',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -1414,7 +2249,10 @@ class _CartPageState extends State<CartPage>
         cartLoading = true;
       });
       final ApiService apiService = ApiService();
-      final response = await apiService.completeCart(context);
+      final response = await apiService.completeCart(
+        context,
+        deliverySchedule: deliverySchedule,
+      );
       setState(() {
         cartLoading = false;
       });
@@ -1651,6 +2489,96 @@ class _CartPageState extends State<CartPage>
     });
   }
 
+  Widget _buildDeliveryModeCard() {
+    final summary = _formatDeliveryScheduleSummary();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Icon(Icons.radio_button_checked_rounded,
+                color: AppColors.primary, size: 24),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(Icons.local_shipping_rounded,
+                  color: AppColors.primary, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    deliverySchedule.isScheduled
+                        ? 'Delivery Scheduling - Scheduled'
+                        : 'Delivery Scheduling',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: UiTypography.cardTitle().copyWith(
+                      fontSize: 15,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    summary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: UiTypography.cardMeta(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            OutlinedButton(
+              onPressed: cartLoading ? null : _showDeliveryScheduleSheet,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: BorderSide(
+                  color: AppColors.primary.withValues(alpha: 0.35),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(
+                deliverySchedule.isScheduled ? 'Change' : 'Schedule',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ===== Payment Method Card =====
   Widget _buildPaymentMethodCard() {
     final providerName = _getProviderName(pp_id, paymentProviders);
@@ -1659,58 +2587,62 @@ class _CartPageState extends State<CartPage>
         : paymentProviders;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: InkWell(
         onTap: () => showPaymentMethodsBottomSheet(context, providers),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: _providerColor(pp_id).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(_providerIcon(pp_id),
-                    color: _providerColor(pp_id), size: 18),
+                    color: _providerColor(pp_id), size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Payment Method',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                      style: UiTypography.cardTitle().copyWith(
+                        fontSize: 15,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       providerName,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: UiTypography.cardMeta(),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Text(
+                'Change',
+                style: UiTypography.cardAction(color: AppColors.primary),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded,
+                  color: AppColors.primary, size: 20),
             ],
           ),
         ),
@@ -1724,22 +2656,26 @@ class _CartPageState extends State<CartPage>
       _displayTotalAmount().toStringAsFixed(2),
     );
     final providerName = _getProviderName(pp_id, paymentProviders);
+    final isServiceabilityBlocked = serviceabilityChecking ||
+        (serviceabilityError != null && serviceabilityError!.isNotEmpty);
 
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EC))),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, -2),
-            blurRadius: 8,
+            color: Color(0x14000000),
+            offset: Offset(0, -4),
+            blurRadius: 18,
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Amount + View details
+          // Left: Total amount + View details
           Expanded(
             flex: 2,
             child: Column(
@@ -1747,33 +2683,45 @@ class _CartPageState extends State<CartPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  'Total',
+                  style: UiTypography.cardMeta(),
+                ),
+                const SizedBox(height: 1),
+                Text(
                   amount,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: UiTypography.cardPrice(color: AppColors.textColor)
+                      .copyWith(fontSize: 22, letterSpacing: -0.3),
                 ),
                 GestureDetector(
                   onTap: _scrollToPriceDetails,
-                  child: Text(
-                    'View details',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View details',
+                          style: UiTypography.cardMeta(color: AppColors.primary)
+                              .copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        Icon(Icons.keyboard_arrow_up_rounded,
+                            color: AppColors.primary, size: 16),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Right: Place Order button with payment method
+          const SizedBox(width: 14),
+          // Right: dominant Checkout CTA with payment method
           Expanded(
             flex: 3,
             child: ElevatedButton(
-              onPressed: cartLoading
+              onPressed: cartLoading || isServiceabilityBlocked
                   ? null
                   : () {
                       if (cartResponse?.cart?.error == true) {
@@ -1786,15 +2734,28 @@ class _CartPageState extends State<CartPage>
                         AppUtils.showToast(AppStrings.add_address_to_proceed);
                         return;
                       }
+                      if (serviceabilityChecking) {
+                        AppUtils.showToast(
+                            'Checking serviceability. Please wait.');
+                        return;
+                      }
+                      if (serviceabilityError != null &&
+                          serviceabilityError!.isNotEmpty) {
+                        AppUtils.showToast(serviceabilityError!);
+                        return;
+                      }
                       if (!addressLoading) {
                         placeOrder(pp_id ?? 'pp_system_default');
                       }
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 54),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: AnimatedSwitcher(
@@ -1802,15 +2763,14 @@ class _CartPageState extends State<CartPage>
                 child: cartLoading
                     ? const SizedBox(
                         key: ValueKey('loader'),
-                        height: 36,
+                        height: 38,
                         child: Center(
                           child: SizedBox(
-                            height: 18,
-                            width: 18,
+                            height: 22,
+                            width: 22,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              color: Colors.white,
+                              strokeWidth: 2.5,
                             ),
                           ),
                         ),
@@ -1819,18 +2779,28 @@ class _CartPageState extends State<CartPage>
                         key: const ValueKey('text'),
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Place Order',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Checkout',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white, size: 18),
+                            ],
                           ),
                           Text(
                             providerName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 10,
+                              fontSize: 11,
                               color: Colors.white70,
                               height: 1.3,
                             ),
@@ -1846,24 +2816,34 @@ class _CartPageState extends State<CartPage>
   }
 
   Widget _priceRow(String label, String value,
-      {Color? valueColor, bool isBold = false, double fontSize = 13}) {
+      {Color? valueColor, bool isBold = false, double fontSize = 14}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
-          Text(value,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: valueColor ?? AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
+          Expanded(
+            child: Text(label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: fontSize,
+                  color: AppColors.textColor.withOpacity(0.65),
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
+                ).copyWith(height: 1.5)),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value,
+                maxLines: 2,
+                textAlign: TextAlign.right,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: fontSize,
+                  color: valueColor ?? AppColors.textColor,
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+                )),
+          ),
         ],
       ),
     );
@@ -1877,72 +2857,76 @@ class _CartPageState extends State<CartPage>
     final canUseCoupon = allowCouponWithWallet || !splitActive;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: InkWell(
         onTap: canUseCoupon ? () => showPromoCodeBottomSheet(context) : null,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color:
-                      isApplied ? Colors.green.shade50 : Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isApplied
+                      ? const Color(0xFFE7F7F0)
+                      : AppColors.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  Icons.local_offer_outlined,
-                  color: isApplied
-                      ? Colors.green.shade600
-                      : Colors.orange.shade700,
-                  size: 18,
+                  Icons.local_offer_rounded,
+                  color:
+                      isApplied ? const Color(0xFF1FA971) : AppColors.primary,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Coupon',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                      isApplied ? 'Coupon Applied' : 'Apply Coupon',
+                      style: UiTypography.cardTitle().copyWith(
+                        fontSize: 15,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     isApplied
                         ? Text(
                             '${coupon!.code} · Save ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.green.shade600),
+                            style: UiTypography.cardMeta(
+                                color: const Color(0xFF1FA971)),
                           )
                         : Text(
                             canUseCoupon
-                                ? 'Apply coupon code'
+                                ? 'Have a code? Tap to add and save'
                                 : 'Remove wallet to apply coupon',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600),
+                            style: UiTypography.cardMeta(),
                           ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Text(
+                isApplied ? 'Change' : 'Add',
+                style: UiTypography.cardAction(color: AppColors.primary),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded,
+                  color: AppColors.primary, size: 20),
             ],
           ),
         ),
@@ -1956,63 +2940,58 @@ class _CartPageState extends State<CartPage>
     final canUseWallet = allowCouponWithWallet || !couponApplied;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
         border: Border.all(
-          color: splitActive
-              ? AppColors.primary.withOpacity(0.4)
-              : Colors.grey.shade200,
+          color: splitActive ? AppColors.primary : const Color(0xFFE5E7EC),
           width: splitActive ? 1.5 : 1,
         ),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: canUseWallet
                         ? AppColors.primary.withOpacity(0.1)
                         : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.account_balance_wallet_outlined,
+                    Icons.account_balance_wallet_rounded,
                     color: canUseWallet ? AppColors.primary : Colors.grey,
-                    size: 18,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Use Wallet Balance',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                        style: UiTypography.cardTitle(
                           color:
                               canUseWallet ? AppColors.textColor : Colors.grey,
-                        ),
+                        ).copyWith(fontSize: 15, letterSpacing: -0.2),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         'Available: ${CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(2))}',
-                        style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                        style: UiTypography.cardMeta(),
                       ),
                       if (walletUsageLimit != null &&
                           walletUsageLimit!.enabled &&
@@ -2058,26 +3037,27 @@ class _CartPageState extends State<CartPage>
             ),
           ),
           if (splitActive && splitWalletAmount > 0) ...[
-            Divider(height: 1, color: Colors.grey.shade100),
+            const Divider(height: 1, color: Color(0xFFE5E7EC)),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE7F7F0),
                 borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                    BorderRadius.vertical(bottom: Radius.circular(15)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline,
-                      color: Colors.green.shade600, size: 14),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.w500),
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF1FA971), size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
+                      style:
+                          UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                              .copyWith(fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ],
               ),

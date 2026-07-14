@@ -3,20 +3,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/push_notification_service.dart';
 import '../model/public_detail_model.dart';
 import '../utility/shared_preferences_util.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utility/version_utils.dart';
 import 'force_update_page.dart';
@@ -35,6 +33,7 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _resolvedSkipLogin = false;
 
   @override
   void initState() {
@@ -67,22 +66,42 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: Center(
-        child: ScaleTransition(
-          scale: _animation,
-          child: SvgPicture.asset(
-            AppAssets.app_logo,
-            height: 120,
-            width: 158,
+      body: Stack(
+        children: [
+          Center(
+            child: ScaleTransition(
+              scale: _animation,
+              child: SvgPicture.asset(
+                AppAssets.app_logo,
+                height: 120,
+                width: 158,
+              ),
+            ),
           ),
-        ),
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 56),
+              child: SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   void navToNextPage() async {
-    final publicDetails = widget.publicDetailsResponse ??
-        await SharedPreferencesUtil().getPublicDetails();
+    final publicDetails = await _resolvePublicDetails();
+    _resolvedSkipLogin =
+        publicDetails?.storeDetails?.storeMetadata?.skipLogin ??
+            widget.skipLogin;
 
     final versionCheckJson =
         publicDetails?.storeDetails?.storeMetadata?.versionCheck;
@@ -127,7 +146,26 @@ class _SplashPageState extends State<SplashPage>
       debugPrint('min build calling');
     }
 
-    _navigateToHome();
+    _navigateToHome(skipLogin: _resolvedSkipLogin);
+  }
+
+  Future<PublicDetailsResponse?> _resolvePublicDetails() async {
+    final prefs = SharedPreferencesUtil();
+    final cachedPublicDetails =
+        widget.publicDetailsResponse ?? await prefs.getPublicDetails();
+
+    final hasSkipLogin = await prefs.containsKey('skip_login');
+    if (cachedPublicDetails != null && hasSkipLogin) {
+      return cachedPublicDetails;
+    }
+
+    try {
+      final freshPublicDetails = await ApiService().getPublicDetails();
+      await prefs.savePublicDetails(freshPublicDetails);
+      return freshPublicDetails;
+    } catch (_) {
+      return cachedPublicDetails;
+    }
   }
 
   void _openStore() {
@@ -162,7 +200,7 @@ class _SplashPageState extends State<SplashPage>
           onUpdateNow: _openStore,
           onContinue: () {
             Navigator.pop(context);
-            _navigateToHome();
+            _navigateToHome(skipLogin: _resolvedSkipLogin);
           },
         ),
       );
@@ -182,17 +220,19 @@ class _SplashPageState extends State<SplashPage>
     return false;
   }
 
-  void _navigateToHome() async {
+  void _navigateToHome({required bool skipLogin}) async {
     String? token = await SharedPreferencesUtil().getString('token');
-    bool skipLogin =
-        await SharedPreferencesUtil().getBool('skip_login') ?? widget.skipLogin;
-    Widget nextPage = token == null
-        ? skipLogin
-            ? const BottomNavPage()
-            : WelcomePage()
-        : const BottomNavPage();
+    final isLoggedIn = token != null && token.isNotEmpty;
+    Widget nextPage = skipLogin ? const BottomNavPage() : WelcomePage();
 
     if (mounted) {
+      if (isLoggedIn || skipLogin) {
+        LoginRedirectUtils.redirectAfterLogin(
+          context,
+          redirectPage: const BottomNavPage(),
+        );
+        return;
+      }
       PageRouteUtils.pushWithZoom(context, nextPage);
     }
   }

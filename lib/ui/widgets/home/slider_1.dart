@@ -179,11 +179,13 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                                       currentData.title ?? '',
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
-                                      style: const TextStyle(
-                                        overflow: TextOverflow.ellipsis,
+                                      style: FontUtils.primaryFontStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w900,
                                         color: Colors.yellow,
+                                        letterSpacing: -0.2,
+                                      ).copyWith(
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],

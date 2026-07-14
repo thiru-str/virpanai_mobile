@@ -20,6 +20,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../ui/splash_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
@@ -52,6 +53,7 @@ Future<void> main() async {
     // Render immediately using cached config (if present), then refresh in background.
     final PublicDetailsResponse? cachedPublicDetails =
         await SharedPreferencesUtil().getPublicDetails();
+
     await ExtensionsUtil.refresh();
     _applyThemeFromPublicDetails(cachedPublicDetails);
     final bool skipLogin = await prefs.getBool('skip_login') ??

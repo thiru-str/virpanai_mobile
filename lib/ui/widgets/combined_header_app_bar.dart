@@ -8,6 +8,7 @@ import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
+import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -20,6 +21,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   final VoidCallback? onProfileTap;
   final String title;
   final String addressType;
+  final String deliveryEta;
   final int cartCount;
   final bool showBack;
 
@@ -34,6 +36,7 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.onProfileTap,
     this.title = "",
     this.addressType = "",
+    this.deliveryEta = "",
     this.cartCount = 0,
     this.showBack = false,
   }) : super(key: key);
@@ -198,6 +201,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   /// it to false because it already has a profile icon there.
   Widget _locationRow({bool showLeadingIcon = true}) {
     final bool hasAddress = title.trim().isNotEmpty;
+    final String eta = deliveryEta.trim();
     final String label =
         addressType.trim().isNotEmpty ? addressType : AppStrings.fast_delivery;
 
@@ -228,6 +232,30 @@ class CombinedHeaderAppBar extends StatelessWidget
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (hasAddress && eta.isNotEmpty && eta != "0") ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.bolt_rounded,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          eta,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.secondaryFontStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                  ],
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -345,6 +373,11 @@ class CombinedHeaderAppBar extends StatelessWidget
   }
 
   double _getHeaderHeight() {
+    if ((headerType == "header-6" || headerType == "header-7") &&
+        deliveryEta.trim().isNotEmpty &&
+        deliveryEta.trim() != "0") {
+      return resolveHeaderHeight(headerType) + 12;
+    }
     return resolveHeaderHeight(headerType);
   }
 
@@ -357,18 +390,17 @@ class CombinedHeaderAppBar extends StatelessWidget
         height: 44,
         decoration: BoxDecoration(
           color: AppColors.searchBarColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.textColor),
+            Icon(Icons.search, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 AppStrings.search,
-                style: FontUtils.secondaryFontStyle(
-                  color: AppColors.textColor.withOpacity(0.7),
-                ),
+                style: UiTypography.searchHint(),
               ),
             ),
           ],

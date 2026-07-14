@@ -2,8 +2,9 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class CategoryCard extends StatelessWidget {
   final String imagePath;
@@ -28,12 +29,12 @@ class CategoryCard extends StatelessWidget {
             color: Colors.white, // Set the background to white
             borderRadius:
                 BorderRadius.circular(16.0), // Adjusted for rounded corners
+            border: Border.all(color: const Color(0xFFE5E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1), // Light shadow
-                spreadRadius: 1,
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -60,7 +61,7 @@ class CategoryCard extends StatelessWidget {
                     : Container(
                         height: 140,
                         width: double.infinity,
-                        color: Colors.grey[200],
+                        color: AppColors.secondary,
                         child: const ImageFallbackWidget(
                           w: 110,
                           h: 110,
@@ -74,11 +75,8 @@ class CategoryCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 14, // Adjusted for better readability
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: UiTypography.cardTitle(color: Colors.black87)
+                      .copyWith(fontSize: 14),
                 ),
               ),
             ],

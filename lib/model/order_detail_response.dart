@@ -40,6 +40,8 @@ class Data {
   String? currencyCode;
   String? status;
   bool? isCanceled;
+  String? orderCustomStatus;
+  String? orderDisplayStatus;
   String? orderStatus;
   String? paymentStatus;
   String? paymentMethod;
@@ -58,6 +60,8 @@ class Data {
     this.currencyCode,
     this.status,
     this.isCanceled,
+    this.orderCustomStatus,
+    this.orderDisplayStatus,
     this.orderStatus,
     this.paymentStatus,
     this.paymentMethod,
@@ -77,6 +81,8 @@ class Data {
     currencyCode: json["currency_code"],
     status: json["status"],
     isCanceled: json["is_canceled"],
+    orderCustomStatus: json["order_custom_status"],
+    orderDisplayStatus: json["order_display_status"],
     orderStatus: json["order_status"],
     paymentStatus: json["payment_status"],
     paymentMethod: json["payment_method"],
@@ -96,6 +102,8 @@ class Data {
     "currency_code": currencyCode,
     "status": status,
     "is_canceled": isCanceled,
+    "order_custom_status": orderCustomStatus,
+    "order_display_status": orderDisplayStatus,
     "order_status": orderStatus,
     "payment_status": paymentStatus,
     "payment_method": paymentMethod,
@@ -259,18 +267,47 @@ class Item {
 class ItemMetadata {
   String? type;
   num? percentage;
+  bool unitBasedInventory;
+  int? unitQuantity;
+  int? baseUnitGrams;
+  String? unitType;
+  String? displayUnit;
 
-  ItemMetadata({this.type, this.percentage});
+  ItemMetadata({
+    this.type,
+    this.percentage,
+    this.unitBasedInventory = false,
+    this.unitQuantity,
+    this.baseUnitGrams,
+    this.unitType,
+    this.displayUnit,
+  });
 
   factory ItemMetadata.fromJson(Map<String, dynamic> json) => ItemMetadata(
     type: json["type"],
     percentage: json["percentage"],
+    unitBasedInventory: json["unit_based_inventory"] == true ||
+        json["unit_based_inventory"] == "true",
+    unitQuantity: _toInt(json["unit_quantity"]),
+    baseUnitGrams: _toInt(json["base_unit_grams"]),
+    unitType: json["unit_type"]?.toString(),
+    displayUnit: json["display_unit"]?.toString(),
   );
 
   Map<String, dynamic> toJson() => {
     "type": type,
     "percentage": percentage,
+    "unit_based_inventory": unitBasedInventory,
+    "unit_quantity": unitQuantity,
+    "base_unit_grams": baseUnitGrams,
+    "unit_type": unitType,
+    "display_unit": displayUnit,
   };
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    return int.tryParse(value.toString());
+  }
 }
 
 class Detail {
@@ -311,6 +348,7 @@ class Prices {
   num? itemSubtotal;
   num? shippingTotal;
   num? discountTotal;
+  num? physicalDiscountTotal;
   num? taxTotal;
 
   Prices({
@@ -319,6 +357,7 @@ class Prices {
     this.itemSubtotal,
     this.shippingTotal,
     this.discountTotal,
+    this.physicalDiscountTotal,
     this.taxTotal,
   });
 
@@ -328,6 +367,7 @@ class Prices {
     itemSubtotal: json["item_subtotal"],
     shippingTotal: json["shipping_total"],
     discountTotal: json["discount_total"],
+    physicalDiscountTotal: json["physical_discount_amount"] ?? json["physical_discount"],
     taxTotal: json["tax_total"],
   );
 
@@ -337,6 +377,7 @@ class Prices {
     "item_subtotal": itemSubtotal,
     "shipping_total": shippingTotal,
     "discount_total": discountTotal,
+    "physical_discount_amount": physicalDiscountTotal,
     "tax_total": taxTotal,
   };
 }

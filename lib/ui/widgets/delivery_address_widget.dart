@@ -10,6 +10,8 @@ class DeliveryAddressWidget extends StatelessWidget {
   final VoidCallback onAddAddress;
   final VoidCallback onChangeAddress;
   final bool isLoading;
+  final String? serviceabilityError;
+  final bool isCheckingServiceability;
 
   const DeliveryAddressWidget({
     super.key,
@@ -18,6 +20,8 @@ class DeliveryAddressWidget extends StatelessWidget {
     required this.onAddAddress,
     required this.onChangeAddress,
     this.isLoading = false,
+    this.serviceabilityError,
+    this.isCheckingServiceability = false,
   });
 
   @override
@@ -110,6 +114,28 @@ class DeliveryAddressWidget extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (isCheckingServiceability) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Checking serviceability...',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+                if (serviceabilityError != null &&
+                    serviceabilityError!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    serviceabilityError!,
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red.shade700,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

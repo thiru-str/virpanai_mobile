@@ -16,6 +16,7 @@ import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/delete_response.dart';
+import 'package:waioz/model/delivery_schedule_model.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/wallet_response.dart';
@@ -31,6 +32,7 @@ import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/review_response.dart';
 import 'package:waioz/model/send_otp_response.dart';
+import 'package:waioz/model/serviceability_response.dart';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/model/up_sell_products_response.dart';
 import 'package:waioz/model/verify_otp_response.dart';
@@ -40,6 +42,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
@@ -50,7 +53,6 @@ import '../model/tags_response.dart';
 import '../ui/bottom_nav_page.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
-import '../utility/location_util.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
@@ -91,32 +93,6 @@ class ApiService {
       return data;
     }
     return 'An error occurred';
-  }
-
-  Future<Map<String, dynamic>> _getLocationPayload() async {
-    final prefs = SharedPreferencesUtil();
-    double? latitude = await prefs.getDouble('current_latitude');
-    double? longitude = await prefs.getDouble('current_longitude');
-
-    if (latitude == null || longitude == null) {
-      final position = await LocationUtil.getApproximateLocation();
-      latitude = position?.latitude;
-      longitude = position?.longitude;
-
-      if (latitude != null && longitude != null) {
-        await prefs.saveDouble('current_latitude', latitude);
-        await prefs.saveDouble('current_longitude', longitude);
-      }
-    }
-
-    if (latitude == null || longitude == null) {
-      return {};
-    }
-
-    return {
-      'lat': latitude,
-      'lng': longitude,
-    };
   }
 
   Future<T> _makePostRequest<T>(
@@ -341,8 +317,14 @@ class ApiService {
     bool skipLogin =
         await SharedPreferencesUtil().getBool('skip_login') ?? false;
 
-    PageRouteUtils.pushAndRemoveUntil(
-        context, skipLogin ? const BottomNavPage() : WelcomePage());
+    if (skipLogin) {
+      LoginRedirectUtils.redirectAfterLogin(
+        context,
+        redirectPage: const BottomNavPage(),
+      );
+    } else {
+      PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+    }
   }
 
   Future<SendOtpResponse> sendOtp(
@@ -499,6 +481,8 @@ class ApiService {
     String searchString, {
     int offset = 0,
     int limit = 10,
+    double? latitude,
+    double? longitude,
   }) async {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
@@ -556,6 +540,13 @@ class ApiService {
       queryParams['q'] = searchString;
     }
 
+    if (latitude != null) {
+      queryParams['latitude'] = latitude;
+    }
+    if (longitude != null) {
+      queryParams['longitude'] = longitude;
+    }
+
     queryParams['offset'] = offset.toString();
     queryParams['limit'] = limit.toString();
 
@@ -583,13 +574,23 @@ class ApiService {
   Future<ProductDetailReponse> productDetail(
       BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    final locationPayload = await _getLocationPayload();
+    final selectedAddress =
+        await SharedPreferencesUtil().getMap('selected_address');
+    final metadata = selectedAddress?['metadata'];
+    final latitude = metadata is Map
+        ? double.tryParse(metadata['latitude']?.toString() ?? '')
+        : null;
+    final longitude = metadata is Map
+        ? double.tryParse(metadata['longitude']?.toString() ?? '')
+        : null;
+
     return _makeGetRequest<ProductDetailReponse>(
       'store/custom-product-detail',
       '$productId?fields=+variants.inventory_quantity,+metadata',
       {
         "region_id": regionId,
-        ...locationPayload,
+        if (latitude != null) "latitude": latitude,
+        if (longitude != null) "longitude": longitude,
       },
       (json) => ProductDetailReponse.fromJson(json),
       context,
@@ -638,8 +639,6 @@ class ApiService {
       double? longitude,
       String? pincode}) async {
     await addToken();
-    final locationPayload = await _getLocationPayload();
-    final cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/tryfresh/v1',
       {
@@ -726,6 +725,25 @@ class ApiService {
       productId,
       null,
       (json) => ReviewResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ReturnSuccessResponse> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => ReturnSuccessResponse.fromJson(json),
       context,
     );
   }
@@ -890,25 +908,32 @@ class ApiService {
     );
   }
 
-  Future<PlaceOrderResponse> placeOrder(
-      BuildContext context, String pp_id) async {
+  Future<PlaceOrderResponse> placeOrder(BuildContext context, String pp_id,
+      {DeliveryScheduleSelection? deliverySchedule}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/place-order/$cartId',
-      {"payment_provider_id": pp_id},
+      {
+        "payment_provider_id": pp_id,
+        ...?deliverySchedule?.toPayload(),
+      },
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }
 
-  Future<String?> initiateIciciPayment(BuildContext context) async {
+  Future<String?> initiateIciciPayment(BuildContext context,
+      {DeliveryScheduleSelection? deliverySchedule}) async {
     await setPublishableKey();
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final response = await _dio.post(
       'store/place-order/$cartId',
-      data: {"payment_provider_id": "pp_icici_icici"},
+      data: {
+        "payment_provider_id": "pp_icici_icici",
+        ...?deliverySchedule?.toPayload(),
+      },
     );
     if (response.statusCode == 200) {
       return response.data?['icici_redirect_url'] as String?;
@@ -984,6 +1009,19 @@ class ApiService {
     );
   }
 
+  Future<ServiceabilityResponse> checkCartServiceability(
+      BuildContext context) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makeGetRequest<ServiceabilityResponse>(
+      'store/carts/$cartId/serviceability-check',
+      null,
+      null,
+      (json) => ServiceabilityResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<CartResponse> updateShippingMethod(
       BuildContext context, String optionId) async {
     await addToken();
@@ -992,6 +1030,30 @@ class ApiService {
       'store/carts/$cartId/shipping-methods',
       {"option_id": optionId},
       (json) => CartResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<DeliveryScheduleResponse> getDeliveryScheduleSlots(
+      BuildContext context, String date) async {
+    await addToken();
+    return _makeGetRequest(
+      'store/delivery-scheduling/slots',
+      null,
+      {'date': date},
+      (json) => DeliveryScheduleResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> updateDeliverySchedule(
+      BuildContext context, DeliveryScheduleSelection selection) async {
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _makePostRequest(
+      'store/custom-carts/$cartId/delivery-schedule',
+      selection.toPayload(),
+      (json) => json,
       context,
     );
   }
@@ -1008,25 +1070,77 @@ class ApiService {
     );
   }
 
-  Future<PlaceOrderResponse> completeCart(BuildContext context) async {
+  Future<PlaceOrderResponse> completeCart(BuildContext context,
+      {DeliveryScheduleSelection? deliverySchedule}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/custom-carts/$cartId/complete',
-      null,
+      deliverySchedule?.toPayload(),
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
   }
 
-  Future<PublicDetailsResponse> getPublicDetails() async {
+  Future<PublicDetailsResponse> getPublicDetails({
+    double? latitude,
+    double? longitude,
+  }) async {
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',
       null,
-      null,
+      {
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
+      },
       (json) => PublicDetailsResponse.fromJson(json),
       null,
     );
+  }
+
+  Future<Map<String, dynamic>> syncCartLocation(
+    BuildContext context, {
+    required double latitude,
+    required double longitude,
+    Map<String, dynamic>? address,
+  }) async {
+    await addToken();
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    final countryCode =
+        address?['country_code']?.toString().trim().toLowerCase();
+    return _makePostRequest<Map<String, dynamic>>(
+      'store/custom-carts/location-sync',
+      {
+        'cart_id': cartId,
+        'latitude': latitude,
+        'longitude': longitude,
+        if (address != null) 'address_1': address['address_1'],
+        if (address != null) 'address_2': address['address_2'],
+        if (address != null) 'city': address['city'],
+        if (address != null) 'province': address['province'],
+        if (address != null) 'postal_code': address['postal_code'],
+        if (countryCode != null && countryCode.isNotEmpty)
+          'country_code': countryCode,
+        if (address != null) 'first_name': address['first_name'],
+        if (address != null) 'last_name': address['last_name'],
+        if (address != null) 'phone': address['phone'],
+        if (address != null) 'company': address['company'],
+      },
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<void> clearCartItems(BuildContext context) async {
+    await addToken();
+    final cart = await getCart(context);
+    final items = cart.cart?.items ?? [];
+
+    for (final item in items) {
+      final itemId = item.id;
+      if (itemId == null || itemId.isEmpty) continue;
+      await removeCart(context, itemId);
+    }
   }
 
   Future<bool> getCouponListVisibility() async {
@@ -1101,8 +1215,6 @@ class ApiService {
   }
 
   Future<CollectionsResponse> listCollections(BuildContext context) async {
-    String? regionId = await SharedPreferencesUtil().getString('region_id');
-
     return _makeGetRequest<CollectionsResponse>(
       'store/collections',
       null,
@@ -1372,6 +1484,7 @@ class ApiService {
     num orderTotal, {
     String? orderId,
     String? cartId,
+    String? productId,
   }) async {
     await setPublishableKey();
     final params = <String, dynamic>{};
@@ -1379,6 +1492,10 @@ class ApiService {
     // Prefer cart_id when available — backend computes earnable amount server-side
     // (excludes platform_fee + applies earn restriction).
     if (cartId != null && cartId.isNotEmpty) params['cart_id'] = cartId;
+    // PDP passes product_id so backend can short-circuit when the merchant
+    // has restricted earning to specific products / categories — keeps the
+    // "you'll earn …" strip honest with what the order subscriber will do.
+    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
@@ -1423,17 +1540,43 @@ class ApiService {
         queryParameters: {'limit': limit, 'offset': offset});
   }
 
-  Future<Response> applyReferralCode(String code) async {
+  Future<Response> applyReferralCode(String identifier) async {
     await addToken();
     await setPublishableKey();
+    // Send via `referral_identifier` (new) — backend accepts unique code OR phone.
     return _dio.post('/store/loyalty/referral/apply',
-        data: {'referral_code': code});
+        data: {'referral_identifier': identifier.trim()});
   }
 
-  /// Public endpoint — no auth required. Validates a referral code before signup.
-  Future<Response> validateReferralCode(String code) async {
+  /// Public endpoint — no auth required. Accepts EITHER a unique code OR a
+  /// phone number (when admin has enabled phone-as-referral mode).
+  Future<Response> validateReferralCode(String identifier) async {
     await setPublishableKey();
+    final raw = identifier.trim();
+    // Pass via the new `identifier` param. Backend uppercases code lookups
+    // internally and tries phone matching when the input has enough digits.
     return _dio.get('/store/loyalty/referral/validate',
-        queryParameters: {'code': code.trim().toUpperCase()});
+        queryParameters: {'identifier': raw});
+  }
+
+  // GET /store/delivery/free-delivery-info — cart-scoped progress banner data.
+  // Returns null on any failure so the widget hides silently rather than
+  // breaking the cart UI.
+  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
+    BuildContext context,
+    String cartId,
+  ) async {
+    try {
+      await addToken();
+      return _makeGetRequest<Map<String, dynamic>>(
+        'store/delivery/free-delivery-info',
+        null,
+        {'cart_id': cartId},
+        (json) => Map<String, dynamic>.from(json as Map),
+        context,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 }

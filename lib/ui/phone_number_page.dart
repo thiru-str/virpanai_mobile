@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,12 +11,13 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
-import 'bottom_nav_page.dart';
 
 class PhoneNumberPage extends StatefulWidget {
   final Widget? redirectPage;
@@ -54,14 +54,51 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     });
   }
 
+  InputDecoration _fieldDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: UiTypography.searchHint(),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+      ),
+    );
+  }
+
+  Widget _fieldLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: FontUtils.primaryFontStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textColor,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           elevation: 0,
           leading: IconButton(
             icon: SvgPicture.asset(
@@ -74,189 +111,199 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             },
           ),
         ),
-        body: Container(
-          color: Colors.white, // Full page background color
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              // Title
-              Text(
-                isEmailLogin?AppStrings.login:AppStrings.enter_mob_no,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+        body: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                // Title
+                Text(
+                  isEmailLogin ? AppStrings.login : AppStrings.enter_mob_no,
+                  style: UiTypography.cardTitle().copyWith(
+                    fontSize: 24,
+                    height: 1.2,
+                    letterSpacing: -0.3,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              // Form for phone input
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                const SizedBox(height: 8),
+                Text(
+                  isEmailLogin
+                      ? AppStrings.email
+                      : AppStrings.mobile_number,
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 14,
+                    color: AppColors.textColor50,
+                  ).copyWith(height: 1.5),
+                ),
+                const SizedBox(height: 28),
+                // Form for phone input
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isEmailLogin) ...[
+                        _fieldLabel(AppStrings.email),
 
-                    if (isEmailLogin) ...[
-                      Text(
-                        AppStrings.email,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[700]!,
+                        CustomTextField(
+                          hintText: AppStrings.email,
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (!isEmailLogin) return null;
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.email_required;
+                            }
+                            if (!RegExp(
+                              r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                            ).hasMatch(value)) {
+                              return AppStrings.enter_valid_email;
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                      const SizedBox(height: 8),
 
-                      CustomTextField(
-                        hintText: AppStrings.email,
-                        controller: emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (!isEmailLogin) return null;
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.email_required;
-                          }
-                          if (!RegExp(
-                            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                          ).hasMatch(value)) {
-                            return AppStrings.enter_valid_email;
-                          }
-                          return null;
-                        },
-                      ),
+                        const SizedBox(height: 16),
 
-                      const SizedBox(height: 16),
+                        _fieldLabel(AppStrings.password),
 
-                      CustomTextField(
-                        hintText: AppStrings.password,
-                        controller: passwordController,
-                        textCapitalization: TextCapitalization.none,
-                        isPassword: true,
-                        keyboardType: TextInputType.visiblePassword,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(
-                                r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
+                        CustomTextField(
+                          hintText: AppStrings.password,
+                          controller: passwordController,
+                          textCapitalization: TextCapitalization.none,
+                          isPassword: true,
+                          keyboardType: TextInputType.visiblePassword,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(
+                                  r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
+                              ),
                             ),
-                          ),
-                        ],
-                        validator: (value) {
-                          if (!isEmailLogin) return null;
-                          if (value == null || value.isEmpty) {
-                            return AppStrings.password_required;
-                          }
-                          if (value.length < 5) {
-                            return AppStrings.password_min_length;
-                          }
-                          return null;
-                        },
-                      ),
-                      newToAppRegisterText(onRegisterTap: () {
-                        PageRouteUtils.pushWithSlide(
-                            context,
-                            RegisterPage(
-                              phoneNo: '',
-                              countryCode: '',
-                              token: '',
-                              redirectPage: widget.redirectPage,
-                            ));
-                      })
-
-                    ] else ...[
-                      Text(
-                        AppStrings.mobile_number,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[700]!,
+                          ],
+                          validator: (value) {
+                            if (!isEmailLogin) return null;
+                            if (value == null || value.isEmpty) {
+                              return AppStrings.password_required;
+                            }
+                            if (value.length < 5) {
+                              return AppStrings.password_min_length;
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                      const SizedBox(height: 8),
+                        newToAppRegisterText(onRegisterTap: () {
+                          PageRouteUtils.pushWithSlide(
+                              context,
+                              RegisterPage(
+                                phoneNo: '',
+                                countryCode: '',
+                                token: '',
+                                redirectPage: widget.redirectPage,
+                              ));
+                        })
 
-                      IntlPhoneField(
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        decoration: InputDecoration(
-                          filled: true,
-                          contentPadding:
-                          const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            BorderSide(color: AppColors.primary, width: 1.5),
+                      ] else ...[
+                        _fieldLabel(AppStrings.mobile_number),
+
+                        IntlPhoneField(
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          dropdownTextStyle: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textColor,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            BorderSide(color: AppColors.primary, width: 1.5),
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textColor,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            BorderSide(color: AppColors.primary, width: 1.5),
-                          ),
+                          decoration: _fieldDecoration(AppStrings.mobile_number),
+                          initialCountryCode: AppStrings.country_code,
+                          onChanged: (phone) {
+                            _phoneNumber = phone.number;
+                            _countryCode = phone.countryCode;
+                          },
+                          validator: (value) {
+                            if (value == null || value.number.isEmpty) {
+                              return AppStrings.enter_valid_mob_no;
+                            }
+                            if (value.number.length < 10 ||
+                                value.number.length > 15) {
+                              return AppStrings.digit_range;
+                            }
+                            return null;
+                          },
                         ),
-                        initialCountryCode: AppStrings.country_code,
-                        onChanged: (phone) {
-                          _phoneNumber = phone.number;
-                          _countryCode = phone.countryCode;
-                        },
-                        validator: (value) {
-                          if (value == null || value.number.isEmpty) {
-                            return AppStrings.enter_valid_mob_no;
-                          }
-                          if (value.number.length < 10 ||
-                              value.number.length > 15) {
-                            return AppStrings.digit_range;
-                          }
-                          return null;
-                        },
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
 
-              const Spacer(),
-              // Submit button
-              Align(
-                alignment: Alignment.bottomRight,
-                child: FloatingActionButton(
-                  elevation: 0,
-                  shape: const CircleBorder(),
-                  onPressed: () {
-                    if(apiCalling)
-                      {
-                        return;
-                      }
-                    if (_formKey.currentState!.validate()) {
-                      if (isEmailLogin) {
-                        loginWithEmail();
-                      } else {
-                        if (_phoneNumber != null) {
-                          sendOtp();
+                const Spacer(),
+                // Submit button — full-width primary CTA at bottom
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      elevation: 0,
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      if(apiCalling)
+                        {
+                          return;
+                        }
+                      if (_formKey.currentState!.validate()) {
+                        if (isEmailLogin) {
+                          loginWithEmail();
                         } else {
-                          AppUtils.showToast(AppStrings.enter_mob_no);
+                          if (_phoneNumber != null) {
+                            sendOtp();
+                          } else {
+                            AppUtils.showToast(AppStrings.enter_mob_no);
+                          }
                         }
                       }
-                    }
-                  },
-
-                  backgroundColor: AppColors.primary,
-                  child: apiCalling
-                      ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0,
-                      color: Colors.white,
-                    ),
-                  ):const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    },
+                    child: apiCalling
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                isEmailLogin
+                                    ? AppStrings.login
+                                    : 'Continue',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white, size: 20),
+                            ],
+                          ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
@@ -316,9 +363,12 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
           setState(() {
             apiCalling = false;
           });
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+          LoginRedirectUtils.redirectAfterLogin(
+            context,
+            redirectPage: widget.redirectPage,
+          );
         } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
+          LoginRedirectUtils.redirectAfterLogin(context);
         }
       }
     } catch (e) {

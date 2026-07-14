@@ -104,7 +104,8 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
       if (mounted) {
         setState(() {
           _account = accountData.data;
-          if (statusData['status'] == true && statusData['data']?['applied'] == true) {
+          if (statusData['status'] == true &&
+              statusData['data']?['applied'] == true) {
             _applied = true;
             _appliedPoints = statusData['data']['points_applied'] ?? 0;
             _discountAmount = statusData['data']['discount_amount'] ?? 0;
@@ -161,7 +162,11 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
       } else {
         await _api.removeLoyaltyCheckout(widget.cartId);
         if (mounted) {
-          setState(() { _applied = false; _appliedPoints = 0; _discountAmount = 0; });
+          setState(() {
+            _applied = false;
+            _appliedPoints = 0;
+            _discountAmount = 0;
+          });
         }
         widget.onRemoved();
         await Future.delayed(const Duration(milliseconds: 500));
@@ -177,7 +182,8 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
   Widget build(BuildContext context) {
     if (!ExtensionsUtil.has('loyalty')) return const SizedBox.shrink();
     if (_loading) return const SizedBox.shrink();
-    if (_account == null || _account!.checkoutApplyEnabled != true) return const SizedBox.shrink();
+    if (_account == null || _account!.checkoutApplyEnabled != true)
+      return const SizedBox.shrink();
     final balance = _account!.pointsBalance ?? 0;
     if (balance <= 0 && !_applied) return const SizedBox.shrink();
 
@@ -300,8 +306,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
             Divider(height: 1, color: Colors.grey.shade100),
             Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: Colors.green.shade50,
                 borderRadius:
@@ -319,6 +324,8 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                           fontSize: 12,
                           color: Colors.green.shade700,
                           fontWeight: FontWeight.w500),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

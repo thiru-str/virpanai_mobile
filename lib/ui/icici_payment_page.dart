@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -41,7 +42,7 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
         NavigationDelegate(
           onPageStarted: (_) => setState(() => _loading = true),
           onPageFinished: (_) => setState(() => _loading = false),
-          onNavigationRequest: (request) {
+          onNavigationRequest: (request) async {
             final url = request.url;
 
             if (url.contains('/order/confirmed/')) {
@@ -53,6 +54,27 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
 
             if (url.contains('/order/transaction/failed/')) {
               widget.onFailure();
+              return NavigationDecision.prevent;
+            }
+
+            // Non-http schemes (upi://, tez://, phonepe://, paytmmp://, etc.)
+            // are app intents — the WebView can't load them and errors with
+            // ERR_UNKNOWN_URL_SCHEME. Hand off to the OS so Android opens its
+            // UPI app chooser. Android 11+ also needs the matching <queries>
+            // entry in AndroidManifest.xml for canLaunchUrl to return true.
+            final uri = Uri.parse(url);
+            if (uri.scheme != 'http' &&
+                uri.scheme != 'https' &&
+                uri.scheme != 'about') {
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No UPI app installed to handle this payment'),
+                  ),
+                );
+              }
               return NavigationDecision.prevent;
             }
 
@@ -69,12 +91,14 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF9F9FB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.close, size: 22),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           color: const Color(0xFF272727),
           onPressed: () => widget.onFailure(),
         ),
@@ -110,8 +134,31 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
         children: [
           WebViewWidget(controller: _controller),
           if (_loading)
-            Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+            Container(
+              color: const Color(0xFFF9F9FB),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2.8,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Securing your payment…',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0x80272727),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),

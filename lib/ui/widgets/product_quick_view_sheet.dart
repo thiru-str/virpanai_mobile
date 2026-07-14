@@ -300,12 +300,39 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
               await apiService.addCart(
                   context, selectedQuantity, selectedVariantId!);
               final cartResponse = await apiService.getCart(context);
+              final productItems = cartResponse.cart?.items
+                      ?.where((i) => !i.isVirtualItem)
+                      .toList() ??
+                  [];
+              final totalQty = productItems
+                  .map((item) => item.quantity ?? 0)
+                  .fold<int>(0, (sum, qty) => sum + qty);
+              final qtyMap = <String, int>{};
+              final unitLineQtyMap = <String, int>{};
+              final unitLineIdMap = <String, String>{};
+              for (final item in productItems) {
+                final variantId = item.variantId;
+                if (variantId != null) {
+                  qtyMap[variantId] =
+                      (qtyMap[variantId] ?? 0) + (item.quantity ?? 0);
+                }
+                final metadata = item.metadata;
+                if (variantId != null &&
+                    metadata?.unitBasedInventory == true &&
+                    metadata?.unitQuantity != null &&
+                    metadata!.unitQuantity! > 0 &&
+                    item.id != null) {
+                  final key = '$variantId::${metadata.unitQuantity!}';
+                  unitLineQtyMap[key] = item.quantity ?? 0;
+                  unitLineIdMap[key] = item.id!;
+                }
+              }
               eventBus.fire(ViewCartModel(
-                cartResponse.cart?.items?.where((i) => !i.isPlatformFee).length ?? 0,
-                cartResponse.cart?.items
-                    ?.where((i) => !i.isPlatformFee)
-                    .map((i) => i.thumbnail ?? "")
-                    .toList() ?? [],
+                totalQty,
+                productItems.map((i) => i.thumbnail ?? "").toList(),
+                qtyMap,
+                unitLineQtyMap,
+                unitLineIdMap,
               ));
               Navigator.pop(context);
             },

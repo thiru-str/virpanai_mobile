@@ -36,6 +36,13 @@ _ProviderMeta _meta(String? id, {String? walletBalanceLabel}) {
         icon: Icons.credit_card_rounded,
         color: Color(0xFF6CB33F),
       );
+    case 'pp_paytm_paytm':
+      return const _ProviderMeta(
+        displayName: 'Paytm',
+        subtitle: 'UPI · Cards · Net banking · Wallets',
+        icon: Icons.account_balance_wallet_rounded,
+        color: Color(0xFF00BAF2),
+      );
     case 'pp_icici_icici':
       return const _ProviderMeta(
         displayName: 'ICICI Bank',
@@ -99,76 +106,84 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
-          ),
 
-          Text(
-            AppStrings.payemnt_method,
-            style: FontUtils.secondaryFontStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF272727),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Select how you\'d like to pay',
-            style: FontUtils.primaryFontStyle(
-              fontSize: 13,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          ...List.generate(paymentProviders.length, (i) {
-            final provider = paymentProviders[i];
-            final isSelected = providerId == provider.id;
-            final walletLabel = provider.id == 'pp_wallet_wallet' && walletBalance != null
-                ? 'Balance: ₹${walletBalance!.toStringAsFixed(2)}'
-                : null;
-            final meta = _meta(provider.id, walletBalanceLabel: walletLabel);
-            final displayName = (provider.name?.isNotEmpty == true)
-                ? provider.name!
-                : meta.displayName;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _PaymentTile(
-                displayName: displayName,
-                subtitle: provider.id == 'pp_wallet_wallet' && walletLabel != null
-                    ? walletLabel
-                    : meta.subtitle,
-                icon: meta.icon,
-                color: meta.color,
-                isSelected: isSelected,
-                onTap: () {
-                  onPaymentSelected(provider);
-                  Navigator.pop(context);
-                },
+              Text(
+                AppStrings.payemnt_method,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF272727),
+                ),
               ),
-            );
-          }),
-        ],
+              const SizedBox(height: 4),
+              Text(
+                'Select how you\'d like to pay',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              ...List.generate(paymentProviders.length, (i) {
+                final provider = paymentProviders[i];
+                final isSelected = providerId == provider.id;
+                final walletLabel =
+                    provider.id == 'pp_wallet_wallet' && walletBalance != null
+                        ? 'Balance: ₹${walletBalance!.toStringAsFixed(2)}'
+                        : null;
+                final meta =
+                    _meta(provider.id, walletBalanceLabel: walletLabel);
+                final displayName = (provider.name?.isNotEmpty == true)
+                    ? provider.name!
+                    : meta.displayName;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _PaymentTile(
+                    displayName: displayName,
+                    subtitle:
+                        provider.id == 'pp_wallet_wallet' && walletLabel != null
+                            ? walletLabel
+                            : meta.subtitle,
+                    icon: meta.icon,
+                    color: meta.color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      onPaymentSelected(provider);
+                      Navigator.pop(context);
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -227,6 +242,7 @@ class _PaymentTileState extends State<_PaymentTile> {
           ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Icon container
             Container(
@@ -252,6 +268,8 @@ class _PaymentTileState extends State<_PaymentTile> {
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF272727),
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   if (widget.subtitle.isNotEmpty) ...[
                     const SizedBox(height: 2),
@@ -261,6 +279,8 @@ class _PaymentTileState extends State<_PaymentTile> {
                         fontSize: 11,
                         color: Colors.grey.shade500,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ],
@@ -276,7 +296,8 @@ class _PaymentTileState extends State<_PaymentTile> {
                 shape: BoxShape.circle,
                 color: widget.isSelected ? widget.color : Colors.transparent,
                 border: Border.all(
-                  color: widget.isSelected ? widget.color : Colors.grey.shade400,
+                  color:
+                      widget.isSelected ? widget.color : Colors.grey.shade400,
                   width: 1.5,
                 ),
               ),

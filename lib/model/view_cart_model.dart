@@ -8,9 +8,17 @@ final EventBus eventBus = EventBus();
 class ViewCartModel {
   final int? totalItems;
   final List<String>? itemImages;
-  final Map<String, int> variantQtyMap; // NEW
+  final Map<String, int> variantQtyMap;
+  final Map<String, int> unitLineQtyMap;
+  final Map<String, String> unitLineIdMap;
 
-  ViewCartModel(this.totalItems, this.itemImages, [this.variantQtyMap = const {}]);
+  ViewCartModel(
+    this.totalItems,
+    this.itemImages, [
+    this.variantQtyMap = const {},
+    this.unitLineQtyMap = const {},
+    this.unitLineIdMap = const {},
+  ]);
 }
 
 class TabSwitchEvent {
