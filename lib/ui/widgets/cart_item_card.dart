@@ -18,6 +18,7 @@ class CartItemCard extends StatelessWidget {
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
   final VoidCallback onRemoveAll;
+  final VoidCallback? onTap;
 
   const CartItemCard({
     super.key,
@@ -32,6 +33,7 @@ class CartItemCard extends StatelessWidget {
     required this.onIncrease,
     required this.onDecrease,
     required this.onRemoveAll,
+    this.onTap,
   });
 
   @override
@@ -40,7 +42,9 @@ class CartItemCard extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         // Card Content
-        Container(
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8.0),
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
@@ -228,6 +232,7 @@ class CartItemCard extends StatelessWidget {
             ],
           ),
         ),
+        ), // GestureDetector
         // Loading Indicator
         if (isUpdating)
           Container(
