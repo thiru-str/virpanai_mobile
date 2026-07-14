@@ -698,6 +698,25 @@ class ApiService {
     );
   }
 
+  Future<ReturnSuccessResponse> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => ReturnSuccessResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> getWishList(
       BuildContext context, String? customerID) async {
     await addToken();
