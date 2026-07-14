@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_assets.dart';
-import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/login_redirect_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
@@ -29,10 +27,7 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _SplashPageState extends State<SplashPage> {
   bool _resolvedSkipLogin = false;
 
   @override
@@ -43,56 +38,17 @@ class _SplashPageState extends State<SplashPage>
       await PushNotificationService().initialize(context);
     });
 
-    // Initialize animation controller
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    // Define animation (zoom in)
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-
-    // Start the animation
-    _controller.forward();
-
-    // Navigate to next page after animation
     navToNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Stack(
-        children: [
-          Center(
-            child: ScaleTransition(
-              scale: _animation,
-              child: SvgPicture.asset(
-                AppAssets.app_logo,
-                height: 120,
-                width: 158,
-              ),
-            ),
-          ),
-          const Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 56),
-              child: SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              ),
-            ),
-          ),
-        ],
+      body: SizedBox.expand(
+        child: Image.asset(
+          AppAssets.splash_screen,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -235,11 +191,5 @@ class _SplashPageState extends State<SplashPage>
       }
       PageRouteUtils.pushWithZoom(context, nextPage);
     }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }
