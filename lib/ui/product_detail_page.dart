@@ -249,9 +249,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         .toList();
 
     final allMedia = [...variantImageUrls, ...commonImageUrls, ...videoUrls];
-    final displayUrls = allMedia.isNotEmpty
-        ? allMedia
-        : <String>[];
+    final displayUrls = allMedia.isNotEmpty ? allMedia : <String>[];
 
     if (displayUrls.isEmpty) {
       return ClipRRect(
@@ -868,9 +866,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildReviews() {
+    final customerReview = reviewResponse?.data?.customerReview;
+    final productReviews = reviewResponse?.data?.productReviews ?? [];
+    final hasCustomerReview = (customerReview?.id ?? '').isNotEmpty;
+
     if (reviewResponse == null ||
-        (reviewResponse?.data?.productReviews ?? []).isEmpty)
+        (!hasCustomerReview && productReviews.isEmpty)) {
       return const SizedBox();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -895,23 +899,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         const SizedBox(
           height: 12,
         ),
+        if (hasCustomerReview)
+          ReviewCard(
+            profileImageUrl: AppStrings.profileImageUrl,
+            name: _reviewerName(
+              customerReview?.customer?.firstName,
+              customerReview?.customer?.lastName,
+              fallback: 'You',
+            ),
+            reviewText: customerReview?.description ?? "",
+            rating: double.tryParse(customerReview?.rating ?? "") ?? 0,
+            timestamp: _formatReviewDate(customerReview?.updatedAt),
+          ),
         ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: reviewResponse?.data?.productReviews?.length ?? 0,
+          itemCount: productReviews.length,
           itemBuilder: (context, index) {
-            final review = reviewResponse?.data?.productReviews?[index];
+            final review = productReviews[index];
             return ReviewCard(
               profileImageUrl: AppStrings.profileImageUrl,
-              name: review?.customer?.firstName ?? '',
-              reviewText: review?.description ?? "",
-              rating: double.parse(review?.rating ?? ""),
-              timestamp: '',
+              name: _reviewerName(
+                review.customer?.firstName,
+                review.customer?.lastName,
+              ),
+              reviewText: review.description ?? "",
+              rating: double.tryParse(review.rating ?? "") ?? 0,
+              timestamp: _formatReviewDate(review.updatedAt),
             );
           },
         ),
       ],
     );
+  }
+
+  String _reviewerName(String? firstName, String? lastName,
+      {String fallback = 'Customer'}) {
+    final name = [firstName, lastName]
+        .where((part) => (part ?? '').trim().isNotEmpty)
+        .map((part) => part!.trim())
+        .join(' ');
+    return name.isNotEmpty ? name : fallback;
+  }
+
+  String _formatReviewDate(DateTime? date) {
+    if (date == null) return '';
+    final localDate = date.toLocal();
+    return 'Reviewed on ${localDate.day.toString().padLeft(2, '0')}/'
+        '${localDate.month.toString().padLeft(2, '0')}/'
+        '${localDate.year}';
   }
 
   Widget buildBottomButton() {
