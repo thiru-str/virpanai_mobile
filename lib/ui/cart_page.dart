@@ -558,6 +558,9 @@ class _CartPageState extends State<CartPage>
   bool apiLoading = true;
   bool cartLoading = false;
   bool addressLoading = false;
+  bool serviceabilityChecking = false;
+  String? serviceabilityError;
+  String? _lastServiceabilitySignature;
   bool isAnimating = false;
 
   bool isLoggedIn = false;
@@ -948,6 +951,9 @@ class _CartPageState extends State<CartPage>
                                   address: _buildShippingAddress(cartResponse),
                                   label: null,
                                   isLoading: addressLoading,
+                                  isCheckingServiceability:
+                                      serviceabilityChecking,
+                                  serviceabilityError: serviceabilityError,
                                   onAddAddress: () {
                                     PageRouteUtils.pushWithSlide(
                                         context,
@@ -1559,6 +1565,7 @@ class _CartPageState extends State<CartPage>
         apiLoading = false;
       });
       _syncPricingStateFromCart();
+      unawaited(_checkCartServiceabilityIfNeeded());
       // Load wallet info after cart is ready
       await _loadWalletInfo();
     } catch (e) {
@@ -1566,6 +1573,74 @@ class _CartPageState extends State<CartPage>
         apiLoading = false;
       });
       debugPrint(' error in cart $e');
+    }
+  }
+
+  String _cartStoreId() {
+    final metadata = cartResponse?.cart?.metadata;
+    if (metadata is Map) {
+      return metadata['storeId']?.toString() ?? '';
+    }
+    return '';
+  }
+
+  String _serviceabilitySignature() {
+    final cart = cartResponse?.cart;
+    final address = cart?.shippingAddress;
+    return [
+      cart?.id ?? '',
+      _cartStoreId(),
+      address?.address1 ?? '',
+      address?.address2 ?? '',
+      address?.city ?? '',
+      address?.province ?? '',
+      address?.postalCode ?? '',
+      address?.countryCode ?? '',
+    ].join('|');
+  }
+
+  Future<void> _checkCartServiceabilityIfNeeded({bool force = false}) async {
+    final cartId = cartResponse?.cart?.id;
+    final address = cartResponse?.cart?.shippingAddress;
+
+    if (cartId == null ||
+        cartId.isEmpty ||
+        (address?.address1 ?? '').isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        serviceabilityChecking = false;
+        serviceabilityError = null;
+        _lastServiceabilitySignature = null;
+      });
+      return;
+    }
+
+    final signature = _serviceabilitySignature();
+    if (!force && signature == _lastServiceabilitySignature) {
+      return;
+    }
+
+    _lastServiceabilitySignature = signature;
+    if (!mounted) return;
+    setState(() {
+      serviceabilityChecking = true;
+      serviceabilityError = null;
+    });
+
+    try {
+      final response = await ApiService().checkCartServiceability(context);
+      if (!mounted || signature != _lastServiceabilitySignature) return;
+      setState(() {
+        serviceabilityChecking = false;
+        serviceabilityError =
+            response.serviceable ? null : response.message;
+      });
+    } catch (e) {
+      if (!mounted || signature != _lastServiceabilitySignature) return;
+      setState(() {
+        serviceabilityChecking = false;
+        serviceabilityError = 'Unable to verify address serviceability.';
+      });
     }
   }
 
@@ -2581,6 +2656,8 @@ class _CartPageState extends State<CartPage>
       _displayTotalAmount().toStringAsFixed(2),
     );
     final providerName = _getProviderName(pp_id, paymentProviders);
+    final isServiceabilityBlocked = serviceabilityChecking ||
+        (serviceabilityError != null && serviceabilityError!.isNotEmpty);
 
     return Container(
       decoration: const BoxDecoration(
@@ -2644,7 +2721,7 @@ class _CartPageState extends State<CartPage>
           Expanded(
             flex: 3,
             child: ElevatedButton(
-              onPressed: cartLoading
+              onPressed: cartLoading || isServiceabilityBlocked
                   ? null
                   : () {
                       if (cartResponse?.cart?.error == true) {
@@ -2655,6 +2732,16 @@ class _CartPageState extends State<CartPage>
                       if ((cartResponse?.cart?.shippingAddress?.address1 ?? '')
                           .isEmpty) {
                         AppUtils.showToast(AppStrings.add_address_to_proceed);
+                        return;
+                      }
+                      if (serviceabilityChecking) {
+                        AppUtils.showToast(
+                            'Checking serviceability. Please wait.');
+                        return;
+                      }
+                      if (serviceabilityError != null &&
+                          serviceabilityError!.isNotEmpty) {
+                        AppUtils.showToast(serviceabilityError!);
                         return;
                       }
                       if (!addressLoading) {

@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/login_redirect_utils.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
@@ -35,6 +41,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   static const Color _hairline = Color(0xFFE5E7EC);
+  static const Color _danger = Color(0xFFE5484D);
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,6 +101,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  _buildDeleteAccountButton(context),
                 ],
               ),
             ),
@@ -133,6 +142,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildDeleteAccountButton(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () => _showDeleteAccount(context),
+      icon: const Icon(Icons.delete_outline, color: _danger),
+      label: Text(
+        AppStrings.deleteAccount,
+        style: FontUtils.primaryFontStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: _danger,
+        ),
+      ),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 54),
+        backgroundColor: Colors.white,
+        side: const BorderSide(color: _danger, width: 1.5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
     );
   }
 
@@ -186,8 +218,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             filled: true,
             fillColor: enabled ? Colors.white : const Color(0xFFF4F4F4),
             hintText: label,
-            hintStyle:
-                UiTypography.cardSubtitle(color: Colors.grey.shade600),
+            hintStyle: UiTypography.cardSubtitle(color: Colors.grey.shade600),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             enabledBorder: OutlineInputBorder(
@@ -208,7 +239,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE5484D), width: 1.5),
+              borderSide:
+                  const BorderSide(color: Color(0xFFE5484D), width: 1.5),
             ),
           ),
         ),
@@ -266,5 +298,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
       print(e);
     }
+  }
+
+  void _showDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CommonAlertDialog(
+          title: AppStrings.deleteAccount,
+          content: AppStrings.delete_account_confirmation,
+          contentOk: AppStrings.yes,
+          contentCancel: AppStrings.no,
+          onTapOk: () async {
+            await ApiService().deleteAccount(context);
+
+            bool skipLogin =
+                await SharedPreferencesUtil().getBool('skip_login') ?? false;
+            // Handle sign out action
+            await SharedPreferencesUtil().clear();
+            await AppErrorReporter.instance.clearUser();
+            if (mounted) {
+              if (skipLogin) {
+                LoginRedirectUtils.redirectAfterLogin(
+                  context,
+                  redirectPage: const BottomNavPage(),
+                );
+              } else {
+                PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
+              }
+            }
+          },
+        );
+      },
+    );
   }
 }
