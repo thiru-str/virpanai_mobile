@@ -165,6 +165,7 @@ class AppStrings {
   static const String review_submitted = 'Review submitted!';
   static const String reviews = 'Reviews';
   static const String add_to_cart = 'Add to Cart';
+  static const String update_cart = 'Update Cart';
   static const String enter_valid_mob_no = 'Please enter a valid phone number';
   static const String profileImageUrl = "profileImageUrl";
   static const String digit_range =

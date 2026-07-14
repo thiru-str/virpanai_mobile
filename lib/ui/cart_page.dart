@@ -24,6 +24,7 @@ import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/icici_payment_page.dart';
+import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -367,6 +368,17 @@ class _CartPageState extends State<CartPage>
                                                   .toStringAsFixed(2)),
                                           quantity: cartItem.quantity!,
                                           isUpdating: cartItem.isUpdating!,
+                                          onTap: cartItem.productId != null
+                                              ? () async {
+                                                  await PageRouteUtils.push(
+                                                    context,
+                                                    ProductDetailPage(
+                                                        productId:
+                                                            cartItem.productId!),
+                                                  );
+                                                  if (mounted) getCartApi();
+                                                }
+                                              : null,
                                           onRemoveAll: () {
                                             setState(() {
                                               cartResponse!
