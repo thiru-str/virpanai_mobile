@@ -157,7 +157,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     Data? orderData,
   ) async {
     final productIds = (orderData?.items ?? [])
-        .where((item) => item.status == 'delivered')
+        .where(_isDeliveredItem)
         .map((item) => item.productId ?? '')
         .where((productId) => productId.isNotEmpty)
         .toSet();
@@ -179,6 +179,11 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     }));
 
     return ratings;
+  }
+
+  bool _isDeliveredItem(Item item) {
+    final status = (item.status ?? '').trim().toLowerCase();
+    return status == 'delivered' || (item.detail?.deliveredQuantity ?? 0) > 0;
   }
 
   @override
@@ -537,13 +542,14 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
           itemCount: visibleItems.length,
           itemBuilder: (context, index) {
             final itemDetail = visibleItems[index];
+            final isDelivered = _isDeliveredItem(itemDetail);
             return Padding(
               padding: EdgeInsets.only(
                 bottom: (index == visibleItems.length - 1) ? 0 : 16.0,
               ),
               child: OrderDetailItemCard(
                 showReturnButton: itemDetail.isReturnable ?? false,
-                showRating: itemDetail.status == 'delivered',
+                showRating: isDelivered,
                 initialRating:
                     _reviewedProductRatings[itemDetail.productId] ?? 0,
                 ratingReadOnly:
