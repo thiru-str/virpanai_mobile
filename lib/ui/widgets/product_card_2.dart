@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
+import 'package:waioz/ui/favourite_list_detail_page.dart';
 import 'package:waioz/ui/widgets/favourite_heart_button.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
@@ -155,11 +157,23 @@ class _ProductCard2State extends State<ProductCard2> {
                   child: FavouriteHeartButton(
                     productId: widget.product.id ?? '',
                     productHandle: widget.product.handle ?? '',
-                    variants: widget.product.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
+                    variants: widget.product.variants?.map((v) => {
+                      'id': v.id,
+                      'title': v.title,
+                      'options': v.options?.map((o) => o.value ?? '').where((s) => s.isNotEmpty).toList() ?? [],
+                    }).toList() ?? [],
                     isLoggedIn: widget.isLoggedIn,
                     config: widget.favConfig,
                     initialSaved: widget.isFavorite,
                     size: 18,
+                    onViewList: (listId, listName) => PageRouteUtils.pushWithSlide(
+                      context,
+                      FavouriteListDetailPage(
+                        listId: listId,
+                        listName: listName,
+                        config: widget.favConfig ?? FavouriteListConfig(),
+                      ),
+                    ),
                   ),
                 ),
               ],

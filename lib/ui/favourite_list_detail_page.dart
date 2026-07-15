@@ -63,7 +63,7 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         itemMap = {
           for (final p in loaded)
             if (p.id != null && p.wishlistItemId != null)
-              p.id!: WishlistGroupProduct(
+              p.wishlistItemId!: WishlistGroupProduct(
                 id: p.wishlistItemId,
                 productId: p.id,
                 variantId: p.savedVariantId,
@@ -83,19 +83,20 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
       await _api.deleteProductFromFavouriteList(
         context,
         productId: product.id ?? '',
+        variantId: product.savedVariantId,
         listId: widget.listId,
       );
       if (mounted) {
         setState(() {
-          products.removeWhere((p) => p.id == product.id);
-          itemMap.remove(product.id);
+          products.removeWhere((p) => p.wishlistItemId == product.wishlistItemId);
+          itemMap.remove(product.wishlistItemId);
         });
       }
     } catch (_) {}
   }
 
   Future<void> _updateQty(Product product, int delta) async {
-    final item = itemMap[product.id ?? ''];
+    final item = itemMap[product.wishlistItemId ?? ''];
     if (item == null || item.id == null) return;
     final current = int.tryParse(item.quantity ?? '1') ?? 1;
     final next = (current + delta).clamp(1, 999);
@@ -104,7 +105,7 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
       await _api.updateFavouriteListItemQty(context, item.id!, next);
       if (mounted) {
         setState(() {
-          itemMap[product.id ?? ''] = WishlistGroupProduct(
+          itemMap[product.wishlistItemId ?? ''] = WishlistGroupProduct(
             id: item.id,
             customerWishlistGroupId: item.customerWishlistGroupId,
             customerId: item.customerId,
@@ -408,10 +409,10 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         ),
         itemCount: products.length,
         itemBuilder: (_, i) => _WishlistGridCard(
-          key: ValueKey(products[i].id ?? i.toString()),
+          key: ValueKey(products[i].wishlistItemId ?? products[i].id ?? i.toString()),
           product: products[i],
           config: widget.config,
-          item: itemMap[products[i].id ?? ''],
+          item: itemMap[products[i].wishlistItemId ?? ''],
           onRemove: () async => _removeProduct(products[i]),
           onQtyChange: (delta) => _updateQty(products[i], delta),
           onTap: () => _openProduct(products[i]),
@@ -429,10 +430,10 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         itemCount: products.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (_, i) => _WishlistListCard(
-          key: ValueKey(products[i].id ?? i.toString()),
+          key: ValueKey(products[i].wishlistItemId ?? products[i].id ?? i.toString()),
           product: products[i],
           config: widget.config,
-          item: itemMap[products[i].id ?? ''],
+          item: itemMap[products[i].wishlistItemId ?? ''],
           onRemove: () async => _removeProduct(products[i]),
           onQtyChange: (delta) => _updateQty(products[i], delta),
           onTap: () => _openProduct(products[i]),

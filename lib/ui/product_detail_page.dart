@@ -214,7 +214,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               productId: product?.id ?? widget.productId,
               productHandle: product?.handle ?? '',
               selectedVariantId: selectedVariantId,
-              variants: product?.variants?.map((v) => {'id': v.id, 'title': v.title}).toList() ?? [],
+              variants: product?.variants?.map((v) => {
+                'id': v.id,
+                'title': v.title,
+                'options': v.options?.map((o) => o.value ?? '').where((s) => s.isNotEmpty).toList() ?? [],
+              }).toList() ?? [],
               isLoggedIn: isLoggedIn,
               config: _favConfig,
               initialSaved: isFavorite,

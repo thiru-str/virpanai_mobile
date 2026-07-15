@@ -4,6 +4,12 @@ import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
+class _AddSheetResult {
+  final bool saved;
+  final CustomerWishlistGroup? navigateTo;
+  const _AddSheetResult({required this.saved, this.navigateTo});
+}
+
 class FavouriteHeartButton extends StatefulWidget {
   final String productId;
   final String productHandle;
@@ -13,6 +19,7 @@ class FavouriteHeartButton extends StatefulWidget {
   final FavouriteListConfig? config;
   final bool initialSaved;
   final double size;
+  final void Function(String listId, String listName)? onViewList;
 
   const FavouriteHeartButton({
     super.key,
@@ -24,6 +31,7 @@ class FavouriteHeartButton extends StatefulWidget {
     this.config,
     this.initialSaved = false,
     this.size = 22,
+    this.onViewList,
   });
 
   @override
@@ -187,7 +195,7 @@ class _FavouriteHeartButtonState extends State<FavouriteHeartButton>
 
     if (!mounted) return;
 
-    final result = await showModalBottomSheet<bool>(
+    final result = await showModalBottomSheet<_AddSheetResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -200,7 +208,17 @@ class _FavouriteHeartButtonState extends State<FavouriteHeartButton>
         api: api,
       ),
     );
-    if (result == true && mounted) setState(() => _saved = true);
+    if (!mounted) return;
+    if (result?.saved == true) {
+      setState(() => _saved = true);
+      final group = result!.navigateTo;
+      if (group != null && group.id != null) {
+        widget.onViewList?.call(
+          group.id!,
+          group.wishlistGroupName ?? _config.displayName,
+        );
+      }
+    }
   }
 
   @override
@@ -308,6 +326,8 @@ class _AddToListSheetState extends State<_AddToListSheet> {
   String? _selectedListId;
   final _newListCtrl = TextEditingController();
   bool _saving = false;
+  bool _savedSuccess = false;
+  CustomerWishlistGroup? _savedGroup;
   int _qty = 1;
 
   @override
@@ -324,6 +344,14 @@ class _AddToListSheetState extends State<_AddToListSheet> {
   void dispose() {
     _newListCtrl.dispose();
     super.dispose();
+  }
+
+  void _closeSheet() {
+    Navigator.pop(context, _AddSheetResult(saved: _savedSuccess));
+  }
+
+  void _viewAndClose() {
+    Navigator.pop(context, _AddSheetResult(saved: true, navigateTo: _savedGroup));
   }
 
   Future<void> _save() async {
@@ -349,8 +377,18 @@ class _AddToListSheetState extends State<_AddToListSheet> {
       );
       if (!mounted) return;
       if (res.success == true) {
-        Navigator.pop(context, true);
-        _toast('Saved to ${widget.config.displayName}!');
+        final group = res.createdWishlistGroup ??
+            (newName.isEmpty && _selectedListId != null
+                ? widget.lists.firstWhere(
+                    (l) => l.id == _selectedListId,
+                    orElse: () => CustomerWishlistGroup(id: _selectedListId),
+                  )
+                : null);
+        setState(() {
+          _savedSuccess = true;
+          _savedGroup = group;
+          _saving = false;
+        });
       } else {
         setState(() => _saving = false);
         _toast('Failed to save. Please try again.');
@@ -416,21 +454,34 @@ class _AddToListSheetState extends State<_AddToListSheet> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(
-                  'Save to ${widget.config.displayName}',
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF272727),
-                  ),
+                padding: const EdgeInsets.fromLTRB(20, 0, 8, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Save to ${widget.config.displayName}',
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF272727),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, size: 20, color: Colors.grey.shade500),
+                      onPressed: _closeSheet,
+                      splashRadius: 20,
+                    ),
+                  ],
                 ),
               ),
-              Divider(height: 16, thickness: 0.5, color: Colors.grey.shade200),
+              Divider(height: 1, thickness: 0.5, color: Colors.grey.shade200),
 
               // ── Scrollable middle ──────────────────────────────────────
               Expanded(
-                child: SingleChildScrollView(
+                child: _savedSuccess
+                    ? _buildSuccessState()
+                    : SingleChildScrollView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
@@ -447,7 +498,11 @@ class _AddToListSheetState extends State<_AddToListSheet> {
               runSpacing: 8,
               children: widget.variants.map((v) {
                 final id = v['id'] as String? ?? '';
-                final title = v['title'] as String? ?? id;
+                final rawOptions = v['options'];
+                final List<String> opts = rawOptions is List
+                    ? rawOptions.whereType<String>().where((s) => s.isNotEmpty).toList()
+                    : [];
+                final title = opts.isNotEmpty ? opts.join(' / ') : (v['title'] as String? ?? id);
                 final sel = _selectedVariantId == id;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedVariantId = id),
@@ -640,66 +695,143 @@ class _AddToListSheetState extends State<_AddToListSheet> {
                 ),
               ),
 
-              // ── Sticky footer: Cancel + Save ────────────────────────
-              // Light top divider (no full divider) — just enough separation.
+              // ── Sticky footer ───────────────────────────────────────
               Container(height: 1, color: Colors.grey.shade100),
               SafeArea(
                 top: false,
                 minimum: const EdgeInsets.only(bottom: 8),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
-                  child: Row(
-                    children: [
-                      // Secondary: text-only cancel — less visual weight
-                      TextButton(
-                        onPressed: _saving
-                            ? null
-                            : () => Navigator.pop(context, false),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text('Cancel',
-                            style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF6B7280))),
-                      ),
-                      const Spacer(),
-                      // Primary CTA — focused, right-aligned, comfortable size
-                      ElevatedButton(
-                        onPressed: _saving ? null : _save,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          disabledBackgroundColor:
-                              AppColors.primary.withOpacity(0.5),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
-                        ),
-                        child: _saving
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
-                              )
-                            : Text('Save',
+                  child: _savedSuccess
+                      ? SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: TextButton(
+                            onPressed: _closeSheet,
+                            style: TextButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: Colors.grey.shade200)),
+                            ),
+                            child: Text('Close',
                                 style: FontUtils.primaryFontStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white)),
-                      ),
-                    ],
-                  ),
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF6B7280))),
+                          ),
+                        )
+                      : Row(
+                          children: [
+                            TextButton(
+                              onPressed: _saving ? null : _closeSheet,
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text('Cancel',
+                                  style: FontUtils.primaryFontStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF6B7280))),
+                            ),
+                            const Spacer(),
+                            ElevatedButton(
+                              onPressed: _saving ? null : _save,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                disabledBackgroundColor:
+                                    AppColors.primary.withOpacity(0.5),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32, vertical: 12),
+                              ),
+                              child: _saving
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white),
+                                    )
+                                  : Text('Save',
+                                      style: FontUtils.primaryFontStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white)),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuccessState() {
+    final listName = _savedGroup?.wishlistGroupName ?? widget.config.displayName;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(32, 0, 32, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.check_rounded, color: AppColors.primary, size: 40),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Saved to "$listName"',
+              style: FontUtils.secondaryFontStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF272727),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Item added to your list successfully.',
+              style: FontUtils.primaryFontStyle(
+                  fontSize: 13, color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
+            ),
+            if (_savedGroup?.id != null) ...[
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: _viewAndClose,
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
+                  label: Text(
+                    'View ${widget.config.displayName}',
+                    style: FontUtils.primaryFontStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
