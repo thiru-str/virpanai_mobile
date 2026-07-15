@@ -121,7 +121,7 @@ class ProductCard7 extends StatelessWidget {
               if (info.variant == null) return const SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.fromLTRB(15, 4, 15, 0),
-                child: buildVariantChips(info.variant!.title!, info.count - 1),
+                child: buildVariantChips(info.variant!, info.count - 1),
               );
             }),
             const SizedBox(height: 2),

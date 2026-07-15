@@ -247,7 +247,7 @@ class _ProductCard4State extends State<ProductCard4> {
               if (info.variant == null) return const SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.fromLTRB(8, 2, 8, 0),
-                child: buildVariantChips(info.variant!.title!, info.count - 1),
+                child: buildVariantChips(info.variant!, info.count - 1),
               );
             }),
 
