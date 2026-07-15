@@ -2,13 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/product_response.dart' hide Image;
-import 'package:waioz/model/wishlist_reponse.dart';
+import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/cart_response.dart' hide Product;
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/ui/widgets/product_card_variant_chips.dart';
 
 class FavouriteListDetailPage extends StatefulWidget {
   final String listId;
@@ -470,15 +471,22 @@ class _WishlistGridCard extends StatefulWidget {
 class _WishlistGridCardState extends State<_WishlistGridCard> {
   bool _removing = false;
 
+  Variant? _savedVariant() {
+    final id = widget.product.savedVariantId;
+    final variants = widget.product.variants;
+    if (variants == null || variants.isEmpty) return null;
+    if (id == null) return variants.first;
+    return variants.firstWhere((v) => v.id == id, orElse: () => variants.first);
+  }
+
   String? _priceStr() {
-    final amt = widget.product.variants?.firstOrNull
-        ?.calculatedPrice?.calculatedAmount;
+    final amt = _savedVariant()?.calculatedPrice?.calculatedAmount;
     if (amt == null) return null;
     return '₹${amt.toStringAsFixed(0)}';
   }
 
   String? _origPriceStr() {
-    final v = widget.product.variants?.firstOrNull;
+    final v = _savedVariant();
     final calc = v?.calculatedPrice?.calculatedAmount;
     final orig = v?.calculatedPrice?.originalAmount;
     if (orig == null || calc == null || orig <= calc) return null;
@@ -490,6 +498,7 @@ class _WishlistGridCardState extends State<_WishlistGridCard> {
     final qty = int.tryParse(widget.item?.quantity ?? '1') ?? 1;
     final price = _priceStr();
     final origPrice = _origPriceStr();
+    final savedVariant = _savedVariant();
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -583,6 +592,10 @@ class _WishlistGridCardState extends State<_WishlistGridCard> {
                     color: const Color(0xFF272727),
                   ),
                 ),
+                if (savedVariant != null) ...[
+                  const SizedBox(height: 4),
+                  buildVariantChips(savedVariant, 0),
+                ],
                 if (price != null) ...[
                   const SizedBox(height: 4),
                   Row(
@@ -660,15 +673,22 @@ class _WishlistListCard extends StatefulWidget {
 class _WishlistListCardState extends State<_WishlistListCard> {
   bool _removing = false;
 
+  Variant? _savedVariant() {
+    final id = widget.product.savedVariantId;
+    final variants = widget.product.variants;
+    if (variants == null || variants.isEmpty) return null;
+    if (id == null) return variants.first;
+    return variants.firstWhere((v) => v.id == id, orElse: () => variants.first);
+  }
+
   String? _priceStr() {
-    final amt = widget.product.variants?.firstOrNull
-        ?.calculatedPrice?.calculatedAmount;
+    final amt = _savedVariant()?.calculatedPrice?.calculatedAmount;
     if (amt == null) return null;
     return '₹${amt.toStringAsFixed(0)}';
   }
 
   String? _origPriceStr() {
-    final v = widget.product.variants?.firstOrNull;
+    final v = _savedVariant();
     final calc = v?.calculatedPrice?.calculatedAmount;
     final orig = v?.calculatedPrice?.originalAmount;
     if (orig == null || calc == null || orig <= calc) return null;
@@ -680,6 +700,7 @@ class _WishlistListCardState extends State<_WishlistListCard> {
     final qty = int.tryParse(widget.item?.quantity ?? '1') ?? 1;
     final price = _priceStr();
     final origPrice = _origPriceStr();
+    final savedVariant = _savedVariant();
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -736,6 +757,10 @@ class _WishlistListCardState extends State<_WishlistListCard> {
                       color: const Color(0xFF272727),
                     ),
                   ),
+                  if (savedVariant != null) ...[
+                    const SizedBox(height: 4),
+                    buildVariantChips(savedVariant, 0),
+                  ],
                   const SizedBox(height: 6),
                   if (price != null)
                     Row(
