@@ -6,6 +6,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
 import '../../utility/ui_typography.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard8 extends StatelessWidget {
   final Product product;
@@ -202,6 +203,15 @@ class ProductCard8 extends StatelessWidget {
                 ),
               ),
             ),
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(7, 4, 7, 0),
+                child: buildVariantChips(info.variant!.title!, info.count - 1),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(7, 6, 7, 0),
               child: Row(
@@ -213,15 +223,6 @@ class ProductCard8 extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: UiTypography.cardPrice(color: AppColors.primary),
                     ),
-                  ),
-                  const _SwatchDot(),
-                  const _SwatchDot(),
-                  const SizedBox(width: 2),
-                  Text(
-                    '+2',
-                    style: UiTypography.cardMeta(
-                      color: Colors.black.withOpacity(0.8),
-                    ).copyWith(fontSize: 11),
                   ),
                 ],
               ),
@@ -253,23 +254,6 @@ class ProductCard8 extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SwatchDot extends StatelessWidget {
-  const _SwatchDot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 13,
-      height: 13,
-      margin: const EdgeInsets.only(left: 2),
-      decoration: const BoxDecoration(
-        color: Color(0xFFD9D9D9),
-        shape: BoxShape.circle,
       ),
     );
   }
