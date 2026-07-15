@@ -4,7 +4,8 @@
 
 import 'dart:convert';
 
-ReviewResponse reviewResponseFromJson(String str) => ReviewResponse.fromJson(json.decode(str));
+ReviewResponse reviewResponseFromJson(String str) =>
+    ReviewResponse.fromJson(json.decode(str));
 
 String reviewResponseToJson(ReviewResponse data) => json.encode(data.toJson());
 
@@ -22,18 +23,18 @@ class ReviewResponse {
   });
 
   factory ReviewResponse.fromJson(Map<String, dynamic> json) => ReviewResponse(
-    status: json["status"],
-    isOrdered: json["is_ordered"],
-    data: json["data"] == null ? null : Data.fromJson(json["data"]),
-    message: json["message"],
-  );
+        status: json["status"],
+        isOrdered: json["is_ordered"],
+        data: json["data"] == null ? null : Data.fromJson(json["data"]),
+        message: json["message"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "status": status,
-    "is_ordered": isOrdered,
-    "data": data?.toJson(),
-    "message": message,
-  };
+        "status": status,
+        "is_ordered": isOrdered,
+        "data": data?.toJson(),
+        "message": message,
+      };
 }
 
 class Data {
@@ -52,58 +53,99 @@ class Data {
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-    customerReview: json["customer_review"] == null ? null : CustomerReview.fromJson(json["customer_review"]),
-    productReviews: json["product_reviews"] == null ? [] : List<ProductReview>.from(json["product_reviews"]!.map((x) => ProductReview.fromJson(x))),
-    count: json["count"],
-    limit: json["limit"],
-    offset: json["offset"],
-  );
+        customerReview: json["customer_review"] == null
+            ? null
+            : CustomerReview.fromJson(json["customer_review"]),
+        productReviews: json["product_reviews"] == null
+            ? []
+            : List<ProductReview>.from(
+                json["product_reviews"]!.map((x) => ProductReview.fromJson(x))),
+        count: json["count"],
+        limit: json["limit"],
+        offset: json["offset"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "customer_review": customerReview?.toJson(),
-    "product_reviews": productReviews == null ? [] : List<dynamic>.from(productReviews!.map((x) => x.toJson())),
-    "count": count,
-    "limit": limit,
-    "offset": offset,
-  };
+        "customer_review": customerReview?.toJson(),
+        "product_reviews": productReviews == null
+            ? []
+            : List<dynamic>.from(productReviews!.map((x) => x.toJson())),
+        "count": count,
+        "limit": limit,
+        "offset": offset,
+      };
 }
 
 class CustomerReview {
-  CustomerReview();
+  String? id;
+  String? rating;
+  String? description;
+  DateTime? updatedAt;
+  Customer? customer;
+
+  CustomerReview({
+    this.id,
+    this.rating,
+    this.description,
+    this.updatedAt,
+    this.customer,
+  });
 
   factory CustomerReview.fromJson(Map<String, dynamic> json) => CustomerReview(
-  );
+        id: json["id"],
+        rating: json["rating"],
+        description: json["description"],
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        customer: json["customer"] == null
+            ? null
+            : Customer.fromJson(json["customer"]),
+      );
 
   Map<String, dynamic> toJson() => {
-  };
+        "id": id,
+        "rating": rating,
+        "description": description,
+        "updated_at": updatedAt?.toIso8601String(),
+        "customer": customer?.toJson(),
+      };
 }
 
 class ProductReview {
   String? id;
   String? rating;
   String? description;
+  DateTime? updatedAt;
   Customer? customer;
 
   ProductReview({
     this.id,
     this.rating,
     this.description,
+    this.updatedAt,
     this.customer,
   });
 
   factory ProductReview.fromJson(Map<String, dynamic> json) => ProductReview(
-    id: json["id"],
-    rating: json["rating"],
-    description: json["description"],
-    customer: json["customer"] == null ? null : Customer.fromJson(json["customer"]),
-  );
+        id: json["id"],
+        rating: json["rating"],
+        description: json["description"],
+        updatedAt: json["updated_at"] == null
+            ? null
+            : DateTime.parse(json["updated_at"]),
+        customer: json["customer"] == null
+            ? null
+            : Customer.fromJson(json["customer"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "rating": rating,
-    "description": description,
-    "customer": customer?.toJson(),
-  };
+        "id": id,
+        "rating": rating,
+        "description": description,
+        "updated_at": updatedAt?.toIso8601String(),
+        "customer": customer?.toJson(),
+      };
 }
 
 class Customer {
@@ -118,14 +160,14 @@ class Customer {
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
-    firstName: json["first_name"],
-    lastName: json["last_name"],
-    id: json["id"],
-  );
+        firstName: json["first_name"],
+        lastName: json["last_name"],
+        id: json["id"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "first_name": firstName,
-    "last_name": lastName,
-    "id": id,
-  };
+        "first_name": firstName,
+        "last_name": lastName,
+        "id": id,
+      };
 }

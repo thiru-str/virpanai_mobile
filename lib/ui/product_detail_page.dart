@@ -86,6 +86,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   final TextEditingController _quantityController = TextEditingController();
   bool stockNotAvailable = false;
 
+  int _cartLineItemQty = 0;
+  String? _cartLineItemId;
+
   bool showVariantSelection = false;
 
   int? cartItems;
@@ -285,9 +288,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         .toList();
 
     final allMedia = [...variantImageUrls, ...commonImageUrls, ...videoUrls];
-    final displayUrls = allMedia.isNotEmpty
-        ? allMedia
-        : <String>[];
+    final displayUrls = allMedia.isNotEmpty ? allMedia : <String>[];
 
     if (displayUrls.isEmpty) {
       return ClipRRect(
@@ -700,6 +701,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(children: sections);
   }
 
+  // Syncs cart state for the currently selected variant.
+  // Must be called inside setState.
+  void _syncCartStateForVariant() {
+    if (selectedVariantId == null || cartResponse?.cart?.items == null) {
+      productPresentInCart = false;
+      _cartLineItemQty = 0;
+      _cartLineItemId = null;
+      return;
+    }
+    final items = cartResponse!.cart!.items!;
+    final Item? match = items.cast<Item?>().firstWhere(
+      (item) => item?.variantId == selectedVariantId,
+      orElse: () => null,
+    );
+    _cartLineItemQty = match?.quantity ?? 0;
+    _cartLineItemId = match?.id;
+    productPresentInCart = _cartLineItemQty > 0;
+    if (_cartLineItemQty > 0) {
+      selectedQuantity = _cartLineItemQty;
+    }
+  }
+
   void updateVariant() {
     if (selectedOptions.values.any((v) => v == null)) {
       setState(() => selectedVariant = null);
@@ -712,6 +735,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       selectedVariant = matchedVariant;
       selectedVariantId = matchedVariant?.id;
       stockNotAvailable = !isStockAvailable(selectedVariant);
+      selectedQuantity = 1;
+      _syncCartStateForVariant();
     });
 
     print("Selected Variant ID: ${selectedVariant?.id}");
@@ -761,8 +786,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
     }
 
-    // default max = 10
-    return (10 - cartQuantity).clamp(0, 10);
+    // no inventory tracking — allow up to 99
+    return (99 - cartQuantity).clamp(0, 99);
   }
 
   Widget buildProductDescription() {
@@ -794,9 +819,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildReviews() {
+    final customerReview = reviewResponse?.data?.customerReview;
+    final productReviews = reviewResponse?.data?.productReviews ?? [];
+    final hasCustomerReview = (customerReview?.id ?? '').isNotEmpty;
+
     if (reviewResponse == null ||
-        (reviewResponse?.data?.productReviews ?? []).isEmpty)
+        (!hasCustomerReview && productReviews.isEmpty)) {
       return const SizedBox();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -821,23 +852,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         const SizedBox(
           height: 12,
         ),
+        if (hasCustomerReview)
+          ReviewCard(
+            profileImageUrl: AppStrings.profileImageUrl,
+            name: _reviewerName(
+              customerReview?.customer?.firstName,
+              customerReview?.customer?.lastName,
+              fallback: 'You',
+            ),
+            reviewText: customerReview?.description ?? "",
+            rating: double.tryParse(customerReview?.rating ?? "") ?? 0,
+            timestamp: _formatReviewDate(customerReview?.updatedAt),
+          ),
         ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: reviewResponse?.data?.productReviews?.length ?? 0,
+          itemCount: productReviews.length,
           itemBuilder: (context, index) {
-            final review = reviewResponse?.data?.productReviews?[index];
+            final review = productReviews[index];
             return ReviewCard(
               profileImageUrl: AppStrings.profileImageUrl,
-              name: review?.customer?.firstName ?? '',
-              reviewText: review?.description ?? "",
-              rating: double.parse(review?.rating ?? ""),
-              timestamp: '',
+              name: _reviewerName(
+                review.customer?.firstName,
+                review.customer?.lastName,
+              ),
+              reviewText: review.description ?? "",
+              rating: double.tryParse(review.rating ?? "") ?? 0,
+              timestamp: _formatReviewDate(review.updatedAt),
             );
           },
         ),
       ],
     );
+  }
+
+  String _reviewerName(String? firstName, String? lastName,
+      {String fallback = 'Customer'}) {
+    final name = [firstName, lastName]
+        .where((part) => (part ?? '').trim().isNotEmpty)
+        .map((part) => part!.trim())
+        .join(' ');
+    return name.isNotEmpty ? name : fallback;
+  }
+
+  String _formatReviewDate(DateTime? date) {
+    if (date == null) return '';
+    final localDate = date.toLocal();
+    return 'Reviewed on ${localDate.day.toString().padLeft(2, '0')}/'
+        '${localDate.month.toString().padLeft(2, '0')}/'
+        '${localDate.year}';
   }
 
   Widget buildBottomButton() {
@@ -884,6 +947,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildQuantitySelector() {
+    final int _stepperMax = (productPresentInCart == true)
+        ? (selectedVariant?.inventoryQuantity ?? 99)
+        : getMaxQuantity(selectedVariant, cartResponse?.cart?.items ?? []);
+
     return Row(
       children: [
         // Quantity stepper (− / value / +)
@@ -939,12 +1006,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
               _buildStepperButton(
                 icon: Icons.add_rounded,
-                enabled: true,
+                enabled: selectedQuantity < _stepperMax,
                 onTap: () {
-                  setState(() {
-                    selectedQuantity++;
-                    _quantityController.text = selectedQuantity.toString();
-                  });
+                  if (selectedQuantity < _stepperMax) {
+                    setState(() => selectedQuantity++);
+                  }
                 },
               ),
             ],
@@ -1024,6 +1090,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       return;
                     }
+                    if (productPresentInCart == true && _cartLineItemId != null) {
+                      // Update existing cart item to new total qty
+                      setState(() => quantityLoading = true);
+                      try {
+                        await ApiService().updateCart(
+                            context, selectedQuantity, _cartLineItemId!);
+                        await getCartApi();
+                      } catch (_) {}
+                      if (mounted) setState(() => quantityLoading = false);
+                      return;
+                    }
                     if ((addOnProductsCount ?? 0) > 0) {
                       final selectedAddOns = await showAddOnBottomSheet(
                         context,
@@ -1072,7 +1149,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ? AppStrings.select_variant
                               : stockNotAvailable
                                   ? AppStrings.out_of_stock
-                                  : AppStrings.add_to_cart,
+                                  : (productPresentInCart == true
+                                      ? AppStrings.update_cart
+                                      : AppStrings.add_to_cart),
                           style: FontUtils.primaryFontStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -1551,9 +1630,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final response = await apiService.getCart(context);
       setState(() {
         cartResponse = response;
-        productPresentInCart = cartResponse?.cart?.items
-                ?.any((item) => item.variantId == selectedVariantId) ??
-            false;
+        _syncCartStateForVariant();
         emitEvent(cartResponse!);
       });
     } catch (e) {
@@ -1563,6 +1640,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
       setState(() {
         productPresentInCart = false;
+        _cartLineItemQty = 0;
+        _cartLineItemId = null;
       });
     }
   }
