@@ -60,6 +60,29 @@ class ProductCard extends StatelessWidget {
 
   String _fmt(double v) => CurrencyUtil.appendCurrency(v.toStringAsFixed(0));
 
+  // Returns the cheapest non-default variant and total non-default count.
+  ({Variant? variant, int count}) _variantInfo(Product p) {
+    final variants = (p.variants ?? [])
+        .where((v) =>
+            v.title != null &&
+            v.title!.isNotEmpty &&
+            v.title != 'Default Title' &&
+            v.title != 'Default variant')
+        .toList();
+    if (variants.isEmpty) return (variant: null, count: 0);
+    Variant? cheapest;
+    double? minPrice;
+    for (final v in variants) {
+      final price = double.tryParse(
+          v.calculatedPrice?.calculatedAmount?.toString() ?? '');
+      if (price != null && (minPrice == null || price < minPrice)) {
+        minPrice = price;
+        cheapest = v;
+      }
+    }
+    return (variant: cheapest ?? variants.first, count: variants.length);
+  }
+
   // -------------------------------------------------------------------------
 
   @override
@@ -184,6 +207,39 @@ class ProductCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+
+            // Variant label (cheapest variant name + remaining count)
+            Builder(builder: (_) {
+              final info = _variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              final remaining = info.count - 1;
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        info.variant!.title!,
+                        style: UiTypography.cardMeta(
+                                color: Colors.grey.shade600)
+                            .copyWith(fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    if (remaining > 0) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        '+$remaining',
+                        style: UiTypography.cardMeta(color: AppColors.primary)
+                            .copyWith(
+                                fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }),
 
             // Price row
             Padding(

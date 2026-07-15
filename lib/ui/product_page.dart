@@ -567,28 +567,39 @@ class _ProductPageState extends State<ProductPage> {
                       );
                       if (result != null && mounted) {
                         final data = result as Map<String, dynamic>;
-                        selectedCategoriesList =
-                            List<String>.from(data['selectedCategories'] ?? []);
-                        selectedCollectionsList = List<String>.from(
-                            data['selectedCollections'] ?? []);
-                        selectedTagsList =
-                            List<String>.from(data['selectedTags'] ?? []);
-                        minPrice = data['minPrice'];
-                        maxPrice = data['maxPrice'];
-                        sortBy = data['sortBy'];
-                        debugPrint('min price product ${minPrice}');
-                        debugPrint('max Price product ${maxPrice}');
-                        selectedSection =
-                            data['selectedSection'] ?? selectedSection;
-                        final categoryIds = selectedCategoriesList.isNotEmpty
-                            ? selectedCategoriesList.join(',')
+                        final newCategories = List<String>.from(data['selectedCategories'] ?? []);
+                        final newCollections = List<String>.from(data['selectedCollections'] ?? []);
+                        final newTags = List<String>.from(data['selectedTags'] ?? []);
+                        final newMinPrice = data['minPrice'];
+                        final newMaxPrice = data['maxPrice'];
+                        final newSortBy = data['sortBy'];
+                        final newSection = data['selectedSection'] ?? selectedSection;
+
+                        setState(() {
+                          selectedCategoriesList = newCategories;
+                          selectedCollectionsList = newCollections;
+                          selectedTagsList = newTags;
+                          minPrice = newMinPrice;
+                          maxPrice = newMaxPrice;
+                          sortBy = newSortBy;
+                          selectedSection = newSection;
+                          currentPage = 0;
+                          filteredProducts.clear();
+                          isFilterApplied = newCategories.isNotEmpty ||
+                              newCollections.isNotEmpty ||
+                              newTags.isNotEmpty ||
+                              (newMinPrice != null || newMaxPrice != null) ||
+                              (newSortBy != null && newSortBy != '' && newSortBy != AppStrings.low_high);
+                        });
+
+                        final categoryIds = newCategories.isNotEmpty
+                            ? newCategories.join(',')
                             : widget.categoryId;
-                        final collectionIds = selectedCollectionsList.join(',');
-                        final tagIds = selectedTagsList.isNotEmpty
-                            ? selectedTagsList.join(',')
+                        final collectionIds = newCollections.join(',');
+                        final tagIds = newTags.isNotEmpty
+                            ? newTags.join(',')
                             : widget.tagId;
-                        currentPage = 0;
-                        filteredProducts.clear();
+
                         getProductsApi(
                           categoryIds: categoryIds.isNotEmpty
                               ? categoryIds
@@ -598,17 +609,10 @@ class _ProductPageState extends State<ProductPage> {
                               : widget.collectionId,
                           tagIds: tagIds.isNotEmpty ? tagIds : widget.tagId,
                           searchString: searchController.text,
-                          minPrice: minPrice,
-                          maxPrice: maxPrice,
-                          sortBy: sortBy,
+                          minPrice: newMinPrice,
+                          maxPrice: newMaxPrice,
+                          sortBy: newSortBy,
                         );
-                        setState(() {
-                          isFilterApplied = selectedCategoriesList.isNotEmpty ||
-                              selectedCollectionsList.isNotEmpty ||
-                              selectedTagsList.isNotEmpty ||
-                              (minPrice != null || maxPrice != null) ||
-                              sortBy != AppStrings.low_high;
-                        });
                       }
                     },
                     child: Container(
