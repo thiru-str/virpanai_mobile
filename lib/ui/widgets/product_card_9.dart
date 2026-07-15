@@ -6,6 +6,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
 import '../../utility/ui_typography.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard9 extends StatelessWidget {
   final Product product;
@@ -154,6 +155,15 @@ class ProductCard9 extends StatelessWidget {
                 ),
               ),
             ),
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                child: buildVariantChips(info.variant!.title!, info.count - 1),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(6, 8, 6, 0),
               child: Wrap(

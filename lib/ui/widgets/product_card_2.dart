@@ -6,6 +6,7 @@ import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard2 extends StatefulWidget {
   final Product product;
@@ -189,6 +190,16 @@ class _ProductCard2State extends State<ProductCard2> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                child: buildVariantChips(info.variant!.title!, info.count - 1),
+              );
+            }),
 
             // ---- Subtitle ----
             Padding(
