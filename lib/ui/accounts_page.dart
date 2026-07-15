@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
@@ -191,6 +192,26 @@ class _SettingsPageState extends State<SettingsPage> {
                                 .toList(),
                           ),
                         ],
+                        const SizedBox(height: 16),
+                        _buildSectionCard(
+                          children: [
+                            _buildProfileItem(
+                              icon: Icons.camera_alt_outlined,
+                              title: 'Follow us on Instagram',
+                              onTap: () => _launchUrl('https://www.instagram.com/annachi_maligai/'),
+                            ),
+                            _buildProfileItem(
+                              icon: Icons.facebook_outlined,
+                              title: 'Follow us on Facebook',
+                              onTap: () => _launchUrl('https://www.facebook.com/annachimaligaimadurai/'),
+                            ),
+                            _buildProfileItem(
+                              icon: Icons.chat_bubble_outline_rounded,
+                              title: 'Chat on WhatsApp',
+                              onTap: () => _launchUrl('https://wa.me/919655247365'),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 28),
                         // Danger zone
                         _buildDangerZone(context),
@@ -323,6 +344,13 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Widget _buildSectionCard({required List<Widget> children}) {
