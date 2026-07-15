@@ -968,10 +968,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 enabled: selectedQuantity > 1,
                 onTap: () {
                   if (selectedQuantity > 1) {
-                    setState(() {
-                      selectedQuantity--;
-                      _quantityController.text = selectedQuantity.toString();
-                    });
+                    setState(() => selectedQuantity--);
+                    _quantityController.text = selectedQuantity.toString();
                   }
                 },
               ),
@@ -1010,6 +1008,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 onTap: () {
                   if (selectedQuantity < _stepperMax) {
                     setState(() => selectedQuantity++);
+                    _quantityController.text = selectedQuantity.toString();
                   }
                 },
               ),
