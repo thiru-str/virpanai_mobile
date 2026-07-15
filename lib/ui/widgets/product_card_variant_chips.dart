@@ -53,43 +53,58 @@ const Map<String, Color> kCardColorSwatchMap = {
   return (variant: cheapest ?? variants.first, count: variants.length);
 }
 
-Widget buildVariantChips(String title, int remaining) {
-  final parts =
-      title.split('/').map((p) => p.trim()).where((p) => p.isNotEmpty).toList();
+Widget buildVariantChips(Variant variant, int remaining) {
+  final opts = (variant.options ?? [])
+      .where((o) => o.value != null && o.value!.isNotEmpty)
+      .toList();
+  final List<String> parts = opts.isNotEmpty
+      ? opts.map((o) => o.value!).toList()
+      : (variant.title ?? '')
+            .split('/')
+            .map((p) => p.trim())
+            .where((p) => p.isNotEmpty)
+            .toList();
 
   Widget chip(String label) {
     final swatch = kCardColorSwatchMap[label.toLowerCase()];
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (swatch != null) ...[
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: swatch,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black12, width: 0.5),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 110),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (swatch != null) ...[
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: swatch,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black12, width: 0.5),
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF374151),
+                  height: 1,
+                ),
               ),
             ),
-            const SizedBox(width: 4),
           ],
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF374151),
-              height: 1,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
