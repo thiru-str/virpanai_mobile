@@ -807,8 +807,35 @@ class _AddToListSheetState extends State<_AddToListSheet> {
                   fontSize: 13, color: Colors.grey.shade500),
               textAlign: TextAlign.center,
             ),
-            if (_savedGroup?.id != null) ...[
-              const SizedBox(height: 28),
+            const SizedBox(height: 28),
+            if (widget.variants.length > 1) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() {
+                    _savedSuccess = false;
+                    _savedGroup = null;
+                    _selectedVariantId = null;
+                  }),
+                  icon: Icon(Icons.add_rounded, size: 18, color: AppColors.primary),
+                  label: Text(
+                    'Add Another Variant',
+                    style: FontUtils.primaryFontStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColors.primary, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (_savedGroup?.id != null)
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -830,7 +857,6 @@ class _AddToListSheetState extends State<_AddToListSheet> {
                   ),
                 ),
               ),
-            ],
           ],
         ),
       ),
