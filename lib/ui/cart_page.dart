@@ -1519,6 +1519,8 @@ class _CartPageState extends State<CartPage>
         getCartApi();
         return;
       }
+      // Clear the completed cart so the next add-to-cart uses a fresh one
+      await SharedPreferencesUtil().saveString('cart_id', '');
       PageRouteUtils.pushAndRemoveUntil(
           context,
           OrderPlacedPage(
