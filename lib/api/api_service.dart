@@ -930,12 +930,35 @@ class ApiService {
       BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/line-items',
-      {"variant_id": variantId, "quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
+    try {
+      return await _makePostRequest(
+        'store/custom-carts/$cartId/line-items',
+        {"variant_id": variantId, "quantity": qty, "metadata": {}},
+        (json) => CartResponse.fromJson(json),
+        context,
+      );
+    } catch (e) {
+      // Cart is inactive (completed after a previous order) — auto-recover by
+      // fetching a fresh cart from the home page endpoint, then retry once.
+      if (e.toString().contains('status code: 409')) {
+        try {
+          final homeResponse = await getHomePage(context);
+          final newCartId = homeResponse.global?.cartId;
+          if (newCartId != null && newCartId.isNotEmpty && newCartId != cartId) {
+            await SharedPreferencesUtil().saveString('cart_id', newCartId);
+            return await _makePostRequest(
+              'store/custom-carts/$newCartId/line-items',
+              {"variant_id": variantId, "quantity": qty, "metadata": {}},
+              (json) => CartResponse.fromJson(json),
+              context,
+            );
+          }
+        } catch (_) {
+          // Refresh failed — fall through to rethrow original error
+        }
+      }
+      rethrow;
+    }
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
