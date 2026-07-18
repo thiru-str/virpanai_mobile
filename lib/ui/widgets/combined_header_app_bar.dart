@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
@@ -279,8 +278,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             children: [
               GestureDetector(
                 onTap: onProfileTap,
-                child: Icon(Icons.account_circle,
-                    color: Colors.grey, size: 36),
+                child: Icon(Icons.account_circle, color: Colors.grey, size: 36),
               ),
               const SizedBox(width: 8),
               Expanded(child: _locationRow(showLeadingIcon: false)),
@@ -303,8 +301,7 @@ class CombinedHeaderAppBar extends StatelessWidget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildIcon(null,
-                  assetPath: AppAssets.app_icon, size: 50, color: Colors.white),
+              _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
               _buildIcon(Icons.shopping_cart,
                   color: Colors.white,
                   onPressed: onCartClick,

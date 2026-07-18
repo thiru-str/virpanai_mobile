@@ -169,6 +169,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: AppConfig.appName,
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: theme,
