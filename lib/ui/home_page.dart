@@ -11,6 +11,10 @@ import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/banner_3_4.dart';
+import 'package:waioz/ui/widgets/home/banner_5.dart';
+import 'package:waioz/ui/widgets/home/marketplace_registry.dart';
+import 'package:waioz/ui/widgets/home/banner_6.dart';
+import 'package:waioz/ui/widgets/home/banner_7.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
 import 'package:waioz/ui/widgets/home/grid_3.dart';
 import 'package:waioz/ui/widgets/home/grid_5.dart';
@@ -23,8 +27,13 @@ import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_12.dart';
 import 'package:waioz/ui/widgets/home/item_13.dart';
 import 'package:waioz/ui/widgets/home/item_14.dart';
+import 'package:waioz/ui/widgets/home/item_15.dart';
+import 'package:waioz/ui/widgets/home/item_16.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
+import 'package:waioz/ui/widgets/home/slider_10.dart';
+import 'package:waioz/ui/widgets/home/slider_11.dart';
+import 'package:waioz/ui/widgets/home/slider_12.dart';
 import 'package:waioz/ui/widgets/home/slider_6.dart';
 import 'package:waioz/ui/widgets/home/slider_7.dart';
 import 'package:waioz/ui/widgets/home/slider_9.dart';
@@ -338,8 +347,20 @@ class _HomePageState extends State<HomePage> {
       "item12",
       "item13",
       "item14",
+      "Slider10",
+      "Slider11",
+      "Slider12",
+      "Banner5",
+      "Banner6",
+      "Banner7",
+      "item15",
+      "item16",
+      ...kMarketplaceLayouts,
     };
 
+    if (kMarketplaceNoDataLayouts.contains(content.layoutName)) {
+      return true; // copy-only components render without layoutData
+    }
     return supportedLayouts.contains(content.layoutName) &&
         (content.layoutData?.isNotEmpty ?? false);
   }
@@ -503,6 +524,23 @@ class _HomePageState extends State<HomePage> {
                   await addCart(deltaQty, variantId);
                 },
               );
+      case "Slider10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider10(
+                content: homePageContent!,
+                onCartQtyChanged: (deltaQty, variantId) async {
+                  await addCart(deltaQty, variantId);
+                },
+              );
+      case "Slider11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider11(content: homePageContent!);
+      case "Slider12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider12(content: homePageContent!);
       case "Banner1":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -515,6 +553,18 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Banner4(content: homePageContent!);
+      case "Banner5":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner5(content: homePageContent!);
+      case "Banner6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner6(content: homePageContent!);
+      case "Banner7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner7(content: homePageContent!);
       case "item9":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -555,8 +605,27 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item14(content: homePageContent!),
               );
+      case "item15":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item15(
+                  content: homePageContent!,
+                  onCartQtyChanged: (deltaQty, variantId) async {
+                    await addCart(deltaQty, variantId);
+                  },
+                ),
+              );
+      case "item16":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item16(content: homePageContent!),
+              );
       default:
-        return const SizedBox();
+        return marketplaceHomeWidget(homePageContent!) ?? const SizedBox();
     }
   }
 

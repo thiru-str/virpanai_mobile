@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/widgets/home/premium_app_headers.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
@@ -59,6 +60,27 @@ class CombinedHeaderAppBar extends StatelessWidget
         return _buildHeader7(context);
       case "header-8":
         return _buildCustomSearchHeader(context);
+      // Premium header family (header-9 .. header-18)
+      case "header-9":
+        return AppHeaderSplit1(cartCount: cartCount);
+      case "header-10":
+        return AppHeaderCentered1(cartCount: cartCount);
+      case "header-11":
+        return AppHeaderMinimal1(cartCount: cartCount);
+      case "header-12":
+        return AppHeaderSearch1(cartCount: cartCount);
+      case "header-13":
+        return AppHeaderTwoRow1(cartCount: cartCount);
+      case "header-14":
+        return AppHeaderLocation1(cartCount: cartCount);
+      case "header-15":
+        return AppHeaderPill1(cartCount: cartCount);
+      case "header-16":
+        return AppHeaderGradient1(cartCount: cartCount);
+      case "header-17":
+        return AppHeaderCategoryTabs1(cartCount: cartCount);
+      case "header-18":
+        return AppHeaderLuxe1(cartCount: cartCount);
       default:
         return _buildHeader1();
     }
@@ -82,6 +104,26 @@ class CombinedHeaderAppBar extends StatelessWidget
         return 140;
       case "header-8":
         return 130;
+      case "header-9":
+        return 64;
+      case "header-10":
+        return 64;
+      case "header-11":
+        return 60;
+      case "header-12":
+        return 68;
+      case "header-13":
+        return 116;
+      case "header-14":
+        return 116;
+      case "header-15":
+        return 68;
+      case "header-16":
+        return 112;
+      case "header-17":
+        return 104;
+      case "header-18":
+        return 60;
       default:
         return 120;
     }
