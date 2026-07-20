@@ -105,8 +105,9 @@ class BeforeAfter1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = content.layoutData ?? [];
-    final beforeImage = items.isNotEmpty ? merchImage(items[0]) : '';
-    final afterImage = items.length > 1 ? merchImage(items[1]) : '';
+    final item = items.isNotEmpty ? items[0] : null;
+    final beforeImage = item != null ? merchImage(item) : '';
+    final afterImage = item?.secondaryMedia ?? '';
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

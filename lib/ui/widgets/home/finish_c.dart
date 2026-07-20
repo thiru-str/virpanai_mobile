@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
+import '../../../utility/redirect_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -11,17 +12,34 @@ class VideoBanner1 extends StatelessWidget {
   final Content content;
   const VideoBanner1({super.key, required this.content});
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: AppUtils.buildLayoutBackground(content),
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    child: ClipRRect(borderRadius: BorderRadius.circular(20), child: Stack(children: [
-      const AspectRatio(aspectRatio: 16 / 9, child: ImageFallbackWidget(fit: BoxFit.cover)),
-      Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(color: Colors.black.withOpacity(0.25)))),
-      const Positioned.fill(child: Center(child: Icon(Icons.play_circle_fill, color: Colors.white, size: 56))),
-      Positioned(left: 16, right: 16, bottom: 16, child: Text(content.layoutTitle ?? 'Watch the Film',
-        style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white))),
-    ])),
-  );
+  Widget build(BuildContext context) {
+    final item = (content.layoutData ?? []).isNotEmpty ? content.layoutData!.first : null;
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: GestureDetector(
+        onTap: () {
+          if (item?.video != null && item!.video!.isNotEmpty) {
+            launchUrl(Uri.parse(item.video!), mode: LaunchMode.externalApplication);
+          } else if (item != null) {
+            RedirectUtils.handleContentRedirect(
+              context: context,
+              layoutOption: content.layoutOption ?? '',
+              layoutData: item,
+            );
+          }
+        },
+        child: ClipRRect(borderRadius: BorderRadius.circular(20), child: Stack(children: [
+          AspectRatio(aspectRatio: 16 / 9,
+            child: merchImageOrFallback(item == null ? '' : merchImage(item), fit: BoxFit.cover)),
+          Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(color: Colors.black.withOpacity(0.25)))),
+          const Positioned.fill(child: Center(child: Icon(Icons.play_circle_fill, color: Colors.white, size: 56))),
+          Positioned(left: 16, right: 16, bottom: 16, child: Text(content.layoutTitle ?? 'Watch the Film',
+            style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white))),
+        ])),
+      ),
+    );
+  }
 }
 
 class TextCta1 extends StatelessWidget {

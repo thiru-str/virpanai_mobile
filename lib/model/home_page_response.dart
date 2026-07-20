@@ -150,6 +150,8 @@ class LayoutDatum {
   Prices? prices;
   RedirectData? redirectData;
   num? rating;
+  String? video;
+  String? secondaryMedia;
   VariantDetails? variantDetails;
   CartDetails? cartDetails;
 
@@ -164,6 +166,8 @@ class LayoutDatum {
     this.prices,
     this.redirectData,
     this.rating,
+    this.video,
+    this.secondaryMedia,
     this.variantDetails,
     this.cartDetails,
   });
@@ -185,6 +189,8 @@ class LayoutDatum {
             ? null
             : RedirectData.fromJson(json["redirect_data"]),
         rating: json["rating"],
+        video: json["video"],
+        secondaryMedia: json["secondary_media"],
         variantDetails: json["variant_details"] == null
             ? null
             : VariantDetails.fromJson(json["variant_details"]),
@@ -203,6 +209,8 @@ class LayoutDatum {
         "product_data": productData?.toJson(),
         "prices": prices?.toJson(), // <-- Serialize
         "rating": rating,
+        "video": video,
+        "secondary_media": secondaryMedia,
         "variant_details": variantDetails?.toJson(),
         "cart_details": cartDetails?.toJson(),
         "redirect_data": redirectData?.toJson(),

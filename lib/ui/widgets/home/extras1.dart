@@ -67,6 +67,15 @@ class TestimonialBig1 extends StatelessWidget {
             textAlign: TextAlign.center,
             style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
           const SizedBox(height: 14),
+          Builder(builder: (_) {
+            final stars = (r?.rating ?? 5).clamp(0, 5).round();
+            return Row(mainAxisSize: MainAxisSize.min, children: [
+              for (int s = 0; s < 5; s++)
+                Icon(s < stars ? Icons.star : Icons.star_border,
+                  size: 16, color: const Color(0xFFF5A623)),
+            ]);
+          }),
+          const SizedBox(height: 10),
           Text(r?.title ?? 'Ananya R.',
             style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
           Text('Verified buyer',

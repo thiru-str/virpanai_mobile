@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
+import '../../../utility/redirect_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -140,10 +142,23 @@ class Reels1 extends StatelessWidget {
           scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) {
-            final likes = (items[i].salesText ?? '').trim().isNotEmpty
-                ? items[i].salesText!.trim()
-                : (items[i].featureText ?? '').trim();
-            return ClipRRect(borderRadius: BorderRadius.circular(16),
+            final item = items[i];
+            final likes = (item.salesText ?? '').trim().isNotEmpty
+                ? item.salesText!.trim()
+                : (item.featureText ?? '').trim();
+            return GestureDetector(
+              onTap: () {
+                if (item.video != null && item.video!.isNotEmpty) {
+                  launchUrl(Uri.parse(item.video!), mode: LaunchMode.externalApplication);
+                } else {
+                  RedirectUtils.handleContentRedirect(
+                    context: context,
+                    layoutOption: content.layoutOption ?? '',
+                    layoutData: item,
+                  );
+                }
+              },
+              child: ClipRRect(borderRadius: BorderRadius.circular(16),
               child: SizedBox(width: 130, child: Stack(children: [
                 Positioned.fill(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
                 Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
@@ -158,7 +173,7 @@ class Reels1 extends StatelessWidget {
                       fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
                   ])),
               ])),
-            );
+            ));
           },
         ),
         ),
