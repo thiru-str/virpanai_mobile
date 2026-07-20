@@ -4,7 +4,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -40,7 +39,7 @@ class ListRow extends StatelessWidget {
         ],
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: const SizedBox(height: 56, width: 56, child: ImageFallbackWidget(fit: BoxFit.cover)),
+          child: SizedBox(height: 56, width: 56, child: merchImageOrFallback(merchImage(data), fit: BoxFit.cover)),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -97,7 +96,8 @@ class ListRow extends StatelessWidget {
 class StoryCircle extends StatelessWidget {
   final String label;
   final Color color;
-  const StoryCircle({super.key, required this.label, required this.color});
+  final String imageUrl;
+  const StoryCircle({super.key, required this.label, required this.color, this.imageUrl = ''});
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +118,7 @@ class StoryCircle extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const ClipOval(child: ImageFallbackWidget(fit: BoxFit.cover)),
+              child: ClipOval(child: merchImageOrFallback(imageUrl, fit: BoxFit.cover)),
             ),
           ),
           const SizedBox(height: 6),

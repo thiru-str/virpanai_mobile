@@ -3,8 +3,8 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
+import 'homepage_merch_shared.dart';
 
 // HeroBanner1 — full-bleed promotional hero with headline + CTA.
 class HeroBanner1 extends StatelessWidget {
@@ -19,7 +19,8 @@ class HeroBanner1 extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            const AspectRatio(aspectRatio: 16 / 10, child: ImageFallbackWidget(fit: BoxFit.cover)),
+            AspectRatio(aspectRatio: 16 / 10,
+              child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover)),
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(

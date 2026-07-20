@@ -4,7 +4,6 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'homepage_merch_shared.dart';
 import 'grocery_shared.dart';
 
@@ -47,7 +46,7 @@ class Combo1 extends StatelessWidget {
                     child: SizedBox(
                       height: 56,
                       width: 56,
-                      child: ImageFallbackWidget(fit: BoxFit.cover),
+                      child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover),
                     ),
                   ),
                   if (i != items.length - 1)

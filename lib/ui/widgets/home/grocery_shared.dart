@@ -4,7 +4,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'homepage_merch_shared.dart';
 
 // Shared building blocks for the supermarket / grocery component family.
@@ -73,9 +72,8 @@ class GroceryTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: image.isEmpty
-                      ? const ImageFallbackWidget(fit: BoxFit.contain)
-                      : ImageFallbackWidget(fit: BoxFit.cover),
+                  child: merchImageOrFallback(image,
+                      fit: BoxFit.cover, fallbackFit: BoxFit.contain),
                 ),
               ),
               if (badge.isNotEmpty)

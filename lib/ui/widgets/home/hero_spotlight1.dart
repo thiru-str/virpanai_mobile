@@ -4,7 +4,6 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -23,7 +22,7 @@ class SplitHero1 extends StatelessWidget {
         child: IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Expanded(child: ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20)),
-            child: const ImageFallbackWidget(fit: BoxFit.cover))),
+            child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover))),
           Expanded(child: Padding(padding: const EdgeInsets.all(16), child: Column(
             mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min, children: [
@@ -62,7 +61,7 @@ class ProductSpotlight1 extends StatelessWidget {
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: const AspectRatio(aspectRatio: 16 / 9, child: ImageFallbackWidget(fit: BoxFit.cover))),
+            child: AspectRatio(aspectRatio: 16 / 9, child: merchImageOrFallback(merchImage(hero), fit: BoxFit.cover))),
           Padding(padding: const EdgeInsets.all(16), child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
               Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -109,7 +108,7 @@ class TripleCollection1 extends StatelessWidget {
           for (int i = 0; i < items.length; i++) ...[
             if (i != 0) const SizedBox(width: 10),
             Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(16), child: Stack(children: [
-              const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+              Positioned.fill(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
               Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
                 gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.center,
                   colors: [Colors.black.withOpacity(0.5), Colors.transparent])))),
@@ -139,7 +138,7 @@ class DualBanner1 extends StatelessWidget {
         for (int i = 0; i < items.length; i++) ...[
           if (i != 0) const SizedBox(width: 10),
           Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(16), child: Stack(children: [
-            const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+            Positioned.fill(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
             Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
               gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight,
                 colors: [Colors.black.withOpacity(0.55), Colors.transparent])))),

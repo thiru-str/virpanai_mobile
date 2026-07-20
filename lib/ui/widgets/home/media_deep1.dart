@@ -3,7 +3,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -27,7 +26,7 @@ class Instagram1 extends StatelessWidget {
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3, crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 1),
           itemBuilder: (context, i) => ClipRRect(borderRadius: BorderRadius.circular(12),
-            child: const ImageFallbackWidget(fit: BoxFit.cover)),
+            child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
         ),
         const SizedBox(height: 12),
         Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -60,7 +59,7 @@ class Ugc1 extends StatelessWidget {
           scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) => ClipRRect(borderRadius: BorderRadius.circular(14),
-            child: const SizedBox(width: 120, child: ImageFallbackWidget(fit: BoxFit.cover))))),
+            child: SizedBox(width: 120, child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover))))),
       ]),
     );
   }
@@ -82,20 +81,21 @@ class Gallery1 extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(height: 320, child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(child: Column(children: [
-            Expanded(flex: 3, child: _cell()), const SizedBox(height: 10),
-            Expanded(flex: 2, child: _cell()),
+            Expanded(flex: 3, child: _cell(_imgAt(items, 0))), const SizedBox(height: 10),
+            Expanded(flex: 2, child: _cell(_imgAt(items, 1))),
           ])),
           const SizedBox(width: 10),
           Expanded(child: Column(children: [
-            Expanded(flex: 2, child: _cell()), const SizedBox(height: 10),
-            Expanded(flex: 3, child: _cell()),
+            Expanded(flex: 2, child: _cell(_imgAt(items, 2))), const SizedBox(height: 10),
+            Expanded(flex: 3, child: _cell(_imgAt(items, 3))),
           ])),
         ])),
       ]),
     );
   }
-  Widget _cell() => ClipRRect(borderRadius: BorderRadius.circular(14),
-    child: const SizedBox.expand(child: ImageFallbackWidget(fit: BoxFit.cover)));
+  String _imgAt(List<LayoutDatum> items, int i) => i < items.length ? merchImage(items[i]) : '';
+  Widget _cell(String url) => ClipRRect(borderRadius: BorderRadius.circular(14),
+    child: SizedBox.expand(child: merchImageOrFallback(url, fit: BoxFit.cover)));
 }
 
 // BeforeAfter1 — before / after comparison panels.
@@ -104,6 +104,9 @@ class BeforeAfter1 extends StatelessWidget {
   const BeforeAfter1({super.key, required this.content});
   @override
   Widget build(BuildContext context) {
+    final items = content.layoutData ?? [];
+    final beforeImage = items.isNotEmpty ? merchImage(items[0]) : '';
+    final afterImage = items.length > 1 ? merchImage(items[1]) : '';
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -113,12 +116,12 @@ class BeforeAfter1 extends StatelessWidget {
         ClipRRect(borderRadius: BorderRadius.circular(18), child: AspectRatio(aspectRatio: 3 / 2,
           child: Row(children: [
             Expanded(child: Stack(children: [
-              const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+              Positioned.fill(child: merchImageOrFallback(beforeImage, fit: BoxFit.cover)),
               Positioned(left: 10, top: 10, child: _tag('BEFORE')),
             ])),
             Container(width: 2, color: Colors.white),
             Expanded(child: Stack(children: [
-              const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+              Positioned.fill(child: merchImageOrFallback(afterImage, fit: BoxFit.cover)),
               Positioned(left: 10, top: 10, child: _tag('AFTER')),
             ])),
           ]))),

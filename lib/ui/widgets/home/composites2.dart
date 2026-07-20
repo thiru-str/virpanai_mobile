@@ -4,7 +4,6 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 import 'composites_shared.dart';
@@ -23,7 +22,8 @@ class CollectionCover1 extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(children: [
-          const AspectRatio(aspectRatio: 16 / 11, child: ImageFallbackWidget(fit: BoxFit.cover)),
+          AspectRatio(aspectRatio: 16 / 11,
+            child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover)),
           Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
             gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter,
               colors: [Colors.black.withOpacity(0.6), Colors.transparent])))),
@@ -41,7 +41,7 @@ class CollectionCover1 extends StatelessWidget {
                   Padding(padding: const EdgeInsets.only(right: 8),
                     child: ClipRRect(borderRadius: BorderRadius.circular(10),
                       child: Container(height: 48, width: 48, color: Colors.white,
-                        child: const ImageFallbackWidget(fit: BoxFit.cover)))),
+                        child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)))),
                 Container(height: 48, width: 48, alignment: Alignment.center,
                   decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(10)),
                   child: Text('+${items.length}', style: FontUtils.primaryFontStyle(
@@ -87,7 +87,7 @@ class MegaSpotlight1 extends StatelessWidget {
           ]),
           const SizedBox(height: 12),
           ClipRRect(borderRadius: BorderRadius.circular(14), child: Stack(children: [
-            const AspectRatio(aspectRatio: 16 / 8, child: ImageFallbackWidget(fit: BoxFit.cover)),
+            AspectRatio(aspectRatio: 16 / 8, child: merchImageOrFallback(merchImage(hero), fit: BoxFit.cover)),
             Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
               gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight,
                 colors: [Colors.black.withOpacity(0.55), Colors.transparent])))),
@@ -169,7 +169,7 @@ class PickForYou1 extends StatelessWidget {
         const SizedBox(height: 12),
         IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(16), child: Stack(children: [
-            const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+            Positioned.fill(child: merchImageOrFallback(merchImage(hero), fit: BoxFit.cover)),
             Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
               gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter,
                 colors: [Colors.black.withOpacity(0.55), Colors.transparent])))),
@@ -190,7 +190,7 @@ class PickForYou1 extends StatelessWidget {
                   border: Border.all(color: kInk.withOpacity(0.08))),
                 child: Row(children: [
                   ClipRRect(borderRadius: BorderRadius.circular(10),
-                    child: const SizedBox(height: 44, width: 44, child: ImageFallbackWidget(fit: BoxFit.cover))),
+                    child: SizedBox(height: 44, width: 44, child: merchImageOrFallback(merchImage(rest[i]), fit: BoxFit.cover))),
                   const SizedBox(width: 8),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [

@@ -3,7 +3,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'homepage_merch_shared.dart';
 
 // HomeCollection1 — home & living room collections (large image cards).
@@ -32,9 +31,9 @@ class HomeCollection1 extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               child: Stack(
                 children: [
-                  const AspectRatio(
+                  AspectRatio(
                     aspectRatio: 16 / 10,
-                    child: ImageFallbackWidget(fit: BoxFit.cover),
+                    child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover),
                   ),
                   Positioned(
                     left: 16, bottom: 16, right: 16,

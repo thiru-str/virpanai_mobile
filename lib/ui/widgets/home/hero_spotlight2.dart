@@ -3,7 +3,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -50,7 +49,8 @@ class CategorySpotlight1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: ClipRRect(borderRadius: BorderRadius.circular(20), child: Stack(children: [
-        const AspectRatio(aspectRatio: 16 / 9, child: ImageFallbackWidget(fit: BoxFit.cover)),
+        AspectRatio(aspectRatio: 16 / 9,
+          child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover)),
         Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
           gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight,
             colors: [Colors.black.withOpacity(0.6), Colors.transparent])))),
@@ -95,7 +95,7 @@ class LookbookRail1 extends StatelessWidget {
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 12),
           itemBuilder: (context, i) => ClipRRect(borderRadius: BorderRadius.circular(18),
             child: SizedBox(width: 170, child: Stack(children: [
-              const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+              Positioned.fill(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
               Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
                 gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.center,
                   colors: [Colors.black.withOpacity(0.5), Colors.transparent])))),
@@ -121,7 +121,8 @@ class LaunchCountdown1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: ClipRRect(borderRadius: BorderRadius.circular(20), child: Stack(children: [
-        const AspectRatio(aspectRatio: 16 / 10, child: ImageFallbackWidget(fit: BoxFit.cover)),
+        AspectRatio(aspectRatio: 16 / 10,
+          child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover)),
         Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
           gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter,
             colors: [Colors.black.withOpacity(0.75), Colors.black.withOpacity(0.15)])))),

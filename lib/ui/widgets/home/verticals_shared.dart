@@ -4,7 +4,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -101,7 +100,7 @@ class RestaurantTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: AspectRatio(
                 aspectRatio: 16 / 11,
-                child: ImageFallbackWidget(fit: BoxFit.cover),
+                child: merchImageOrFallback(image, fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 8),

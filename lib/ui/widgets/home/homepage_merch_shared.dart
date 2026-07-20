@@ -11,6 +11,28 @@ String merchImage(LayoutDatum data) {
   return data.image ?? data.productData?.image ?? '';
 }
 
+/// Renders a merchant image from a resolved [url], falling back to
+/// [ImageFallbackWidget] when the url is empty or fails to load.
+/// Mirrors the CachedNetworkImage usage in [HomeMerchCompactCard].
+Widget merchImageOrFallback(
+  String url, {
+  BoxFit fit = BoxFit.cover,
+  BoxFit? fallbackFit,
+  double? width,
+  double? height,
+}) {
+  ImageFallbackWidget fallback() =>
+      ImageFallbackWidget(h: height, w: width, fit: fallbackFit ?? fit);
+  if (url.isEmpty) return fallback();
+  return CachedNetworkImage(
+    imageUrl: url,
+    fit: fit,
+    width: width,
+    height: height,
+    errorWidget: (_, __, ___) => fallback(),
+  );
+}
+
 String merchSubtitle(LayoutDatum data) {
   if ((data.featureText ?? '').trim().isNotEmpty) {
     return data.featureText!.trim();

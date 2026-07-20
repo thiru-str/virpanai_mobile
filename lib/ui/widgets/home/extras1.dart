@@ -3,7 +3,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -84,17 +83,19 @@ class StatBand1 extends StatelessWidget {
   const StatBand1({super.key, required this.content});
   @override
   Widget build(BuildContext context) {
-    final stats = [['50k+', 'Happy customers'], ['200+', 'Artisan partners'], ['4.8', 'Avg. rating']];
+    final items = content.layoutData ?? [];
+    if (items.isEmpty) return const SizedBox.shrink();
     return Container(
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
         decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(20)),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          for (final s in stats) Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(s[0], style: FontUtils.primaryFontStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
+          for (final item in items) Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(item.title ?? '', style: FontUtils.primaryFontStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
             const SizedBox(height: 2),
-            Text(s[1], style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: Colors.white60)),
+            Text((item.featureText ?? '').trim().isNotEmpty ? item.featureText!.trim() : (item.subTitle ?? ''),
+              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: Colors.white60)),
           ]),
         ]),
       ),
@@ -123,7 +124,7 @@ class CategoryCardRail1 extends StatelessWidget {
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 12),
           itemBuilder: (context, i) => SizedBox(width: 120, child: Column(children: [
             Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(16),
-              child: const SizedBox.expand(child: ImageFallbackWidget(fit: BoxFit.cover)))),
+              child: SizedBox.expand(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)))),
             const SizedBox(height: 8),
             Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
               style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textColor)),

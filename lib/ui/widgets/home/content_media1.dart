@@ -3,7 +3,6 @@ import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 
@@ -28,7 +27,7 @@ class Blog1 extends StatelessWidget {
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 12),
           itemBuilder: (context, i) => SizedBox(width: 240, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             ClipRRect(borderRadius: BorderRadius.circular(14),
-              child: const AspectRatio(aspectRatio: 16 / 10, child: ImageFallbackWidget(fit: BoxFit.cover))),
+              child: AspectRatio(aspectRatio: 16 / 10, child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover))),
             const SizedBox(height: 10),
             if ((items[i].salesText ?? '').isNotEmpty)
               Text(items[i].salesText!.toUpperCase(),
@@ -60,7 +59,8 @@ class Story1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         ClipRRect(borderRadius: BorderRadius.circular(18),
-          child: const AspectRatio(aspectRatio: 16 / 9, child: ImageFallbackWidget(fit: BoxFit.cover))),
+          child: AspectRatio(aspectRatio: 16 / 9,
+            child: merchImageOrFallback(hero == null ? '' : merchImage(hero), fit: BoxFit.cover))),
         const SizedBox(height: 14),
         if ((content.layoutSubTitle ?? '').isNotEmpty)
           Text(content.layoutSubTitle!.toUpperCase(),
@@ -69,7 +69,7 @@ class Story1 extends StatelessWidget {
         Text(content.layoutTitle ?? 'Rooted in Craft',
           style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textColor)),
         const SizedBox(height: 8),
-        Text(hero?.featureText ?? 'Every piece is made by skilled artisans using time-honoured techniques, blending heritage with a modern sensibility.',
+        Text(hero == null ? '' : merchSubtitle(hero),
           style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
         const SizedBox(height: 12),
         Row(children: [
@@ -124,7 +124,6 @@ class HowTo1 extends StatelessWidget {
 class Reels1 extends StatelessWidget {
   final Content content;
   const Reels1({super.key, required this.content});
-  static const _likes = ['12.4k', '8.1k', '21.7k', '5.9k', '15.2k', '9.3k'];
   @override
   Widget build(BuildContext context) {
     final items = content.layoutData ?? [];
@@ -140,22 +139,29 @@ class Reels1 extends StatelessWidget {
         SizedBox(height: 230, child: ListView.separated(
           scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (context, i) => ClipRRect(borderRadius: BorderRadius.circular(16),
-            child: SizedBox(width: 130, child: Stack(children: [
-              const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
-              Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.center,
-                  colors: [Colors.black.withOpacity(0.5), Colors.transparent])))),
-              const Positioned.fill(child: Center(child: Icon(Icons.play_circle_fill, color: Colors.white, size: 40))),
-              Positioned(left: 8, bottom: 8, child: Row(children: [
-                const Icon(Icons.favorite, color: Colors.white, size: 12),
-                const SizedBox(width: 3),
-                Text(_likes[i % _likes.length], style: FontUtils.primaryFontStyle(
-                  fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+          itemBuilder: (context, i) {
+            final likes = (items[i].salesText ?? '').trim().isNotEmpty
+                ? items[i].salesText!.trim()
+                : (items[i].featureText ?? '').trim();
+            return ClipRRect(borderRadius: BorderRadius.circular(16),
+              child: SizedBox(width: 130, child: Stack(children: [
+                Positioned.fill(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
+                Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
+                  gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.center,
+                    colors: [Colors.black.withOpacity(0.5), Colors.transparent])))),
+                const Positioned.fill(child: Center(child: Icon(Icons.play_circle_fill, color: Colors.white, size: 40))),
+                if (likes.isNotEmpty)
+                  Positioned(left: 8, bottom: 8, child: Row(children: [
+                    const Icon(Icons.favorite, color: Colors.white, size: 12),
+                    const SizedBox(width: 3),
+                    Text(likes, style: FontUtils.primaryFontStyle(
+                      fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                  ])),
               ])),
-            ])),
-          ),
-        )),
+            );
+          },
+        ),
+        ),
       ]),
     );
   }

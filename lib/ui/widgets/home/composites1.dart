@@ -4,7 +4,6 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
-import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 import 'composites_shared.dart';
@@ -35,7 +34,7 @@ class SpotlightList1 extends StatelessWidget {
             child: Row(
               children: [
                 ClipRRect(borderRadius: BorderRadius.circular(12),
-                  child: const SizedBox(height: 92, width: 92, child: ImageFallbackWidget(fit: BoxFit.cover))),
+                  child: SizedBox(height: 92, width: 92, child: merchImageOrFallback(merchImage(hero), fit: BoxFit.cover))),
                 const SizedBox(width: 14),
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min,
@@ -114,7 +113,7 @@ class CategoryCollection1 extends StatelessWidget {
                 crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.5),
               itemBuilder: (context, i) => ClipRRect(borderRadius: BorderRadius.circular(16),
                 child: Stack(children: [
-                  const Positioned.fill(child: ImageFallbackWidget(fit: BoxFit.cover)),
+                  Positioned.fill(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)),
                   Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
                     gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.center,
                       colors: [Colors.black.withOpacity(0.5), Colors.transparent])))),
@@ -185,7 +184,7 @@ class StoryRail1 extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, i) => StoryCircle(label: items[i].title ?? '', color: Color(_colors[i % _colors.length])),
+              itemBuilder: (context, i) => StoryCircle(label: items[i].title ?? '', color: Color(_colors[i % _colors.length]), imageUrl: merchImage(items[i])),
             ),
           ),
         ],
