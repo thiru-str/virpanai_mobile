@@ -304,7 +304,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildIcon(null,
-                  assetPath: AppAssets.app_icon, size: 50, color: Colors.white),
+                  assetPath: AppAssets.app_icon, size: 50),
               _buildIcon(Icons.shopping_cart,
                   color: Colors.white,
                   onPressed: onCartClick,

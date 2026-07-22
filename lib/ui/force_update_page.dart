@@ -58,7 +58,7 @@ class ForceUpdateScreen extends StatelessWidget {
 
                 /// Description (pure white background)
                 Text(
-                  "A brand new version of the VirpanAI app is available in the App Store. "
+                  "A brand new version of the Sri Arumugam Fireworks app is available in the App Store. "
                       "Please update your app to use all of our amazing features.",
                   textAlign: TextAlign.center,
                   style: FontUtils.secondaryFontStyle(
@@ -103,7 +103,6 @@ class ForceUpdateScreen extends StatelessWidget {
     );
   }
 }
-
 
 
 
