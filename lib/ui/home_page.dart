@@ -47,6 +47,37 @@ import 'package:waioz/ui/widgets/home/item_5.dart';
 import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
+// --- marketplace list components (Slider50+/Banner8+/Collection3+) ---
+import 'package:waioz/ui/widgets/home/slider50.dart';
+import 'package:waioz/ui/widgets/home/slider51.dart';
+import 'package:waioz/ui/widgets/home/slider52.dart';
+import 'package:waioz/ui/widgets/home/slider53.dart';
+import 'package:waioz/ui/widgets/home/slider54.dart';
+import 'package:waioz/ui/widgets/home/slider55.dart';
+import 'package:waioz/ui/widgets/home/slider56.dart';
+import 'package:waioz/ui/widgets/home/slider57.dart';
+import 'package:waioz/ui/widgets/home/slider58.dart';
+import 'package:waioz/ui/widgets/home/slider59.dart';
+import 'package:waioz/ui/widgets/home/banner8.dart';
+import 'package:waioz/ui/widgets/home/banner9.dart';
+import 'package:waioz/ui/widgets/home/banner10.dart';
+import 'package:waioz/ui/widgets/home/banner11.dart';
+import 'package:waioz/ui/widgets/home/banner12.dart';
+import 'package:waioz/ui/widgets/home/banner13.dart';
+import 'package:waioz/ui/widgets/home/banner14.dart';
+import 'package:waioz/ui/widgets/home/banner15.dart';
+import 'package:waioz/ui/widgets/home/banner16.dart';
+import 'package:waioz/ui/widgets/home/banner17.dart';
+import 'package:waioz/ui/widgets/home/collection3.dart';
+import 'package:waioz/ui/widgets/home/collection4.dart';
+import 'package:waioz/ui/widgets/home/collection5.dart';
+import 'package:waioz/ui/widgets/home/collection6.dart';
+import 'package:waioz/ui/widgets/home/collection7.dart';
+import 'package:waioz/ui/widgets/home/collection8.dart';
+import 'package:waioz/ui/widgets/home/collection9.dart';
+import 'package:waioz/ui/widgets/home/collection10.dart';
+import 'package:waioz/ui/widgets/home/collection11.dart';
+import 'package:waioz/ui/widgets/home/collection12.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
@@ -356,6 +387,36 @@ class _HomePageState extends State<HomePage> {
       "item15",
       "item16",
       ...kMarketplaceLayouts,
+          "Slider50",
+      "Slider51",
+      "Slider52",
+      "Slider53",
+      "Slider54",
+      "Slider55",
+      "Slider56",
+      "Slider57",
+      "Slider58",
+      "Slider59",
+      "Banner8",
+      "Banner9",
+      "Banner10",
+      "Banner11",
+      "Banner12",
+      "Banner13",
+      "Banner14",
+      "Banner15",
+      "Banner16",
+      "Banner17",
+      "Collection3",
+      "Collection4",
+      "Collection5",
+      "Collection6",
+      "Collection7",
+      "Collection8",
+      "Collection9",
+      "Collection10",
+      "Collection11",
+      "Collection12",
     };
 
     if (kMarketplaceNoDataLayouts.contains(content.layoutName)) {
@@ -624,6 +685,126 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item16(content: homePageContent!),
               );
+      case "Slider50":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider50(content: homePageContent!);
+      case "Slider51":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider51(content: homePageContent!);
+      case "Slider52":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider52(content: homePageContent!);
+      case "Slider53":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider53(content: homePageContent!);
+      case "Slider54":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider54(content: homePageContent!);
+      case "Slider55":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider55(content: homePageContent!);
+      case "Slider56":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider56(content: homePageContent!);
+      case "Slider57":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider57(content: homePageContent!);
+      case "Slider58":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider58(content: homePageContent!);
+      case "Slider59":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider59(content: homePageContent!);
+      case "Banner8":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner8(content: homePageContent!);
+      case "Banner9":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner9(content: homePageContent!);
+      case "Banner10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner10(content: homePageContent!);
+      case "Banner11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner11(content: homePageContent!);
+      case "Banner12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner12(content: homePageContent!);
+      case "Banner13":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner13(content: homePageContent!);
+      case "Banner14":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner14(content: homePageContent!);
+      case "Banner15":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner15(content: homePageContent!);
+      case "Banner16":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner16(content: homePageContent!);
+      case "Banner17":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner17(content: homePageContent!);
+      case "Collection3":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection3(content: homePageContent!);
+      case "Collection4":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection4(content: homePageContent!);
+      case "Collection5":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection5(content: homePageContent!);
+      case "Collection6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection6(content: homePageContent!);
+      case "Collection7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection7(content: homePageContent!);
+      case "Collection8":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection8(content: homePageContent!);
+      case "Collection9":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection9(content: homePageContent!);
+      case "Collection10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection10(content: homePageContent!);
+      case "Collection11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection11(content: homePageContent!);
+      case "Collection12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection12(content: homePageContent!);
       default:
         return marketplaceHomeWidget(homePageContent!) ?? const SizedBox();
     }
