@@ -412,6 +412,16 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     }
   }
 
+  // Returns variantTitle when productTitle is a migration placeholder like "Migrated Products 1"
+  String _resolveProductTitle(String? productTitle, String? variantTitle) {
+    final title = (productTitle ?? '').trim();
+    if (title.toLowerCase().startsWith('migrated')) {
+      final fallback = (variantTitle ?? '').trim();
+      return fallback.isNotEmpty ? fallback : title;
+    }
+    return title.isNotEmpty ? title : (variantTitle ?? '');
+  }
+
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -526,7 +536,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                 imageUrl: itemDetail.thumbnail ?? '',
                 variant: itemDetail.variantTitle ?? '',
                 productName:
-                    '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
+                    '${itemDetail.quantity ?? ''} x ${_resolveProductTitle(itemDetail.productTitle, itemDetail.variantTitle)}',
                 status: itemDetail.status ?? '',
                 price: CurrencyUtil.appendCurrency(
                   ((itemDetail.unitPrice ?? 0) * (itemDetail.quantity ?? 0))
@@ -643,7 +653,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          itemDetail.productTitle ?? '',
+                          _resolveProductTitle(itemDetail.productTitle, itemDetail.variantTitle),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

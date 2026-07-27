@@ -7,6 +7,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
 import 'package:waioz/model/shipping_response.dart' as PaymentSessionData;
 import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/paytm_payment_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
@@ -1946,8 +1947,45 @@ class _CartPageState extends State<CartPage>
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () => PageRouteUtils.pushAndRemoveUntil(
+                context, const BottomNavPage()),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.06),
+                border: Border(
+                  bottom: BorderSide(
+                      color: AppColors.primary.withValues(alpha: 0.12)),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.arrow_back_ios_rounded,
+                      color: AppColors.primary, size: 12),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Continue Shopping',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Left: Total amount + View details
@@ -2073,6 +2111,9 @@ class _CartPageState extends State<CartPage>
                         ],
                       ),
               ),
+            ),
+          ),
+        ],
             ),
           ),
         ],
