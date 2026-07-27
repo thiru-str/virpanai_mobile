@@ -54,8 +54,8 @@ class _FilterPageState extends State<FilterPage> {
   double? maxPrice;
   String? sortBy;
 
-  TextEditingController categorySearchController = TextEditingController();
-  String categorySearchQuery = '';
+  TextEditingController facetSearchController = TextEditingController();
+  String facetSearchQuery = '';
 
   FilterSection selectedSection = FilterSection.collections;
   bool isLoadingCollections = true;
@@ -71,13 +71,33 @@ class _FilterPageState extends State<FilterPage> {
 
   static const sortOptions = [AppStrings.low_high, AppStrings.high_low];
 
-  final sidebarItems = [
-    {'label': AppStrings.collections, 'section': FilterSection.collections},
-    {'label': AppStrings.categories, 'section': FilterSection.categories},
-    {'label': AppStrings.tags, 'section': FilterSection.tags},
-    {'label': AppStrings.price, 'section': FilterSection.price},
-    {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
-  ];
+  List<Map<String, dynamic>> get _sidebarItems {
+    final items = <Map<String, dynamic>>[];
+    if (collectionsList.isNotEmpty || selectedCollections.isNotEmpty) {
+      items.add({
+        'label': AppStrings.collections,
+        'section': FilterSection.collections
+      });
+    }
+    if (categoryList.isNotEmpty || selectedCategories.isNotEmpty) {
+      items.add({
+        'label': AppStrings.categories,
+        'section': FilterSection.categories
+      });
+    }
+    if (tagsList.isNotEmpty || selectedTags.isNotEmpty) {
+      items.add({'label': AppStrings.tags, 'section': FilterSection.tags});
+    }
+    items.add({'label': AppStrings.price, 'section': FilterSection.price});
+    items.add({'label': AppStrings.sort_by, 'section': FilterSection.sortBy});
+    return items;
+  }
+
+  void _selectFallbackSectionIfNeeded() {
+    if (!_sidebarItems.any((item) => item['section'] == selectedSection)) {
+      selectedSection = _sidebarItems.first['section'] as FilterSection;
+    }
+  }
 
   @override
   void initState() {
@@ -98,54 +118,63 @@ class _FilterPageState extends State<FilterPage> {
     _fetchInitialData();
   }
 
-  void _fetchInitialData() {
-    _loadCollections();
-    _loadCategories();
-    _loadTags();
+  @override
+  void dispose() {
+    facetSearchController.dispose();
+    minPriceController.dispose();
+    maxPriceController.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadCollections() async {
+  void _fetchInitialData() => _loadFacets();
+
+  Future<void> _loadFacets() async {
+    // `ProductPage` seeds its incoming category into selectedCategories. Do
+    // not silently restore parentCategoryId after the shopper removes it;
+    // an empty selection must request unscoped category facets.
+    final categories = selectedCategories.toList();
+    setState(() {
+      isLoadingCollections = true;
+      isLoadingCategories = true;
+      isTagsLoading = true;
+    });
     try {
-      final response = await ApiService().listCollections(context);
+      final response = await ApiService().listProductFilterFacets(
+        context,
+        categoryIds: categories,
+        collectionIds: selectedCollections.toList(),
+        tagIds: selectedTags.toList(),
+      );
+      if (!mounted) return;
       setState(() {
-        collectionsList = response.collections ?? [];
+        categoryList = response.categories
+            .map((facet) => ProductCategory(
+                id: facet.id, name: facet.label, count: facet.count))
+            .toList();
+        collectionsList = response.collections
+            .map((facet) =>
+                Collection(id: facet.id, title: facet.label, count: facet.count))
+            .toList();
+        tagsList = response.tags
+            .map((facet) => ProductTag(
+                id: facet.id, value: facet.label, count: facet.count))
+            .toList();
         isLoadingCollections = false;
-      });
-    } catch (e) {
-      print('Error loading collections: $e');
-      setState(() => isLoadingCollections = false);
-    }
-  }
-
-  Future<void> _loadCategories() async {
-    try {
-      final response = await ApiService().listCategories(
-        context,
-      );
-      setState(() {
-        categoryList = response.productCategories ?? [];
         isLoadingCategories = false;
+        isTagsLoading = false;
+        _selectFallbackSectionIfNeeded();
       });
     } catch (e) {
-      print('Error loading categories: $e');
-      setState(() => isLoadingCategories = false);
+      if (!mounted) return;
+      setState(() {
+        isLoadingCollections = false;
+        isLoadingCategories = false;
+        isTagsLoading = false;
+        _selectFallbackSectionIfNeeded();
+      });
     }
   }
 
-  Future<void> _loadTags() async {
-    try {
-      final response = await ApiService().listTags(
-        context,
-      );
-      setState(() {
-        tagsList = response.productTags ?? [];
-        isTagsLoading = false;
-      });
-    } catch (e) {
-      print('Error loading categories: $e');
-      setState(() => isTagsLoading = false);
-    }
-  }
 
   // Count of currently selected filters (for the "Clear all" affordance).
   int get _activeFilterCount {
@@ -231,7 +260,7 @@ class _FilterPageState extends State<FilterPage> {
 
   Widget _buildSidebar() {
     return Container(
-      width: 148,
+      width: 118,
       color: Colors.white,
       child: Column(
         children: [
@@ -239,13 +268,17 @@ class _FilterPageState extends State<FilterPage> {
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
-              children: sidebarItems.map((item) {
+              children: _sidebarItems.map((item) {
                 final label = item['label'] as String;
                 final section = item['section'] as FilterSection;
                 return SidebarItem(
                   title: label,
                   selected: selectedSection == section,
-                  onTap: () => setState(() => selectedSection = section),
+                  onTap: () => setState(() {
+                    selectedSection = section;
+                    facetSearchController.clear();
+                    facetSearchQuery = '';
+                  }),
                 );
               }).toList(),
             ),
@@ -260,57 +293,71 @@ class _FilterPageState extends State<FilterPage> {
       case FilterSection.collections:
         return isLoadingCollections
             ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : _buildFilterList(
-                collectionsList.map((e) => e.id ?? '').toList(),
-                selectedCollections,
+            : _buildSearchableFilterList(
+                hint: 'Search collections',
+                items: collectionsList
+                    .where((e) => (e.title ?? '')
+                        .toLowerCase()
+                        .contains(facetSearchQuery))
+                    .map((e) => e.id ?? '')
+                    .toList(),
+                selectedSet: selectedCollections,
                 labelMap: Map.fromEntries(collectionsList
-                    .where((e) => e.id != null && e.title != null)
+                    .where((e) =>
+                        e.id != null &&
+                        e.title != null &&
+                        e.title!.toLowerCase().contains(facetSearchQuery))
                     .map((e) => MapEntry(e.id!, e.title!))),
+                countMap: Map.fromEntries(collectionsList
+                    .where((e) => e.id != null)
+                    .map((e) => MapEntry(e.id!, e.count))),
+                onSelectionChanged: _loadFacets,
               );
       case FilterSection.categories:
         return isLoadingCategories
             ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : Column(
-                children: [
-                  // Search field for categories
-                  _buildSearchField(),
-                  const SizedBox(height: 12),
-
-                  // Filtered list
-                  Expanded(
-                    child: _buildFilterList(
-                      categoryList
-                          .where((e) =>
-                              e.name != null &&
-                              e.name!
-                                  .toLowerCase()
-                                  .contains(categorySearchQuery))
-                          .map((e) => e.id ?? '')
-                          .toList(),
-                      selectedCategories,
-                      labelMap: Map.fromEntries(
-                        categoryList
-                            .where((e) =>
-                                e.id != null &&
-                                e.name != null &&
-                                e.name!
-                                    .toLowerCase()
-                                    .contains(categorySearchQuery))
-                            .map((e) => MapEntry(e.id!, e.name!)),
-                      ),
-                    ),
-                  ),
-                ],
+            : _buildSearchableFilterList(
+                hint: AppStrings.search_categories,
+                items: categoryList
+                    .where((e) => (e.name ?? '')
+                        .toLowerCase()
+                        .contains(facetSearchQuery))
+                    .map((e) => e.id ?? '')
+                    .toList(),
+                selectedSet: selectedCategories,
+                labelMap: Map.fromEntries(categoryList
+                    .where((e) =>
+                        e.id != null &&
+                        e.name != null &&
+                        e.name!.toLowerCase().contains(facetSearchQuery))
+                    .map((e) => MapEntry(e.id!, e.name!))),
+                countMap: Map.fromEntries(categoryList
+                    .where((e) => e.id != null)
+                    .map((e) => MapEntry(e.id!, e.count))),
+                onSelectionChanged: _loadFacets,
               );
       case FilterSection.tags:
         return isTagsLoading
             ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : _buildFilterList(
-                tagsList.map((e) => e.id ?? '').toList(),
-                selectedTags,
+            : _buildSearchableFilterList(
+                hint: 'Search brands or tags',
+                items: tagsList
+                    .where((e) => (e.value ?? '')
+                        .toLowerCase()
+                        .contains(facetSearchQuery))
+                    .map((e) => e.id ?? '')
+                    .toList(),
+                selectedSet: selectedTags,
+                onSelectionChanged: _loadFacets,
                 labelMap: Map.fromEntries(tagsList
-                    .where((e) => e.id != null && e.value != null)
+                    .where((e) =>
+                        e.id != null &&
+                        e.value != null &&
+                        e.value!.toLowerCase().contains(facetSearchQuery))
                     .map((e) => MapEntry(e.id!, e.value!))),
+                countMap: Map.fromEntries(tagsList
+                    .where((e) => e.id != null)
+                    .map((e) => MapEntry(e.id!, e.count))),
               );
       case FilterSection.price:
         return _buildPriceFilter();
@@ -319,7 +366,29 @@ class _FilterPageState extends State<FilterPage> {
     }
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchableFilterList({
+    required String hint,
+    required List<String> items,
+    required Set<String> selectedSet,
+    required Map<String, String> labelMap,
+    required Map<String, int?> countMap,
+    VoidCallback? onSelectionChanged,
+  }) {
+    return Column(
+      children: [
+        _buildSearchField(hint),
+        const SizedBox(height: 12),
+        Expanded(
+          child: _buildFilterList(items, selectedSet,
+              labelMap: labelMap,
+              countMap: countMap,
+              onSelectionChanged: onSelectionChanged),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchField(String hint) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -327,22 +396,22 @@ class _FilterPageState extends State<FilterPage> {
         border: Border.all(color: _kHairline),
       ),
       child: TextField(
-        controller: categorySearchController,
+        controller: facetSearchController,
         style: FontUtils.primaryFontStyle(
             fontSize: 14, color: AppColors.textColor),
         decoration: InputDecoration(
-          hintText: AppStrings.search_categories,
+          hintText: hint,
           hintStyle: UiTypography.searchHint(),
           border: InputBorder.none,
           isDense: true,
           prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey.shade500),
-          suffixIcon: categorySearchQuery.isNotEmpty
+          suffixIcon: facetSearchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
                   onPressed: () {
-                    categorySearchController.clear();
+                    facetSearchController.clear();
                     setState(() {
-                      categorySearchQuery = '';
+                      facetSearchQuery = '';
                     });
                   },
                 )
@@ -352,7 +421,7 @@ class _FilterPageState extends State<FilterPage> {
         ),
         onChanged: (value) {
           setState(() {
-            categorySearchQuery = value.toLowerCase();
+            facetSearchQuery = value.toLowerCase();
           });
         },
       ),
@@ -363,21 +432,27 @@ class _FilterPageState extends State<FilterPage> {
     List<String> items,
     Set<String> selectedSet, {
     Map<String, String>? labelMap,
+    Map<String, int?>? countMap,
+    VoidCallback? onSelectionChanged,
   }) {
     return ListView.separated(
       padding: const EdgeInsets.only(bottom: 8),
       itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 3),
       itemBuilder: (context, index) {
         final id = items[index];
         final isSelected = selectedSet.contains(id);
         final displayName = labelMap?[id] ?? id;
         return FilterOption(
           title: displayName,
+          count: countMap?[id],
           selected: isSelected,
-          onSelected: () => setState(() {
-            isSelected ? selectedSet.remove(id) : selectedSet.add(id);
-          }),
+          onSelected: () {
+            setState(() {
+              isSelected ? selectedSet.remove(id) : selectedSet.add(id);
+            });
+            onSelectionChanged?.call();
+          },
         );
       },
     );
@@ -610,8 +685,9 @@ class _FilterPageState extends State<FilterPage> {
       maxPrice = null;
       maxPriceController.text = '';
       minPriceController.text = '';
-      sortBy = '';
+      sortBy = null;
     });
+    _loadFacets();
   }
 }
 
@@ -657,11 +733,13 @@ class SidebarItem extends StatelessWidget {
 
 class FilterOption extends StatelessWidget {
   final String title;
+  final int? count;
   final bool selected;
   final VoidCallback onSelected;
 
   const FilterOption({
     required this.title,
+    this.count,
     required this.selected,
     required this.onSelected,
   });
@@ -670,6 +748,7 @@ class FilterOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return _SelectableRow(
       label: title,
+      count: count,
       selected: selected,
       isRadio: false,
       onTap: onSelected,
@@ -681,12 +760,14 @@ class FilterOption extends StatelessWidget {
 /// options (checkbox style) and sort options (radio style).
 class _SelectableRow extends StatelessWidget {
   final String label;
+  final int? count;
   final bool selected;
   final bool isRadio;
   final VoidCallback onTap;
 
   const _SelectableRow({
     required this.label,
+    this.count,
     required this.selected,
     required this.isRadio,
     required this.onTap,
@@ -696,31 +777,41 @@ class _SelectableRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withOpacity(0.06) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: selected ? AppColors.primary : _kHairline,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 label,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   color:
                       selected ? AppColors.primary : AppColors.textColor,
                 ),
               ),
             ),
+            if (count != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                constraints: const BoxConstraints(minWidth: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$count',
+                  textAlign: TextAlign.center,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(width: 8),
             _indicator(),
           ],

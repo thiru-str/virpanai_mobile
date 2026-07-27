@@ -61,11 +61,20 @@ class _ProductPageState extends State<ProductPage> {
   @override
   void initState() {
     super.initState();
+    // A category/collection/tag supplied while opening this page is already
+    // an applied product filter. Keep it in the same state used by the filter
+    // page so it is visibly preselected when the drawer opens.
+    selectedCategoriesList = _splitFilterIds(widget.categoryId);
+    selectedCollectionsList = _splitFilterIds(widget.collectionId);
+    selectedTagsList = _splitFilterIds(widget.tagId);
+    isFilterApplied = selectedCategoriesList.isNotEmpty ||
+        selectedCollectionsList.isNotEmpty ||
+        selectedTagsList.isNotEmpty;
     _loadProductViewType();
     getProductsApi(
-        categoryIds: widget.categoryId,
-        collectionIds: widget.collectionId,
-        tagIds: widget.tagId);
+        categoryIds: selectedCategoriesList.join(','),
+        collectionIds: selectedCollectionsList.join(','),
+        tagIds: selectedTagsList.join(','));
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
 
@@ -82,6 +91,12 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
+  List<String> _splitFilterIds(String ids) => ids
+      .split(',')
+      .map((id) => id.trim())
+      .where((id) => id.isNotEmpty)
+      .toList();
+
   Future<void> _loadProductViewType() async {
     final type = await SharedPreferencesUtil().getString('product_view');
     if (!mounted) return;
@@ -94,15 +109,9 @@ class _ProductPageState extends State<ProductPage> {
     isPaginating = true;
     currentPage++;
     getProductsApi(
-      categoryIds: selectedCategoriesList.isNotEmpty
-          ? selectedCategoriesList.join(',')
-          : widget.categoryId,
-      collectionIds: selectedCollectionsList.isNotEmpty
-          ? selectedCollectionsList.join(',')
-          : widget.collectionId,
-      tagIds: selectedTagsList.isNotEmpty
-          ? selectedTagsList.join(',')
-          : widget.tagId,
+      categoryIds: selectedCategoriesList.join(','),
+      collectionIds: selectedCollectionsList.join(','),
+      tagIds: selectedTagsList.join(','),
       searchString: searchController.text,
       minPrice: minPrice,
       maxPrice: maxPrice,
@@ -131,15 +140,9 @@ class _ProductPageState extends State<ProductPage> {
       final currentToken = ++_searchToken;
 
       getProductsApi(
-        categoryIds: selectedCategoriesList.isNotEmpty
-            ? selectedCategoriesList.join(',')
-            : widget.categoryId,
-        tagIds: selectedTagsList.isNotEmpty
-            ? selectedTagsList.join(',')
-            : widget.tagId,
-        collectionIds: selectedCollectionsList.isNotEmpty
-            ? selectedCollectionsList.join(',')
-            : widget.collectionId,
+        categoryIds: selectedCategoriesList.join(','),
+        tagIds: selectedTagsList.join(','),
+        collectionIds: selectedCollectionsList.join(','),
         searchString: newQuery,
         searchToken: currentToken, // Pass the token to the API call
       );
@@ -263,25 +266,17 @@ class _ProductPageState extends State<ProductPage> {
                               newCollections.isNotEmpty ||
                               newTags.isNotEmpty ||
                               (newMinPrice != null || newMaxPrice != null) ||
-                              (newSortBy != null && newSortBy != '' && newSortBy != AppStrings.low_high);
+                              (newSortBy != null && newSortBy.trim().isNotEmpty);
                         });
 
-                        final categoryIds = newCategories.isNotEmpty
-                            ? newCategories.join(',')
-                            : widget.categoryId;
+                        final categoryIds = newCategories.join(',');
                         final collectionIds = newCollections.join(',');
-                        final tagIds = newTags.isNotEmpty
-                            ? newTags.join(',')
-                            : widget.tagId;
+                        final tagIds = newTags.join(',');
 
                         getProductsApi(
-                          categoryIds: categoryIds.isNotEmpty
-                              ? categoryIds
-                              : widget.categoryId,
-                          collectionIds: collectionIds.isNotEmpty
-                              ? collectionIds
-                              : widget.collectionId,
-                          tagIds: tagIds.isNotEmpty ? tagIds : widget.tagId,
+                          categoryIds: categoryIds,
+                          collectionIds: collectionIds,
+                          tagIds: tagIds,
                           searchString: searchController.text,
                           minPrice: newMinPrice,
                           maxPrice: newMaxPrice,
