@@ -29,6 +29,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
+import 'package:waioz/model/product_filter_facets_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
@@ -116,7 +117,16 @@ class ApiService {
         },
       ));
       if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.logFullJson(response.data);
+        if (endpoint == 'store/get_home_page/v8') {
+          final payload = response.data as Map<String, dynamic>?;
+          final content = payload?['content'];
+          AppLogger.print(
+            'Home page response:',
+            'status=${payload?['status']}, components=${content is List ? content.length : 0}',
+          );
+        } else {
+          AppLogger.logFullJson(response.data);
+        }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
@@ -524,7 +534,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if (sortBy != null) {
+    if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -615,8 +625,8 @@ class ApiService {
       {
         'limit': limit,
         'offset': offset,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
         if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
       },
       (json) => HomePageResponse.fromJson(json),
@@ -1307,12 +1317,44 @@ class ApiService {
     );
   }
 
-  Future<TagsResponse> listTags(BuildContext context) async {
+  Future<TagsResponse> listTags(BuildContext context,
+      {String? categoryIds}) async {
+    final queryParams = <String, dynamic>{"fields": "id,value"};
+    final categories = (categoryIds ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (categories.isNotEmpty) {
+      queryParams['category_id[]'] = categories;
+    }
+
     return _makeGetRequest<TagsResponse>(
-      'store/product-tags',
-      '?fields=id,value',
+      categories.isEmpty ? 'store/product-tags' : 'store/product-filter-tags',
       null,
+      queryParams,
       (json) => TagsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductFilterFacetsResponse> listProductFilterFacets(
+    BuildContext context, {
+    List<String> categoryIds = const [],
+    List<String> collectionIds = const [],
+    List<String> tagIds = const [],
+  }) async {
+    final queryParams = <String, dynamic>{
+      if (categoryIds.isNotEmpty) 'category_id[]': categoryIds,
+      if (collectionIds.isNotEmpty) 'collection_id[]': collectionIds,
+      if (tagIds.isNotEmpty) 'tag_id[]': tagIds,
+    };
+
+    return _makeGetRequest<ProductFilterFacetsResponse>(
+      'store/product-filter-facets',
+      null,
+      queryParams,
+      (json) => ProductFilterFacetsResponse.fromJson(json),
       context,
     );
   }
