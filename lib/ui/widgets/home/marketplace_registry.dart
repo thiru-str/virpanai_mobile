@@ -32,6 +32,7 @@ import 'finish_a.dart';
 import 'finish_b.dart';
 import 'finish_c.dart';
 import 'finish_d.dart';
+import 'food1.dart';
 
 // Marketplace home-component registry. Maps a CMS `layout_name` to its widget
 // so the production home page renders the new components (grocery, multi-
@@ -75,6 +76,8 @@ const List<String> kMarketplaceLayouts = [
   // finishing B
   'VideoBanner1', 'TextCta1', 'CountBadgeRail1', 'SubscribeBox1', 'FaqCompact1',
   'ContactSupport1', 'FooterCta1', 'AnnouncementBar1', 'StickyOffer1', 'PromoMarquee1',
+  // food / organic (SATVA genre)
+  'Certifications1', 'NutritionFacts1', 'Recipe1', 'SubscriptionBox1', 'FarmStory1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -276,6 +279,16 @@ Widget? marketplaceHomeWidget(Content content) {
       return StickyOffer1(content: content);
     case 'PromoMarquee1':
       return PromoMarquee1(content: content);
+    case 'Certifications1':
+      return Certifications1(content: content);
+    case 'NutritionFacts1':
+      return NutritionFacts1(content: content);
+    case 'Recipe1':
+      return Recipe1(content: content);
+    case 'SubscriptionBox1':
+      return SubscriptionBox1(content: content);
+    case 'FarmStory1':
+      return FarmStory1(content: content);
     default:
       return null;
   }

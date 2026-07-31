@@ -6,6 +6,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
+import 'package:waioz/ui/widgets/home/marketplace_registry.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/banner_3_4.dart';
@@ -219,8 +220,12 @@ class _CustomPageState extends State<CustomPage> {
       "Collection10",
       "Collection11",
       "Collection12",
+      ...kMarketplaceLayouts,
     };
 
+    if (kMarketplaceNoDataLayouts.contains(content.layoutName)) {
+      return true; // copy-only components render without layoutData
+    }
     return supportedLayouts.contains(content.layoutName) &&
         (content.layoutData?.isNotEmpty ?? false);
   }
@@ -754,7 +759,7 @@ class _CustomPageState extends State<CustomPage> {
             : Collection12(content: homePageContent!);
 
       default:
-        return const SizedBox();
+        return marketplaceHomeWidget(homePageContent!) ?? const SizedBox();
     }
   }
 
