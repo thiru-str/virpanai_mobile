@@ -134,7 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             _buildProfileItem(
                               icon: Icons.favorite_border,
-                              title: AppStrings.favourites,
+                              title: favouriteListName,
                               onTap: () {
                                 PageRouteUtils.pushWithSlide(
                                     context, MyFavoritesPage());

@@ -40,6 +40,7 @@ import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
 import 'widgets/favourite_heart_button.dart';
+import 'favourite_list_detail_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -255,8 +256,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildImageSection(BuildContext context) {
     final screenH = MediaQuery.of(context).size.height;
-    final imageH = screenH * 0.50;
     final topPad = MediaQuery.of(context).padding.top;
+    // Add topPad so the visible area *below* the status bar is exactly 50% of screen height
+    final imageH = screenH * 0.50 + topPad;
 
     final variantImages = selectedVariant?.metadata?.images ?? [];
     final variantVideos = productInfoResponse?.productVideo ?? [];
@@ -286,7 +288,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       width: double.infinity,
       child: Stack(
         children: [
-          Positioned.fill(child: Container(color: AppColors.secondary)),
+          Positioned.fill(child: Container(color: Colors.white)),
 
           if (displayUrls.isNotEmpty)
             Positioned.fill(
@@ -314,7 +316,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 Image.file(videoThumbnails![url]!,
                                     width: double.infinity,
                                     height: imageH,
-                                    fit: BoxFit.cover)
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter)
                               else
                                 Container(
                                     width: double.infinity,
@@ -338,6 +341,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             width: double.infinity,
                             height: imageH,
                             fit: BoxFit.cover,
+                            alignment: Alignment.topCenter,
                             errorWidget: (_, __, ___) =>
                                 ImageFallbackWidget(h: imageH),
                           ),
@@ -348,18 +352,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           else
             Positioned.fill(child: ImageFallbackWidget(h: imageH)),
 
-          // Bottom white gradient fade
+          // Bottom gradient: semi-opaque white → transparent white
+          // Avoids the gray-midpoint artifact and is softer on dark images
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              height: 70,
+              height: 72,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Colors.white, Colors.transparent],
+                  colors: [Color(0xBBFFFFFF), Color(0x00FFFFFF)],
                 ),
               ),
             ),
@@ -447,6 +452,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 config: _favConfig,
                 initialSaved: isFavorite,
                 size: 22,
+                onViewList: (listId, listName) => PageRouteUtils.pushWithSlide(
+                  context,
+                  FavouriteListDetailPage(
+                    listId: listId,
+                    listName: listName,
+                    config: _favConfig,
+                  ),
+                ),
               ),
             ),
           ),
@@ -588,6 +601,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               config: _favConfig,
               initialSaved: isFavorite,
               size: 20,
+              onViewList: (listId, listName) => PageRouteUtils.pushWithSlide(
+                context,
+                FavouriteListDetailPage(
+                  listId: listId,
+                  listName: listName,
+                  config: _favConfig,
+                ),
+              ),
             ),
           ],
         ),
