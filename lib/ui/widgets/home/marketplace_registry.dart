@@ -34,6 +34,7 @@ import 'finish_c.dart';
 import 'finish_d.dart';
 import 'food1.dart';
 import 'supermarket1.dart';
+import 'supermarket2.dart';
 
 // Marketplace home-component registry. Maps a CMS `layout_name` to its widget
 // so the production home page renders the new components (grocery, multi-
@@ -81,6 +82,7 @@ const List<String> kMarketplaceLayouts = [
   'Certifications1', 'NutritionFacts1', 'Recipe1', 'SubscriptionBox1', 'FarmStory1',
   // supermarket / quick-commerce (FRESHKART genre) — compact cards
   'CategoryMini1', 'ProductMini1', 'DealStrip1',
+  'ProductStepper1', 'CategoryCircle1', 'CategoryPills1', 'ReorderRail1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -298,6 +300,14 @@ Widget? marketplaceHomeWidget(Content content) {
       return ProductMini1(content: content);
     case 'DealStrip1':
       return DealStrip1(content: content);
+    case 'ProductStepper1':
+      return ProductStepper1(content: content);
+    case 'CategoryCircle1':
+      return CategoryCircle1(content: content);
+    case 'CategoryPills1':
+      return CategoryPills1(content: content);
+    case 'ReorderRail1':
+      return ReorderRail1(content: content);
     default:
       return null;
   }
