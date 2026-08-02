@@ -168,7 +168,7 @@ class _Grid1Card extends StatelessWidget {
       child: Container(
         width: 150,
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA),
+          color: cmsCard(context, const Color(0xFFFAFAFA)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

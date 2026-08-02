@@ -340,8 +340,8 @@ class HomeMerchCompactCard extends StatelessWidget {
                         : onTap,
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
+                      backgroundColor: cmsAccent(context, Colors.black),
+                      foregroundColor: cmsOn(cmsAccent(context, Colors.black)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -353,7 +353,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: cmsOn(cmsAccent(context, Colors.black)),
                       ),
                     ),
                   ),

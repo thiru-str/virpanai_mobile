@@ -231,7 +231,7 @@ class _Item13Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                   letterSpacing: 0.1,
                 ),
                 maxLines: 2,
@@ -251,7 +251,7 @@ class _Item13Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),

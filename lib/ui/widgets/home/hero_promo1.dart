@@ -79,17 +79,17 @@ class SaleCountdown1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
         padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(18)),
+        decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(18)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             if ((content.layoutSubTitle ?? '').isNotEmpty)
               Text(content.layoutSubTitle!.toUpperCase(),
-                style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white70)),
+                style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cmsText(context, Colors.white70))),
             const SizedBox(height: 6),
             Text(content.layoutTitle ?? '',
-              style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+              style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -101,11 +101,11 @@ class SaleCountdown1 extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
                         child: Text(parts[i],
-                          style: FontUtils.primaryFontStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                          style: FontUtils.primaryFontStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
                       ),
                       const SizedBox(height: 4),
                       Text(labels[i],
-                        style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w600, color: Colors.white54)),
+                        style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w600, color: cmsText(context, Colors.white54))),
                     ],
                   ),
                   if (i != 3) const SizedBox(width: 10),

@@ -191,13 +191,13 @@ class _MiniProductCard extends StatelessWidget {
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: kGrocery),
+                            border: Border.all(color: cmsAccent(context, kGrocery)),
                           ),
                           child: Text('ADD',
                               style: FontUtils.primaryFontStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,
-                                  color: kGrocery)),
+                                  color: cmsAccent(context, kGrocery))),
                         ),
                       ]),
                 ]),

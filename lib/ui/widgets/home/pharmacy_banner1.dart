@@ -62,13 +62,13 @@ class PharmacyBanner1 extends StatelessWidget {
               height: 34,
               padding: const EdgeInsets.symmetric(horizontal: 14),
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: _teal, borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: cmsAccent(context, _teal), borderRadius: BorderRadius.circular(10)),
               child: Text(
                 content.layoutRedirectTitle?.isNotEmpty == true
                     ? content.layoutRedirectTitle!
                     : 'Upload',
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                  fontSize: 12, fontWeight: FontWeight.w700, color: cmsOn(cmsAccent(context, _teal))),
               ),
             ),
           ],

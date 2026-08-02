@@ -137,7 +137,7 @@ class _Item6Card extends StatelessWidget {
         width: 220, // similar to item5 width
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.secondary,
+          color: cmsCard(context, AppColors.secondary),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

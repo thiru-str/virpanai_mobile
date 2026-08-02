@@ -60,13 +60,13 @@ class TestimonialBig1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(20)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          const Icon(Icons.format_quote, color: Colors.white24, size: 36),
+          Icon(Icons.format_quote, color: cmsText(context, Colors.white24), size: 36),
           const SizedBox(height: 10),
           Text('"${r?.featureText ?? 'Hands-down the best purchase I have made all year. The craftsmanship is unreal.'}"',
             textAlign: TextAlign.center,
-            style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+            style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cmsText(context, Colors.white))),
           const SizedBox(height: 14),
           Builder(builder: (_) {
             final stars = (r?.rating ?? 5).clamp(0, 5).round();
@@ -78,9 +78,9 @@ class TestimonialBig1 extends StatelessWidget {
           }),
           const SizedBox(height: 10),
           Text(r?.title ?? 'Ananya R.',
-            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsText(context, Colors.white))),
           Text('Verified buyer',
-            style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: Colors.white54)),
+            style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white54))),
         ]),
       ),
     );
@@ -99,13 +99,13 @@ class StatBand1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(20)),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
           for (final item in items) Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(item.title ?? '', style: FontUtils.primaryFontStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
+            Text(item.title ?? '', style: FontUtils.primaryFontStyle(fontSize: 26, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
             const SizedBox(height: 2),
             Text((item.featureText ?? '').trim().isNotEmpty ? item.featureText!.trim() : (item.subTitle ?? ''),
-              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: Colors.white60)),
+              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white60))),
           ]),
         ]),
       ),

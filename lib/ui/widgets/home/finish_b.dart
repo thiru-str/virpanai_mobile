@@ -84,7 +84,7 @@ class GiftBanner1 extends StatelessWidget {
         ])),
         Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
           decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(10)),
-          child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Gift now', style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFFD6336C)))),
+          child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Gift now', style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsCardText(context, const Color(0xFFD6336C))))),
       ]),
     ),
   );

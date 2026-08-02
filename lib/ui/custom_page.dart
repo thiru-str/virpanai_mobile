@@ -305,6 +305,9 @@ class _CustomPageState extends State<CustomPage> {
                                                 cardColor: parseCmsColor(
                                                     homePageContent
                                                         .layoutCardColor),
+                                                accent: parseCmsColor(
+                                                    homePageContent
+                                                        .layoutPrimaryColor),
                                                 child: getLayoutWidget(
                                                     homePageContent),
                                               );

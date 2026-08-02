@@ -11,18 +11,26 @@ import 'package:flutter/widgets.dart';
 class CmsTextColor extends InheritedWidget {
   final Color? color; // Text Color (layout_secondary_color) — section-bg text
   final Color? cardColor; // Card Background (layout_card_color) — card surfaces
+  final Color? accent; // Primary Color (layout_primary_color) — CTAs/buttons
   const CmsTextColor(
-      {super.key, required this.color, this.cardColor, required super.child});
+      {super.key,
+      required this.color,
+      this.cardColor,
+      this.accent,
+      required super.child});
 
   static CmsTextColor? _of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<CmsTextColor>();
 
   static Color? of(BuildContext context) => _of(context)?.color;
   static Color? cardOf(BuildContext context) => _of(context)?.cardColor;
+  static Color? accentOf(BuildContext context) => _of(context)?.accent;
 
   @override
   bool updateShouldNotify(CmsTextColor oldWidget) =>
-      oldWidget.color != color || oldWidget.cardColor != cardColor;
+      oldWidget.color != color ||
+      oldWidget.cardColor != cardColor ||
+      oldWidget.accent != accent;
 }
 
 // Colour for text that sits on the SECTION background (titles, descriptions,
@@ -41,6 +49,25 @@ Color cmsCardText(BuildContext context, Color fallback) {
   if (CmsTextColor.cardOf(context) == null) return fallback;
   return CmsTextColor.of(context) ?? fallback;
 }
+
+// Solid CTA / button FILL: the Primary Color cascade if set, else the widget's
+// own fallback. Pair with cmsOn(...) for a contrast-correct label colour.
+Color cmsAccent(BuildContext context, Color fallback) =>
+    CmsTextColor.accentOf(context) ?? fallback;
+
+// A DARK panel/island background: Card Background if set, else a dark fallback.
+// Text inside such a panel should use cmsText(context, Colors.white) so it
+// follows Text Color but defaults to white on the dark surface.
+Color cmsPanel(BuildContext context, Color fallback) =>
+    CmsTextColor.cardOf(context) ?? fallback;
+
+// True when a colour is light enough to need a dark label on top of it.
+bool cmsIsLight(Color c) =>
+    (0.2126 * c.red + 0.7152 * c.green + 0.0722 * c.blue) / 255 > 0.6;
+
+// Contrast-correct label colour for text/icons sitting ON a filled button.
+Color cmsOn(Color background) =>
+    cmsIsLight(background) ? const Color(0xFF0B0B0B) : const Color(0xFFFFFFFF);
 
 // Parse a hex ("#rrggbb"/"#rgb") or rgb()/rgba() string into a Color. Returns
 // null for empty/gradient/unparseable values (so the default colour is used).

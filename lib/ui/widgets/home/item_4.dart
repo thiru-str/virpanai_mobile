@@ -131,7 +131,7 @@ class _Item4Card extends StatelessWidget {
       child: Container(
         width: 160,
         decoration: BoxDecoration(
-          color: AppColors.secondary,
+          color: cmsCard(context, AppColors.secondary),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

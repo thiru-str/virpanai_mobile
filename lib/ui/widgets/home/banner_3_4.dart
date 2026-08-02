@@ -86,7 +86,7 @@ class _BannerGridSection extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
-                  color: const Color(0xFF6B6B6B),
+                  color: cmsCardText(context, const Color(0xFF6B6B6B)),
                 ),
               ),
             ],

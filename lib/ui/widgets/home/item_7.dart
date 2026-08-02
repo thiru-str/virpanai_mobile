@@ -133,7 +133,7 @@ class _Item7Card extends StatelessWidget {
     return Container(
       width: 150, // You can also make this dynamic if needed
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: cmsCard(context, AppColors.secondary),
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(12),

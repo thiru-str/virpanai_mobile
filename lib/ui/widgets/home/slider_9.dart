@@ -249,8 +249,8 @@ class _Slider9Card extends StatelessWidget {
                               },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
+                          backgroundColor: cmsAccent(context, Colors.black),
+                          foregroundColor: cmsOn(cmsAccent(context, Colors.black)),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           minimumSize: const Size(68, 38),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -263,7 +263,7 @@ class _Slider9Card extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: cmsOn(cmsAccent(context, Colors.black)),
                           ),
                         ),
                       ),

@@ -441,6 +441,7 @@ class _HomePageState extends State<HomePage> {
             child: CmsTextColor(
               color: parseCmsColor(homePageContent.layoutSecondaryColor),
               cardColor: parseCmsColor(homePageContent.layoutCardColor),
+              accent: parseCmsColor(homePageContent.layoutPrimaryColor),
               child: getLayoutWidget(homePageContent),
             ),
           );

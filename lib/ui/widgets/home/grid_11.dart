@@ -32,7 +32,7 @@ class Grid11 extends StatelessWidget {
                   fit: BoxFit.fill,
                 )
               : null,
-          color: bgImage.isEmpty ? const Color(0xFFE7E9F3) : null,
+          color: bgImage.isEmpty ? cmsCard(context, const Color(0xFFE7E9F3)) : null,
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 148, 16, 20),

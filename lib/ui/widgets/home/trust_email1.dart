@@ -63,7 +63,7 @@ class EmailCapture1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(18)),
+        decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(18)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -74,11 +74,11 @@ class EmailCapture1 extends StatelessWidget {
               child: const Icon(Icons.mail_outline, color: Colors.white, size: 22)),
             const SizedBox(height: 12),
             Text(content.layoutTitle ?? '', textAlign: TextAlign.center,
-              style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+              style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
             const SizedBox(height: 6),
             if ((content.layoutSubTitle ?? '').isNotEmpty)
               Text(content.layoutSubTitle!, textAlign: TextAlign.center,
-                style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white70)),
+                style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white70))),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -87,7 +87,7 @@ class EmailCapture1 extends StatelessWidget {
                     height: 42, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.centerLeft,
                     decoration: BoxDecoration(color: Colors.white.withOpacity(0.10), borderRadius: BorderRadius.circular(12)),
                     child: Text('Enter your email',
-                      style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white54)),
+                      style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white54))),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -95,7 +95,7 @@ class EmailCapture1 extends StatelessWidget {
                   height: 42, padding: const EdgeInsets.symmetric(horizontal: 18), alignment: Alignment.center,
                   decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(12)),
                   child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Subscribe',
-                    style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kInk)),
+                    style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, kInk))),
                 ),
               ],
             ),

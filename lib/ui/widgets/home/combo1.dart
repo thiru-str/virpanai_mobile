@@ -78,13 +78,13 @@ class Combo1 extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: kFresh, borderRadius: BorderRadius.circular(10)),
+                        color: cmsAccent(context, kFresh), borderRadius: BorderRadius.circular(10)),
                       child: Text(
                         content.layoutRedirectTitle?.isNotEmpty == true
                             ? content.layoutRedirectTitle!
                             : 'Add combo',
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                          fontSize: 12, fontWeight: FontWeight.w700, color: cmsOn(cmsAccent(context, kFresh))),
                       ),
                     ),
                   ],

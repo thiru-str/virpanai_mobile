@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
 import '../../../utility/font_utils.dart';
+import 'cms_text_color.dart';
 
 // Shared helpers for the reusable product-card components (product_cards1.dart).
 const Color kAccentInk = Color(0xFF0B0B0B);
@@ -44,36 +45,36 @@ class AddStepper extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(9),
-            border: Border.all(color: accent),
+            border: Border.all(color: cmsAccent(context, accent)),
           ),
           child: Text('ADD',
               style: FontUtils.primaryFontStyle(
-                  fontSize: 11, fontWeight: FontWeight.w800, color: accent)),
+                  fontSize: 11, fontWeight: FontWeight.w800, color: cmsAccent(context, accent))),
         ),
       );
     }
     return Container(
       decoration:
-          BoxDecoration(color: accent, borderRadius: BorderRadius.circular(9)),
+          BoxDecoration(color: cmsAccent(context, accent), borderRadius: BorderRadius.circular(9)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        _btn(Icons.remove, onDec),
+        _btn(context, Icons.remove, onDec),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text('$count',
               style: FontUtils.primaryFontStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white)),
+                  color: cmsOn(cmsAccent(context, accent)))),
         ),
-        _btn(Icons.add, onInc),
+        _btn(context, Icons.add, onInc),
       ]),
     );
   }
 
-  Widget _btn(IconData icon, VoidCallback onTap) => GestureDetector(
+  Widget _btn(BuildContext context, IconData icon, VoidCallback onTap) => GestureDetector(
       onTap: onTap,
       child: SizedBox(
-          height: 28, width: 26, child: Icon(icon, size: 15, color: Colors.white)));
+          height: 28, width: 26, child: Icon(icon, size: 15, color: cmsOn(cmsAccent(context, accent)))));
 }
 
 // A tiny reusable ★ rating chip.

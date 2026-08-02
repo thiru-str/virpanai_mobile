@@ -24,9 +24,9 @@ class MinimalHero1 extends StatelessWidget {
         style: FontUtils.primaryFontStyle(fontSize: 30, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
       const SizedBox(height: 16),
       Container(height: 44, padding: const EdgeInsets.symmetric(horizontal: 28), alignment: Alignment.center,
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(22)),
+        decoration: BoxDecoration(color: cmsAccent(context, kInk), borderRadius: BorderRadius.circular(22)),
         child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Discover',
-          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white))),
+          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsOn(cmsAccent(context, kInk))))),
     ]),
   );
 }

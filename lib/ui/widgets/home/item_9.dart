@@ -273,7 +273,7 @@ class _Item9Card extends StatelessWidget {
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _qtyButton(Icons.remove, () {
+                      _qtyButton(context, Icons.remove, () {
                         if (cartQty > 0) {
                           onCartQtyChanged?.call(-1, variantId);
                         }
@@ -285,7 +285,7 @@ class _Item9Card extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      _qtyButton(Icons.add, () {
+                      _qtyButton(context, Icons.add, () {
                         onCartQtyChanged?.call(1, variantId);
                       }),
                     ],
@@ -312,14 +312,14 @@ class _Item9Card extends StatelessWidget {
     );
   }
 
-  Widget _qtyButton(IconData icon, VoidCallback onPressed) {
+  Widget _qtyButton(BuildContext context, IconData icon, VoidCallback onPressed) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: cmsAccent(context, AppColors.primary),
         borderRadius: BorderRadius.circular(6),
       ),
       child: IconButton(
-        color: Colors.white,
+        color: cmsOn(cmsAccent(context, AppColors.primary)),
         icon: Icon(icon, size: 16),
         onPressed: onPressed,
         padding: const EdgeInsets.all(4),

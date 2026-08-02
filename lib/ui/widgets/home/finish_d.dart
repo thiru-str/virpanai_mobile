@@ -38,10 +38,10 @@ class FooterCta1 extends StatelessWidget {
     decoration: AppUtils.buildLayoutBackground(content),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     child: Container(padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(20)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Text(content.layoutTitle ?? 'Shop Anytime, Anywhere', textAlign: TextAlign.center,
-          style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+          style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
         const SizedBox(height: 14),
         Container(height: 42, padding: const EdgeInsets.symmetric(horizontal: 26), alignment: Alignment.center,
           decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(22)),
@@ -50,7 +50,7 @@ class FooterCta1 extends StatelessWidget {
         const SizedBox(height: 16),
         Wrap(spacing: 16, runSpacing: 8, alignment: WrapAlignment.center, children: [
           for (final l in ['About', 'Contact', 'Returns', 'Privacy', 'Terms'])
-            Text(l, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white60)),
+            Text(l, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w500, color: cmsText(context, Colors.white60))),
         ]),
       ]),
     ),
@@ -63,10 +63,10 @@ class AnnouncementBar1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     decoration: AppUtils.buildLayoutBackground(content),
-    child: Container(width: double.infinity, color: kInk,
+    child: Container(width: double.infinity, color: cmsPanel(context, kInk),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Text(content.layoutTitle ?? 'Free shipping on orders over Rs 499  •  Shop now',
-        textAlign: TextAlign.center, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white))),
+        textAlign: TextAlign.center, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cmsText(context, Colors.white)))),
   );
 }
 
@@ -88,8 +88,8 @@ class StickyOffer1 extends StatelessWidget {
         Expanded(child: Text(content.layoutTitle ?? 'Extra 10% off — code WELCOME10', maxLines: 1, overflow: TextOverflow.ellipsis,
           style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor)))),
         Container(height: 32, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
-          decoration: BoxDecoration(color: kFresh, borderRadius: BorderRadius.circular(16)),
-          child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Apply', style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white))),
+          decoration: BoxDecoration(color: cmsAccent(context, kFresh), borderRadius: BorderRadius.circular(16)),
+          child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Apply', style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsOn(cmsAccent(context, kFresh))))),
       ]),
     ),
   );

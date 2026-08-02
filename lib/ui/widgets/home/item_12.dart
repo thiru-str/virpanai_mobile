@@ -187,9 +187,9 @@ class _Item12Card extends StatelessWidget {
                       backgroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                       foregroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.primary),
+                      MaterialStateProperty.all<Color>(cmsAccent(context, AppColors.primary)),
                       side: MaterialStateProperty.all<BorderSide>(
-                          BorderSide(color: AppColors.primary, width: 1)),
+                          BorderSide(color: cmsAccent(context, AppColors.primary), width: 1)),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
@@ -206,7 +206,7 @@ class _Item12Card extends StatelessWidget {
                     child: Text(
                       "ADD",
                       style: FontUtils.primaryFontStyle(
-                        color: AppColors.primary,
+                        color: cmsAccent(context, AppColors.primary),
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -230,7 +230,7 @@ class _Item12Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -241,7 +241,7 @@ class _Item12Card extends StatelessWidget {
                       ),
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: cmsCardText(context, Colors.grey),
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -273,7 +273,7 @@ class _Item12Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

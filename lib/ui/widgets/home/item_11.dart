@@ -241,7 +241,7 @@ class _Item11CardState extends State<_Item11Card> {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -255,7 +255,7 @@ class _Item11CardState extends State<_Item11Card> {
                 data.subTitle ?? '',
                 style: FontUtils.secondaryFontStyle(
                   fontSize: 11,
-                  color: Colors.black54,
+                  color: cmsCardText(context, Colors.black54),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -272,7 +272,7 @@ class _Item11CardState extends State<_Item11Card> {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   if (hasDiscount)
@@ -303,14 +303,14 @@ class _Item11CardState extends State<_Item11Card> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    side: BorderSide(color: AppColors.primary),
+                    side: BorderSide(color: cmsAccent(context, AppColors.primary)),
                   ),
                   child: Text(
                     "Add To Cart",
                     style: FontUtils.primaryFontStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: cmsAccent(context, AppColors.primary),
                     ),
                   ),
                 ),

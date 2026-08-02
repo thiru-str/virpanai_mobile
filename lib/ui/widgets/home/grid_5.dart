@@ -54,7 +54,7 @@ class Grid5 extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF7B7B7B),
+                          color: cmsText(context, const Color(0xFF7B7B7B)),
                         ),
                       ),
                     ],
@@ -87,7 +87,7 @@ class Grid5 extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFE1E4ED),
+                color: cmsCard(context, const Color(0xFFE1E4ED)),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: GridView.builder(

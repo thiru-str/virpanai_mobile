@@ -29,24 +29,24 @@ class _AddStepper extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: _kGrocery),
+            border: Border.all(color: cmsAccent(context, _kGrocery)),
           ),
           child: Text('ADD',
               style: FontUtils.primaryFontStyle(
-                  fontSize: 10, fontWeight: FontWeight.w800, color: _kGrocery)),
+                  fontSize: 10, fontWeight: FontWeight.w800, color: cmsAccent(context, _kGrocery))),
         ),
       );
     }
     return Container(
       decoration:
-          BoxDecoration(color: _kGrocery, borderRadius: BorderRadius.circular(8)),
+          BoxDecoration(color: cmsAccent(context, _kGrocery), borderRadius: BorderRadius.circular(8)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         _stepBtn(Icons.remove, onDec),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text('$count',
               style: FontUtils.primaryFontStyle(
-                  fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
+                  fontSize: 12, fontWeight: FontWeight.w800, color: cmsOn(cmsAccent(context, _kGrocery)))),
         ),
         _stepBtn(Icons.add, onInc),
       ]),
@@ -394,7 +394,7 @@ class CategoryPills1 extends StatelessWidget {
             itemBuilder: (context, i) => Container(
               padding: const EdgeInsets.only(left: 4, right: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cmsCard(context, Colors.white),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: _kBorder),
               ),
@@ -412,7 +412,7 @@ class CategoryPills1 extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textColor)),
+                        color: cmsCardText(context, AppColors.textColor))),
               ]),
             ),
           ),

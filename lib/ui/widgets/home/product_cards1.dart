@@ -44,7 +44,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
   Widget build(BuildContext context) {
     final items = (widget.content.layoutData ?? []).take(8).toList();
     if (items.isEmpty) return const SizedBox.shrink();
-    final accent = AppColors.textColor;
+    final accent = cmsAccent(context, AppColors.textColor);
     return Container(
       decoration: AppUtils.buildLayoutBackground(widget.content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -173,7 +173,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
   Widget build(BuildContext context) {
     final items = (widget.content.layoutData ?? []).take(5).toList();
     if (items.isEmpty) return const SizedBox.shrink();
-    final accent = AppColors.textColor;
+    final accent = cmsAccent(context, AppColors.textColor);
     final hero = items.first;
     final rest = items.skip(1).take(4).toList();
     return Container(
@@ -324,7 +324,7 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
   Widget build(BuildContext context) {
     final items = (widget.content.layoutData ?? []).take(10).toList();
     if (items.isEmpty) return const SizedBox.shrink();
-    final accent = AppColors.textColor;
+    final accent = cmsAccent(context, AppColors.textColor);
     return Container(
       decoration: AppUtils.buildLayoutBackground(widget.content),
       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -399,15 +399,13 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                                                         fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.w800,
-                                                        color: AppColors
-                                                            .textColor)),
+                                                        color: cmsCardText(context, AppColors.textColor))),
                                             if (hasDiscount)
                                               Text(_price(original),
                                                   style: FontUtils
                                                       .primaryFontStyle(
                                                           fontSize: 10,
-                                                          color: AppColors
-                                                              .textColor50,
+                                                          color: cmsCardText(context, AppColors.textColor50),
                                                           decoration:
                                                               TextDecoration
                                                                   .lineThrough)),
@@ -459,7 +457,7 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
   Widget build(BuildContext context) {
     final items = (widget.content.layoutData ?? []).take(8).toList();
     if (items.isEmpty) return const SizedBox.shrink();
-    final accent = AppColors.textColor;
+    final accent = cmsAccent(context, AppColors.textColor);
     return Container(
       decoration: AppUtils.buildLayoutBackground(widget.content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -551,15 +549,13 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
                                                       fontSize: 12,
                                                       fontWeight:
                                                           FontWeight.w800,
-                                                      color: AppColors
-                                                          .textColor)),
+                                                      color: cmsCardText(context, AppColors.textColor))),
                                           if (hasDiscount)
                                             Text(_price(original),
                                                 style: FontUtils
                                                     .primaryFontStyle(
                                                         fontSize: 9,
-                                                        color: AppColors
-                                                            .textColor50,
+                                                        color: cmsCardText(context, AppColors.textColor50),
                                                         decoration:
                                                             TextDecoration
                                                                 .lineThrough)),

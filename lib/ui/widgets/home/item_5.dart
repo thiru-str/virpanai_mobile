@@ -144,7 +144,7 @@ class _Item5Card extends StatelessWidget {
       child: Container(
         width: 200,
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.05),
+          color: cmsCard(context, AppColors.primary.withOpacity(0.05)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

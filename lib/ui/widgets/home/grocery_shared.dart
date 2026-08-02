@@ -27,14 +27,14 @@ class GroceryAddButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: kFresh.withOpacity(0.10),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: kFresh.withOpacity(0.35)),
+        border: Border.all(color: cmsAccent(context, kFresh.withOpacity(0.35))),
       ),
       child: Text(
         'ADD',
         style: FontUtils.primaryFontStyle(
           fontSize: compact ? 11 : 12,
           fontWeight: FontWeight.w700,
-          color: kFresh,
+          color: cmsAccent(context, kFresh),
         ),
       ),
     );

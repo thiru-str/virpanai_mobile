@@ -141,7 +141,7 @@ class _Item14Card extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 180,
-        color: AppColors.secondary,
+        color: cmsCard(context, AppColors.secondary),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -178,7 +178,7 @@ class _Item14Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -200,7 +200,7 @@ class _Item14Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -209,7 +209,7 @@ class _Item14Card extends StatelessWidget {
                       CurrencyUtil.appendCurrency(original.toStringAsFixed(0)),
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 12,
-                        color: Colors.grey,
+                        color: cmsCardText(context, Colors.grey),
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),

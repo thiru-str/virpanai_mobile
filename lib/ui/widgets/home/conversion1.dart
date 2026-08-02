@@ -18,7 +18,7 @@ class Loyalty1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
         padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(18)),
+        decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(18)),
         child: Row(children: [
           Container(height: 46, width: 46,
             decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
@@ -26,11 +26,11 @@ class Loyalty1 extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Text(content.layoutTitle ?? 'Earn Points on Every Order',
-              style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+              style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
             const SizedBox(height: 2),
             Text(content.layoutSubTitle ?? 'Unlock perks & birthday treats',
               maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white70)),
+              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white70))),
           ])),
           const SizedBox(width: 10),
           Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
@@ -71,9 +71,9 @@ class Referral1 extends StatelessWidget {
           ])),
           const SizedBox(width: 10),
           Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
-            decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: cmsAccent(context, kInk), borderRadius: BorderRadius.circular(10)),
             child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Invite',
-              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white))),
+              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsOn(cmsAccent(context, kInk))))),
         ]),
       ),
     );

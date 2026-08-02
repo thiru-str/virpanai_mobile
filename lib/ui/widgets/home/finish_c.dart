@@ -58,9 +58,9 @@ class TextCta1 extends StatelessWidget {
         style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
       const SizedBox(height: 16),
       Container(height: 44, padding: const EdgeInsets.symmetric(horizontal: 28), alignment: Alignment.center,
-        decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(22)),
+        decoration: BoxDecoration(color: cmsAccent(context, kInk), borderRadius: BorderRadius.circular(22)),
         child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Get started',
-          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white))),
+          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsOn(cmsAccent(context, kInk))))),
     ]),
   );
 }
@@ -96,15 +96,15 @@ class SubscribeBox1 extends StatelessWidget {
     decoration: AppUtils.buildLayoutBackground(content),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     child: Container(padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(18)),
+      decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(18)),
       child: Row(children: [
         Container(height: 48, width: 48, decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
           child: const Icon(Icons.autorenew, color: Colors.white, size: 26)),
         const SizedBox(width: 14),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text(content.layoutTitle ?? 'Subscribe & Save 15%', style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+          Text(content.layoutTitle ?? 'Subscribe & Save 15%', style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
           const SizedBox(height: 2),
-          Text(content.layoutSubTitle ?? 'Never run out of your essentials', maxLines: 2, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white70)),
+          Text(content.layoutSubTitle ?? 'Never run out of your essentials', maxLines: 2, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white70))),
         ])),
         const SizedBox(width: 8),
         Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,

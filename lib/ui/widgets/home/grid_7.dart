@@ -29,7 +29,7 @@ class Grid7 extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F1F8),
+            color: cmsCard(context, const Color(0xFFF0F1F8)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
