@@ -7,6 +7,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Banner1 extends StatelessWidget {
   final Content content;
@@ -41,7 +42,7 @@ class Banner1 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -68,7 +69,7 @@ class Banner1 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -162,7 +163,7 @@ class _Banner1Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ],

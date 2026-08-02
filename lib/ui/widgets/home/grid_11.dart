@@ -5,6 +5,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Grid11 extends StatelessWidget {
   final Content content;
@@ -116,7 +117,7 @@ class _Grid11Item extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),

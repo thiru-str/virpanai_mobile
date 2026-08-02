@@ -6,6 +6,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // SplitHero1 — split hero: image beside a content panel.
 class SplitHero1 extends StatelessWidget {
@@ -17,7 +18,7 @@ class SplitHero1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(20),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Expanded(child: ClipRRect(
@@ -28,10 +29,10 @@ class SplitHero1 extends StatelessWidget {
             mainAxisSize: MainAxisSize.min, children: [
               if ((content.layoutSubTitle ?? '').isNotEmpty)
                 Text(content.layoutSubTitle!.toUpperCase(),
-                  style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textColor50)),
+                  style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor50))),
               const SizedBox(height: 6),
               Text(content.layoutTitle ?? '', maxLines: 3, overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
               const SizedBox(height: 12),
               Container(height: 36, padding: const EdgeInsets.symmetric(horizontal: 16), alignment: Alignment.center,
                 decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(10)),
@@ -57,7 +58,7 @@ class ProductSpotlight1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(20),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -69,14 +70,14 @@ class ProductSpotlight1 extends StatelessWidget {
                 child: Text((content.layoutSubTitle ?? 'FEATURED').toUpperCase(),
                   style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w800, color: kFresh))),
               const SizedBox(height: 8),
-              Text(hero.title ?? '', style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              Text(hero.title ?? '', style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
               const SizedBox(height: 6),
               Text(merchSubtitle(hero).isEmpty ? 'Crafted to last, designed for every day.' : merchSubtitle(hero),
-                maxLines: 2, style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                maxLines: 2, style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
               const SizedBox(height: 12),
               Row(children: [
                 Text(CurrencyUtil.appendCurrency(merchSellingPrice(hero)),
-                  style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                  style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                 const Spacer(),
                 Container(height: 40, padding: const EdgeInsets.symmetric(horizontal: 22), alignment: Alignment.center,
                   decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(12)),

@@ -7,6 +7,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // RestaurantOffers1 — restaurant offer cards rail (offer ribbon + cuisine/rating).
 class RestaurantOffers1 extends StatelessWidget {
@@ -39,14 +40,14 @@ class RestaurantOffers1 extends StatelessWidget {
             ])),
             const SizedBox(height: 8),
             Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
             const SizedBox(height: 2),
             Row(children: [
               const Icon(Icons.star, size: 12, color: Color(0xFF1BA672)),
               const SizedBox(width: 3),
               Text('${merchRating(items[i]).isEmpty ? '4.3' : merchRating(items[i])}  ·  ${items[i].featureText ?? 'North Indian'}',
                 maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textColor50)),
+                style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cmsCardText(context, AppColors.textColor50))),
             ]),
           ]))),
         ),
@@ -109,7 +110,7 @@ class PharmacyCategories1 extends StatelessWidget {
               child: Icon(_icons[i % _icons.length], color: _teal, size: 26)),
             const SizedBox(height: 6),
             Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor))),
           ]),
         ),
       ]),
@@ -134,7 +135,7 @@ class BeautyShades1 extends StatelessWidget {
         HomeMerchSectionHeader(title: content.layoutTitle ?? '', subtitle: content.layoutSubTitle ?? ''),
         const SizedBox(height: 12),
         Container(padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+          decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
             border: Border.all(color: kInk.withOpacity(0.08))),
           child: Row(children: [
             ClipRRect(borderRadius: BorderRadius.circular(12),
@@ -142,7 +143,7 @@ class BeautyShades1 extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
               Text(hero.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
               const SizedBox(height: 6),
               Row(children: [
                 for (int i = 0; i < _shades.length; i++)
@@ -154,7 +155,7 @@ class BeautyShades1 extends StatelessWidget {
               const SizedBox(height: 10),
               Row(children: [
                 Text(CurrencyUtil.appendCurrency(merchSellingPrice(hero)),
-                  style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                  style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                 const Spacer(),
                 Container(height: 32, padding: const EdgeInsets.symmetric(horizontal: 16), alignment: Alignment.center,
                   decoration: BoxDecoration(color: const Color(0xFFD6336C), borderRadius: BorderRadius.circular(10)),

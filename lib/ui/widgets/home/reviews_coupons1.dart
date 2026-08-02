@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Reviews1 — customer review cards rail.
 class Reviews1 extends StatelessWidget {
@@ -38,7 +39,7 @@ class Reviews1 extends StatelessWidget {
                   width: 260,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white, borderRadius: BorderRadius.circular(16),
+                    color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: kInk.withOpacity(0.08))),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +52,7 @@ class Reviews1 extends StatelessWidget {
                       Expanded(
                         child: Text('"${r.featureText ?? ''}"',
                           maxLines: 3, overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textColor)),
+                          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w500, color: cmsCardText(context, AppColors.textColor))),
                       ),
                       const SizedBox(height: 8),
                       Row(children: [
@@ -65,9 +66,9 @@ class Reviews1 extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(r.title ?? '',
-                              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+                              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
                             Text('Verified buyer',
-                              style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                              style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
                           ],
                         ),
                       ]),
@@ -114,7 +115,7 @@ class CouponRow1 extends StatelessWidget {
                   width: 240,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white, borderRadius: BorderRadius.circular(14),
+                    color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: kFresh.withOpacity(0.35), width: 1.5, style: BorderStyle.solid)),
                   child: Row(
                     children: [
@@ -125,11 +126,11 @@ class CouponRow1 extends StatelessWidget {
                           children: [
                             Text(c.salesText ?? 'FLAT 20% OFF',
                               maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                              style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                             const SizedBox(height: 2),
                             Text(c.featureText ?? 'On your order',
                               maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
                           ],
                         ),
                       ),

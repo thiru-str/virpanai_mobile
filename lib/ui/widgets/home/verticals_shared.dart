@@ -6,6 +6,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Shared building blocks for the multi-vertical component family
 // (electronics, food, pharmacy, beauty, home) so a single storefront can mix
@@ -42,7 +43,7 @@ class VerticalTile extends StatelessWidget {
             height: 40,
             width: 40,
             decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: Colors.white, size: 22),
+            child: Icon(icon, color: cmsCard(context, Colors.white), size: 22),
           ),
           const SizedBox(height: 10),
           Text(
@@ -50,7 +51,7 @@ class VerticalTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: FontUtils.primaryFontStyle(
-              fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textColor),
+              fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor)),
           ),
           if (subLabel.isNotEmpty) ...[
             const SizedBox(height: 2),
@@ -87,7 +88,7 @@ class RestaurantTile extends StatelessWidget {
       width: width,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08)),
         ),
@@ -126,7 +127,7 @@ class RestaurantTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textColor),
+                      fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor)),
                   ),
                 ),
               ],
@@ -162,7 +163,7 @@ class RestaurantTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textColor),
+                      fontSize: 13, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor)),
                   ),
                 ),
                 const SizedBox(width: 6),

@@ -7,6 +7,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 class MinimalHero1 extends StatelessWidget {
   final Content content;
@@ -17,10 +18,10 @@ class MinimalHero1 extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
     child: Column(children: [
       if ((content.layoutSubTitle ?? '').isNotEmpty)
-        Text(content.layoutSubTitle!.toUpperCase(), style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textColor50)),
+        Text(content.layoutSubTitle!.toUpperCase(), style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor50))),
       const SizedBox(height: 10),
       Text(content.layoutTitle ?? 'Timeless. Effortless.', textAlign: TextAlign.center,
-        style: FontUtils.primaryFontStyle(fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+        style: FontUtils.primaryFontStyle(fontSize: 30, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
       const SizedBox(height: 16),
       Container(height: 44, padding: const EdgeInsets.symmetric(horizontal: 28), alignment: Alignment.center,
         decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(22)),
@@ -42,13 +43,13 @@ class IconActionNav1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: kInk.withOpacity(0.08))),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16), border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
           for (int i = 0; i < items.length; i++) Column(mainAxisSize: MainAxisSize.min, children: [
             Container(height: 44, width: 44, decoration: BoxDecoration(color: kInk.withOpacity(0.05), borderRadius: BorderRadius.circular(14)),
               child: Icon(_ic[i % _ic.length], color: kInk, size: 22)),
             const SizedBox(height: 6),
-            Text(items[i].title ?? '', style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor)),
+            Text(items[i].title ?? '', style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor))),
           ]),
         ]),
       ),
@@ -68,7 +69,7 @@ class WideProductCard1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: kInk.withOpacity(0.08))),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(18), border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(children: [
           ClipRRect(borderRadius: BorderRadius.circular(14), child: const SizedBox(height: 104, width: 104, child: ImageFallbackWidget(fit: BoxFit.cover))),
           const SizedBox(width: 14),
@@ -76,11 +77,11 @@ class WideProductCard1 extends StatelessWidget {
             if ((content.layoutSubTitle ?? '').isNotEmpty)
               Text(content.layoutSubTitle!.toUpperCase(), style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w800, color: kFresh)),
             const SizedBox(height: 4),
-            Text(h.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor)),
-            Text(merchSubtitle(h), maxLines: 1, overflow: TextOverflow.ellipsis, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+            Text(h.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
+            Text(merchSubtitle(h), maxLines: 1, overflow: TextOverflow.ellipsis, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
             const SizedBox(height: 8),
             Row(children: [
-              Text(CurrencyUtil.appendCurrency(merchSellingPrice(h)), style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              Text(CurrencyUtil.appendCurrency(merchSellingPrice(h)), style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
               const Spacer(),
               const GroceryAddButton(),
             ]),
@@ -113,7 +114,7 @@ class CircleCategoryRail1 extends StatelessWidget {
             ClipOval(child: SizedBox(height: 64, width: 64, child: Container(color: AppColors.secondary, child: const ImageFallbackWidget(fit: BoxFit.cover)))),
             const SizedBox(height: 6),
             Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor))),
           ]))),
         ),
       ]),

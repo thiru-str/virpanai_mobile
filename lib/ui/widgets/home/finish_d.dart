@@ -4,6 +4,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
+import 'cms_text_color.dart';
 
 class ContactSupport1 extends StatelessWidget {
   final Content content;
@@ -17,12 +18,12 @@ class ContactSupport1 extends StatelessWidget {
       for (int i = 0; i < _items.length; i++) ...[
         if (i != 0) const SizedBox(width: 10),
         Expanded(child: Container(padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: kInk.withOpacity(0.08))),
+          decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16), border: Border.all(color: kInk.withOpacity(0.08))),
           child: Column(children: [
             Icon(_items[i][0] as IconData, color: kInk, size: 24),
             const SizedBox(height: 8),
-            Text(_items[i][1] as String, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textColor)),
-            Text(_items[i][2] as String, style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+            Text(_items[i][1] as String, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
+            Text(_items[i][2] as String, style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
           ]))),
       ],
     ]),
@@ -43,7 +44,7 @@ class FooterCta1 extends StatelessWidget {
           style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
         const SizedBox(height: 14),
         Container(height: 42, padding: const EdgeInsets.symmetric(horizontal: 26), alignment: Alignment.center,
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(22)),
           child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Start shopping',
             style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kInk))),
         const SizedBox(height: 16),
@@ -77,7 +78,7 @@ class StickyOffer1 extends StatelessWidget {
     decoration: AppUtils.buildLayoutBackground(content),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: kInk.withOpacity(0.10)),
+      decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(24), border: Border.all(color: kInk.withOpacity(0.10)),
         boxShadow: [BoxShadow(color: kInk.withOpacity(0.10), blurRadius: 16, offset: const Offset(0, 6))]),
       child: Row(children: [
         Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -85,7 +86,7 @@ class StickyOffer1 extends StatelessWidget {
           child: Text('OFFER', style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white))),
         const SizedBox(width: 10),
         Expanded(child: Text(content.layoutTitle ?? 'Extra 10% off — code WELCOME10', maxLines: 1, overflow: TextOverflow.ellipsis,
-          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textColor))),
+          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor)))),
         Container(height: 32, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
           decoration: BoxDecoration(color: kFresh, borderRadius: BorderRadius.circular(16)),
           child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Apply', style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white))),

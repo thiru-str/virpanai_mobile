@@ -13,6 +13,7 @@ import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
+import 'cms_text_color.dart';
 
 class Item5 extends StatelessWidget {
   final Content content;
@@ -48,7 +49,7 @@ class Item5 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -74,7 +75,7 @@ class Item5 extends StatelessWidget {
                             content.layoutRedirectTitle!,
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -197,7 +198,7 @@ class _Item5Card extends StatelessWidget {
                         child: Text(
                           '${layoutData.prices!.discountPercentage ?? ''} OFF',
                           style: FontUtils.primaryFontStyle(
-                            color: Colors.white,
+                            color: cmsCard(context, Colors.white),
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                             letterSpacing: 0.2,
@@ -220,7 +221,7 @@ class _Item5Card extends StatelessWidget {
                 layoutData.title ?? '',
                 style: FontUtils.primaryFontStyle(
                   fontSize: 14,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -241,7 +242,7 @@ class _Item5Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                   ),
                   if (_hasDiscount)
@@ -257,7 +258,7 @@ class _Item5Card extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.textColor.withOpacity(0.6),
+                            color: cmsCardText(context, AppColors.textColor).withOpacity(0.6),
                             decoration: TextDecoration.lineThrough,
                           ),
                         ),

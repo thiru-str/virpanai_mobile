@@ -14,6 +14,7 @@ import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
+import 'cms_text_color.dart';
 
 class Item12 extends StatelessWidget {
   final Content content;
@@ -48,7 +49,7 @@ class Item12 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -73,7 +74,7 @@ class Item12 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -140,7 +141,7 @@ class _Item12Card extends StatelessWidget {
       child: Container(
         width: 160,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade200),
         ),

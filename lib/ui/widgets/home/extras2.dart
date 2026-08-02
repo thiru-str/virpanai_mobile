@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // TwoColProducts1 — standard 2-up product grid.
 class TwoColProducts1 extends StatelessWidget {
@@ -55,14 +56,14 @@ class OfferDuo1 extends StatelessWidget {
             child: Row(children: [
               Container(height: 38, width: 38,
                 decoration: BoxDecoration(color: Color(_c[i % 2]), borderRadius: BorderRadius.circular(10)),
-                child: Icon(_ic[i % 2], color: Colors.white, size: 20)),
+                child: Icon(_ic[i % 2], color: cmsCard(context, Colors.white), size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                 Text(items[i].salesText ?? items[i].title ?? 'Special Offer',
-                  style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                  style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                 if ((items[i].featureText ?? '').isNotEmpty)
                   Text(items[i].featureText!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                    style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
               ])),
               const Icon(Icons.chevron_right, color: AppColors.tabInActivecolor),
             ])),
@@ -119,14 +120,14 @@ class TrustBadges1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
           for (final it in _items) Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(it[0] as IconData, color: AppColors.textColor, size: 22),
+            Icon(it[0] as IconData, color: cmsCardText(context, AppColors.textColor), size: 22),
             const SizedBox(height: 6),
             Text(it[1] as String, style: FontUtils.primaryFontStyle(
-              fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor50)),
+              fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor50))),
           ]),
         ]),
       ),

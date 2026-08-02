@@ -4,6 +4,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // HomeCollection1 — home & living room collections (large image cards).
 class HomeCollection1 extends StatelessWidget {
@@ -44,7 +45,7 @@ class HomeCollection1 extends StatelessWidget {
                         Text(
                           items[i].title ?? '',
                           style: FontUtils.primaryFontStyle(
-                            fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textColor),
+                            fontSize: 18, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor)),
                         ),
                         if ((items[i].featureText ?? '').isNotEmpty)
                           Padding(
@@ -52,7 +53,7 @@ class HomeCollection1 extends StatelessWidget {
                             child: Text(
                               items[i].featureText!,
                               style: FontUtils.primaryFontStyle(
-                                fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textColor50),
+                                fontSize: 12, fontWeight: FontWeight.w500, color: cmsCardText(context, AppColors.textColor50)),
                             ),
                           ),
                       ],

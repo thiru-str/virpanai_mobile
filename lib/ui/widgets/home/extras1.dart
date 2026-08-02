@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // FeatureIcons1 — "why shop with us" icon + text row.
 class FeatureIcons1 extends StatelessWidget {
@@ -26,7 +27,7 @@ class FeatureIcons1 extends StatelessWidget {
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, mainAxisExtent: 108),
           itemBuilder: (context, i) => Container(padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
               border: Border.all(color: kInk.withOpacity(0.08))),
             child: Row(children: [
               Container(height: 40, width: 40,
@@ -36,10 +37,10 @@ class FeatureIcons1 extends StatelessWidget {
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center, children: [
                 Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                  style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                 if ((items[i].featureText ?? '').isNotEmpty)
                   Text(items[i].featureText!, maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                    style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
               ])),
             ])),
         ),
@@ -136,7 +137,7 @@ class CategoryCardRail1 extends StatelessWidget {
               child: SizedBox.expand(child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)))),
             const SizedBox(height: 8),
             Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
           ]))),
         ),
       ]),

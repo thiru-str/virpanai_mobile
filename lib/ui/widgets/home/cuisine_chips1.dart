@@ -4,6 +4,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // CuisineChips1 — cuisine / dish-type shortcuts for a food storefront.
 class CuisineChips1 extends StatelessWidget {
@@ -58,7 +59,7 @@ class CuisineChips1 extends StatelessWidget {
                     items[i].title ?? '',
                     maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor),
+                      fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor)),
                   ),
                 ],
               );

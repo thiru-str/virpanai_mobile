@@ -8,6 +8,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Item14 extends StatelessWidget {
   final Content content;
@@ -43,7 +44,7 @@ class Item14 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -66,7 +67,7 @@ class Item14 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -224,7 +225,7 @@ class _Item14Card extends StatelessWidget {
                         "$percentOff% OFF",
                         style: FontUtils.primaryFontStyle(
                           fontSize: 10,
-                          color: Colors.white,
+                          color: cmsCard(context, Colors.white),
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
                         ),

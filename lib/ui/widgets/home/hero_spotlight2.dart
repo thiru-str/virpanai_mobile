@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // RankedGrid1 — top-4 ranked product grid with rank badges.
 class RankedGrid1 extends StatelessWidget {
@@ -66,7 +67,7 @@ class CategorySpotlight1 extends StatelessWidget {
               fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white)),
             const SizedBox(height: 12),
             Container(height: 38, padding: const EdgeInsets.symmetric(horizontal: 18), alignment: Alignment.center,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(20)),
               child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Explore',
                 style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kInk))),
           ]))),
@@ -150,7 +151,7 @@ class LaunchCountdown1 extends StatelessWidget {
               ],
               const Spacer(),
               Container(height: 38, padding: const EdgeInsets.symmetric(horizontal: 18), alignment: Alignment.center,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(20)),
                 child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Notify me',
                   style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk))),
             ]),

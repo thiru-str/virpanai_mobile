@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // BrandWall1 — shop-by-brand logo grid.
 class BrandWall1 extends StatelessWidget {
@@ -31,11 +32,11 @@ class BrandWall1 extends StatelessWidget {
             itemBuilder: (context, i) => Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(14),
+                color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: kInk.withOpacity(0.08))),
               child: Text(items[i].title ?? '',
                 maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-                style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textColor50)),
+                style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor50))),
             ),
           ),
         ],
@@ -65,7 +66,7 @@ class FaqList1 extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(12),
+                color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: kInk.withOpacity(0.08))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,14 +75,14 @@ class FaqList1 extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(items[i].title ?? '',
-                          style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textColor))),
-                      Icon(i == 0 ? Icons.remove : Icons.add, size: 18, color: AppColors.textColor),
+                          style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor)))),
+                      Icon(i == 0 ? Icons.remove : Icons.add, size: 18, color: cmsCardText(context, AppColors.textColor)),
                     ],
                   ),
                   if (i == 0 && (items[i].featureText ?? '').isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(items[i].featureText!,
-                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
                   ],
                 ],
               ),

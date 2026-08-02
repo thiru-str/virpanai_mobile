@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
 import 'grocery_shared.dart';
+import 'cms_text_color.dart';
 
 // CategoryChips1 — grocery category shortcuts (icon chip + label).
 class CategoryChips1 extends StatelessWidget {
@@ -65,7 +66,7 @@ class CategoryChips1 extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                   ),
                 ],

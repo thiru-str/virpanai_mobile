@@ -8,6 +8,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 class Banner5 extends StatelessWidget {
   final Content content;
@@ -147,7 +148,7 @@ class _HeroTile extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: cmsCard(context, Colors.white),
                       ),
                     ),
                     if (merchSubtitle(data).isNotEmpty) ...[
@@ -167,7 +168,7 @@ class _HeroTile extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cmsCard(context, Colors.white),
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
@@ -178,7 +179,7 @@ class _HeroTile extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -213,7 +214,7 @@ class _MiniBannerTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
@@ -226,7 +227,7 @@ class _MiniBannerTile extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
             if (merchSubtitle(data).isNotEmpty) ...[
@@ -237,7 +238,7 @@ class _MiniBannerTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: FontUtils.primaryFontStyle(
                   fontSize: 11,
-                  color: AppColors.textColor50,
+                  color: cmsCardText(context, AppColors.textColor50),
                 ),
               ),
             ],

@@ -6,6 +6,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
 import 'grocery_shared.dart';
+import 'cms_text_color.dart';
 
 // Combo1 — grocery combo / value pack (bundle of items at one price).
 class Combo1 extends StatelessWidget {
@@ -34,7 +35,7 @@ class Combo1 extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cmsCard(context, Colors.white),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: kInk.withOpacity(0.08)),
             ),
@@ -52,7 +53,7 @@ class Combo1 extends StatelessWidget {
                   if (i != items.length - 1)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Icon(Icons.add, size: 16, color: AppColors.textColor50),
+                      child: Icon(Icons.add, size: 16, color: cmsCardText(context, AppColors.textColor50)),
                     ),
                 ],
                 const Spacer(),
@@ -63,13 +64,13 @@ class Combo1 extends StatelessWidget {
                     Text(
                       'Combo price',
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textColor50),
+                        fontSize: 11, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50)),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       CurrencyUtil.appendCurrency(total.toStringAsFixed(0)),
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textColor),
+                        fontSize: 18, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor)),
                     ),
                     const SizedBox(height: 6),
                     Container(

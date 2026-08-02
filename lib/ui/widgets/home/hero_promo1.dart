@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // HeroBanner1 — full-bleed promotional hero with headline + CTA.
 class HeroBanner1 extends StatelessWidget {
@@ -51,7 +52,7 @@ class HeroBanner1 extends StatelessWidget {
                   const SizedBox(height: 12),
                   Container(
                     height: 38, padding: const EdgeInsets.symmetric(horizontal: 18), alignment: Alignment.center,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(20)),
                     child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Shop now',
                       style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kInk)),
                   ),

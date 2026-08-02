@@ -19,6 +19,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
 import '../../../utility/app_assets.dart';
+import 'cms_text_color.dart';
 
 class Grid1 extends StatelessWidget {
   final Content content;
@@ -52,7 +53,7 @@ class Grid1 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -79,7 +80,7 @@ class Grid1 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -207,7 +208,7 @@ class _Grid1Card extends StatelessWidget {
                         layoutData.salesText ?? '',
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 10,
-                          color: Colors.white,
+                          color: cmsCard(context, Colors.white),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -251,7 +252,7 @@ class _Grid1Card extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: cmsCard(context, Colors.white),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
@@ -285,7 +286,7 @@ class _Grid1Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

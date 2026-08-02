@@ -7,6 +7,7 @@ import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 import 'composites_shared.dart';
+import 'cms_text_color.dart';
 
 // SpotlightList1 — a featured spotlight product on top + a companion list.
 class SpotlightList1 extends StatelessWidget {
@@ -29,7 +30,7 @@ class SpotlightList1 extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(16),
+              color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
               border: Border.all(color: kInk.withOpacity(0.08))),
             child: Row(
               children: [
@@ -44,15 +45,15 @@ class SpotlightList1 extends StatelessWidget {
                       child: Text('FEATURED', style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w800, color: kFresh))),
                     const SizedBox(height: 6),
                     Text(hero.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                      style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                     if ((merchSubtitle(hero)).isNotEmpty)
                       Padding(padding: const EdgeInsets.only(top: 2),
                         child: Text(merchSubtitle(hero), maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50))),
+                          style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50)))),
                     const SizedBox(height: 6),
                     Row(children: [
                       Text(CurrencyUtil.appendCurrency(merchSellingPrice(hero)),
-                        style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                        style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                       const Spacer(),
                       const GroceryAddButton(),
                     ]),
@@ -147,7 +148,7 @@ class ListCard1 extends StatelessWidget {
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
               border: Border.all(color: kInk.withOpacity(0.08))),
             child: Column(children: [
               for (int i = 0; i < items.length; i++) ...[

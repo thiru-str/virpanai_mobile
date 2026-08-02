@@ -8,6 +8,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 class Slider12 extends StatelessWidget {
   final Content content;
@@ -136,7 +137,7 @@ class _ShapeCard extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
             if (merchSubtitle(data).isNotEmpty) ...[
@@ -148,7 +149,7 @@ class _ShapeCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
-                  color: AppColors.textColor50,
+                  color: cmsCardText(context, AppColors.textColor50),
                 ),
               ),
             ],

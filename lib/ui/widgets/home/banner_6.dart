@@ -5,6 +5,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 class Banner6 extends StatelessWidget {
   final Content content;
@@ -53,7 +54,7 @@ class Banner6 extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cmsCard(context, Colors.white),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: const [
                     BoxShadow(
@@ -87,7 +88,7 @@ class Banner6 extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                     ),
                     if (merchSubtitle(item).isNotEmpty) ...[
@@ -98,7 +99,7 @@ class Banner6 extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 11,
-                          color: AppColors.textColor50,
+                          color: cmsCardText(context, AppColors.textColor50),
                         ),
                       ),
                     ],

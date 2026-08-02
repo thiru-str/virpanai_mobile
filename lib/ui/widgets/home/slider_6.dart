@@ -9,6 +9,7 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Slider6 extends StatelessWidget {
   final Content content;
@@ -43,7 +44,7 @@ class Slider6 extends StatelessWidget {
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textColor,
+                    color: cmsCardText(context, AppColors.textColor),
                   ),
                 ),
               ),
@@ -107,7 +108,7 @@ class _Slider6Card extends StatelessWidget {
       child: Container(
         width: 220,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -176,7 +177,7 @@ class _Slider6Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
               ),
             ),
@@ -189,7 +190,7 @@ class _Slider6Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                   ),
                   if (hasDiscount) ...[
@@ -201,7 +202,7 @@ class _Slider6Card extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 14,
-                          color: AppColors.textColor.withOpacity(0.35),
+                          color: cmsCardText(context, AppColors.textColor).withOpacity(0.35),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),

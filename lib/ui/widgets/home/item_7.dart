@@ -12,6 +12,7 @@ import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
+import 'cms_text_color.dart';
 
 class Item7 extends StatelessWidget {
   final Content content;
@@ -47,7 +48,7 @@ class Item7 extends StatelessWidget {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -69,7 +70,7 @@ class Item7 extends StatelessWidget {
                               content.layoutRedirectTitle ?? "",
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
-                                color: AppColors.textColor,
+                                color: cmsCardText(context, AppColors.textColor),
                               ),
                             ),
                             const Icon(Icons.chevron_right, size: 18),
@@ -145,7 +146,7 @@ class _Item7Card extends StatelessWidget {
               child: Container(
                 width: 60,
                 height: 60,
-                color: Colors.white,
+                color: cmsCard(context, Colors.white),
                 child: imageUrl.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: imageUrl,
@@ -165,7 +166,7 @@ class _Item7Card extends StatelessWidget {
             style: FontUtils.primaryFontStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textColor,
+              color: cmsCardText(context, AppColors.textColor),
             ),
           ),
           const SizedBox(height: 6),
@@ -175,7 +176,7 @@ class _Item7Card extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: FontUtils.primaryFontStyle(
               fontSize: 13,
-              color: AppColors.textColor.withOpacity(0.8),
+              color: cmsCardText(context, AppColors.textColor).withOpacity(0.8),
             ),
           ),
         ],

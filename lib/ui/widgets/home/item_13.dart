@@ -9,6 +9,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Item13 extends StatelessWidget {
   final Content content;
@@ -44,7 +45,7 @@ class Item13 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -67,7 +68,7 @@ class Item13 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -138,7 +139,7 @@ class _Item13Card extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300),
         ),
@@ -179,7 +180,7 @@ class _Item13Card extends StatelessWidget {
                       child: Text(
                         AppStrings.new_tag,
                         style: FontUtils.primaryFontStyle(
-                          color: Colors.white,
+                          color: cmsCard(context, Colors.white),
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,

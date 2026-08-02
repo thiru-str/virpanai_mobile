@@ -12,6 +12,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Banner2 extends StatefulWidget {
   final Content content;
@@ -113,7 +114,7 @@ class _Banner2State extends State<Banner2> {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                       ),
                       Visibility(
@@ -131,7 +132,7 @@ class _Banner2State extends State<Banner2> {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                         ),

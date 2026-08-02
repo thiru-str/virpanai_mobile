@@ -6,6 +6,7 @@ import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Grid8 extends StatelessWidget {
   final Content content;
@@ -46,7 +47,7 @@ class Grid8 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                     ),
                   ),
@@ -65,7 +66,7 @@ class Grid8 extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                       ),
@@ -223,7 +224,7 @@ class _Grid8Item extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),

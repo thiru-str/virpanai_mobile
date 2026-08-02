@@ -7,6 +7,7 @@ import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 import 'composites_shared.dart';
+import 'cms_text_color.dart';
 
 // CollectionCover1 — large collection cover with an overlaid product peek strip.
 class CollectionCover1 extends StatelessWidget {
@@ -40,7 +41,7 @@ class CollectionCover1 extends StatelessWidget {
                 for (int i = 0; i < (items.length > 4 ? 4 : items.length); i++)
                   Padding(padding: const EdgeInsets.only(right: 8),
                     child: ClipRRect(borderRadius: BorderRadius.circular(10),
-                      child: Container(height: 48, width: 48, color: Colors.white,
+                      child: Container(height: 48, width: 48, color: cmsCard(context, Colors.white),
                         child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)))),
                 Container(height: 48, width: 48, alignment: Alignment.center,
                   decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(10)),
@@ -71,11 +72,11 @@ class MegaSpotlight1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(20),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(content.layoutTitle ?? '', style: FontUtils.primaryFontStyle(
-            fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+            fontSize: 18, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
           const SizedBox(height: 10),
           Row(children: [
             for (int i = 0; i < chips.length; i++)
@@ -138,7 +139,7 @@ class TabbedList1 extends StatelessWidget {
         ]),
         const SizedBox(height: 14),
         Container(padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+          decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
             border: Border.all(color: kInk.withOpacity(0.08))),
           child: Column(children: [
             for (int i = 0; i < items.length; i++) ...[
@@ -186,7 +187,7 @@ class PickForYou1 extends StatelessWidget {
             for (int i = 0; i < rest.length; i++) ...[
               if (i != 0) const SizedBox(height: 10),
               Expanded(child: Container(padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14),
+                decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: kInk.withOpacity(0.08))),
                 child: Row(children: [
                   ClipRRect(borderRadius: BorderRadius.circular(10),
@@ -195,9 +196,9 @@ class PickForYou1 extends StatelessWidget {
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
                     Text(rest[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
                     Text(CurrencyUtil.appendCurrency(merchSellingPrice(rest[i])),
-                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
                   ])),
                 ]))),
             ],

@@ -11,6 +11,7 @@ import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
+import 'cms_text_color.dart';
 
 class Item3 extends StatelessWidget {
   final Content content;
@@ -47,7 +48,7 @@ class Item3 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -69,7 +70,7 @@ class Item3 extends StatelessWidget {
                             content?.layoutRedirectTitle ?? '',
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
