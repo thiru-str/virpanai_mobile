@@ -35,6 +35,7 @@ import 'finish_d.dart';
 import 'food1.dart';
 import 'supermarket1.dart';
 import 'supermarket2.dart';
+import 'product_cards1.dart';
 
 // Marketplace home-component registry. Maps a CMS `layout_name` to its widget
 // so the production home page renders the new components (grocery, multi-
@@ -83,6 +84,8 @@ const List<String> kMarketplaceLayouts = [
   // supermarket / quick-commerce (FRESHKART genre) — compact cards
   'CategoryMini1', 'ProductMini1', 'DealStrip1',
   'ProductStepper1', 'CategoryCircle1', 'CategoryPills1', 'ReorderRail1',
+  // reusable product components (any genre)
+  'ProductListRow1', 'ProductHeroGrid1', 'ProductCarouselXL1', 'ProductRatingGrid1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -309,6 +312,14 @@ Widget? marketplaceHomeWidget(Content content,
       return CategoryPills1(content: content);
     case 'ReorderRail1':
       return ReorderRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductListRow1':
+      return ProductListRow1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductHeroGrid1':
+      return ProductHeroGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductCarouselXL1':
+      return ProductCarouselXL1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductRatingGrid1':
+      return ProductRatingGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
     default:
       return null;
   }
