@@ -98,7 +98,8 @@ const Set<String> kMarketplaceNoDataLayouts = {
   'AnnouncementBar1', 'StickyOffer1', 'PromoMarquee1',
 };
 
-Widget? marketplaceHomeWidget(Content content) {
+Widget? marketplaceHomeWidget(Content content,
+    {void Function(int delta, String variantId)? onCartQtyChanged}) {
   switch (content.layoutName) {
     case 'CategoryChips1':
       return CategoryChips1(content: content);
@@ -301,13 +302,13 @@ Widget? marketplaceHomeWidget(Content content) {
     case 'DealStrip1':
       return DealStrip1(content: content);
     case 'ProductStepper1':
-      return ProductStepper1(content: content);
+      return ProductStepper1(content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryCircle1':
       return CategoryCircle1(content: content);
     case 'CategoryPills1':
       return CategoryPills1(content: content);
     case 'ReorderRail1':
-      return ReorderRail1(content: content);
+      return ReorderRail1(content: content, onCartQtyChanged: onCartQtyChanged);
     default:
       return null;
   }

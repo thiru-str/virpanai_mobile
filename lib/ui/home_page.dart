@@ -806,7 +806,13 @@ class _HomePageState extends State<HomePage> {
             ? const SizedBox()
             : Collection12(content: homePageContent!);
       default:
-        return marketplaceHomeWidget(homePageContent!) ?? const SizedBox();
+        return marketplaceHomeWidget(
+              homePageContent!,
+              onCartQtyChanged: (delta, variantId) async {
+                await addCart(delta, variantId);
+              },
+            ) ??
+            const SizedBox();
     }
   }
 

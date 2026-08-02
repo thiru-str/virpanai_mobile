@@ -168,18 +168,36 @@ class _StepperCard extends StatelessWidget {
   }
 }
 
-// ProductStepper1 — dense grid of small product cards with ADD→stepper.
+// A product's variant id (for the cart) and its current cart quantity.
+String _variantOf(LayoutDatum d) =>
+    d.variantDetails?.variantId ?? d.cartDetails?.variantId ?? '';
+int _cartQtyOf(LayoutDatum d) => d.cartDetails?.quantity ?? 0;
+
+// ProductStepper1 — dense grid of small product cards with ADD→stepper wired to
+// the real cart. `onCartQtyChanged(delta, variantId)` runs the add/update.
 class ProductStepper1 extends StatefulWidget {
   final Content content;
-  const ProductStepper1({super.key, required this.content});
+  final void Function(int delta, String variantId)? onCartQtyChanged;
+  const ProductStepper1({super.key, required this.content, this.onCartQtyChanged});
   @override
   State<ProductStepper1> createState() => _ProductStepper1State();
 }
 
 class _ProductStepper1State extends State<ProductStepper1> {
   final Map<String, int> _qty = {};
-  void _bump(String id, int d) =>
-      setState(() => _qty[id] = ((_qty[id] ?? 0) + d).clamp(0, 99));
+
+  @override
+  void initState() {
+    super.initState();
+    for (final d in widget.content.layoutData ?? []) {
+      _qty[d.id ?? ''] = _cartQtyOf(d);
+    }
+  }
+
+  void _bump(String id, String variantId, int d) {
+    setState(() => _qty[id] = ((_qty[id] ?? 0) + d).clamp(0, 99));
+    if (variantId.isNotEmpty) widget.onCartQtyChanged?.call(d, variantId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,11 +223,12 @@ class _ProductStepper1State extends State<ProductStepper1> {
               childAspectRatio: 0.56),
           itemBuilder: (context, i) {
             final id = items[i].id ?? '$i';
+            final vid = _variantOf(items[i]);
             return _StepperCard(
                 data: items[i],
                 count: _qty[id] ?? 0,
-                onInc: () => _bump(id, 1),
-                onDec: () => _bump(id, -1));
+                onInc: () => _bump(id, vid, 1),
+                onDec: () => _bump(id, vid, -1));
           },
         ),
       ]),
@@ -220,15 +239,27 @@ class _ProductStepper1State extends State<ProductStepper1> {
 // ReorderRail1 — "Buy it again" horizontal rail of small cards with stepper.
 class ReorderRail1 extends StatefulWidget {
   final Content content;
-  const ReorderRail1({super.key, required this.content});
+  final void Function(int delta, String variantId)? onCartQtyChanged;
+  const ReorderRail1({super.key, required this.content, this.onCartQtyChanged});
   @override
   State<ReorderRail1> createState() => _ReorderRail1State();
 }
 
 class _ReorderRail1State extends State<ReorderRail1> {
   final Map<String, int> _qty = {};
-  void _bump(String id, int d) =>
-      setState(() => _qty[id] = ((_qty[id] ?? 0) + d).clamp(0, 99));
+
+  @override
+  void initState() {
+    super.initState();
+    for (final d in widget.content.layoutData ?? []) {
+      _qty[d.id ?? ''] = _cartQtyOf(d);
+    }
+  }
+
+  void _bump(String id, String variantId, int d) {
+    setState(() => _qty[id] = ((_qty[id] ?? 0) + d).clamp(0, 99));
+    if (variantId.isNotEmpty) widget.onCartQtyChanged?.call(d, variantId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -261,13 +292,14 @@ class _ReorderRail1State extends State<ReorderRail1> {
             separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, i) {
               final id = items[i].id ?? '$i';
+              final vid = _variantOf(items[i]);
               return SizedBox(
                 width: 140,
                 child: _StepperCard(
                     data: items[i],
                     count: _qty[id] ?? 0,
-                    onInc: () => _bump(id, 1),
-                    onDec: () => _bump(id, -1)),
+                    onInc: () => _bump(id, vid, 1),
+                    onDec: () => _bump(id, vid, -1)),
               );
             },
           ),
