@@ -65,6 +65,7 @@ class Content {
   String? layoutBgType;
   String? layoutPrimaryColor;
   String? layoutSecondaryColor;
+  String? layoutCardColor;
   String? layoutRedirectTitle;
   String? layoutRedirect;
   String? layoutOption;
@@ -86,6 +87,7 @@ class Content {
     this.layoutBgType,
     this.layoutPrimaryColor,
     this.layoutSecondaryColor,
+    this.layoutCardColor,
     this.layoutRedirectTitle,
     this.layoutRedirect,
     this.layoutOption,
@@ -108,6 +110,7 @@ class Content {
         layoutBgType: json["layout_bg_type"],
         layoutPrimaryColor: json["layout_primary_color"],
         layoutSecondaryColor: json["layout_secondary_color"],
+        layoutCardColor: json["layout_card_color"],
         layoutRedirectTitle: json["layout_redirect_title"],
         layoutRedirect: json["layout_redirect"],
         layoutOption: json["layout_option"],

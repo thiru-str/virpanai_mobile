@@ -88,7 +88,7 @@ class _StepperCard extends StatelessWidget {
     final badge = merchBadge(data);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cmsCard(context, Colors.white),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _kBorder),
       ),
@@ -130,14 +130,14 @@ class _StepperCard extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textColor50)),
+                            color: cmsCardText(context, AppColors.textColor50))),
                   Text(data.title ?? '',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textColor)),
+                          color: cmsCardText(context, AppColors.textColor))),
                   const Spacer(),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -151,12 +151,12 @@ class _StepperCard extends StatelessWidget {
                                   style: FontUtils.primaryFontStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.textColor)),
+                                      color: cmsCardText(context, AppColors.textColor))),
                               if (hasDiscount)
                                 Text(CurrencyUtil.appendCurrency(original),
                                     style: FontUtils.primaryFontStyle(
                                         fontSize: 9,
-                                        color: AppColors.textColor50,
+                                        color: cmsCardText(context, AppColors.textColor50),
                                         decoration: TextDecoration.lineThrough)),
                             ]),
                         _AddStepper(count: count, onInc: onInc, onDec: onDec),

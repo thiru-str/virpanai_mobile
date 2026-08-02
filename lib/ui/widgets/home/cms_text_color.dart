@@ -9,23 +9,36 @@ import 'package:flutter/widgets.dart';
 // getLayoutStyles — wrap each rendered CMS component with it (see the
 // buildComponentList item builders in home_page.dart / custom_page.dart).
 class CmsTextColor extends InheritedWidget {
-  final Color? color;
-  const CmsTextColor({super.key, required this.color, required super.child});
+  final Color? color; // Text Color (layout_secondary_color) — section-bg text
+  final Color? cardColor; // Card Background (layout_card_color) — card surfaces
+  const CmsTextColor(
+      {super.key, required this.color, this.cardColor, required super.child});
 
-  static Color? of(BuildContext context) {
-    final w = context.dependOnInheritedWidgetOfExactType<CmsTextColor>();
-    return w?.color;
-  }
+  static CmsTextColor? _of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<CmsTextColor>();
+
+  static Color? of(BuildContext context) => _of(context)?.color;
+  static Color? cardOf(BuildContext context) => _of(context)?.cardColor;
 
   @override
-  bool updateShouldNotify(CmsTextColor oldWidget) => oldWidget.color != color;
+  bool updateShouldNotify(CmsTextColor oldWidget) =>
+      oldWidget.color != color || oldWidget.cardColor != cardColor;
 }
 
-// Resolve the colour for text that sits on the SECTION background: the
-// per-component Text Color cascade if set, else the given fallback (the theme
-// default). Use this for titles, descriptions, category labels, etc. — text
-// inside cards should keep its own explicit colour so it stays readable.
-Color cmsText(BuildContext context, Color fallback) {
+// Colour for text that sits on the SECTION background (titles, descriptions,
+// category labels): the Text Color cascade if set, else the theme default.
+Color cmsText(BuildContext context, Color fallback) =>
+    CmsTextColor.of(context) ?? fallback;
+
+// Card surface colour: the Card Background cascade if set, else the default.
+Color cmsCard(BuildContext context, Color fallback) =>
+    CmsTextColor.cardOf(context) ?? fallback;
+
+// Colour for text INSIDE a card: when the card is themed (Card Background set),
+// it follows the Text Color so it's readable on the themed card; otherwise it
+// keeps its default (dark on a white card).
+Color cmsCardText(BuildContext context, Color fallback) {
+  if (CmsTextColor.cardOf(context) == null) return fallback;
   return CmsTextColor.of(context) ?? fallback;
 }
 
