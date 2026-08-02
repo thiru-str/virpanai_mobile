@@ -5,6 +5,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Food / organic-store component batch (SATVA genre). Mirrors the web
 // components Certifications1, NutritionFacts1, Recipe1, SubscriptionBox1 and
@@ -365,14 +366,14 @@ class FarmStory1 extends StatelessWidget {
             style: FontUtils.primaryFontStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textColor)),
+                color: cmsText(context, AppColors.textColor))),
         if ((hero.featureText ?? '').trim().isNotEmpty) ...[
           const SizedBox(height: 10),
           Text(hero.featureText!.trim(),
               style: FontUtils.primaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textColor50)
+                      color: cmsText(context, AppColors.textColor50))
                   .copyWith(height: 1.5)),
         ],
         if (stats.isNotEmpty) ...[
@@ -386,12 +387,12 @@ class FarmStory1 extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textColor)),
+                        color: cmsText(context, AppColors.textColor))),
                 Text(s.featureText ?? '',
                     style: FontUtils.primaryFontStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textColor50)),
+                        color: cmsText(context, AppColors.textColor50))),
               ]),
           ]),
         ],

@@ -6,6 +6,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Second quick-commerce compact batch (FRESHKART). Mirrors the web
 // ProductStepper1 / CategoryCircle1 / CategoryPills1 / ReorderRail1 — the ADD
@@ -354,7 +355,7 @@ class CategoryCircle1 extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textColor)),
+                        color: cmsText(context, AppColors.textColor))),
               ]),
             ),
           ),

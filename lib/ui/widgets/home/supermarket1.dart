@@ -6,6 +6,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Supermarket / quick-commerce compact component batch (FRESHKART genre).
 // Mirrors the web CategoryMini1 / ProductMini1 / DealStrip1 — deliberately
@@ -57,7 +58,7 @@ class CategoryMini1 extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textColor)),
+                    color: cmsText(context, AppColors.textColor))),
           ]),
         ),
       ]),

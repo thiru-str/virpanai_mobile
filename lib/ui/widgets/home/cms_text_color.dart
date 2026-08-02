@@ -21,6 +21,14 @@ class CmsTextColor extends InheritedWidget {
   bool updateShouldNotify(CmsTextColor oldWidget) => oldWidget.color != color;
 }
 
+// Resolve the colour for text that sits on the SECTION background: the
+// per-component Text Color cascade if set, else the given fallback (the theme
+// default). Use this for titles, descriptions, category labels, etc. — text
+// inside cards should keep its own explicit colour so it stays readable.
+Color cmsText(BuildContext context, Color fallback) {
+  return CmsTextColor.of(context) ?? fallback;
+}
+
 // Parse a hex ("#rrggbb"/"#rgb") or rgb()/rgba() string into a Color. Returns
 // null for empty/gradient/unparseable values (so the default colour is used).
 Color? parseCmsColor(String? raw) {
