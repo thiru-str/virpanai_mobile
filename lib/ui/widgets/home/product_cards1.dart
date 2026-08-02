@@ -7,6 +7,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
 import 'product_cards_shared.dart';
+import 'cms_text_color.dart';
 
 // Reusable product-card components (mirrors the web ProductListRow1 /
 // ProductHeroGrid1 / ProductCarouselXL1 / ProductRatingGrid1). Each is wired to
@@ -55,7 +56,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cmsCard(context, Colors.white),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: kCardBorder),
           ),
@@ -64,7 +65,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
             children: [
               for (int i = 0; i < items.length; i++) ...[
                 if (i != 0) const Divider(height: 1),
-                _row(items[i], accent),
+                _row(context, items[i], accent),
               ]
             ],
           ),
@@ -73,7 +74,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
     );
   }
 
-  Widget _row(LayoutDatum d, Color accent) {
+  Widget _row(BuildContext context, LayoutDatum d, Color accent) {
     final id = d.id ?? '';
     final vid = variantIdOf(d);
     final selling = sellingPriceOf(d);
@@ -102,7 +103,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
                     style: FontUtils.primaryFontStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textColor)),
+                        color: cmsCardText(context, AppColors.textColor))),
                 const SizedBox(height: 2),
                 Row(children: [
                   if (hasPackText(d.subTitle))
@@ -110,7 +111,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
                       padding: const EdgeInsets.only(right: 8),
                       child: Text(d.subTitle!,
                           style: FontUtils.primaryFontStyle(
-                              fontSize: 11, color: AppColors.textColor50)),
+                              fontSize: 11, color: cmsCardText(context, AppColors.textColor50))),
                     ),
                   if (rating != null && rating.isNotEmpty)
                     RatingChip(rating: rating),
@@ -121,13 +122,13 @@ class _ProductListRow1State extends State<ProductListRow1> {
                       style: FontUtils.primaryFontStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textColor)),
+                          color: cmsCardText(context, AppColors.textColor))),
                   if (hasDiscount) ...[
                     const SizedBox(width: 6),
                     Text(_price(original),
                         style: FontUtils.primaryFontStyle(
                             fontSize: 11,
-                            color: AppColors.textColor50,
+                            color: cmsCardText(context, AppColors.textColor50),
                             decoration: TextDecoration.lineThrough)),
                   ],
                 ]),
@@ -184,7 +185,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
             subtitle: widget.content.layoutSubTitle ?? '',
             ctaText: widget.content.layoutRedirectTitle ?? ''),
         const SizedBox(height: 12),
-        _heroCard(hero, accent),
+        _heroCard(context, hero, accent),
         const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
@@ -193,18 +194,18 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           childAspectRatio: 0.82,
-          children: [for (final d in rest) _smallCard(d, accent)],
+          children: [for (final d in rest) _smallCard(context, d, accent)],
         ),
       ]),
     );
   }
 
-  Widget _heroCard(LayoutDatum d, Color accent) {
+  Widget _heroCard(BuildContext context, LayoutDatum d, Color accent) {
     final id = d.id ?? '';
     final vid = variantIdOf(d);
     return Container(
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: kCardBorder)),
       clipBehavior: Clip.antiAlias,
@@ -226,13 +227,13 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
                         style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textColor)),
+                            color: cmsCardText(context, AppColors.textColor))),
                     const SizedBox(height: 4),
                     Text(_price(sellingPriceOf(d)),
                         style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textColor)),
+                            color: cmsCardText(context, AppColors.textColor))),
                   ]),
             ),
             AddStepper(
@@ -246,12 +247,12 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
     );
   }
 
-  Widget _smallCard(LayoutDatum d, Color accent) {
+  Widget _smallCard(BuildContext context, LayoutDatum d, Color accent) {
     final id = d.id ?? '';
     final vid = variantIdOf(d);
     return Container(
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kCardBorder)),
       clipBehavior: Clip.antiAlias,
@@ -271,7 +272,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
                       style: FontUtils.primaryFontStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textColor)),
+                          color: cmsCardText(context, AppColors.textColor))),
                   const Spacer(),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -280,7 +281,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
                             style: FontUtils.primaryFontStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textColor)),
+                                color: cmsCardText(context, AppColors.textColor))),
                         AddStepper(
                             count: _qty[id] ?? 0,
                             accent: accent,
@@ -354,7 +355,7 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
               return Container(
                 width: 220,
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: cmsCard(context, Colors.white),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(color: kCardBorder)),
                 clipBehavior: Clip.antiAlias,
@@ -377,7 +378,7 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                                     style: FontUtils.primaryFontStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textColor)),
+                                        color: cmsCardText(context, AppColors.textColor))),
                                 if (rating != null && rating.isNotEmpty) ...[
                                   const SizedBox(height: 3),
                                   RatingChip(rating: rating),
@@ -488,7 +489,7 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
             final off = d.prices?.discountPercentage;
             return Container(
               decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cmsCard(context, Colors.white),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: kCardBorder)),
               clipBehavior: Clip.antiAlias,
@@ -533,7 +534,7 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
                                   style: FontUtils.primaryFontStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textColor)),
+                                      color: cmsCardText(context, AppColors.textColor))),
                               const Spacer(),
                               Row(
                                   mainAxisAlignment:

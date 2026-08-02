@@ -41,7 +41,7 @@ class Certifications1 extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cmsCard(context, Colors.white),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(color: kOlive.withOpacity(0.25)),
                 ),
@@ -56,13 +56,13 @@ class Certifications1 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textColor)),
+                                color: cmsCardText(context, AppColors.textColor))),
                         if ((item.featureText ?? '').trim().isNotEmpty)
                           Text(item.featureText!.trim(),
                               style: FontUtils.primaryFontStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.textColor50)),
+                                  color: cmsCardText(context, AppColors.textColor50))),
                       ]),
                 ]),
               ),
@@ -103,7 +103,7 @@ class NutritionFacts1 extends StatelessWidget {
           itemBuilder: (context, i) => Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cmsCard(context, Colors.white),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: kOlive.withOpacity(0.10)),
             ),
@@ -123,7 +123,7 @@ class NutritionFacts1 extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textColor)),
+                          color: cmsCardText(context, AppColors.textColor))),
                   if ((items[i].subTitle ?? '').trim().isNotEmpty)
                     Text(items[i].subTitle!.trim(),
                         maxLines: 1,
@@ -131,7 +131,7 @@ class NutritionFacts1 extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.textColor50)),
+                            color: cmsCardText(context, AppColors.textColor50))),
                 ]),
           ),
         ),
@@ -171,7 +171,7 @@ class Recipe1 extends StatelessWidget {
             itemBuilder: (context, i) => Container(
               width: 190,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cmsCard(context, Colors.white),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: const [
                   BoxShadow(
@@ -204,7 +204,7 @@ class Recipe1 extends StatelessWidget {
                                 style: FontUtils.primaryFontStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w800,
-                                    color: AppColors.textColor)),
+                                    color: cmsCardText(context, AppColors.textColor))),
                             const SizedBox(height: 8),
                             Row(children: [
                               const Icon(Icons.schedule,
@@ -214,7 +214,7 @@ class Recipe1 extends StatelessWidget {
                                   style: FontUtils.primaryFontStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.textColor50)),
+                                      color: cmsCardText(context, AppColors.textColor50))),
                               const SizedBox(width: 12),
                               const Icon(Icons.people_alt_outlined,
                                   size: 14, color: kOlive),
@@ -223,7 +223,7 @@ class Recipe1 extends StatelessWidget {
                                   style: FontUtils.primaryFontStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.textColor50)),
+                                      color: cmsCardText(context, AppColors.textColor50))),
                             ]),
                           ]),
                     ),
