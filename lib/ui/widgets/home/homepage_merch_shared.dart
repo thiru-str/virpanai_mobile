@@ -6,6 +6,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
+import 'cms_text_color.dart';
 
 String merchImage(LayoutDatum data) {
   return data.image ?? data.productData?.image ?? '';
@@ -81,6 +82,10 @@ class HomeMerchSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Per-component "Text Color" (content.layoutSecondaryColor) cascaded via
+    // CmsTextColor — recolour the title (which sits on the section background).
+    // The subtitle sits inside a white pill, so it keeps its default colour.
+    final cmsColor = CmsTextColor.of(context);
     final titleWidget = Text(
       title,
       maxLines: 2,
@@ -89,7 +94,7 @@ class HomeMerchSectionHeader extends StatelessWidget {
       style: FontUtils.primaryFontStyle(
         fontSize: 22,
         fontWeight: FontWeight.w800,
-        color: AppColors.textColor,
+        color: cmsColor ?? AppColors.textColor,
       ),
     );
 

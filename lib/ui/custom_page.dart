@@ -7,6 +7,7 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/marketplace_registry.dart';
+import 'package:waioz/ui/widgets/home/cms_text_color.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/banner_3_4.dart';
@@ -297,8 +298,13 @@ class _CustomPageState extends State<CustomPage> {
                                             itemBuilder: (context, index) {
                                               final homePageContent =
                                                   visibleComponents[index];
-                                              return getLayoutWidget(
-                                                  homePageContent);
+                                              return CmsTextColor(
+                                                color: parseCmsColor(
+                                                    homePageContent
+                                                        .layoutSecondaryColor),
+                                                child: getLayoutWidget(
+                                                    homePageContent),
+                                              );
                                             },
                                           ),
                                         ),

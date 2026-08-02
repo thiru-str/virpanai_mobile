@@ -13,6 +13,7 @@ import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/banner_3_4.dart';
 import 'package:waioz/ui/widgets/home/banner_5.dart';
 import 'package:waioz/ui/widgets/home/marketplace_registry.dart';
+import 'package:waioz/ui/widgets/home/cms_text_color.dart';
 import 'package:waioz/ui/widgets/home/banner_6.dart';
 import 'package:waioz/ui/widgets/home/banner_7.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
@@ -437,7 +438,10 @@ class _HomePageState extends State<HomePage> {
           final homePageContent = content[index];
           return AppReveal(
             index: index,
-            child: getLayoutWidget(homePageContent),
+            child: CmsTextColor(
+              color: parseCmsColor(homePageContent.layoutSecondaryColor),
+              child: getLayoutWidget(homePageContent),
+            ),
           );
         }
 
