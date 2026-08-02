@@ -6,6 +6,7 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Shared building blocks for rich, composite (multi-element) components that
 // combine collection / list / spotlight / category patterns in one section.
@@ -33,7 +34,7 @@ class ListRow extends StatelessWidget {
             child: Text('$rank',
               textAlign: TextAlign.center,
               style: FontUtils.primaryFontStyle(
-                fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textColor50)),
+                fontSize: 16, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor50))),
           ),
           const SizedBox(width: 8),
         ],
@@ -50,7 +51,7 @@ class ListRow extends StatelessWidget {
               Text(data.title ?? '',
                 maxLines: 1, overflow: TextOverflow.ellipsis,
                 style: FontUtils.primaryFontStyle(
-                  fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+                  fontSize: 14, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
               if (_metaLine(rating, meta).isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Row(children: [
@@ -59,18 +60,18 @@ class ListRow extends StatelessWidget {
                     const SizedBox(width: 2),
                     Text(rating,
                       style: FontUtils.primaryFontStyle(
-                        fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor50)),
+                        fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor50))),
                     if (meta.isNotEmpty)
                       Text('  ·  ',
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                          fontSize: 11, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
                   ],
                   if (meta.isNotEmpty)
                     Flexible(
                       child: Text(meta,
                         maxLines: 1, overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
-                          fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                          fontSize: 11, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
                     ),
                 ]),
               ],
@@ -78,7 +79,7 @@ class ListRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(CurrencyUtil.appendCurrency(selling),
                   style: FontUtils.primaryFontStyle(
-                    fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+                    fontSize: 13, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
               ],
             ],
           ),
@@ -117,7 +118,7 @@ class StoryCircle extends StatelessWidget {
             ),
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: cmsCard(context, Colors.white), shape: BoxShape.circle),
               child: ClipOval(child: merchImageOrFallback(imageUrl, fit: BoxFit.cover)),
             ),
           ),
@@ -125,7 +126,7 @@ class StoryCircle extends StatelessWidget {
           Text(label,
             maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
             style: FontUtils.primaryFontStyle(
-              fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textColor)),
+              fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor))),
         ],
       ),
     );

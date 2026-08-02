@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -7,7 +8,6 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
-import 'cms_text_color.dart';
 
 class Slider9 extends StatelessWidget {
   final Content content;
@@ -263,7 +263,7 @@ class _Slider9Card extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: cmsCard(context, Colors.white),
+                            color: Colors.white,
                           ),
                         ),
                       ),

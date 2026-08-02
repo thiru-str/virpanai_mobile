@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // SizeGuide1 — fit-finder / size-guide prompt.
 class SizeGuide1 extends StatelessWidget {
@@ -16,7 +17,7 @@ class SizeGuide1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(children: [
           Container(height: 44, width: 44,
@@ -25,11 +26,11 @@ class SizeGuide1 extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Text(content.layoutTitle ?? 'Not sure about your size?',
-              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
             const SizedBox(height: 2),
             Text(content.layoutSubTitle ?? 'Use our fit finder for a recommendation',
               maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
           ])),
           Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
             decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(10)),
@@ -51,21 +52,21 @@ class PincodeCheck1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             const Icon(Icons.location_on, color: kFresh, size: 20),
             const SizedBox(width: 8),
             Text(content.layoutTitle ?? 'Check Delivery',
-              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
           ]),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(child: Container(height: 44, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.centerLeft,
               decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(12)),
               child: Text('Enter pincode',
-                style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textColor50)))),
+                style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))))),
             const SizedBox(width: 8),
             Container(height: 44, padding: const EdgeInsets.symmetric(horizontal: 18), alignment: Alignment.center,
               decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(12)),
@@ -98,7 +99,7 @@ class AppPromo1 extends StatelessWidget {
               maxLines: 2, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white70)),
             const SizedBox(height: 12),
             Container(height: 36, padding: const EdgeInsets.symmetric(horizontal: 16), alignment: Alignment.center,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(10)),
               child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Explore',
                 style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk))),
           ])),
@@ -141,7 +142,7 @@ class Membership1 extends StatelessWidget {
           ])),
           const SizedBox(height: 4),
           Container(height: 40, alignment: Alignment.center,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(12)),
             child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Become a member',
               style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kInk))),
         ]),

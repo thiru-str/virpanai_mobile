@@ -6,8 +6,8 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
-import 'composites_shared.dart';
 import 'cms_text_color.dart';
+import 'composites_shared.dart';
 
 // SpotlightList1 — a featured spotlight product on top + a companion list.
 class SpotlightList1 extends StatelessWidget {

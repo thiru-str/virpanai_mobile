@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -9,7 +10,6 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
-import 'cms_text_color.dart';
 
 class Item13 extends StatelessWidget {
   final Content content;
@@ -180,7 +180,7 @@ class _Item13Card extends StatelessWidget {
                       child: Text(
                         AppStrings.new_tag,
                         style: FontUtils.primaryFontStyle(
-                          color: cmsCard(context, Colors.white),
+                          color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,

@@ -43,7 +43,7 @@ class VerticalTile extends StatelessWidget {
             height: 40,
             width: 40,
             decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: cmsCard(context, Colors.white), size: 22),
+            child: Icon(icon, color: Colors.white, size: 22),
           ),
           const SizedBox(height: 10),
           Text(

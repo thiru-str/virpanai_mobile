@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'cms_text_color.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
-import 'cms_text_color.dart';
 
 class ContactSupport1 extends StatelessWidget {
   final Content content;

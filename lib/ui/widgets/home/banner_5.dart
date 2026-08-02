@@ -148,7 +148,7 @@ class _HeroTile extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: cmsCard(context, Colors.white),
+                        color: Colors.white,
                       ),
                     ),
                     if (merchSubtitle(data).isNotEmpty) ...[

@@ -7,7 +7,6 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
 import 'homepage_merch_shared.dart';
-import 'cms_text_color.dart';
 
 class Banner7 extends StatelessWidget {
   final Content content;
@@ -138,7 +137,7 @@ class _PromoTile extends StatelessWidget {
                   style: FontUtils.primaryFontStyle(
                     fontSize: height > 200 ? 24 : 17,
                     fontWeight: FontWeight.w800,
-                    color: cmsCard(context, Colors.white),
+                    color: Colors.white,
                   ),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'cms_text_color.dart';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -78,7 +79,7 @@ class _Item9State extends State<Item9> {
                     style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
@@ -102,7 +103,7 @@ class _Item9State extends State<Item9> {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                         const Icon(Icons.chevron_right, size: 18),
@@ -178,7 +179,7 @@ class _Item9Card extends StatelessWidget {
       child: Container(
       width: 180,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cmsCard(context, Colors.white),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade300),
       ),
@@ -231,7 +232,7 @@ class _Item9Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -246,7 +247,7 @@ class _Item9Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),

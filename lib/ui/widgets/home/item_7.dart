@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -12,7 +13,6 @@ import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
-import 'cms_text_color.dart';
 
 class Item7 extends StatelessWidget {
   final Content content;
@@ -146,7 +146,7 @@ class _Item7Card extends StatelessWidget {
               child: Container(
                 width: 60,
                 height: 60,
-                color: cmsCard(context, Colors.white),
+                color: Colors.white,
                 child: imageUrl.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: imageUrl,

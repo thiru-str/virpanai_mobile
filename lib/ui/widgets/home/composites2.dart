@@ -6,8 +6,8 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
-import 'composites_shared.dart';
 import 'cms_text_color.dart';
+import 'composites_shared.dart';
 
 // CollectionCover1 — large collection cover with an overlaid product peek strip.
 class CollectionCover1 extends StatelessWidget {
@@ -41,7 +41,7 @@ class CollectionCover1 extends StatelessWidget {
                 for (int i = 0; i < (items.length > 4 ? 4 : items.length); i++)
                   Padding(padding: const EdgeInsets.only(right: 8),
                     child: ClipRRect(borderRadius: BorderRadius.circular(10),
-                      child: Container(height: 48, width: 48, color: cmsCard(context, Colors.white),
+                      child: Container(height: 48, width: 48, color: Colors.white,
                         child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover)))),
                 Container(height: 48, width: 48, alignment: Alignment.center,
                   decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(10)),

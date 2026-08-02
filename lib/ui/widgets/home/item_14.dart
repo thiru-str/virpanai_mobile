@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
@@ -8,7 +9,6 @@ import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import '../../../utility/redirect_utils.dart';
-import 'cms_text_color.dart';
 
 class Item14 extends StatelessWidget {
   final Content content;
@@ -225,7 +225,7 @@ class _Item14Card extends StatelessWidget {
                         "$percentOff% OFF",
                         style: FontUtils.primaryFontStyle(
                           fontSize: 10,
-                          color: cmsCard(context, Colors.white),
+                          color: Colors.white,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
                         ),

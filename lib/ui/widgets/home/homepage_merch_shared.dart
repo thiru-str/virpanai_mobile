@@ -105,7 +105,7 @@ class HomeMerchSectionHeader extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cmsCard(context, Colors.white),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: Colors.black12),
               ),
@@ -115,7 +115,7 @@ class HomeMerchSectionHeader extends StatelessWidget {
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
-                  color: AppColors.textColor50,
+                  color: cmsCardText(context, AppColors.textColor50),
                 ),
               ),
             ),
@@ -155,7 +155,7 @@ class HomeMerchSectionHeader extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                   ),
                   const SizedBox(width: 2),
@@ -199,7 +199,7 @@ class HomeMerchCompactCard extends StatelessWidget {
       child: Container(
         width: 188,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(24),
           boxShadow: const [
             BoxShadow(
@@ -249,7 +249,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: cmsCard(context, Colors.white),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
@@ -257,7 +257,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                       ),
@@ -272,7 +272,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
               ),
               if (subtitle.isNotEmpty) ...[
@@ -283,7 +283,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: FontUtils.primaryFontStyle(
                     fontSize: 12,
-                    color: AppColors.textColor50,
+                    color: cmsCardText(context, AppColors.textColor50),
                   ),
                 ),
               ],
@@ -293,7 +293,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
               ),
               if (hasDiscount) ...[
@@ -302,7 +302,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                   CurrencyUtil.appendCurrency(originalPrice),
                   style: FontUtils.primaryFontStyle(
                     fontSize: 12,
-                    color: AppColors.textColor50,
+                    color: cmsCardText(context, AppColors.textColor50),
                     decoration: TextDecoration.lineThrough,
                   ),
                 ),
@@ -322,7 +322,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                       ),
                     ),
@@ -389,7 +389,7 @@ class HomeMerchEditorialCard extends StatelessWidget {
       child: Container(
         width: 248,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(28),
           boxShadow: const [
             BoxShadow(
@@ -452,7 +452,7 @@ class HomeMerchEditorialCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: cmsCard(context, Colors.white),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
@@ -460,7 +460,7 @@ class HomeMerchEditorialCard extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                       ),
@@ -510,7 +510,7 @@ class HomeMerchEditorialCard extends StatelessWidget {
                       style: FontUtils.primaryFontStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                     ),
                   ),

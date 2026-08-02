@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -13,7 +14,6 @@ import '../../../utility/page_route_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import '../../product_detail_page.dart';
 import '../../product_page.dart';
-import 'cms_text_color.dart';
 
 class Item5 extends StatelessWidget {
   final Content content;
@@ -198,7 +198,7 @@ class _Item5Card extends StatelessWidget {
                         child: Text(
                           '${layoutData.prices!.discountPercentage ?? ''} OFF',
                           style: FontUtils.primaryFontStyle(
-                            color: cmsCard(context, Colors.white),
+                            color: Colors.white,
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                             letterSpacing: 0.2,

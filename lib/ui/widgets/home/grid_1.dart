@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'cms_text_color.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,6 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
 import '../../../utility/app_assets.dart';
-import 'cms_text_color.dart';
 
 class Grid1 extends StatelessWidget {
   final Content content;
@@ -208,7 +208,7 @@ class _Grid1Card extends StatelessWidget {
                         layoutData.salesText ?? '',
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 10,
-                          color: cmsCard(context, Colors.white),
+                          color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

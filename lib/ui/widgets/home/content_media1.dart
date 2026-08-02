@@ -7,6 +7,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Blog1 — article / journal teaser rail.
 class Blog1 extends StatelessWidget {
@@ -36,11 +37,11 @@ class Blog1 extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kFresh)),
             const SizedBox(height: 4),
             Text(items[i].title ?? '', maxLines: 2, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
             if ((items[i].featureText ?? '').isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(items[i].featureText!, maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
             ],
           ]))),
         ),
@@ -66,19 +67,19 @@ class Story1 extends StatelessWidget {
         const SizedBox(height: 14),
         if ((content.layoutSubTitle ?? '').isNotEmpty)
           Text(content.layoutSubTitle!.toUpperCase(),
-            style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textColor50)),
+            style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor50))),
         const SizedBox(height: 6),
         Text(content.layoutTitle ?? 'Rooted in Craft',
-          style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+          style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
         const SizedBox(height: 8),
         Text(hero == null ? '' : merchSubtitle(hero),
-          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+          style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
         const SizedBox(height: 12),
         Row(children: [
           Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Read our story',
-            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
           const SizedBox(width: 4),
-          const Icon(Icons.arrow_forward, size: 16, color: AppColors.textColor),
+          Icon(Icons.arrow_forward, size: 16, color: cmsCardText(context, AppColors.textColor)),
         ]),
       ]),
     );
@@ -108,11 +109,11 @@ class HowTo1 extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
               Text(items[i].title ?? '',
-                style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+                style: FontUtils.primaryFontStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
               if ((items[i].featureText ?? '').isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(items[i].featureText!,
-                  style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                  style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
               ],
             ])),
           ]),

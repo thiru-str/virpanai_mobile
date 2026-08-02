@@ -6,6 +6,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/image_fallback_widget.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 import 'verticals_shared.dart';
 
 // SearchHeroVertical1 — search-led hero with vertical/quick tags.
@@ -20,16 +21,16 @@ class SearchHeroVertical1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(content.layoutTitle ?? 'What are you looking for?',
-          style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+          style: FontUtils.primaryFontStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
         const SizedBox(height: 12),
         Container(height: 48, padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14),
+          decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(14),
             border: Border.all(color: kInk.withOpacity(0.10))),
           child: Row(children: [
             const Icon(Icons.search, size: 20, color: AppColors.tabInActivecolor),
             const SizedBox(width: 10),
             Text('Search across all categories',
-              style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+              style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
           ])),
         const SizedBox(height: 12),
         Wrap(spacing: 8, runSpacing: 8, children: [
@@ -66,7 +67,7 @@ class ServiceBooking1 extends StatelessWidget {
             crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, mainAxisExtent: 104),
           itemBuilder: (context, i) => Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
               border: Border.all(color: kInk.withOpacity(0.08))),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(height: 40, width: 40,
@@ -74,7 +75,7 @@ class ServiceBooking1 extends StatelessWidget {
                 child: Icon(_icons[i % _icons.length], color: const Color(0xFF3B5BDB), size: 22)),
               const SizedBox(height: 8),
               Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-                style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+                style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
             ])),
         ),
       ]),
@@ -109,7 +110,7 @@ class WalletCashback1 extends StatelessWidget {
           ])),
           const SizedBox(width: 10),
           Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(10)),
             child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Add money',
               style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF0E9C95)))),
         ]),
@@ -128,7 +129,7 @@ class StorePickup1 extends StatelessWidget {
       decoration: AppUtils.buildLayoutBackground(content),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(children: [
           Container(height: 44, width: 44,
@@ -137,11 +138,11 @@ class StorePickup1 extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Text(content.layoutTitle ?? 'Pickup in store',
-              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
             const SizedBox(height: 2),
             Text(content.layoutSubTitle ?? 'Ready in 2 hours at your nearest store',
               maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
           ])),
           const Icon(Icons.chevron_right, color: AppColors.tabInActivecolor),
         ]),

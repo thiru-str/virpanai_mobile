@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cms_text_color.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -42,7 +43,7 @@ class PharmacyBanner1 extends StatelessWidget {
                         ? content.layoutTitle!
                         : 'Order Medicines',
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor),
+                      fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor)),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -51,7 +52,7 @@ class PharmacyBanner1 extends StatelessWidget {
                         : 'Upload prescription • Up to 25% off',
                     maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50),
+                      fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50)),
                   ),
                 ],
               ),

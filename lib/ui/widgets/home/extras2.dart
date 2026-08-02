@@ -56,7 +56,7 @@ class OfferDuo1 extends StatelessWidget {
             child: Row(children: [
               Container(height: 38, width: 38,
                 decoration: BoxDecoration(color: Color(_c[i % 2]), borderRadius: BorderRadius.circular(10)),
-                child: Icon(_ic[i % 2], color: cmsCard(context, Colors.white), size: 20)),
+                child: Icon(_ic[i % 2], color: Colors.white, size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                 Text(items[i].salesText ?? items[i].title ?? 'Special Offer',

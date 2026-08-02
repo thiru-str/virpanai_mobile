@@ -5,8 +5,8 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
-import 'grocery_shared.dart';
 import 'cms_text_color.dart';
+import 'grocery_shared.dart';
 
 // Combo1 — grocery combo / value pack (bundle of items at one price).
 class Combo1 extends StatelessWidget {

@@ -5,6 +5,7 @@ import '../../../utility/app_colors.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Shared building blocks for the supermarket / grocery component family.
 // Kept compact and dense — the way grocery apps (Blinkit, Zepto, BigBasket)
@@ -57,7 +58,7 @@ class GroceryTile extends StatelessWidget {
 
     final tile = Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cmsCard(context, Colors.white),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: kInk.withOpacity(0.08)),
       ),
@@ -106,7 +107,7 @@ class GroceryTile extends StatelessWidget {
             style: FontUtils.primaryFontStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.textColor,
+              color: cmsCardText(context, AppColors.textColor),
             ),
           ),
           if (unit.isNotEmpty) ...[
@@ -118,7 +119,7 @@ class GroceryTile extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textColor50,
+                color: cmsCardText(context, AppColors.textColor50),
               ),
             ),
           ],
@@ -135,7 +136,7 @@ class GroceryTile extends StatelessWidget {
                   style: FontUtils.primaryFontStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textColor,
+                    color: cmsCardText(context, AppColors.textColor),
                   ),
                 ),
               ),
@@ -149,7 +150,7 @@ class GroceryTile extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textColor50,
+                      color: cmsCardText(context, AppColors.textColor50),
                     ).copyWith(decoration: TextDecoration.lineThrough),
                   ),
                 ),

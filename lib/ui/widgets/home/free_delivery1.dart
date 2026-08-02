@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cms_text_color.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -40,7 +41,7 @@ class FreeDelivery1 extends StatelessWidget {
                         ? content.layoutTitle!
                         : 'Free delivery over Rs 199',
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textColor),
+                      fontSize: 14, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor)),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -48,7 +49,7 @@ class FreeDelivery1 extends StatelessWidget {
                         ? content.layoutSubTitle!
                         : 'Delivered in 30 minutes or less',
                     style: FontUtils.primaryFontStyle(
-                      fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50),
+                      fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50)),
                   ),
                 ],
               ),

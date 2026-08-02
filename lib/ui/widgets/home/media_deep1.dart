@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Instagram1 — shoppable Instagram feed grid.
 class Instagram1 extends StatelessWidget {
@@ -30,10 +31,10 @@ class Instagram1 extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.camera_alt, size: 16, color: AppColors.textColor),
+          Icon(Icons.camera_alt, size: 16, color: cmsCardText(context, AppColors.textColor)),
           const SizedBox(width: 6),
           Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : '@yourbrand',
-            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
         ])),
       ]),
     );

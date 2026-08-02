@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cms_text_color.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -20,7 +21,7 @@ class TrustStrip1 extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(16),
+          color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(
           children: [
@@ -36,11 +37,11 @@ class TrustStrip1 extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(items[i].title ?? '',
                       maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-                      style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textColor)),
+                      style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor))),
                     if ((items[i].featureText ?? '').isNotEmpty)
                       Text(items[i].featureText!,
                         maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-                        style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+                        style: FontUtils.primaryFontStyle(fontSize: 9, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
                   ],
                 ),
               ),
@@ -92,7 +93,7 @@ class EmailCapture1 extends StatelessWidget {
                 const SizedBox(width: 8),
                 Container(
                   height: 42, padding: const EdgeInsets.symmetric(horizontal: 18), alignment: Alignment.center,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(12)),
                   child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Subscribe',
                     style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kInk)),
                 ),

@@ -7,6 +7,7 @@ import '../../../utility/font_utils.dart';
 import '../../../utility/redirect_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 class VideoBanner1 extends StatelessWidget {
   final Content content;
@@ -51,10 +52,10 @@ class TextCta1 extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
     child: Column(children: [
       if ((content.layoutSubTitle ?? '').isNotEmpty)
-        Text(content.layoutSubTitle!.toUpperCase(), style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textColor50)),
+        Text(content.layoutSubTitle!.toUpperCase(), style: FontUtils.primaryFontStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor50))),
       const SizedBox(height: 8),
       Text(content.layoutTitle ?? 'Join thousands who shop smarter', textAlign: TextAlign.center,
-        style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+        style: FontUtils.primaryFontStyle(fontSize: 22, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
       const SizedBox(height: 16),
       Container(height: 44, padding: const EdgeInsets.symmetric(horizontal: 28), alignment: Alignment.center,
         decoration: BoxDecoration(color: kInk, borderRadius: BorderRadius.circular(22)),
@@ -107,7 +108,7 @@ class SubscribeBox1 extends StatelessWidget {
         ])),
         const SizedBox(width: 8),
         Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(10)),
           child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Start', style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk))),
       ]),
     ),
@@ -130,10 +131,10 @@ class FaqCompact1 extends StatelessWidget {
         for (int i = 0; i < items.length; i++) ...[
           if (i != 0) const SizedBox(height: 8),
           Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kInk.withOpacity(0.08))),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(12), border: Border.all(color: kInk.withOpacity(0.08))),
             child: Row(children: [
-              Expanded(child: Text(items[i].title ?? '', style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textColor))),
-              const Icon(Icons.add, size: 18, color: AppColors.textColor),
+              Expanded(child: Text(items[i].title ?? '', style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor)))),
+              Icon(Icons.add, size: 18, color: cmsCardText(context, AppColors.textColor)),
             ])),
         ],
       ]),

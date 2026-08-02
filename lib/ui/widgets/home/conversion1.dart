@@ -5,6 +5,7 @@ import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
+import 'cms_text_color.dart';
 
 // Loyalty1 — rewards / points programme banner (dark).
 class Loyalty1 extends StatelessWidget {
@@ -33,7 +34,7 @@ class Loyalty1 extends StatelessWidget {
           ])),
           const SizedBox(width: 10),
           Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(10)),
             child: Text(content.layoutRedirectTitle?.isNotEmpty == true ? content.layoutRedirectTitle! : 'Join',
               style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk))),
         ]),
@@ -53,7 +54,7 @@ class Referral1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kInk.withOpacity(0.08))),
         child: Row(children: [
           Container(height: 46, width: 46,
@@ -62,11 +63,11 @@ class Referral1 extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Text(content.layoutTitle ?? 'Refer a Friend, Get Rs 300',
-              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textColor)),
+              style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
             const SizedBox(height: 2),
             Text(content.layoutSubTitle ?? 'They get Rs 300 off too',
               maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textColor50)),
+              style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w400, color: cmsCardText(context, AppColors.textColor50))),
           ])),
           const SizedBox(width: 10),
           Container(height: 34, padding: const EdgeInsets.symmetric(horizontal: 14), alignment: Alignment.center,
@@ -127,7 +128,7 @@ class StockUrgency1 extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(child: Text(content.layoutTitle ?? 'Selling fast — 200+ sold in the last 24 hours',
             maxLines: 2, overflow: TextOverflow.ellipsis,
-            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textColor))),
+            style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cmsCardText(context, AppColors.textColor)))),
         ]),
       ),
     );
