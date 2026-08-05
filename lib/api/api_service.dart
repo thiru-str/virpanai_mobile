@@ -64,12 +64,24 @@ class ApiService {
     _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
   }
 
+  String _responseErrorMessage(dynamic data, String fallback) {
+    if (data is Map) {
+      final message = data['error'] ?? data['message'];
+      if (message != null && message.toString().trim().isNotEmpty) {
+        return message.toString();
+      }
+    }
+    return fallback;
+  }
+
   Future<T> _makePostRequest<T>(
     String endpoint,
     Map<String, dynamic>? data,
     T Function(Map<String, dynamic>) fromJson,
     BuildContext context,
   ) async {
+    var toastShown = false;
+    String? failureMessage;
     try {
       await setPublishableKey();
 
@@ -77,26 +89,78 @@ class ApiService {
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
 
-      final response = await _dio.post(endpoint, data: data ?? {},options: Options(
+      final response =
+          await _dio.post(endpoint, data: data ?? {}, options: Options(
         validateStatus: (status) {
           // Accept status codes 400-499 as valid responses for handling errors manually
           return status != null && status < 500;
         },
       ));
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         await _handleLogout(context, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        failureMessage =
+            _responseErrorMessage(response.data, 'Unauthorized request');
+        throw Exception(failureMessage);
       } else {
-        AppUtils.showToast(response.data['message'] ?? 'An error occurred');
-        throw Exception('Unexpected status code: ${response.statusCode}');
+        failureMessage =
+            _responseErrorMessage(response.data, 'An error occurred');
+        AppUtils.showToast(failureMessage);
+        toastShown = true;
+        throw Exception(failureMessage);
       }
     } catch (e, stacktrace) {
+      failureMessage ??= e is DioException
+          ? _responseErrorMessage(e.response?.data, 'An error occurred')
+          : e.toString().replaceFirst('Exception: ', '');
+      if (!toastShown) {
+        AppUtils.showToast(failureMessage);
+      }
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
-      throw Exception('An error occurred: $e');
+      throw Exception(failureMessage);
+    }
+  }
+
+  Future<T> _makePatchRequest<T>(
+    String endpoint,
+    Map<String, dynamic> data,
+    T Function(Map<String, dynamic>) fromJson,
+    BuildContext context,
+  ) async {
+    var toastShown = false;
+    String? failureMessage;
+    try {
+      await setPublishableKey();
+      final response = await _dio.patch(
+        endpoint,
+        data: data,
+        options:
+            Options(validateStatus: (status) => status != null && status < 500),
+      );
+      if (response.statusCode == 200) {
+        return fromJson(Map<String, dynamic>.from(response.data));
+      }
+      if (response.statusCode == 401) {
+        await _handleLogout(context, response.data['error']);
+      }
+      failureMessage =
+          _responseErrorMessage(response.data, 'Unable to update item');
+      AppUtils.showToast(failureMessage);
+      toastShown = true;
+      throw Exception(failureMessage);
+    } catch (error, stacktrace) {
+      failureMessage ??= error is DioException
+          ? _responseErrorMessage(error.response?.data, 'An error occurred')
+          : error.toString().replaceFirst('Exception: ', '');
+      if (!toastShown) {
+        AppUtils.showToast(failureMessage);
+      }
+      AppLogger.print('API Exception:', '$error');
+      AppLogger.print('Stacktrace:', '$stacktrace');
+      throw Exception(failureMessage);
     }
   }
 
@@ -136,7 +200,7 @@ class ApiService {
       } else if (response.statusCode == 401) {
         await _handleLogout(context!, response.data['error']);
         throw Exception('Unauthorized: ${response.data['error']}');
-      }  else {
+      } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -165,12 +229,12 @@ class ApiService {
 
       // Make the DELETE request
       final response =
-          await _dio.delete(fullEndpoint, data: queryParams,options: Options(
-            validateStatus: (status) {
-              // Accept status codes 400-499 as valid responses for handling errors manually
-              return status != null && status < 500;
-            },
-          ));
+          await _dio.delete(fullEndpoint, data: queryParams, options: Options(
+        validateStatus: (status) {
+          // Accept status codes 400-499 as valid responses for handling errors manually
+          return status != null && status < 500;
+        },
+      ));
 
       if (response.statusCode == 200) {
         AppLogger.print('API Response:', '${response.data}');
@@ -197,7 +261,8 @@ class ApiService {
     try {
       // Prepare FormData with the image file
       final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(file.path, filename: file.path.split('/').last),
+        'image': await MultipartFile.fromFile(file.path,
+            filename: file.path.split('/').last),
       });
 
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$apiUrl');
@@ -243,28 +308,37 @@ class ApiService {
     PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
   }
 
-  Future<SendOtpResponse> sendOtp(BuildContext context, String countryCode,String phone) async {
+  Future<SendOtpResponse> sendOtp(
+      BuildContext context, String countryCode, String phone) async {
     await addToken();
-    return _makePostRequest("dealer/customer/send-otp", {"country_code":countryCode,"phone": phone},
-        (data) => SendOtpResponse.fromJson(data), context);
+    return _makePostRequest(
+        "dealer/customer/send-otp",
+        {"country_code": countryCode, "phone": phone},
+        (data) => SendOtpResponse.fromJson(data),
+        context);
   }
 
-  Future<VerifyOtpResponse> verifyOtp(
-      BuildContext context,String countryCode,String phone, String otp) async {
+  Future<VerifyOtpResponse> verifyOtp(BuildContext context, String countryCode,
+      String phone, String otp) async {
     await addToken();
     //String? deviceId = await SharedPreferencesUtil().getString('fcm_token');
     return _makePostRequest(
         "dealer/customer/verify-otp",
-        {"device_id": "","country_code":countryCode,"phone": phone, "otp": otp},
+        {
+          "device_id": "",
+          "country_code": countryCode,
+          "phone": phone,
+          "otp": otp
+        },
         (data) => VerifyOtpResponse.fromJson(data),
         context);
   }
 
   Future<VerifyOtpResponse> login(
-      BuildContext context,String email,String password) async {
+      BuildContext context, String email, String password) async {
     return _makePostRequest(
         "dealer/login",
-        {"email": email,"password":password},
+        {"email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
         context);
   }
@@ -275,7 +349,8 @@ class ApiService {
       String name,
       String phone,
       String password,
-      String panNo,String panImage) async {
+      String panNo,
+      String panImage) async {
     return _makePostRequest(
         "dealer/create",
         {
@@ -300,15 +375,12 @@ class ApiService {
   }
 
   Future<RefreshTokenResponse> refreshToken(
-      BuildContext context,
-      String token,
-      ) async {
+    BuildContext context,
+    String token,
+  ) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
-    return _makePostRequest(
-        "auth/token/refresh",
-        null,
-        (data) => RefreshTokenResponse.fromJson(data),
-        context);
+    return _makePostRequest("auth/token/refresh", null,
+        (data) => RefreshTokenResponse.fromJson(data), context);
   }
 
   Future<ProductsResponse> listProducts(
@@ -396,7 +468,7 @@ class ApiService {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v4',
-        null,
+      null,
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -414,23 +486,24 @@ class ApiService {
       String country,
       String zipCode,
       String addressName,
-      String latitude,String longitude) async {
+      String latitude,
+      String longitude) async {
     await addToken();
     return _makePostRequest(
         addressID != null
             ? "store/customers/me/addresses/$addressID"
             : "store/customers/me/addresses",
         {
-          "first_name" : firstName,
-          "last_name" : lastName,
+          "first_name": firstName,
+          "last_name": lastName,
           "address_1": address_1,
           "phone": phone,
           "city": city,
           "province": state,
           "postal_code": zipCode,
           "address_name": addressName,
-          "country_code" : "in",
-          "metadata":{"latitude":latitude,"longitude":longitude}
+          "country_code": "in",
+          "metadata": {"latitude": latitude, "longitude": longitude}
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -450,8 +523,8 @@ class ApiService {
   Future<RegisterResponse> deleteAddress(
       BuildContext context, String? addressID) async {
     await addToken();
-    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null, null,
-        (data) => RegisterResponse.fromJson(data), context);
+    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null,
+        null, (data) => RegisterResponse.fromJson(data), context);
   }
 
   Future<ReviewResponse> getProductReviews(
@@ -504,13 +577,15 @@ class ApiService {
   }
 
   Future<CartResponse> addPromoCode(
-      BuildContext context,String promoCode) async {
+      BuildContext context, String promoCode) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId/promotions',
-      {"promo_codes": [promoCode]},
-          (json) => CartResponse.fromJson(json),
+      {
+        "promo_codes": [promoCode]
+      },
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
@@ -529,9 +604,12 @@ class ApiService {
   Future<WishlistResponse> deleteFavourite(
       BuildContext context, String? productId, String? wishlistId) async {
     await addToken();
-    return _makeDeleteRequest('store/product-wishlist', wishlistId, {"product_id": productId},
-            (data) => WishlistResponse.fromJson(data), context);
-
+    return _makeDeleteRequest(
+        'store/product-wishlist',
+        wishlistId,
+        {"product_id": productId},
+        (data) => WishlistResponse.fromJson(data),
+        context);
   }
 
   Future<CartResponse> updateAddress(
@@ -540,7 +618,7 @@ class ApiService {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId',
-      {"shipping_address": address,"billing_address": address},
+      {"shipping_address": address, "billing_address": address},
       (json) => CartResponse.fromJson(json),
       context,
     );
@@ -636,14 +714,13 @@ class ApiService {
         context);
   }
 
-  Future<ShippingResponse> getShippingInfo(
-      BuildContext context) async {
+  Future<ShippingResponse> getShippingInfo(BuildContext context) async {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest<ShippingResponse>(
       'store/shipping-options',
       null,
       {"cart_id": cartId},
-          (json) => ShippingResponse.fromJson(json),
+      (json) => ShippingResponse.fromJson(json),
       context,
     );
   }
@@ -655,31 +732,35 @@ class ApiService {
     return _makePostRequest(
       'store/carts/$cartId/shipping-methods',
       {"option_id": optionId},
-          (json) => CartResponse.fromJson(json),
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
 
-  Future<dynamic> updatePaymentMethod(
-      BuildContext context, String paymentProviderId,CartResponse cartResponse) async {
+  Future<dynamic> updatePaymentMethod(BuildContext context,
+      String paymentProviderId, CartResponse cartResponse) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/update-payment-method/$cartId',
-      paymentProviderId == 'pp_razorpay_razorpay'?{"payment_provider_id": paymentProviderId,"context":{"extra":cartResponse.cart}}:{"payment_provider_id": paymentProviderId},
-          (json) => json,
+      paymentProviderId == 'pp_razorpay_razorpay'
+          ? {
+              "payment_provider_id": paymentProviderId,
+              "context": {"extra": cartResponse.cart}
+            }
+          : {"payment_provider_id": paymentProviderId},
+      (json) => json,
       context,
     );
   }
 
-  Future<dynamic> completeCart(
-      BuildContext context) async {
+  Future<dynamic> completeCart(BuildContext context) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId/complete',
       null,
-          (json) => json,
+      (json) => json,
       context,
     );
   }
@@ -689,7 +770,7 @@ class ApiService {
       'public/details',
       null,
       null,
-          (json) => PublicDetailsResponse.fromJson(json),
+      (json) => PublicDetailsResponse.fromJson(json),
       null,
     );
   }
@@ -704,7 +785,8 @@ class ApiService {
     );
   }
 
-  Future<dynamic> uploadDocImages(BuildContext context,String token, File file) async {
+  Future<dynamic> uploadDocImages(
+      BuildContext context, String token, File file) async {
     //_dio.options.headers['Authorization'] = 'Bearer $token';
     return _uploadFile(
       file: file,
@@ -714,13 +796,14 @@ class ApiService {
     );
   }
 
-  Future<NeftTransactionResponse> getNEFTTransaction(BuildContext context, String? orderID) async {
+  Future<NeftTransactionResponse> getNEFTTransaction(
+      BuildContext context, String? orderID) async {
     await addToken();
     return _makeGetRequest<NeftTransactionResponse>(
       'store/neft-payment-images',
       orderID,
       null,
-          (json) => NeftTransactionResponse.fromJson(json),
+      (json) => NeftTransactionResponse.fromJson(json),
       null,
     );
   }
@@ -731,7 +814,7 @@ class ApiService {
     return _makePostRequest(
       '/store/neft-payment-images',
       payload,
-          (json) => ProductInfoResponse.fromJson(json),
+      (json) => ProductInfoResponse.fromJson(json),
       context,
     );
   }
@@ -741,7 +824,7 @@ class ApiService {
       '/store/content',
       null,
       null,
-          (json) => StoreContentResponse.fromJson(json),
+      (json) => StoreContentResponse.fromJson(json),
       null,
     );
   }
@@ -753,19 +836,20 @@ class ApiService {
       'store/collections',
       null,
       null,
-          (json) => CollectionsResponse.fromJson(json),
+      (json) => CollectionsResponse.fromJson(json),
       context,
     );
   }
 
-  Future<FilterCategoryResponse> listCategories(BuildContext context, String parentId) async {
+  Future<FilterCategoryResponse> listCategories(
+      BuildContext context, String parentId) async {
     return _makeGetRequest<FilterCategoryResponse>(
       'store/product-categories',
       null,
       {
         "parent_category_id": parentId,
       },
-          (json) => FilterCategoryResponse.fromJson(json),
+      (json) => FilterCategoryResponse.fromJson(json),
       context,
     );
   }
@@ -776,7 +860,7 @@ class ApiService {
     return _makePostRequest<RelatedProductsResponse>(
       'store/related-product/${productId}',
       {"region_id": regionId},
-          (json) => RelatedProductsResponse.fromJson(json),
+      (json) => RelatedProductsResponse.fromJson(json),
       context,
     );
   }
@@ -787,27 +871,36 @@ class ApiService {
   }
 
   Future<void> setPublishableKey() async {
-    String? publishableKey = await SharedPreferencesUtil().getString('publishable_key');
+    String? publishableKey =
+        await SharedPreferencesUtil().getString('publishable_key');
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
   }
 
   //Dealer APIs
-  Future<DashboardResponse> dashboard(
-      BuildContext context, String type,{String? year}) async {
+  Future<DashboardResponse> dashboard(BuildContext context, String type,
+      {String? year}) async {
     await addToken();
     return _makeGetRequest<DashboardResponse>(
       'dealer/dashboard/$type',
       null,
       {"year": '2026'},
-          (json) => DashboardResponse.fromJson(json),
+      (json) => DashboardResponse.fromJson(json),
       context,
     );
   }
 
-  Future<CompleteOrderResponse> completeOrder(BuildContext context, String orderId,String fulfillmentId,String additionalStatus) async {
+  Future<CompleteOrderResponse> completeOrder(BuildContext context,
+      String orderId, String fulfillmentId, String additionalStatus) async {
     await addToken();
-    return _makePostRequest('dealer/orders/fulfillments/mark-as-delivered', {"order_id":orderId,"fulfillment_id": fulfillmentId,'additional_status':additionalStatus},
-            (data) => CompleteOrderResponse.fromJson(data), context);
+    return _makePostRequest(
+        'dealer/orders/fulfillments/mark-as-delivered',
+        {
+          "order_id": orderId,
+          "fulfillment_id": fulfillmentId,
+          'additional_status': additionalStatus
+        },
+        (data) => CompleteOrderResponse.fromJson(data),
+        context);
   }
 
   Future<LiveOrderDetailResponse> orderDetail(
@@ -817,13 +910,13 @@ class ApiService {
       'dealer/get-live-orders/$orderId',
       null,
       null,
-          (json) => LiveOrderDetailResponse.fromJson(json),
+      (json) => LiveOrderDetailResponse.fromJson(json),
       context,
     );
   }
 
   Future<PastOrderDetailResponse> pastOrderDetail(
-      BuildContext context, String date,String status) async {
+      BuildContext context, String date, String status) async {
     await addToken();
     final queryParams = <String, String>{};
     if (status.isNotEmpty) {
@@ -833,32 +926,35 @@ class ApiService {
       'dealer/get-past-orders/$date',
       null,
       queryParams,
-          (json) => PastOrderDetailResponse.fromJson(json),
+      (json) => PastOrderDetailResponse.fromJson(json),
       context,
     );
   }
 
-  Future<PendingOrderDetailResponse> pendingOrderDetail(
-      BuildContext context,{required int limit,required int offset}) async {
+  Future<PendingOrderDetailResponse> pendingOrderDetail(BuildContext context,
+      {required int limit, required int offset}) async {
     await addToken();
 
     return _makeGetRequest<PendingOrderDetailResponse>(
       'dealer/get-pending-orders',
       null,
-        {
-          'limit': limit,
-          'offset': offset,
-        },
-          (json) => PendingOrderDetailResponse.fromJson(json),
+      {
+        'limit': limit,
+        'offset': offset,
+      },
+      (json) => PendingOrderDetailResponse.fromJson(json),
       context,
     );
   }
 
   Future<PastOrderResponse> pastOrders(
-      BuildContext context,String startUtc,String endUtc,String status, {
-        required int limit,
-        required int offset,
-      }) async {
+    BuildContext context,
+    String startUtc,
+    String endUtc,
+    String status, {
+    required int limit,
+    required int offset,
+  }) async {
     await addToken();
     final queryParams = <String, dynamic>{};
     if (startUtc.isNotEmpty) {
@@ -876,16 +972,16 @@ class ApiService {
       'dealer/get-past-orders',
       null,
       queryParams,
-          (json) => PastOrderResponse.fromJson(json),
+      (json) => PastOrderResponse.fromJson(json),
       context,
     );
   }
 
   Future<LiveOrdersResponse> liveOrders(
-      BuildContext context, {
-        required int limit,
-        required int offset,
-      }) async {
+    BuildContext context, {
+    required int limit,
+    required int offset,
+  }) async {
     await addToken();
 
     return _makeGetRequest<LiveOrdersResponse>(
@@ -895,11 +991,10 @@ class ApiService {
         'limit': limit,
         'offset': offset,
       },
-          (json) => LiveOrdersResponse.fromJson(json),
+      (json) => LiveOrdersResponse.fromJson(json),
       context,
     );
   }
-
 
   Future<DealerResponse> getDealerDetails(BuildContext context) async {
     await addToken();
@@ -907,16 +1002,16 @@ class ApiService {
       'dealer/me',
       null,
       null,
-          (json) => DealerResponse.fromJson(json),
+      (json) => DealerResponse.fromJson(json),
       context,
     );
   }
 
   Future<CustomerListResponse> getCustomerList(
-      BuildContext context, {
-        required int limit,
-        required int offset,
-      }) async {
+    BuildContext context, {
+    required int limit,
+    required int offset,
+  }) async {
     await addToken();
 
     return _makeGetRequest<CustomerListResponse>(
@@ -926,7 +1021,165 @@ class ApiService {
         'limit': limit,
         'offset': offset,
       },
-          (json) => CustomerListResponse.fromJson(json),
+      (json) => CustomerListResponse.fromJson(json),
+      context,
+    );
+  }
+
+  // Dealer POS order APIs. These deliberately target /dealer/* and retain the
+  // dealer bearer token; do not replace them with storefront cart endpoints.
+  Future<Map<String, dynamic>> startDealerOrderCart(
+      BuildContext context, String customerId) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts',
+      {'customer_id': customerId},
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderCart(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+        'dealer/order-carts', cartId, null, (json) => json, context);
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderShippingOptions(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/shipping-options',
+      null,
+      null,
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> selectDealerOrderShippingMethod(
+      BuildContext context, String cartId, String optionId) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/shipping-method',
+      {'option_id': optionId},
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> addDealerOrderShippingAddress(
+      BuildContext context,
+      String cartId,
+      Map<String, dynamic> shippingAddress) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/shipping-address',
+      {'shipping_address': shippingAddress},
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderPaymentMethods(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/payment-methods',
+      null,
+      null,
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> selectDealerOrderPaymentMethod(
+      BuildContext context, String cartId, String providerId) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/payment-method',
+      {'provider_id': providerId},
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderProducts(
+    BuildContext context, {
+    String search = '',
+    String cartId = '',
+    String categoryId = '',
+    String collectionId = '',
+    String brandId = '',
+    String order = '',
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/products',
+      null,
+      {
+        'limit': limit,
+        'offset': offset,
+        if (search.isNotEmpty) 'q': search,
+        if (cartId.isNotEmpty) 'cart_id': cartId,
+        if (categoryId.isNotEmpty) 'category_id': categoryId,
+        if (collectionId.isNotEmpty) 'collection_id': collectionId,
+        if (brandId.isNotEmpty) 'tag_id': brandId,
+        if (order.isNotEmpty) 'order': order,
+      },
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderCategories(
+      BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/categories',
+      null,
+      null,
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderProductFilters(
+      BuildContext context) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/product-filters',
+      null,
+      null,
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> addDealerOrderItem(
+      BuildContext context, String cartId, String variantId) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/items',
+      {'variant_id': variantId, 'quantity': 1},
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> updateDealerOrderItemQuantity(
+      BuildContext context,
+      String cartId,
+      String variantId,
+      int quantity) async {
+    await addToken();
+    return _makePatchRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/items',
+      {'variant_id': variantId, 'quantity': quantity},
+      (json) => json,
       context,
     );
   }
@@ -937,7 +1190,17 @@ class ApiService {
       String firstName,
       String countryCode,
       String phone,
-      String shopName,String state,String city,String postalCode,bool isGST,String gstNo,String gstImage,String shopNameBoardImage,String shopInteriorImage,String shopCounterImage,String token) async {
+      String shopName,
+      String state,
+      String city,
+      String postalCode,
+      bool isGST,
+      String gstNo,
+      String gstImage,
+      String shopNameBoardImage,
+      String shopInteriorImage,
+      String shopCounterImage,
+      String token) async {
     //await addToken();
     _dio.options.headers['Authorization'] = 'Bearer $token';
     return _makePostRequest(
@@ -948,61 +1211,72 @@ class ApiService {
           "first_name": shopName,
           "phone": phone,
           "metadata": {
-            "country_code":countryCode,
-            "shop_name":shopName,
-            "country":"IN",
-            "city":city,
-            "state":state,
-            "postal_code":postalCode,
-            "is_gst":isGST,
-            "gst_number":gstNo,
-            "gst_image":gstImage,
-            "shop_name_board_image":shopNameBoardImage,
-            "shop_interior_image":shopInteriorImage,
-            "shop_counter_image":shopCounterImage
+            "country_code": countryCode,
+            "shop_name": shopName,
+            "country": "IN",
+            "city": city,
+            "state": state,
+            "postal_code": postalCode,
+            "is_gst": isGST,
+            "gst_number": gstNo,
+            "gst_image": gstImage,
+            "shop_name_board_image": shopNameBoardImage,
+            "shop_interior_image": shopInteriorImage,
+            "shop_counter_image": shopCounterImage
           }
         },
-            (data) => data,
+        (data) => data,
         context);
   }
 
-  Future<PinCodeResponse> pinCodeCheck(BuildContext context, String pinCode) async {
-    return _makePostRequest('public/pincode-list', {"pincode":pinCode},
-            (data) => PinCodeResponse.fromJson(data), context);
+  Future<PinCodeResponse> pinCodeCheck(
+      BuildContext context, String pinCode) async {
+    return _makePostRequest('public/pincode-list', {"pincode": pinCode},
+        (data) => PinCodeResponse.fromJson(data), context);
   }
 
-  Future<DuplicateResponse> checkDuplicate(BuildContext context,String email,String phone) async {
-    return _makePostRequest('store/customers/check-duplicate', {"email":email,"phone":phone},
-            (data) => DuplicateResponse.fromJson(data),context);
+  Future<DuplicateResponse> checkDuplicate(
+      BuildContext context, String email, String phone) async {
+    return _makePostRequest(
+        'store/customers/check-duplicate',
+        {"email": email, "phone": phone},
+        (data) => DuplicateResponse.fromJson(data),
+        context);
   }
 
-  Future<DuplicateResponse> checkDuplicateDealer(BuildContext context,String email,String phone) async {
-    return _makePostRequest('dealer/check-duplicate', {"email":email,"phone":phone},
-            (data) => DuplicateResponse.fromJson(data),context);
+  Future<DuplicateResponse> checkDuplicateDealer(
+      BuildContext context, String email, String phone) async {
+    return _makePostRequest(
+        'dealer/check-duplicate',
+        {"email": email, "phone": phone},
+        (data) => DuplicateResponse.fromJson(data),
+        context);
   }
 
   Future<ResetResponse> sendEmailOtp(BuildContext context) async {
     await addToken();
     return _makePostRequest('dealer/password/send-email-otp', null,
-            (data) => ResetResponse.fromJson(data),context);
+        (data) => ResetResponse.fromJson(data), context);
   }
 
-  Future<ResetResponse> verifyEmailOtp(BuildContext context,String otp,String password) async {
+  Future<ResetResponse> verifyEmailOtp(
+      BuildContext context, String otp, String password) async {
     await addToken();
-    return _makePostRequest('dealer/password/reset', {"otp":otp,"password":password},
-            (data) => ResetResponse.fromJson(data),context);
+    return _makePostRequest(
+        'dealer/password/reset',
+        {"otp": otp, "password": password},
+        (data) => ResetResponse.fromJson(data),
+        context);
   }
 
-  Future<ContentResponse> getContents(
-      BuildContext context, String slug) async {
+  Future<ContentResponse> getContents(BuildContext context, String slug) async {
     await addToken();
     return _makeGetRequest<ContentResponse>(
       'dealer/content/$slug',
       null,
       {"slug": slug},
-          (json) => ContentResponse.fromJson(json),
+      (json) => ContentResponse.fromJson(json),
       context,
     );
   }
-
 }

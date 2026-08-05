@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/model/dealer_response.dart';
 import 'package:waioz/model/live_order_response.dart';
 import 'package:waioz/ui/pending_order_details.dart';
+import 'package:waioz/ui/dealer_order_create_page.dart';
 import 'package:waioz/ui/profile_page.dart';
 import 'package:waioz/ui/widgets/clear_pending_orders.dart';
 import 'package:waioz/ui/widgets/empty_view.dart';
@@ -169,11 +170,9 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                   const SizedBox(height: 24),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Live Orders',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                    child: Text('Live Orders',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 16),
                   // Ledger Balance Card
@@ -207,11 +206,12 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if (_liveOrdersResponse?.hasPending==true)
+                                if (_liveOrdersResponse?.hasPending == true)
                                   Positioned.fill(
                                     child: ClipRect(
                                       child: BackdropFilter(
-                                        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                        filter: ImageFilter.blur(
+                                            sigmaX: 6, sigmaY: 6),
                                         child: Container(
                                           color: Colors.black.withOpacity(0.1),
                                         ),
@@ -268,10 +268,19 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
                   if (_hasMore)
                     Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+                      child: Center(
+                          child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      )),
                     ),
                 ],
               ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Create order',
+        backgroundColor: AppColors.primary,
+        onPressed: () => showDealerOrderCustomerDrawer(context),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -292,7 +301,7 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
             return false;
           },
           child: ClearPendingOrdersDialog(
-            onLogOut: (){
+            onLogOut: () {
               SharedPreferencesUtil().clear();
               PageRouteUtils.pushAndRemoveUntil(context, WelcomePage());
             },
