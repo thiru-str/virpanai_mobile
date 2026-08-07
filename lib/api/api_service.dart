@@ -1105,6 +1105,45 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>> getDealerOrderCoupons(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/coupons',
+      null,
+      null,
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> applyDealerOrderCoupon(
+      BuildContext context, String cartId, String promoCode) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/coupons',
+      {
+        'promo_codes': [promoCode]
+      },
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> removeDealerOrderCoupon(
+      BuildContext context, String cartId, String promoCode) async {
+    await addToken();
+    return _makeDeleteRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/coupons',
+      null,
+      {
+        'promo_codes': [promoCode]
+      },
+      (json) => json,
+      context,
+    );
+  }
+
   Future<Map<String, dynamic>> getDealerOrderProducts(
     BuildContext context, {
     String search = '',

@@ -14,6 +14,9 @@ class DealerOrderCartPage extends StatefulWidget {
 
 class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
   final ApiService _api = ApiService();
+  final TextEditingController _inlineCouponController = TextEditingController();
+  final FocusNode _inlineCouponFocus = FocusNode();
+  final GlobalKey _couponCardKey = GlobalKey();
   late Map<String, dynamic> _cart;
   String? _updatingVariantId;
   List<Map<String, dynamic>> _shippingOptions = [];
@@ -26,12 +29,24 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
   String? _selectingPaymentMethodId;
   bool _paymentMethodsLoading = true;
   String? _paymentMethodsError;
+  bool _couponListEnabled = true;
+  bool _couponVisibilityLoaded = false;
+  bool _couponChecking = false;
+  bool _showInlineCouponEntry = false;
+  bool _inlineCouponApplying = false;
 
   @override
   void initState() {
     super.initState();
     _cart = widget.initialCart;
     _loadCartPage();
+  }
+
+  @override
+  void dispose() {
+    _inlineCouponController.dispose();
+    _inlineCouponFocus.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCartPage() async {
@@ -81,9 +96,9 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
               response['selected_shipping_option_id']?.toString();
         }
       });
-      if (response['shipping_options'] is! List) {
-        await _loadShippingOptions();
-      }
+      // Item mutations now reprice only the selected shipping method on the
+      // backend. Keep the already-loaded method choices instead of blocking
+      // this action on a second all-options calculation.
       return true;
     } catch (_) {
       return false;
@@ -172,9 +187,9 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
     }
   }
 
-  Future<void> _selectPaymentMethod(String providerId) async {
+  Future<bool> _selectPaymentMethod(String providerId) async {
     final cartId = _cart['id']?.toString();
-    if (cartId == null || _selectingPaymentMethodId != null) return;
+    if (cartId == null || _selectingPaymentMethodId != null) return false;
     setState(() => _selectingPaymentMethodId = providerId);
     try {
       final response = await _api.selectDealerOrderPaymentMethod(
@@ -188,8 +203,10 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
           _selectedPaymentMethodId = providerId;
         });
       }
+      return true;
     } catch (_) {
       // The shared API layer displays the backend error.
+      return false;
     } finally {
       if (mounted) setState(() => _selectingPaymentMethodId = null);
     }
@@ -222,6 +239,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
 
   Future<void> _showPaymentMethods() async {
     if (_paymentMethodsLoading || _paymentMethods.isEmpty) return;
+    String? sheetSelectingId;
     await showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -257,7 +275,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
               ..._paymentMethods.map((method) {
                 final id = method['id']?.toString() ?? '';
                 final selected = _selectedPaymentMethodId == id;
-                final selecting = _selectingPaymentMethodId == id;
+                final selecting = sheetSelectingId == id;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Container(
@@ -299,15 +317,16 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                               ? AppColors.primary
                               : AppColors.textColor50,
                         ),
-                  onTap: _selectingPaymentMethodId != null
+                  onTap: sheetSelectingId != null
                       ? null
                       : () async {
-                          await _selectPaymentMethod(id);
-                          refresh(() {});
-                          if (mounted &&
-                              _selectedPaymentMethodId == id &&
-                              sheetContext.mounted) {
+                          refresh(() => sheetSelectingId = id);
+                          final updated = await _selectPaymentMethod(id);
+                          if (!sheetContext.mounted) return;
+                          if (updated) {
                             Navigator.pop(sheetContext);
+                          } else {
+                            refresh(() => sheetSelectingId = null);
                           }
                         },
                 );
@@ -317,6 +336,147 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
         ),
       ),
     );
+  }
+
+  Future<Map<String, dynamic>> _loadCoupons() async {
+    final cartId = _cart['id']?.toString();
+    if (cartId == null) return const {};
+    final response = await _api.getDealerOrderCoupons(context, cartId);
+    if (mounted) {
+      setState(() {
+        _couponListEnabled = response['coupon_list_enabled'] != false;
+        _couponVisibilityLoaded = true;
+      });
+    }
+    return response;
+  }
+
+  Future<bool> _applyCoupon(String code) async {
+    final cartId = _cart['id']?.toString();
+    if (cartId == null) return false;
+    try {
+      final response = await _api.applyDealerOrderCoupon(context, cartId, code);
+      if (!mounted) return false;
+      final updatedCart = response['cart'];
+      if (updatedCart is Map) {
+        setState(() => _cart = Map<String, dynamic>.from(updatedCart));
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _removeCoupon(String code) async {
+    final cartId = _cart['id']?.toString();
+    if (cartId == null) return false;
+    try {
+      final response =
+          await _api.removeDealerOrderCoupon(context, cartId, code);
+      if (!mounted) return false;
+      final updatedCart = response['cart'];
+      if (updatedCart is Map) {
+        setState(() => _cart = Map<String, dynamic>.from(updatedCart));
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _showCoupons({Map<String, dynamic>? initialResponse}) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _DealerCouponSheet(
+        loadCoupons: _loadCoupons,
+        applyCoupon: _applyCoupon,
+        removeCoupon: _removeCoupon,
+        initiallyHasAppliedCoupon: _appliedCouponCodes().isNotEmpty,
+        initialResponse: initialResponse,
+      ),
+    );
+  }
+
+  void _openInlineCouponEntry() {
+    setState(() => _showInlineCouponEntry = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _inlineCouponFocus.requestFocus();
+      final cardContext = _couponCardKey.currentContext;
+      if (cardContext != null) {
+        Scrollable.ensureVisible(
+          cardContext,
+          alignment: .35,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _openCouponSelector() async {
+    if (_couponChecking || _inlineCouponApplying) return;
+    if (_couponVisibilityLoaded &&
+        !_couponListEnabled &&
+        _appliedCouponCodes().isEmpty) {
+      _openInlineCouponEntry();
+      return;
+    }
+
+    setState(() => _couponChecking = true);
+    try {
+      final response = await _loadCoupons();
+      if (!mounted) return;
+      final hasApplied = response['has_applied_coupon'] == true;
+      if (response['coupon_list_enabled'] == false && !hasApplied) {
+        _openInlineCouponEntry();
+      } else {
+        await _showCoupons(initialResponse: response);
+      }
+    } catch (_) {
+      // Shared API layer displays the backend error.
+    } finally {
+      if (mounted) setState(() => _couponChecking = false);
+    }
+  }
+
+  Future<void> _submitInlineCoupon() async {
+    final code = _inlineCouponController.text.trim();
+    if (code.isEmpty || _inlineCouponApplying) return;
+    setState(() => _inlineCouponApplying = true);
+    final applied = await _applyCoupon(code);
+    if (applied && mounted) {
+      _inlineCouponController.clear();
+      _inlineCouponFocus.unfocus();
+      setState(() => _showInlineCouponEntry = false);
+    }
+    if (mounted) setState(() => _inlineCouponApplying = false);
+  }
+
+  List<String> _appliedCouponCodes() {
+    final result = <String>[];
+    final promotions = _cart['promotions'];
+    if (promotions is List) {
+      for (final promotion in promotions.whereType<Map>()) {
+        final code = promotion['code']?.toString();
+        if (code != null && code.isNotEmpty) result.add(code);
+      }
+    }
+    final metadata = _cart['metadata'];
+    final qtyTiered = metadata is Map ? metadata['qty_tiered_promo'] : null;
+    if (qtyTiered is Map && qtyTiered['active'] == true) {
+      final code = qtyTiered['promo_code']?.toString();
+      if (code != null && code.isNotEmpty && !result.contains(code)) {
+        result.add(code);
+      }
+    }
+    return result;
   }
 
   Future<void> _showQuantityEditor(Map item) async {
@@ -343,17 +503,35 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
     return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
+  bool _isPlatformFeeItem(dynamic rawItem) {
+    if (rawItem is! Map) return false;
+    final metadata = rawItem['metadata'];
+    final feeType = metadata is Map
+        ? (metadata['type'] ?? metadata['fee_type'])
+            ?.toString()
+            .trim()
+            .toLowerCase()
+        : null;
+    if (feeType == 'platform_fee' ||
+        feeType == 'platform fee' ||
+        (metadata is Map && metadata['is_platform_fee'] == true)) {
+      return true;
+    }
+    final title = (rawItem['product_title'] ?? rawItem['title'])
+        ?.toString()
+        .trim()
+        .toLowerCase();
+    return title == 'platform fee' || title == 'platform_fee';
+  }
+
   String _money(dynamic value) => '₹${_amount(value).toStringAsFixed(2)}';
 
   @override
   Widget build(BuildContext context) {
     final allItems = _cart['items'] as List<dynamic>? ?? [];
-    final products = allItems
-        .where((item) => (item as Map)['metadata']?['type'] != 'platform_fee')
-        .toList();
-    final platformFee = allItems
-        .where((item) => (item as Map)['metadata']?['type'] == 'platform_fee')
-        .fold<double>(
+    final products =
+        allItems.where((item) => !_isPlatformFeeItem(item)).toList();
+    final platformFee = allItems.where(_isPlatformFeeItem).fold<double>(
           0,
           (sum, item) =>
               sum +
@@ -366,6 +544,10 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
         _amount((metadata['wallet_split'] as Map?)?['wallet_amount']);
     final loyalty = _amount(
         (metadata['loyalty_checkout_apply'] as Map?)?['discount_amount']);
+    final shippingAmount = _amount(_cart['shipping_total']);
+    final shippingMethods = _cart['shipping_methods'] as List<dynamic>? ?? [];
+    final hasSelectedShippingMethod =
+        _selectedShippingOptionId != null || shippingMethods.isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xfff5faf5),
@@ -524,8 +706,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                     ),
                   );
                 }),
-                _optionCard(Icons.local_offer_outlined, 'Coupon',
-                    'Automatic eligible promotions apply'),
+                _couponCard(),
                 _paymentMethodCard(),
                 _shippingMethodCard(),
                 Container(
@@ -547,13 +728,23 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                       const SizedBox(height: 14),
                       _priceRow(
                           'Subtotal', _cart['subtotal'] ?? _cart['item_total']),
-                      if (_amount(_cart['shipping_total']) > 0)
-                        _priceRow('Shipping', _cart['shipping_total']),
+                      if (hasSelectedShippingMethod)
+                        _priceRow(
+                          'Shipping',
+                          shippingAmount,
+                          displayValue: shippingAmount == 0 ? 'Free' : null,
+                          valueColor: shippingAmount == 0
+                              ? const Color(0xff059669)
+                              : null,
+                        ),
                       if (_amount(_cart['tax_total']) > 0)
                         _priceRow('Tax', _cart['tax_total']),
                       if (_amount(_cart['discount_total']) > 0)
-                        _priceRow('Promotion discount',
-                            -_amount(_cart['discount_total'])),
+                        _priceRow(
+                          'Coupon',
+                          -_amount(_cart['discount_total']),
+                          color: const Color(0xff059669),
+                        ),
                       if (platformFee > 0)
                         _priceRow('Platform fee', platformFee),
                       if (wallet > 0) _priceRow('Wallet', -wallet),
@@ -616,39 +807,160 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
     );
   }
 
-  Widget _optionCard(IconData icon, String title, String subtitle) => Container(
-        margin: const EdgeInsets.only(top: 12),
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
-                      )),
-                  Text(subtitle,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 11,
-                        color: AppColors.textColor50,
-                      )),
-                ],
-              ),
+  Widget _couponCard() {
+    final appliedCodes = _appliedCouponCodes();
+    return Container(
+      key: _couponCardKey,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: _showInlineCouponEntry ? null : _openCouponSelector,
+            borderRadius: BorderRadius.circular(10),
+            child: Row(
+              children: [
+                Icon(Icons.local_offer_outlined, color: AppColors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Coupon',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textColor,
+                          )),
+                      Text(
+                        appliedCodes.isNotEmpty
+                            ? '${appliedCodes.join(', ')} applied'
+                            : _showInlineCouponEntry || !_couponListEnabled
+                                ? 'Enter a coupon code'
+                                : 'View available offers',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 11,
+                          color: appliedCodes.isNotEmpty
+                              ? const Color(0xff059669)
+                              : AppColors.textColor50,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_couponChecking)
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                else if (_showInlineCouponEntry)
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    onPressed: _inlineCouponApplying
+                        ? null
+                        : () {
+                            _inlineCouponFocus.unfocus();
+                            setState(() => _showInlineCouponEntry = false);
+                          },
+                    icon: Icon(Icons.close,
+                        size: 19, color: AppColors.textColor50),
+                  )
+                else
+                  Icon(Icons.chevron_right, color: AppColors.textColor50),
+              ],
             ),
-            Icon(Icons.chevron_right, color: AppColors.textColor50),
+          ),
+          if (_showInlineCouponEntry) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _inlineCouponController,
+                    focusNode: _inlineCouponFocus,
+                    cursorColor: AppColors.primary,
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 13,
+                      color: AppColors.textColor,
+                    ),
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.done,
+                    enabled: !_inlineCouponApplying,
+                    onSubmitted: (_) => _submitInlineCoupon(),
+                    decoration: InputDecoration(
+                      hintText: 'Enter coupon code',
+                      hintStyle: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        color: AppColors.textColor50,
+                      ),
+                      isDense: true,
+                      filled: true,
+                      fillColor: const Color(0xfff7faf8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 13),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xffdfe7e2)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xffdfe7e2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                            BorderSide(color: AppColors.primary, width: 1.5),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _inlineCouponApplying ? null : _submitInlineCoupon,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.primary.withValues(alpha: .55),
+                    disabledForegroundColor: Colors.white,
+                    minimumSize: const Size(68, 46),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: _inlineCouponApplying
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Apply',
+                          style: FontUtils.primaryFontStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ],
-        ),
-      );
+        ],
+      ),
+    );
+  }
 
   IconData _paymentIcon(String providerId) {
     if (providerId == 'pp_system_default') return Icons.payments_outlined;
@@ -903,7 +1215,15 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
         ),
       );
 
-  Widget _priceRow(String label, dynamic value, {bool bold = false}) => Padding(
+  Widget _priceRow(
+    String label,
+    dynamic value, {
+    bool bold = false,
+    Color? color,
+    String? displayValue,
+    Color? valueColor,
+  }) =>
+      Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -912,13 +1232,13 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-                  color: AppColors.textColor,
+                  color: color ?? AppColors.textColor,
                 )),
-            Text(_money(value),
+            Text(displayValue ?? _money(value),
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: bold ? FontWeight.bold : FontWeight.w500,
-                  color: AppColors.textColor,
+                  color: valueColor ?? color ?? AppColors.textColor,
                 )),
           ],
         ),
@@ -1098,6 +1418,382 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
           ),
         ],
       );
+}
+
+class _DealerCouponSheet extends StatefulWidget {
+  final Future<Map<String, dynamic>> Function() loadCoupons;
+  final Future<bool> Function(String code) applyCoupon;
+  final Future<bool> Function(String code) removeCoupon;
+  final bool initiallyHasAppliedCoupon;
+  final Map<String, dynamic>? initialResponse;
+
+  const _DealerCouponSheet({
+    required this.loadCoupons,
+    required this.applyCoupon,
+    required this.removeCoupon,
+    required this.initiallyHasAppliedCoupon,
+    this.initialResponse,
+  });
+
+  @override
+  State<_DealerCouponSheet> createState() => _DealerCouponSheetState();
+}
+
+class _DealerCouponSheetState extends State<_DealerCouponSheet> {
+  final TextEditingController _codeController = TextEditingController();
+  List<Map<String, dynamic>> _coupons = [];
+  bool _couponListEnabled = true;
+  late bool _hasAppliedCoupon;
+  bool _loading = true;
+  String? _busyCode;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _hasAppliedCoupon = widget.initiallyHasAppliedCoupon;
+    if (widget.initialResponse != null) {
+      _acceptResponse(widget.initialResponse!);
+      _loading = false;
+    } else {
+      _reload();
+    }
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _reload() async {
+    if (mounted) setState(() => _error = null);
+    try {
+      final response = await widget.loadCoupons();
+      if (mounted) setState(() => _acceptResponse(response));
+    } catch (_) {
+      if (mounted) setState(() => _error = 'Could not load available coupons');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _acceptResponse(Map<String, dynamic> response) {
+    final rawCoupons = response['promotions'];
+    _coupons = rawCoupons is List
+        ? rawCoupons
+            .whereType<Map>()
+            .map((coupon) => Map<String, dynamic>.from(coupon))
+            .toList()
+        : <Map<String, dynamic>>[];
+    _couponListEnabled = response['coupon_list_enabled'] != false;
+    _hasAppliedCoupon = response['has_applied_coupon'] == true;
+  }
+
+  Future<void> _apply(String rawCode) async {
+    final code = rawCode.trim();
+    if (code.isEmpty || _busyCode != null) return;
+    setState(() => _busyCode = code);
+    final applied = await widget.applyCoupon(code);
+    if (applied) {
+      _codeController.clear();
+      await _reload();
+    }
+    if (mounted) setState(() => _busyCode = null);
+  }
+
+  Future<void> _remove(String code) async {
+    if (_busyCode != null) return;
+    setState(() => _busyCode = code);
+    if (await widget.removeCoupon(code)) await _reload();
+    if (mounted) setState(() => _busyCode = null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Start compact while visibility is loading. Expand only after the API
+    // confirms that offer discovery is enabled.
+    final compact = _loading || !_couponListEnabled;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    return SizedBox(
+      height: compact
+          ? (_hasAppliedCoupon ? 330.0 : 215.0)
+              .clamp(0, screenHeight * .62)
+              .toDouble()
+          : screenHeight * .82,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text('Coupons & offers',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      )),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          if (!_hasAppliedCoupon)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _codeController,
+                      cursorColor: AppColors.primary,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 14,
+                        color: AppColors.textColor,
+                      ),
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: 'Enter coupon code',
+                        hintStyle: FontUtils.primaryFontStyle(
+                          fontSize: 13,
+                          color: AppColors.textColor50,
+                        ),
+                        prefixIcon: Icon(Icons.local_offer_outlined,
+                            color: AppColors.primary),
+                        filled: true,
+                        fillColor: const Color(0xfff7faf8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              const BorderSide(color: Color(0xffdfe7e2)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              const BorderSide(color: Color(0xffdfe7e2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              BorderSide(color: AppColors.primary, width: 1.5),
+                        ),
+                      ),
+                      onSubmitted: _apply,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _busyCode == null
+                        ? () => _apply(_codeController.text)
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor:
+                          AppColors.primary.withValues(alpha: .55),
+                      disabledForegroundColor: Colors.white,
+                      minimumSize: const Size(72, 54),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Apply',
+                      style: FontUtils.primaryFontStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: _loading
+                ? Center(
+                    child: CircularProgressIndicator(color: AppColors.primary))
+                : _error != null
+                    ? Center(
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() => _loading = true);
+                            _reload();
+                          },
+                          child: Text('$_error. Retry'),
+                        ),
+                      )
+                    : !_couponListEnabled && _coupons.isEmpty
+                        ? const SizedBox.shrink()
+                        : _coupons.isEmpty
+                            ? Center(
+                                child: Text('No coupons available',
+                                    style: FontUtils.primaryFontStyle(
+                                      color: AppColors.textColor50,
+                                    )))
+                            : ListView.separated(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                                itemCount: _coupons.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 10),
+                                itemBuilder: (_, index) {
+                                  final coupon = _coupons[index];
+                                  final code = coupon['code']?.toString() ?? '';
+                                  final applied = coupon['is_applied'] == true;
+                                  final eligible =
+                                      coupon['is_eligible'] == true;
+                                  final busy = _busyCode == code;
+                                  final green = const Color(0xff059669);
+                                  return Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: applied
+                                          ? green.withValues(alpha: .06)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: applied
+                                            ? green.withValues(alpha: .35)
+                                            : const Color(0xffe5e7eb),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(code,
+                                                        style: FontUtils
+                                                            .primaryFontStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: applied
+                                                              ? green
+                                                              : AppColors
+                                                                  .textColor,
+                                                        )),
+                                                  ),
+                                                  if (applied) ...[
+                                                    const SizedBox(width: 6),
+                                                    Icon(Icons.check_circle,
+                                                        color: green, size: 16),
+                                                  ],
+                                                ],
+                                              ),
+                                              const SizedBox(height: 5),
+                                              Text(
+                                                  (coupon['title'] ?? 'Coupon')
+                                                      .toString(),
+                                                  style: FontUtils
+                                                      .primaryFontStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textColor,
+                                                  )),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                (coupon['description'] ?? '')
+                                                    .toString(),
+                                                style:
+                                                    FontUtils.primaryFontStyle(
+                                                  fontSize: 11,
+                                                  color: AppColors.textColor50,
+                                                ),
+                                              ),
+                                              if (!eligible &&
+                                                  !applied &&
+                                                  coupon['ineligibility_reason'] !=
+                                                      null) ...[
+                                                const SizedBox(height: 5),
+                                                Text(
+                                                  coupon['ineligibility_reason']
+                                                      .toString(),
+                                                  style: FontUtils
+                                                      .primaryFontStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.redAccent,
+                                                  ),
+                                                ),
+                                              ],
+                                              if (coupon[
+                                                      'estimated_discount_display'] !=
+                                                  null) ...[
+                                                const SizedBox(height: 5),
+                                                Text(
+                                                  coupon['estimated_discount_display']
+                                                      .toString(),
+                                                  style: FontUtils
+                                                      .primaryFontStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: green,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        busy
+                                            ? SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: AppColors.primary,
+                                                ),
+                                              )
+                                            : TextButton(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: applied
+                                                      ? Colors.redAccent
+                                                      : AppColors.primary,
+                                                ),
+                                                onPressed: applied
+                                                    ? () => _remove(code)
+                                                    : eligible
+                                                        ? () => _apply(code)
+                                                        : null,
+                                                child: Text(
+                                                  applied ? 'Remove' : 'Apply',
+                                                  style: FontUtils
+                                                      .primaryFontStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: applied
+                                                        ? Colors.redAccent
+                                                        : eligible
+                                                            ? AppColors.primary
+                                                            : AppColors
+                                                                .textColor50,
+                                                  ),
+                                                ),
+                                              ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _DealerQuantityDialog extends StatefulWidget {
