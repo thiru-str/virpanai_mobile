@@ -53,19 +53,26 @@ Future<void> main() async {
     final PublicDetailsResponse? cachedPublicDetails =
         await SharedPreferencesUtil().getPublicDetails();
     await ExtensionsUtil.refresh();
-    _applyThemeFromPublicDetails(cachedPublicDetails);
+
+    // LOCAL-DEV FIX: refresh the publishable key from the *current* backend
+    // BEFORE the first store call. Otherwise a key cached from a different
+    // backend (e.g. dev) is sent to localhost and rejected with
+    // "valid publishable key is required". Revert alongside the local baseUrl.
+    await _bootstrapPublicDetails();
+    final PublicDetailsResponse? publicDetails =
+        await SharedPreferencesUtil().getPublicDetails() ?? cachedPublicDetails;
+
+    _applyThemeFromPublicDetails(publicDetails);
     final bool skipLogin = await prefs.getBool('skip_login') ??
-        (cachedPublicDetails?.storeDetails?.storeMetadata?.skipLogin ?? false);
+        (publicDetails?.storeDetails?.storeMetadata?.skipLogin ?? false);
 
     final homeScreen = HomeScreen(
       skipLogin: skipLogin,
-      publicDetailsResponse: cachedPublicDetails,
+      publicDetailsResponse: publicDetails,
     );
 
     await _runAppWithOptionalNewRelic(homeScreen);
     await AppErrorReporter.instance.initialize();
-
-    unawaited(_bootstrapPublicDetails());
     Future.delayed(Duration.zero, () {
       AppLinkHelper.init();
     });
