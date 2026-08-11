@@ -107,6 +107,12 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
     }
   }
 
+  Future<void> _refreshLiveOrdersAfterPlacement() async {
+    _offset = 0;
+    _hasMore = true;
+    await fetchLiveOrders(isInitial: true);
+  }
+
   void _onScroll() {
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
@@ -279,7 +285,10 @@ class _LiveOrderPageState extends State<LiveOrderPage> {
       floatingActionButton: FloatingActionButton(
         tooltip: 'Create order',
         backgroundColor: AppColors.primary,
-        onPressed: () => showDealerOrderCustomerDrawer(context),
+        onPressed: () => showDealerOrderCustomerDrawer(
+          context,
+          onOrderPlaced: _refreshLiveOrdersAfterPlacement,
+        ),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

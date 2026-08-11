@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 class DealerOrderCartPage extends StatefulWidget {
@@ -34,6 +35,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
   bool _couponChecking = false;
   bool _showInlineCouponEntry = false;
   bool _inlineCouponApplying = false;
+  bool _sendingOrderOtp = false;
 
   @override
   void initState() {
@@ -231,9 +233,26 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
   }
 
   Future<void> _showAddressEditor() async {
+    final rawAddress = _cart['shipping_address'];
+    final currentAddress = rawAddress is Map ? rawAddress : const {};
+    final rawMetadata = _cart['metadata'];
+    final metadata = rawMetadata is Map ? rawMetadata : const {};
     await showDialog<void>(
       context: context,
-      builder: (_) => _DealerAddressDialog(onSave: _addShippingAddress),
+      builder: (_) => _DealerAddressDialog(
+        initialAddress: {
+          'first_name': currentAddress['first_name'],
+          'last_name': currentAddress['last_name'],
+          'company': currentAddress['company'],
+          'address_1': currentAddress['address_1'],
+          'address_2': currentAddress['address_2'],
+          'city': currentAddress['city'],
+          'province': currentAddress['province'],
+          'postal_code': metadata['pincode'] ?? currentAddress['postal_code'],
+          'phone': metadata['dealer_customer_phone'] ?? currentAddress['phone'],
+        },
+        onSave: _addShippingAddress,
+      ),
     );
   }
 
@@ -485,12 +504,37 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
     await showDialog<void>(
       context: context,
       builder: (_) => _DealerQuantityDialog(
-        productTitle:
-            (item['product_title'] ?? item['title'] ?? 'Cart item').toString(),
+        productTitle: _productTitle(item),
         initialQuantity: _integer(item['quantity']),
         onUpdate: (quantity) => _updateQuantity(variantId, quantity),
       ),
     );
+  }
+
+  Future<void> _startPlaceOrder() async {
+    final cartId = _cart['id']?.toString();
+    if (cartId == null || _sendingOrderOtp) return;
+    setState(() => _sendingOrderOtp = true);
+    try {
+      final response = await _api.sendDealerOrderOtp(context, cartId);
+      if (!mounted) return;
+      final placed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => _DealerOrderOtpDialog(
+          phone: response['phone']?.toString() ?? 'the customer',
+          onResend: () => _api.sendDealerOrderOtp(context, cartId),
+          onPlace: (otp) => _api.placeDealerOrder(context, cartId, otp),
+        ),
+      );
+      if (placed == true && mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (_) {
+      // Shared API layer shows the backend message.
+    } finally {
+      if (mounted) setState(() => _sendingOrderOtp = false);
+    }
   }
 
   double _amount(dynamic value) {
@@ -501,6 +545,15 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
   int _integer(dynamic value) {
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  String _productTitle(Map item) {
+    final product = item['product'];
+    final productMetadata = product is Map ? product['metadata'] : null;
+    final displayName =
+        productMetadata is Map ? productMetadata['display_name'] : null;
+    return (displayName ?? item['product_title'] ?? item['title'] ?? 'Product')
+        .toString();
   }
 
   bool _isPlatformFeeItem(dynamic rawItem) {
@@ -548,6 +601,13 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
     final shippingMethods = _cart['shipping_methods'] as List<dynamic>? ?? [];
     final hasSelectedShippingMethod =
         _selectedShippingOptionId != null || shippingMethods.isNotEmpty;
+    final selectedPaymentMethod =
+        _paymentMethods.cast<Map<String, dynamic>?>().firstWhere(
+              (method) => method?['id']?.toString() == _selectedPaymentMethodId,
+              orElse: () => null,
+            );
+    final selectedPaymentMethodName =
+        selectedPaymentMethod?['name']?.toString() ?? 'Select payment method';
 
     return Scaffold(
       backgroundColor: const Color(0xfff5faf5),
@@ -626,10 +686,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                (item['product_title'] ??
-                                        item['title'] ??
-                                        'Product')
-                                    .toString(),
+                                _productTitle(item),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: FontUtils.primaryFontStyle(
@@ -791,13 +848,54 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                     Expanded(
                       flex: 2,
                       child: ElevatedButton(
-                        onPressed: null,
+                        onPressed: _sendingOrderOtp ||
+                                !hasSelectedShippingMethod ||
+                                _selectedPaymentMethodId == null
+                            ? null
+                            : _startPlaceOrder,
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              AppColors.primary.withValues(alpha: 0.45),
+                          disabledForegroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(52),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Proceed to checkout'),
+                        child: _sendingOrderOtp
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Place order',
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    selectedPaymentMethodName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.8),
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],
@@ -977,7 +1075,9 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
       shippingAddress['address_1'],
       shippingAddress['city'],
       shippingAddress['postal_code'],
-    ].any((value) => value?.toString().trim().isNotEmpty == true);
+      shippingAddress['country_code'],
+      shippingAddress['phone'],
+    ].every((value) => value?.toString().trim().isNotEmpty == true);
     final name = [
       shippingAddress['first_name'],
       shippingAddress['last_name'],
@@ -1035,12 +1135,22 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                         color: AppColors.textColor,
                       )),
                 ),
-                TextButton.icon(
+                ElevatedButton.icon(
                   onPressed: _showAddressEditor,
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('Add address'),
-                  style:
-                      TextButton.styleFrom(foregroundColor: AppColors.primary),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -1245,10 +1355,167 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
       );
 }
 
+class _DealerOrderOtpDialog extends StatefulWidget {
+  final String phone;
+  final Future<Map<String, dynamic>> Function() onResend;
+  final Future<Map<String, dynamic>> Function(String otp) onPlace;
+
+  const _DealerOrderOtpDialog({
+    required this.phone,
+    required this.onResend,
+    required this.onPlace,
+  });
+
+  @override
+  State<_DealerOrderOtpDialog> createState() => _DealerOrderOtpDialogState();
+}
+
+class _DealerOrderOtpDialogState extends State<_DealerOrderOtpDialog> {
+  final TextEditingController _controller = TextEditingController();
+  bool _placing = false;
+  bool _resending = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _place() async {
+    final otp = _controller.text.trim();
+    if (!RegExp(r'^\d{6}$').hasMatch(otp) || _placing) {
+      if (!_placing) AppUtils.showToast('Enter the 6 digit OTP');
+      return;
+    }
+    setState(() => _placing = true);
+    try {
+      await widget.onPlace(otp);
+      if (!mounted) return;
+      AppUtils.showToast('Order placed successfully');
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      // Shared API layer shows the backend message.
+      if (mounted) setState(() => _placing = false);
+    }
+  }
+
+  Future<void> _resend() async {
+    if (_resending || _placing) return;
+    setState(() => _resending = true);
+    try {
+      await widget.onResend();
+      if (mounted) {
+        _controller.clear();
+        AppUtils.showToast('OTP sent to the customer');
+      }
+    } catch (_) {
+      // Shared API layer shows the backend message.
+    } finally {
+      if (mounted) setState(() => _resending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Verify customer OTP',
+          style: FontUtils.primaryFontStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textColor,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Enter the 6 digit OTP sent to ${widget.phone} to place this order.',
+              style: FontUtils.primaryFontStyle(
+                fontSize: 12,
+                color: AppColors.textColor50,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              enabled: !_placing,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              textAlign: TextAlign.center,
+              style: FontUtils.primaryFontStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textColor,
+              ).copyWith(letterSpacing: 8),
+              decoration: InputDecoration(
+                counterText: '',
+                hintText: 'Enter OTP',
+                filled: true,
+                fillColor: AppColors.secondary,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xffdce5df)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                ),
+              ),
+              onSubmitted: (_) => _place(),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: _resending || _placing ? null : _resend,
+            child: _resending
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                : Text('Resend OTP',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 13,
+                      color: AppColors.primary,
+                    )),
+          ),
+          ElevatedButton(
+            onPressed: _placing ? null : _place,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: _placing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Verify & place order'),
+          ),
+        ],
+      );
+}
+
 class _DealerAddressDialog extends StatefulWidget {
+  final Map<String, dynamic> initialAddress;
   final Future<bool> Function(Map<String, dynamic> address) onSave;
 
-  const _DealerAddressDialog({required this.onSave});
+  const _DealerAddressDialog({
+    required this.initialAddress,
+    required this.onSave,
+  });
 
   @override
   State<_DealerAddressDialog> createState() => _DealerAddressDialogState();
@@ -1257,7 +1524,6 @@ class _DealerAddressDialog extends StatefulWidget {
 class _DealerAddressDialogState extends State<_DealerAddressDialog> {
   final _formKey = GlobalKey<FormState>();
   final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
   final _company = TextEditingController();
   final _address = TextEditingController();
   final _address2 = TextEditingController();
@@ -1268,9 +1534,21 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
   bool _saving = false;
 
   @override
+  void initState() {
+    super.initState();
+    _firstName.text = widget.initialAddress['first_name']?.toString() ?? '';
+    _company.text = widget.initialAddress['company']?.toString() ?? '';
+    _address.text = widget.initialAddress['address_1']?.toString() ?? '';
+    _address2.text = widget.initialAddress['address_2']?.toString() ?? '';
+    _city.text = widget.initialAddress['city']?.toString() ?? '';
+    _state.text = widget.initialAddress['province']?.toString() ?? '';
+    _postalCode.text = widget.initialAddress['postal_code']?.toString() ?? '';
+    _phone.text = widget.initialAddress['phone']?.toString() ?? '';
+  }
+
+  @override
   void dispose() {
     _firstName.dispose();
-    _lastName.dispose();
     _company.dispose();
     _address.dispose();
     _address2.dispose();
@@ -1289,7 +1567,7 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
     setState(() => _saving = true);
     final saved = await widget.onSave({
       'first_name': _firstName.text.trim(),
-      'last_name': _lastName.text.trim(),
+      'last_name': '',
       'company': _company.text.trim(),
       'address_1': _address.text.trim(),
       'address_2': _address2.text.trim(),
@@ -1322,6 +1600,7 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
     TextEditingController controller,
     String label, {
     bool required = true,
+    bool readOnly = false,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) =>
@@ -1329,6 +1608,7 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
         padding: const EdgeInsets.only(bottom: 12),
         child: TextFormField(
           controller: controller,
+          readOnly: readOnly,
           keyboardType: keyboardType,
           cursorColor: AppColors.primary,
           decoration: _decoration(label),
@@ -1355,13 +1635,7 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(child: _field(_firstName, 'First name')),
-                      const SizedBox(width: 10),
-                      Expanded(child: _field(_lastName, 'Last name')),
-                    ],
-                  ),
+                  _field(_firstName, 'Name'),
                   _field(_company, 'Company (optional)', required: false),
                   _field(_address, 'Address'),
                   _field(_address2, 'Address line 2 (optional)',
@@ -1370,12 +1644,13 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
                     children: [
                       Expanded(child: _field(_city, 'City')),
                       const SizedBox(width: 10),
-                      Expanded(child: _field(_state, 'State', required: false)),
+                      Expanded(child: _field(_state, 'State')),
                     ],
                   ),
                   _field(
                     _postalCode,
                     'Postal code',
+                    readOnly: true,
                     keyboardType: TextInputType.number,
                     validator: (value) => RegExp(r'^\d+$').hasMatch(value ?? '')
                         ? null
@@ -1384,6 +1659,7 @@ class _DealerAddressDialogState extends State<_DealerAddressDialog> {
                   _field(
                     _phone,
                     'Phone number',
+                    readOnly: true,
                     keyboardType: TextInputType.phone,
                     validator: (value) =>
                         RegExp(r'^\d{10}$').hasMatch(value ?? '')
@@ -1638,7 +1914,7 @@ class _DealerCouponSheetState extends State<_DealerCouponSheet> {
                                     )))
                             : ListView.separated(
                                 padding:
-                                    const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                                    const EdgeInsets.fromLTRB(16, 12, 16, 24),
                                 itemCount: _coupons.length,
                                 separatorBuilder: (_, __) =>
                                     const SizedBox(height: 10),

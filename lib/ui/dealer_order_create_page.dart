@@ -7,7 +7,10 @@ import 'package:waioz/ui/dealer_order_cart_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
 
-Future<void> showDealerOrderCustomerDrawer(BuildContext context) {
+Future<void> showDealerOrderCustomerDrawer(
+  BuildContext context, {
+  Future<void> Function()? onOrderPlaced,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -17,21 +20,23 @@ Future<void> showDealerOrderCustomerDrawer(BuildContext context) {
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (sheetContext) => DealerOrderCustomerDrawer(
-      onStarted: (customer, cart) {
+      onStarted: (customer, cart) async {
         Navigator.of(sheetContext).pop();
-        Navigator.of(context).push(MaterialPageRoute(
+        final placed = await Navigator.of(context).push<bool>(MaterialPageRoute(
           builder: (_) => DealerOrderProductsPage(
             customer: customer,
             initialCart: cart,
           ),
         ));
+        if (placed == true) await onOrderPlaced?.call();
       },
     ),
   );
 }
 
 class DealerOrderCustomerDrawer extends StatefulWidget {
-  final void Function(Customer customer, Map<String, dynamic> cart) onStarted;
+  final Future<void> Function(Customer customer, Map<String, dynamic> cart)
+      onStarted;
   const DealerOrderCustomerDrawer({super.key, required this.onStarted});
 
   @override
@@ -41,24 +46,98 @@ class DealerOrderCustomerDrawer extends StatefulWidget {
 
 class _DealerOrderCustomerDrawerState extends State<DealerOrderCustomerDrawer> {
   final ApiService _api = ApiService();
+  final ScrollController _scrollController = ScrollController();
   List<Customer> _customers = [];
   bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasMore = true;
   String? _startingCustomerId;
   String _searchQuery = '';
+  int _offset = 0;
+  int _requestGeneration = 0;
+  Timer? _searchDebounce;
+  static const int _limit = 20;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
+    _loadCustomers(reset: true);
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients ||
+        _scrollController.position.extentAfter > 240 ||
+        _loading ||
+        _loadingMore ||
+        !_hasMore) {
+      return;
+    }
     _loadCustomers();
   }
 
-  Future<void> _loadCustomers() async {
+  void _onSearchChanged(String value) {
+    setState(() => _searchQuery = value);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _loadCustomers(reset: true),
+    );
+  }
+
+  Future<void> _loadCustomers({bool reset = false}) async {
+    if (!reset && (_loadingMore || !_hasMore)) return;
+    final generation = reset ? ++_requestGeneration : _requestGeneration;
+    final requestOffset = reset ? 0 : _offset;
+    final requestSearch = _searchQuery.trim();
+    if (mounted) {
+      setState(() {
+        if (reset) {
+          _loading = true;
+          _hasMore = true;
+        } else {
+          _loadingMore = true;
+        }
+      });
+    }
     try {
-      final response =
-          await _api.getCustomerList(context, limit: 100, offset: 0);
-      if (mounted) setState(() => _customers = response.customers ?? []);
+      final response = await _api.getCustomerList(
+        context,
+        limit: _limit,
+        offset: requestOffset,
+        search: requestSearch,
+      );
+      if (!mounted || generation != _requestGeneration) return;
+      final nextCustomers = response.customers ?? [];
+      setState(() {
+        if (reset) {
+          _customers = nextCustomers;
+        } else {
+          final existingIds = _customers.map((item) => item.id).toSet();
+          _customers.addAll(nextCustomers
+              .where((customer) => !existingIds.contains(customer.id)));
+        }
+        _offset = requestOffset + nextCustomers.length;
+        _hasMore = response.count != null
+            ? _offset < response.count!
+            : nextCustomers.length == _limit;
+      });
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && generation == _requestGeneration) {
+        setState(() {
+          _loading = false;
+          _loadingMore = false;
+        });
+      }
     }
   }
 
@@ -68,7 +147,7 @@ class _DealerOrderCustomerDrawerState extends State<DealerOrderCustomerDrawer> {
     try {
       final result = await _api.startDealerOrderCart(context, customer.id!);
       if (!mounted) return;
-      widget.onStarted(
+      await widget.onStarted(
           customer, Map<String, dynamic>.from(result['cart'] ?? {}));
     } catch (_) {
       if (mounted)
@@ -109,7 +188,7 @@ class _DealerOrderCustomerDrawerState extends State<DealerOrderCustomerDrawer> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: TextField(
-                onChanged: (value) => setState(() => _searchQuery = value),
+                onChanged: _onSearchChanged,
                 style: FontUtils.primaryFontStyle(fontSize: 14),
                 decoration: InputDecoration(
                   filled: true,
@@ -128,82 +207,82 @@ class _DealerOrderCustomerDrawerState extends State<DealerOrderCustomerDrawer> {
                   ? Center(
                       child:
                           CircularProgressIndicator(color: AppColors.primary))
-                  : ListView.separated(
-                      itemCount: _customers.where((customer) {
-                        final query = _searchQuery.trim().toLowerCase();
-                        if (query.isEmpty) return true;
-                        return [
-                          customer.metadata?.shopName,
-                          customer.companyName,
-                          customer.firstName,
-                          customer.lastName,
-                          customer.phone,
-                          customer.email,
-                        ].whereType<String>().any(
-                            (value) => value.toLowerCase().contains(query));
-                      }).length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (_, index) {
-                        final customers = _customers.where((customer) {
-                          final query = _searchQuery.trim().toLowerCase();
-                          if (query.isEmpty) return true;
-                          return [
-                            customer.metadata?.shopName,
-                            customer.companyName,
-                            customer.firstName,
-                            customer.lastName,
-                            customer.phone,
-                            customer.email
-                          ].whereType<String>().any(
-                              (value) => value.toLowerCase().contains(query));
-                        }).toList();
-                        final customer = customers[index];
-                        final title = customer.metadata?.shopName ??
-                            customer.companyName ??
-                            customer.firstName ??
-                            'Customer';
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.grey.shade100,
-                            backgroundImage: customer.metadata
-                                        ?.shopNameBoardImage?.isNotEmpty ==
-                                    true
-                                ? NetworkImage(
-                                    customer.metadata!.shopNameBoardImage!)
-                                : null,
-                            child: customer.metadata?.shopNameBoardImage
-                                        ?.isNotEmpty ==
-                                    true
-                                ? null
-                                : const Icon(Icons.storefront_outlined),
-                          ),
-                          title: Text(
-                            title,
+                  : _customers.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No dealer customers found',
                             style: FontUtils.primaryFontStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textColor,
+                              fontSize: 14,
+                              color: AppColors.textColor50,
                             ),
                           ),
-                          subtitle: Text(customer.phone ?? customer.email ?? '',
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 13,
-                                color: AppColors.textColor50,
-                              )),
-                          trailing: _startingCustomerId == customer.id
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2))
-                              : Icon(Icons.chevron_right,
-                                  color: AppColors.primary),
-                          onTap: _startingCustomerId == null
-                              ? () => _selectCustomer(customer)
-                              : null,
-                        );
-                      },
-                    ),
+                        )
+                      : ListView.separated(
+                          controller: _scrollController,
+                          itemCount: _customers.length + (_loadingMore ? 1 : 0),
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (_, index) {
+                            if (index == _customers.length) {
+                              return Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              );
+                            }
+                            final customer = _customers[index];
+                            final title = customer.metadata?.shopName ??
+                                customer.companyName ??
+                                customer.firstName ??
+                                'Customer';
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.grey.shade100,
+                                backgroundImage: customer.metadata
+                                            ?.shopNameBoardImage?.isNotEmpty ==
+                                        true
+                                    ? NetworkImage(
+                                        customer.metadata!.shopNameBoardImage!)
+                                    : null,
+                                child: customer.metadata?.shopNameBoardImage
+                                            ?.isNotEmpty ==
+                                        true
+                                    ? null
+                                    : const Icon(Icons.storefront_outlined),
+                              ),
+                              title: Text(
+                                title,
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textColor,
+                                ),
+                              ),
+                              subtitle:
+                                  Text(customer.phone ?? customer.email ?? '',
+                                      style: FontUtils.primaryFontStyle(
+                                        fontSize: 13,
+                                        color: AppColors.textColor50,
+                                      )),
+                              trailing: _startingCustomerId == customer.id
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary,
+                                      ))
+                                  : Icon(Icons.chevron_right,
+                                      color: AppColors.primary),
+                              onTap: _startingCustomerId == null
+                                  ? () => _selectCustomer(customer)
+                                  : null,
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -455,9 +534,13 @@ class _DealerOrderProductsPageState extends State<DealerOrderProductsPage> {
   }
 
   Future<void> _openCartPage() async {
-    await Navigator.of(context).push(MaterialPageRoute(
+    final placed = await Navigator.of(context).push<bool>(MaterialPageRoute(
       builder: (_) => DealerOrderCartPage(initialCart: _cart),
     ));
+    if (placed == true) {
+      if (mounted) Navigator.of(context).pop(true);
+      return;
+    }
     final cartId = _cart['id']?.toString();
     if (cartId == null || !mounted) return;
     try {
@@ -1066,12 +1149,14 @@ class _DealerOrderProductsPageState extends State<DealerOrderProductsPage> {
                                                                 variant)
                                                             : null,
                                                         icon: isUpdating
-                                                            ? const SizedBox(
+                                                            ? SizedBox(
                                                                 width: 14,
                                                                 height: 14,
                                                                 child: CircularProgressIndicator(
                                                                     strokeWidth:
-                                                                        2))
+                                                                        2,
+                                                                    color: AppColors
+                                                                        .primary))
                                                             : const Icon(
                                                                 Icons.add,
                                                                 size: 16),

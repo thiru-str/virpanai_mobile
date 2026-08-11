@@ -78,8 +78,9 @@ class ApiService {
     String endpoint,
     Map<String, dynamic>? data,
     T Function(Map<String, dynamic>) fromJson,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    Duration? receiveTimeout,
+  }) async {
     var toastShown = false;
     String? failureMessage;
     try {
@@ -89,13 +90,15 @@ class ApiService {
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$endpoint');
       AppLogger.print('API Params:', '${data ?? {}}');
 
-      final response =
-          await _dio.post(endpoint, data: data ?? {}, options: Options(
-        validateStatus: (status) {
-          // Accept status codes 400-499 as valid responses for handling errors manually
-          return status != null && status < 500;
-        },
-      ));
+      final response = await _dio.post(endpoint,
+          data: data ?? {},
+          options: Options(
+            receiveTimeout: receiveTimeout,
+            validateStatus: (status) {
+              // Accept status codes 400-499 as valid responses for handling errors manually
+              return status != null && status < 500;
+            },
+          ));
       if (response.statusCode == 200 || response.statusCode == 201) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
@@ -1011,6 +1014,7 @@ class ApiService {
     BuildContext context, {
     required int limit,
     required int offset,
+    String search = '',
   }) async {
     await addToken();
 
@@ -1020,6 +1024,7 @@ class ApiService {
       {
         'limit': limit,
         'offset': offset,
+        if (search.trim().isNotEmpty) 'search': search.trim(),
       },
       (json) => CustomerListResponse.fromJson(json),
       context,
@@ -1102,6 +1107,29 @@ class ApiService {
       {'provider_id': providerId},
       (json) => json,
       context,
+    );
+  }
+
+  Future<Map<String, dynamic>> sendDealerOrderOtp(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/place-order/otp',
+      {},
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> placeDealerOrder(
+      BuildContext context, String cartId, String otp) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/place-order',
+      {'otp': otp},
+      (json) => json,
+      context,
+      receiveTimeout: const Duration(minutes: 2),
     );
   }
 
