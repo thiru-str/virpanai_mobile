@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../utility/app_colors.dart';
+import '../../utility/font_utils.dart';
 
 class VariantsBottomSheet extends StatelessWidget {
   final String title;
@@ -19,78 +20,98 @@ class VariantsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Grabber handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(
-                  Icons.close,
-                  size: 24,
-                  color: Colors.black87,
+            ),
+            // Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: FontUtils.primaryFontStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Options List
-          Expanded(
-            child: ListView.separated(
-              itemCount: options.length,
-              separatorBuilder: (context, index) => const Divider(
-                color: Colors.grey,
-                height: 0.5,
-              ),
-              itemBuilder: (context, index) {
-                final option = options[index];
-                return ListTile(
-                  onTap: () => onOptionSelected(option),
-                  title: Text(
-                    option,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 20,
                       color: Colors.black87,
                     ),
                   ),
-                  trailing: option == selectedOption
-                      ? Icon(
-                    Icons.check_circle,
-                    color: AppColors.primary,
-                    size: 24,
-                  )
-                      : null,
-                  leading: title == 'Color'
-                      ? CircleAvatar(
-                    backgroundColor: _getColor(option),
-                    radius: 12,
-                  )
-                      : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            // Options List
+            Expanded(
+              child: ListView.separated(
+                itemCount: options.length,
+                separatorBuilder: (context, index) => const Divider(
+                  color: Color(0xFFE5E7EC),
+                  height: 0.5,
+                ),
+                itemBuilder: (context, index) {
+                  final option = options[index];
+                  return ListTile(
+                    onTap: () => onOptionSelected(option),
+                    title: Text(
+                      option,
+                      style: UiTypography.cardAction(color: Colors.black87)
+                          .copyWith(fontSize: 16),
+                    ),
+                    trailing: option == selectedOption
+                        ? Icon(
+                            Icons.check_circle,
+                            color: AppColors.primary,
+                            size: 24,
+                          )
+                        : null,
+                    leading: title == 'Color'
+                        ? CircleAvatar(
+                            backgroundColor: _getColor(option),
+                            radius: 12,
+                          )
+                        : null,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 8.0),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

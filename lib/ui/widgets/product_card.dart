@@ -1,12 +1,122 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+
+const Map<String, Color> _colorSwatchMap = {
+  'red': Color(0xFFEF4444),
+  'blue': Color(0xFF3B82F6),
+  'green': Color(0xFF22C55E),
+  'white': Color(0xFFFFFFFF),
+  'black': Color(0xFF111827),
+  'yellow': Color(0xFFEAB308),
+  'orange': Color(0xFFF97316),
+  'pink': Color(0xFFEC4899),
+  'purple': Color(0xFFA855F7),
+  'grey': Color(0xFF9CA3AF),
+  'gray': Color(0xFF9CA3AF),
+  'brown': Color(0xFF92400E),
+  'navy': Color(0xFF1E3A8A),
+  'beige': Color(0xFFF5F5DC),
+  'cream': Color(0xFFFFFDD0),
+  'maroon': Color(0xFF9B2335),
+  'teal': Color(0xFF14B8A6),
+  'wine': Color(0xFF722F37),
+  'golden': Color(0xFFFFD700),
+  'gold': Color(0xFFFFD700),
+  'silver': Color(0xFFC0C0C0),
+  'indigo': Color(0xFF4F46E5),
+  'violet': Color(0xFF7C3AED),
+  'cyan': Color(0xFF06B6D4),
+  'lime': Color(0xFF84CC16),
+};
+
+Widget _buildVariantChips(Variant variant, int remaining) {
+  final opts = (variant.options ?? [])
+      .where((o) => o.value != null && o.value!.isNotEmpty)
+      .toList();
+  final List<String> parts = opts.isNotEmpty
+      ? opts.map((o) => o.value!).toList()
+      : (variant.title ?? '')
+            .split('/')
+            .map((p) => p.trim())
+            .where((p) => p.isNotEmpty)
+            .toList();
+
+  Widget chip(String label) {
+    final swatch = _colorSwatchMap[label.toLowerCase()];
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 110),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (swatch != null) ...[
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: swatch,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black12, width: 0.5),
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF374151),
+                  height: 1,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  return Wrap(
+    spacing: 4,
+    runSpacing: 4,
+    children: [
+      ...parts.map(chip),
+      if (remaining > 0)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5E9),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Text(
+            '+$remaining',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3EAA3C),
+              height: 1,
+            ),
+          ),
+        ),
+    ],
+  );
+}
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -60,6 +170,29 @@ class ProductCard extends StatelessWidget {
 
   String _fmt(double v) => CurrencyUtil.appendCurrency(v.toStringAsFixed(0));
 
+  // Returns the cheapest non-default variant and total non-default count.
+  ({Variant? variant, int count}) _variantInfo(Product p) {
+    final variants = (p.variants ?? [])
+        .where((v) =>
+            v.title != null &&
+            v.title!.isNotEmpty &&
+            v.title != 'Default Title' &&
+            v.title != 'Default variant')
+        .toList();
+    if (variants.isEmpty) return (variant: null, count: 0);
+    Variant? cheapest;
+    double? minPrice;
+    for (final v in variants) {
+      final price = double.tryParse(
+          v.calculatedPrice?.calculatedAmount?.toString() ?? '');
+      if (price != null && (minPrice == null || price < minPrice)) {
+        minPrice = price;
+        cheapest = v;
+      }
+    }
+    return (variant: cheapest ?? variants.first, count: variants.length);
+  }
+
   // -------------------------------------------------------------------------
 
   @override
@@ -76,16 +209,14 @@ class ProductCard extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: const Color(0xFFF8F8FB),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.black.withOpacity(0.03),
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 18,
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -97,24 +228,27 @@ class ProductCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(18),
+                    top: Radius.circular(16),
                   ),
-                  child: CachedNetworkImage(
-                    imageUrl: product.thumbnail ?? '',
-                    height: 225,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 350),
-                    placeholderFadeInDuration:
-                        const Duration(milliseconds: 150),
-                    placeholder: (context, url) => const AppShimmer(
-                      child: ShimmerBox(
-                        height: 225,
-                        borderRadius: BorderRadius.zero,
+                  child: Container(
+                    color: AppColors.secondary,
+                    child: CachedNetworkImage(
+                      imageUrl: product.thumbnail ?? '',
+                      height: 225,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      fadeInDuration: const Duration(milliseconds: 350),
+                      placeholderFadeInDuration:
+                          const Duration(milliseconds: 150),
+                      placeholder: (context, url) => const AppShimmer(
+                        child: ShimmerBox(
+                          height: 225,
+                          borderRadius: BorderRadius.zero,
+                        ),
                       ),
+                      errorWidget: (context, url, error) =>
+                          const ImageFallbackWidget(w: 60, h: 60),
                     ),
-                    errorWidget: (context, url, error) =>
-                        const ImageFallbackWidget(w: 60, h: 60),
                   ),
                 ),
 
@@ -125,37 +259,45 @@ class ProductCard extends StatelessWidget {
                     right: 8,
                     child: GestureDetector(
                       onTap: onTapFavorite,
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.grey[600],
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          size: 18,
+                          color: isFavorite ? Colors.red : Colors.grey[600],
+                        ),
                       ),
                     ),
                   ),
 
-                // (Optional) % OFF ribbon – keep/remove as you prefer
+                // Discount badge
                 if (hasDiscount && percentOff != null)
                   Positioned(
-                    top: 0,
-                    left: 0,
+                    top: 8,
+                    left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 6),
-                      decoration: const BoxDecoration(
-                        color: Colors.pink,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(18),
-                        ),
+                          vertical: 4, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7F7F0),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: RotatedBox(
-                        quarterTurns: -1,
-                        child: Text(
-                          '$percentOff% OFF',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
+                      child: Text(
+                        '$percentOff% OFF',
+                        style: UiTypography.cardMeta(
+                          color: const Color(0xFF1FA971),
+                        ).copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -169,15 +311,23 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Text(
                 product.title ?? '',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textColor,
-                ),
-                maxLines: 1,
+                style: UiTypography.cardTitle(color: AppColors.textColor)
+                    .copyWith(fontSize: 15, height: 1.2),
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+
+            // Variant chips
+            Builder(builder: (_) {
+              final info = _variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(12, 2, 12, 4),
+                child: _buildVariantChips(
+                    info.variant!, info.count - 1),
+              );
+            }),
 
             // Price row
             Padding(
@@ -186,20 +336,13 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0), // show calc, else original
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   const SizedBox(width: 8),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: FontUtils.secondaryFontStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: Colors.grey,
+                      style: UiTypography.cardMeta().copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),

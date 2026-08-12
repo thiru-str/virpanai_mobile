@@ -1,12 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard3 extends StatelessWidget {
   final Product product;
@@ -68,8 +69,15 @@ class ProductCard3 extends StatelessWidget {
         width: 180,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,12 +87,12 @@ class ProductCard3 extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
                   child: Container(
                     height: 140,
-                    color: Colors.grey[100],
+                    color: AppColors.secondary,
                     child: CachedNetworkImage(
                       imageUrl: product.thumbnail ?? '',
                       fit: BoxFit.contain,
@@ -103,15 +111,13 @@ class ProductCard3 extends StatelessWidget {
                     child: Container(
                       width: 50,
                       height: 24,
-                      color: Colors.green,
+                      color: const Color(0xFF1FA971),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         AppStrings.new_tag,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: UiTypography.cardMeta(color: Colors.white)
+                            .copyWith(
+                                fontSize: 10.5, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -127,21 +133,18 @@ class ProductCard3 extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.brown[50],
-                  borderRadius: BorderRadius.circular(4),
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star, size: 14, color: Colors.brown),
+                    Icon(Icons.star, size: 14, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text(
                       "${5 ?? 0} (${2 ?? 0})",
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      style: UiTypography.cardMeta(color: Colors.black87)
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -155,37 +158,43 @@ class ProductCard3 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 product.title ?? '',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                style: UiTypography.cardTitle().copyWith(
+                  fontSize: 15,
+                  height: 1.2,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
 
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                child: buildVariantChips(info.variant!, info.count - 1),
+              );
+            }),
+
             const SizedBox(height: 4),
 
             // ---- Price Row ----
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 2,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
-                  const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
                     Text(
                       _fmt(orig),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -199,11 +208,8 @@ class ProductCard3 extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green,
-                  ),
+                  style: UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                      .copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
             // ---- Add to Cart Button ----
@@ -214,24 +220,19 @@ class ProductCard3 extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
                 child: ElevatedButton.icon(
                   onPressed: onAddToCart,
-                  icon: const Icon(Icons.shopping_cart_outlined,
-                      size: 16, color: Colors.brown),
-                  label: const Text(
+                  icon: Icon(Icons.shopping_cart_outlined,
+                      size: 16, color: AppColors.primary),
+                  label: Text(
                     AppStrings.add_to_cart,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.brown,
-                    ),
+                    style: UiTypography.cardAction(color: AppColors.primary)
+                        .copyWith(fontWeight: FontWeight.w700),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown[50],
-                    foregroundColor: Colors.brown,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(0),
-                        bottomRight: Radius.circular(0),
-                      ),
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: AppColors.primary,
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
                   ),

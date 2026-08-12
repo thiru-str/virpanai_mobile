@@ -24,9 +24,13 @@ class CouponBottomSheet extends StatefulWidget {
 
 class _CouponBottomSheetState extends State<CouponBottomSheet> {
   List<AvailablePromotion> _promotions = [];
-  bool _loading = true;
+  bool _showCouponList = true;
   String? _error;
-  String? _actionCode; // code currently being applied/removed
+  String? _actionCode;
+
+  // Stays false until both API calls finish — prevents a height shake
+  // during the modal's slide-in animation.
+  bool _initialized = false;
 
   final TextEditingController _manualController = TextEditingController();
   String? _manualError;
@@ -34,13 +38,40 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadPromotions();
+    _initializeCouponSettings();
   }
 
   @override
   void dispose() {
     _manualController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initializeCouponSettings() async {
+    bool visible = true;
+    try {
+      visible = await ApiService().getCouponListVisibility();
+    } catch (_) {
+      visible = true;
+    }
+
+    if (visible) {
+      try {
+        final result =
+            await ApiService().getAvailablePromotions(context, widget.cartId);
+        if (!mounted) return;
+        _promotions = result.promotions;
+      } catch (_) {
+        if (!mounted) return;
+        _error = 'Could not load coupons';
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _showCouponList = visible;
+      _initialized = true;
+    });
   }
 
   Future<void> _applyManual() async {
@@ -58,23 +89,6 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) setState(() => _actionCode = null);
-    }
-  }
-
-  Future<void> _loadPromotions() async {
-    try {
-      final result = await ApiService().getAvailablePromotions(context, widget.cartId);
-      if (!mounted) return;
-      setState(() {
-        _promotions = result.promotions;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Could not load coupons';
-        _loading = false;
-      });
     }
   }
 
@@ -100,24 +114,32 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final eligible = _promotions.where((p) => p.isEligible && !p.isApplied).toList();
+    final eligible =
+        _promotions.where((p) => p.isEligible && !p.isApplied).toList();
     final applied = _promotions.where((p) => p.isApplied).toList();
-    final ineligible = _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
+    final ineligible =
+        _promotions.where((p) => !p.isEligible && !p.isApplied).toList();
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      maxChildSize: 0.92,
-      minChildSize: 0.4,
-      expand: false,
-      builder: (_, scrollController) {
-        return Container(
+    final mq = MediaQuery.of(context);
+    final viewInsetsBottom = mq.viewInsets.bottom;
+    final keyboardOpen = viewInsetsBottom > 0;
+    final listMaxHeight = mq.size.height * 0.58;
+    final isApplyingManual = _actionCode != null &&
+        _actionCode == _manualController.text.trim().toUpperCase();
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: viewInsetsBottom),
+        child: Container(
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle
+              // Grab handle
               Padding(
                 padding: const EdgeInsets.only(top: 10, bottom: 4),
                 child: Container(
@@ -135,7 +157,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                 child: Row(
                   children: [
                     Text(
-                      'Coupons & Offers',
+                      _showCouponList ? 'Coupons & Offers' : 'Apply Coupon',
                       style: FontUtils.primaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -145,7 +167,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                     const Spacer(),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Icon(Icons.close, color: Colors.grey.shade600, size: 22),
+                      child: Icon(Icons.close,
+                          color: Colors.grey.shade600, size: 22),
                     ),
                   ],
                 ),
@@ -153,7 +176,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
               Divider(height: 1, color: Colors.grey.shade100),
               // Manual entry
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -162,7 +185,13 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                         Expanded(
                           child: TextField(
                             controller: _manualController,
-                            textCapitalization: TextCapitalization.none,
+                            textCapitalization: TextCapitalization.characters,
+                            onSubmitted: (_) => _applyManual(),
+                            onChanged: (_) {
+                              if (_manualError != null) {
+                                setState(() => _manualError = null);
+                              }
+                            },
                             style: FontUtils.primaryFontStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -170,11 +199,12 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                             ),
                             decoration: InputDecoration(
                               hintText: 'Enter coupon code',
-                              hintStyle: TextStyle(
+                              hintStyle: FontUtils.primaryFontStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade400,
                                 fontWeight: FontWeight.w400,
                               ),
+                              isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 12),
                               border: OutlineInputBorder(
@@ -192,13 +222,7 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                                 borderSide: BorderSide(
                                     color: AppColors.primary, width: 1.5),
                               ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide:
-                                    BorderSide(color: Colors.red.shade300),
-                              ),
                             ),
-                            onSubmitted: (_) => _applyManual(),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -211,12 +235,8 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: _actionCode != null &&
-                                    _actionCode ==
-                                        _manualController.text
-                                            .trim()
-                                            .toUpperCase()
-                                ? SizedBox(
+                            child: isApplyingManual
+                                ? const SizedBox(
                                     width: 16,
                                     height: 16,
                                     child: CircularProgressIndicator(
@@ -247,67 +267,97 @@ class _CouponBottomSheetState extends State<CouponBottomSheet> {
                   ],
                 ),
               ),
-              Divider(height: 1, color: Colors.grey.shade100),
-              // Content
-              Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _error != null
-                        ? Center(
-                            child: Text(_error!,
-                                style: TextStyle(color: Colors.grey.shade600)),
-                          )
-                        : _promotions.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.local_offer_outlined,
-                                        size: 48, color: Colors.grey.shade300),
-                                    const SizedBox(height: 12),
-                                    Text('No coupons available',
-                                        style: TextStyle(color: Colors.grey.shade500)),
-                                  ],
-                                ),
-                              )
-                            : ListView(
-                                controller: scrollController,
-                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                                children: [
-                                  if (applied.isNotEmpty) ...[
-                                    _sectionLabel('Applied'),
-                                    ...applied.map((p) => _PromoCard(
-                                          promo: p,
-                                          actionCode: _actionCode,
-                                          onRemove: () => _remove(
-                                            applied.map((x) => x.code).toList(),
-                                          ),
-                                        )),
-                                    const SizedBox(height: 8),
-                                  ],
-                                  if (eligible.isNotEmpty) ...[
-                                    _sectionLabel('Available Offers'),
-                                    ...eligible.map((p) => _PromoCard(
-                                          promo: p,
-                                          actionCode: _actionCode,
-                                          onApply: () => _apply(p.code),
-                                        )),
-                                    const SizedBox(height: 8),
-                                  ],
-                                  if (ineligible.isNotEmpty) ...[
-                                    _sectionLabel('Not Available Offers'),
-                                    ...ineligible.map((p) => _PromoCard(
-                                          promo: p,
-                                          actionCode: _actionCode,
-                                        )),
-                                  ],
-                                ],
-                              ),
+              // Promo list — AnimatedSize gives a smooth fold/unfold when
+              // keyboard opens or closes.
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: (_initialized && _showCouponList && !keyboardOpen)
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 20),
+                          Divider(height: 1, color: Colors.grey.shade100),
+                          ConstrainedBox(
+                            constraints:
+                                BoxConstraints(maxHeight: listMaxHeight),
+                            child: _error != null
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 40),
+                                    child: Center(
+                                      child: Text(_error!,
+                                          style: TextStyle(
+                                              color: Colors.grey.shade600)),
+                                    ),
+                                  )
+                                : _promotions.isEmpty
+                                    ? Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 32),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.local_offer_outlined,
+                                                size: 48,
+                                                color: Colors.grey.shade300),
+                                            const SizedBox(height: 12),
+                                            Text('No coupons available',
+                                                style: TextStyle(
+                                                    color:
+                                                        Colors.grey.shade500)),
+                                          ],
+                                        ),
+                                      )
+                                    : ListView(
+                                        shrinkWrap: true,
+                                        padding: const EdgeInsets.fromLTRB(
+                                            16, 8, 16, 24),
+                                        children: [
+                                          if (applied.isNotEmpty) ...[
+                                            _sectionLabel('Applied'),
+                                            ...applied.map((p) => _PromoCard(
+                                                  promo: p,
+                                                  actionCode: _actionCode,
+                                                  onRemove: () => _remove(
+                                                    applied
+                                                        .map((x) => x.code)
+                                                        .toList(),
+                                                  ),
+                                                )),
+                                            const SizedBox(height: 8),
+                                          ],
+                                          if (eligible.isNotEmpty) ...[
+                                            _sectionLabel('Available Offers'),
+                                            ...eligible.map((p) => _PromoCard(
+                                                  promo: p,
+                                                  actionCode: _actionCode,
+                                                  onApply: () =>
+                                                      _apply(p.code),
+                                                )),
+                                            const SizedBox(height: 8),
+                                          ],
+                                          if (ineligible.isNotEmpty) ...[
+                                            _sectionLabel(
+                                                'Not Available Offers'),
+                                            ...ineligible
+                                                .map((p) => _PromoCard(
+                                                      promo: p,
+                                                      actionCode: _actionCode,
+                                                    )),
+                                          ],
+                                        ],
+                                      ),
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
               ),
+              SizedBox(height: mq.padding.bottom),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -367,7 +417,6 @@ class _PromoCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Middle: code + description
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,7 +455,6 @@ class _PromoCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Right: action button
                 if (isApplied)
                   _ActionButton(
                     label: 'Remove',
@@ -424,7 +472,6 @@ class _PromoCard extends StatelessWidget {
               ],
             ),
           ),
-          // Ineligibility reason strip
           if (!isEligible && !isApplied && promo.ineligibilityReason != null)
             Container(
               width: double.infinity,

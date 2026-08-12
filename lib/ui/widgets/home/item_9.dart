@@ -130,6 +130,15 @@ class _Item9State extends State<Item9> {
                           content.layoutData![i].cartDetails?.quantity ??
                           0,
                       onCartQtyChanged: widget.onCartQtyChanged,
+                      onTap: () {
+                        // Navigate to product detail when the card body is
+                        // tapped — matches the pattern used by Item11/Item12.
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption ?? '',
+                          layoutData: content.layoutData![i],
+                        );
+                      },
                     ),
                     if (i != content.layoutData!.length - 1)
                       const SizedBox(width: 16),
@@ -148,12 +157,14 @@ class _Item9Card extends StatelessWidget {
   final dynamic layoutData;
   final int cartQty;
   final void Function(int delta, String variantId)? onCartQtyChanged;
+  final VoidCallback? onTap;
 
   const _Item9Card({
     Key? key,
     required this.layoutData,
     required this.cartQty,
     required this.onCartQtyChanged,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -161,7 +172,10 @@ class _Item9Card extends StatelessWidget {
     final prices = layoutData.prices ?? {};
     final variantId = layoutData.variantDetails?.variantId ?? '';
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       width: 180,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -293,6 +307,7 @@ class _Item9Card extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -337,10 +352,9 @@ class _DiscountBurstBadge extends StatelessWidget {
         child: Text(
           '$normalized',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: FontUtils.primaryFontStyle(
             color: Colors.white,
             fontSize: 8,
-            height: 1.0,
             fontWeight: FontWeight.w700,
           ),
         ),

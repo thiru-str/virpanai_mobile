@@ -188,12 +188,14 @@ class StoreMetadata {
   String? versionCheck;
   String? invoiceUrl;
   num? minimumOrderValue;
+  String? favouriteListName;
 
   StoreMetadata({
     this.skipLogin,
     this.versionCheck,
     this.invoiceUrl,
     this.minimumOrderValue,
+    this.favouriteListName,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
@@ -201,6 +203,7 @@ class StoreMetadata {
         versionCheck: json["version_check"],
         invoiceUrl: json["invoice_url"],
         minimumOrderValue: json["minimum_order_value"],
+        favouriteListName: json["favourite_list_name"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -208,6 +211,7 @@ class StoreMetadata {
         "version_check": versionCheck,
         "invoice_url": invoiceUrl,
         "minimum_order_value": minimumOrderValue,
+        "favourite_list_name": favouriteListName,
       };
 }
 

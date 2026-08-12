@@ -10,10 +10,12 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/public_detail_model.dart';
 import '../model/view_cart_model.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
 import '../utility/currency_util.dart';
+import '../utility/font_utils.dart';
 import 'product_detail_page.dart';
 import 'widgets/no_orders_widget.dart';
 
@@ -30,6 +32,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   WishlistResponse? wishListResponse;
   bool apiLoading = true;
   Customer? customer;
+  String _pageTitle = AppStrings.my_favorites;
 
   void initState() {
     super.initState();
@@ -37,9 +40,13 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   }
 
   Future<void> _initializeData() async {
-    // Wait for the customer data to be fetched
     customer = await getCustomerResponse();
-
+    final prefs = SharedPreferencesUtil();
+    final details = await prefs.getPublicDetails();
+    final name = details?.storeDetails?.storeMetadata?.favouriteListName?.trim();
+    if (name != null && name.isNotEmpty) {
+      setState(() => _pageTitle = name);
+    }
     if (customer != null) {
       getWishListApi(customer?.id);
     }
@@ -48,9 +55,9 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       appBar:CommonHeaderAppBar(
-              title: AppStrings.my_favorites,
+              title: _pageTitle,
               leading: widget.isFromBottomNav ?? false ? false : true,
               onBackTap: () {
                 Navigator.of(context).pop();
@@ -67,7 +74,20 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                   child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: MasonryGridView.count(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 14.0),
+                          child: Text(
+                            '${wishListResponse?.products?.length ?? 0} ${(wishListResponse?.products?.length ?? 0) == 1 ? 'item' : 'items'} saved',
+                            style: FontUtils.secondaryFontStyle(
+                              fontSize: 14,
+                              color: AppColors.textColor50,
+                            ),
+                          ),
+                        ),
+                        MasonryGridView.count(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16, // Space between columns
                       mainAxisSpacing: 16, // Space between rows
@@ -112,6 +132,8 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
                               }),
                         );
                       },
+                    ),
+                      ],
                     ),
                   ),
                 ))
