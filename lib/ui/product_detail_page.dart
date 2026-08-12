@@ -169,6 +169,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     try {
       await getProductsApi();
+      // Await cart so qty is ready before the loader hides — avoids the
+      // flash of 0→N qty after the product is visible.
+      if (isLoggedIn) await getCartApi();
       if (mounted) {
         setState(() => apiLoading = false);
       }
@@ -176,10 +179,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       // Load non-critical sections in background after primary PDP is visible.
       unawaited(getRelatedProductsApi());
       unawaited(getUpSellingProductsApi());
-      if (isLoggedIn) {
-        unawaited(getReviewApi());
-        unawaited(getCartApi());
-      }
+      if (isLoggedIn) unawaited(getReviewApi());
       unawaited(getProductsInfoApi());
     } catch (e) {
       print("Error fetching initial data: $e");
