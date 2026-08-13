@@ -1015,8 +1015,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     productPresentInCart = _cartLineItemQty > 0;
     if (_cartLineItemQty > 0) {
       selectedQuantity = _cartLineItemQty;
-      _quantityController.text = _cartLineItemQty.toString();
     }
+    // Always sync the controller — switching variants must clear the previous
+    // variant's qty even when the new variant has nothing in the cart.
+    _quantityController.text = (_cartLineItemQty > 0 ? _cartLineItemQty : selectedQuantity).toString();
   }
 
   void updateVariant() {
