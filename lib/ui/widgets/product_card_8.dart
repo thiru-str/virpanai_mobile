@@ -48,6 +48,9 @@ class ProductCard8 extends StatelessWidget {
   Widget build(BuildContext context) {
     final images = product.images ?? [];
     final cheapest = _cheapestVariant(product);
+    final rating = double.tryParse(
+      product.metadata?.reviewSummary?.averageRating ?? '',
+    );
 
     final calc = cheapest != null
         ? double.tryParse(
@@ -168,24 +171,25 @@ class ProductCard8 extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Container(
-                          height: 16,
-                          width: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            '4.2',
-                            style: UiTypography.cardMeta(
-                              color: const Color(0xFF6D758F),
-                            ).copyWith(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                        if (rating != null && rating.isFinite && rating > 0)
+                          Container(
+                            height: 16,
+                            width: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              rating.toStringAsFixed(1),
+                              style: UiTypography.cardMeta(
+                                color: const Color(0xFF6D758F),
+                              ).copyWith(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),

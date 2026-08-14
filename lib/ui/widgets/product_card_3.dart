@@ -48,6 +48,12 @@ class ProductCard3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cheapest = _cheapestVariant(product);
+    final rating = double.tryParse(
+      product.metadata?.reviewSummary?.averageRating ?? '',
+    );
+    final totalReviews = int.tryParse(
+      product.metadata?.reviewSummary?.totalReviews ?? '',
+    );
 
     final calc = cheapest != null
         ? double.tryParse(
@@ -128,30 +134,34 @@ class ProductCard3 extends StatelessWidget {
             const SizedBox(height: 6),
 
             // ---- Rating with cut style ----
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.star, size: 14, color: AppColors.primary),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${5 ?? 0} (${2 ?? 0})",
-                      style: UiTypography.cardMeta(color: Colors.black87)
-                          .copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ],
+            if (rating != null && rating.isFinite && rating > 0) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star, size: 14, color: AppColors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        totalReviews != null && totalReviews > 0
+                            ? '${rating.toStringAsFixed(1)} ($totalReviews)'
+                            : rating.toStringAsFixed(1),
+                        style: UiTypography.cardMeta(color: Colors.black87)
+                            .copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 6),
+              const SizedBox(height: 6),
+            ],
 
             // ---- Title ----
             Padding(
