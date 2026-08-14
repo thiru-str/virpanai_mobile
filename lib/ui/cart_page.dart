@@ -1212,46 +1212,67 @@ class _CartPageState extends State<CartPage>
     );
   }
 
-  void placeOrder(String paymentProviderId) async {
-    // Ensure cart has a shipping method attached before placing the order.
-    // Some backends rely on a subscriber to auto-attach (distance-based etc.),
-    // but if it fails the cart stays without one and complete-cart rejects
-    // with "No shipping method selected but the cart contains items that
-    // require shipping". Fetch options here and attach the first as fallback.
-    final hasShipping =
-        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
-    if (!hasShipping) {
+  /// Fetches available shipping options and attaches the first one to the cart.
+  /// Retries once on failure. Returns true if a method was successfully
+  /// attached (or was already present after the retry), false otherwise.
+  Future<bool> _tryAttachShipping() async {
+    final api = ApiService();
+    for (int attempt = 0; attempt < 2; attempt++) {
       try {
-        setState(() => cartLoading = true);
-        final api = ApiService();
         final shipping = await api.getShippingInfo(context);
         final first = shipping.shippingOptions?.isNotEmpty == true
             ? shipping.shippingOptions!.first
             : null;
-        if (first?.id != null) {
-          await api.updateShippingMethod(context, first!.id!);
-          await getCartApi();
-        } else {
-          setState(() => cartLoading = false);
+        if (first?.id == null) {
           AppUtils.showToast('No shipping method available for this address.');
-          return;
+          return false;
+        }
+        await api.updateShippingMethod(context, first!.id!);
+        await getCartApi();
+        if (cartResponse?.cart?.shippingMethods?.isNotEmpty == true) {
+          return true;
         }
       } catch (e) {
-        setState(() => cartLoading = false);
-        final msg = e.toString();
-        if (msg.contains('DELIVERY_INVALID_ADDRESS')) {
-          AppUtils.showToast(
-              'We couldn\'t locate your address. Please update it or re-pick from the map.');
-        } else if (msg.contains('DELIVERY_SERVICE_DOWN')) {
-          AppUtils.showToast(
-              'Delivery service temporarily unavailable. Please try again shortly.');
-        } else {
-          AppUtils.showToast('Could not attach shipping method. Please try again.');
+        if (attempt == 1) {
+          final msg = e.toString();
+          if (msg.contains('DELIVERY_INVALID_ADDRESS')) {
+            AppUtils.showToast(
+                'We couldn\'t locate your address. Please update it or re-pick from the map.');
+          } else if (msg.contains('DELIVERY_SERVICE_DOWN')) {
+            AppUtils.showToast(
+                'Delivery service temporarily unavailable. Please try again shortly.');
+          } else {
+            AppUtils.showToast('Could not attach shipping method. Please try again.');
+          }
+          return false;
         }
-        return;
-      } finally {
-        setState(() => cartLoading = false);
+        // First attempt failed — wait briefly then retry once
+        await Future.delayed(const Duration(seconds: 1));
       }
+    }
+    AppUtils.showToast('Could not attach shipping method. Please try again.');
+    return false;
+  }
+
+  void placeOrder(String paymentProviderId) async {
+    // Refresh cart first — in-memory state may be stale; the shipping method
+    // may already have been attached server-side since the last fetch.
+    setState(() => cartLoading = true);
+    await getCartApi();
+
+    final hasShipping =
+        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    if (!hasShipping) {
+      // Attempt to fetch shipping options and attach the first available one.
+      // Retries once on transient failure (network blip, Maps quota, etc.)
+      // before surfacing the error to the user.
+      final attached = await _tryAttachShipping();
+      if (!attached) {
+        setState(() => cartLoading = false);
+        return;
+      }
+    } else {
+      setState(() => cartLoading = false);
     }
 
     if (paymentProviderId == 'pp_icici_icici') {
