@@ -174,7 +174,7 @@ class ProductCard9 extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                    style: UiTypography.cardPrice(color: Colors.black),
                   ),
                   Text(
                     _fmt(orig ?? calc ?? 0),

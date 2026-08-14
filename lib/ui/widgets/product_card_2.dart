@@ -225,7 +225,7 @@ class _ProductCard2State extends State<ProductCard2> {
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
               child: Text(
                 _fmt(calc ?? orig ?? 0),
-                style: UiTypography.cardPrice(color: AppColors.primary),
+                style: UiTypography.cardPrice(color: Colors.black),
               ),
             ),
 

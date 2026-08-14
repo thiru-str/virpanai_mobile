@@ -203,7 +203,7 @@ class _ProductCard4State extends State<ProductCard4> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                    style: UiTypography.cardPrice(color: Colors.black),
                   ),
                   const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
@@ -293,4 +293,3 @@ class _ProductCard4State extends State<ProductCard4> {
     );
   }
 }
-

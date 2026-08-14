@@ -134,7 +134,7 @@ class ProductCard7 extends StatelessWidget {
                       _fmt(calc ?? orig ?? 0),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: UiTypography.cardPrice(color: AppColors.primary),
+                      style: UiTypography.cardPrice(color: Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),
