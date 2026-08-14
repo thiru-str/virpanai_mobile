@@ -27,6 +27,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
+import 'package:waioz/model/product_filter_facets_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
@@ -73,6 +74,26 @@ class ApiService {
     );
   }
 
+  // Pull a human-readable error message from response.data without assuming
+  // it's a Map. Some upstreams return plain text or HTML, in which case
+  // response.data['message'] threw "type 'String' is not a subtype of type
+  // 'int' of 'index'" and masked the real failure.
+  String _extractErrorMessage(dynamic data) {
+    if (data is Map) {
+      final m = data['message'];
+      if (m is String && m.isNotEmpty) return m;
+      final err = data['error'];
+      if (err is Map) {
+        final em = err['message'];
+        if (em is String && em.isNotEmpty) return em;
+      }
+      if (err is String && err.isNotEmpty) return err;
+    } else if (data is String && data.isNotEmpty) {
+      return data;
+    }
+    return 'An error occurred';
+  }
+
   Future<T> _makePostRequest<T>(
     String endpoint,
     Map<String, dynamic>? data,
@@ -94,15 +115,23 @@ class ApiService {
         },
       ));
       if (response.statusCode == 200) {
-        AppLogger.logFullJson(response.data);
+        if (endpoint == 'store/get_home_page/v8') {
+          final payload = response.data as Map<String, dynamic>?;
+          final content = payload?['content'];
+          AppLogger.print(
+            'Home page response:',
+            'status=${payload?['status']}, components=${content is List ? content.length : 0}',
+          );
+        } else {
+          AppLogger.logFullJson(response.data);
+        }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -152,13 +181,12 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context!, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context!, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
@@ -209,9 +237,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -264,9 +290,7 @@ class ApiService {
         AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ??
-            response.data['error']?['message'] ??
-            'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -508,7 +532,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if (sortBy != null) {
+    if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -588,11 +612,21 @@ class ApiService {
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
-      {int offset = 0, int limit = 0}) async {
+      {int offset = 0,
+      int limit = 0,
+      double? latitude,
+      double? longitude,
+      String? pincode}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-      {'limit': limit, 'offset': offset},
+      {
+        'limit': limit,
+        'offset': offset,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -674,6 +708,25 @@ class ApiService {
     );
   }
 
+  Future<ReturnSuccessResponse> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => ReturnSuccessResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> getWishList(
       BuildContext context, String? customerID) async {
     await addToken();
@@ -691,12 +744,35 @@ class ApiService {
       BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/line-items',
-      {"variant_id": variantId, "quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
+    try {
+      return await _makePostRequest(
+        'store/custom-carts/$cartId/line-items',
+        {"variant_id": variantId, "quantity": qty, "metadata": {}},
+        (json) => CartResponse.fromJson(json),
+        context,
+      );
+    } catch (e) {
+      // Cart is inactive (completed after a previous order) — auto-recover by
+      // fetching a fresh cart from the home page endpoint, then retry once.
+      if (e.toString().contains('status code: 409')) {
+        try {
+          final homeResponse = await getHomePage(context);
+          final newCartId = homeResponse.global?.cartId;
+          if (newCartId != null && newCartId.isNotEmpty && newCartId != cartId) {
+            await SharedPreferencesUtil().saveString('cart_id', newCartId);
+            return await _makePostRequest(
+              'store/custom-carts/$newCartId/line-items',
+              {"variant_id": variantId, "quantity": qty, "metadata": {}},
+              (json) => CartResponse.fromJson(json),
+              context,
+            );
+          }
+        } catch (_) {
+          // Refresh failed — fall through to rethrow original error
+        }
+      }
+      rethrow;
+    }
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
@@ -825,6 +901,20 @@ class ApiService {
     );
   }
 
+  Future<String?> initiateIciciPayment(BuildContext context) async {
+    await setPublishableKey();
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final response = await _dio.post(
+      'store/place-order/$cartId',
+      data: {"payment_provider_id": "pp_icici_icici"},
+    );
+    if (response.statusCode == 200) {
+      return response.data?['icici_redirect_url'] as String?;
+    }
+    throw Exception('Failed to initiate ICICI payment');
+  }
+
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
   //   await addToken();
   //   return _makeGetRequest<WishlistResponse>(
@@ -938,6 +1028,34 @@ class ApiService {
     );
   }
 
+  Future<bool> getCouponListVisibility() async {
+    return _makeGetRequest<bool>(
+      'store/web/global_settings',
+      null,
+      null,
+      (json) {
+        final value = json['globalSettings']?['coupon_list_enabled'];
+
+        if (value is bool) {
+          return value;
+        }
+
+        if (value is String) {
+          final normalized = value.trim().toLowerCase();
+          if (['false', '0', 'off', 'no'].contains(normalized)) {
+            return false;
+          }
+          if (['true', '1', 'on', 'yes'].contains(normalized)) {
+            return true;
+          }
+        }
+
+        return true;
+      },
+      null,
+    );
+  }
+
   Future<dynamic> uploadImage(BuildContext context, File file) async {
     await addToken();
     return _uploadFile(
@@ -1003,12 +1121,44 @@ class ApiService {
     );
   }
 
-  Future<TagsResponse> listTags(BuildContext context) async {
+  Future<TagsResponse> listTags(BuildContext context,
+      {String? categoryIds}) async {
+    final queryParams = <String, dynamic>{"fields": "id,value"};
+    final categories = (categoryIds ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (categories.isNotEmpty) {
+      queryParams['category_id[]'] = categories;
+    }
+
     return _makeGetRequest<TagsResponse>(
-      'store/product-tags',
-      '?fields=id,value',
+      categories.isEmpty ? 'store/product-tags' : 'store/product-filter-tags',
       null,
+      queryParams,
       (json) => TagsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductFilterFacetsResponse> listProductFilterFacets(
+    BuildContext context, {
+    List<String> categoryIds = const [],
+    List<String> collectionIds = const [],
+    List<String> tagIds = const [],
+  }) async {
+    final queryParams = <String, dynamic>{
+      if (categoryIds.isNotEmpty) 'category_id[]': categoryIds,
+      if (collectionIds.isNotEmpty) 'collection_id[]': collectionIds,
+      if (tagIds.isNotEmpty) 'tag_id[]': tagIds,
+    };
+
+    return _makeGetRequest<ProductFilterFacetsResponse>(
+      'store/product-filter-facets',
+      null,
+      queryParams,
+      (json) => ProductFilterFacetsResponse.fromJson(json),
       context,
     );
   }
@@ -1231,6 +1381,121 @@ class ApiService {
     } catch (e) {
       debugPrint('removeWalletSplit error: $e');
       rethrow;
+    }
+  }
+
+  // ─── Loyalty ──────────────────────────────────────────────
+
+  Future<Response> getLoyaltyAccount() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty');
+  }
+
+  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/transactions',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> getLoyaltyPreview(
+    num orderTotal, {
+    String? orderId,
+    String? cartId,
+    String? productId,
+  }) async {
+    await setPublishableKey();
+    final params = <String, dynamic>{};
+    if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    // Prefer cart_id when available — backend computes earnable amount server-side
+    // (excludes platform_fee + applies earn restriction).
+    if (cartId != null && cartId.isNotEmpty) params['cart_id'] = cartId;
+    // PDP passes product_id so backend can short-circuit when the merchant
+    // has restricted earning to specific products / categories — keeps the
+    // "you'll earn …" strip honest with what the order subscriber will do.
+    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (orderTotal > 0) params['order_total'] = orderTotal;
+    return _dio.get('/store/loyalty/preview', queryParameters: params);
+  }
+
+  Future<Response> redeemLoyaltyPoints(int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/redeem', data: {'points': points});
+  }
+
+  Future<Response> applyLoyaltyCheckout(String cartId, int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId, 'points': points});
+  }
+
+  Future<Response> getLoyaltyCheckoutStatus(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/checkout-apply',
+        queryParameters: {'cart_id': cartId});
+  }
+
+  Future<Response> removeLoyaltyCheckout(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.delete('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId});
+  }
+
+  Future<Response> getLoyaltyReferral() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral');
+  }
+
+  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/history',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> applyReferralCode(String identifier) async {
+    await addToken();
+    await setPublishableKey();
+    // Send via `referral_identifier` (new) — backend accepts unique code OR phone.
+    return _dio.post('/store/loyalty/referral/apply',
+        data: {'referral_identifier': identifier.trim()});
+  }
+
+  /// Public endpoint — no auth required. Accepts EITHER a unique code OR a
+  /// phone number (when admin has enabled phone-as-referral mode).
+  Future<Response> validateReferralCode(String identifier) async {
+    await setPublishableKey();
+    final raw = identifier.trim();
+    // Pass via the new `identifier` param. Backend uppercases code lookups
+    // internally and tries phone matching when the input has enough digits.
+    return _dio.get('/store/loyalty/referral/validate',
+        queryParameters: {'identifier': raw});
+  }
+
+  // GET /store/delivery/free-delivery-info — cart-scoped progress banner data.
+  // Returns null on any failure so the widget hides silently rather than
+  // breaking the cart UI.
+  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
+    BuildContext context,
+    String cartId,
+  ) async {
+    try {
+      await addToken();
+      return _makeGetRequest<Map<String, dynamic>>(
+        'store/delivery/free-delivery-info',
+        null,
+        {'cart_id': cartId},
+        (json) => Map<String, dynamic>.from(json as Map),
+        context,
+      );
+    } catch (_) {
+      return null;
     }
   }
 }

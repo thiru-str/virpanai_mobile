@@ -211,15 +211,33 @@ class RawAmount {
 class Data {
   String? id;
   String? clientSecret;
+  String? host;
+  String? mid;
+  String? orderId;
+  String? txnToken;
+  String? token;
+  dynamic amount;
 
   Data({
     this.id,
     this.clientSecret,
+    this.host,
+    this.mid,
+    this.orderId,
+    this.txnToken,
+    this.token,
+    this.amount,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
     id: json["id"],
     clientSecret: json["client_secret"],
+    host: json["host"],
+    mid: json["mid"],
+    orderId: json["orderId"] ?? json["order_id"],
+    txnToken: json["txnToken"] ?? json["txn_token"],
+    token: json["token"],
+    amount: json["amount"],
   );
 
   Map<String, dynamic> toJson() => {

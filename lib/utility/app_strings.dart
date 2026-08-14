@@ -1,7 +1,7 @@
 // lib/assets.dart
 
 class AppStrings {
-  static const String welcome_to_store = 'Welcome to \n our store';
+  static const String welcome_to_store = 'virpanai';
   static const String get_your_product = 'Get your product as fast as one hour';
 
   static const String transation_details = 'Transaction details';
@@ -139,6 +139,7 @@ class AppStrings {
   static const String billing_details = 'Billing details';
   static const String shipping_details = "Shipping Details";
   static const String fast_delivery = "Lightning-Fast Delivery";
+  static const String set_delivery_address = "Set delivery address";
   static const String delivered = 'Delivered';
   static const String shipped = 'Shipped';
   static const String order_confirmed = " Order Confirmed";
@@ -164,6 +165,7 @@ class AppStrings {
   static const String review_submitted = 'Review submitted!';
   static const String reviews = 'Reviews';
   static const String add_to_cart = 'Add to Cart';
+  static const String update_cart = 'Update Cart';
   static const String enter_valid_mob_no = 'Please enter a valid phone number';
   static const String profileImageUrl = "profileImageUrl";
   static const String digit_range =
@@ -244,6 +246,7 @@ class AppStrings {
   static const String items_suffix = 'items.';
   static const String add_ons = 'Add-ons';
   static const String no_subcategories_found = 'No subcategories found';
+  static const String no_categories_found = 'No categories found';
   static const String write_a_reason = 'Write a reason';
   static const String download_invoice = 'Download Invoice';
   static const String cancel_order = 'Cancel Order';

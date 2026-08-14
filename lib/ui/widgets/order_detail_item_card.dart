@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -14,7 +15,10 @@ class OrderDetailItemCard extends StatelessWidget {
   final double initialRating;
   final bool showReturnButton;
   final bool showRating;
+  final bool ratingReadOnly;
+  final String ratingLabel;
   final Function(double)? onRatingChanged;
+  final VoidCallback? onRatingTap;
   final VoidCallback? onReturnTap;
 
   const OrderDetailItemCard({
@@ -27,7 +31,10 @@ class OrderDetailItemCard extends StatelessWidget {
     this.initialRating = 0.0,
     this.showReturnButton = true,
     this.showRating = true,
+    this.ratingReadOnly = false,
+    this.ratingLabel = "Please rate the product",
     this.onRatingChanged,
+    this.onRatingTap,
     this.onReturnTap,
   }) : super(key: key);
 
@@ -42,8 +49,15 @@ class OrderDetailItemCard extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(color: Colors.grey.shade300, width: 1.2),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(color: const Color(0xFFE5E7EC)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,13 +68,18 @@ class OrderDetailItemCard extends StatelessWidget {
                 children: [
                   // Product Image
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
+                    borderRadius: BorderRadius.circular(12.0),
+                    child: Container(
                       width: 70,
                       height: 70,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, _, __) => _fallbackWidget(),
+                      color: AppColors.secondary,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, _, __) => _fallbackWidget(),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -72,27 +91,28 @@ class OrderDetailItemCard extends StatelessWidget {
                       children: [
                         // Product Name + Price in same row
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Text(
                                 productName,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
+                                style: UiTypography.cardTitle(
+                                        color: Colors.black87)
+                                    .copyWith(height: 1.2),
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              price,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                            Flexible(
+                              child: Text(
+                                price,
+                                maxLines: 2,
+                                textAlign: TextAlign.right,
+                                overflow: TextOverflow.ellipsis,
+                                style: UiTypography.cardPrice(
+                                        color: AppColors.primary)
+                                    .copyWith(fontSize: 16),
                               ),
                             ),
                           ],
@@ -100,10 +120,8 @@ class OrderDetailItemCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           variant,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
+                          style:
+                              UiTypography.cardSubtitle(color: Colors.black54),
                         ),
                       ],
                     ),
@@ -114,7 +132,7 @@ class OrderDetailItemCard extends StatelessWidget {
               // Divider
               if (showRating || showReturnButton) ...[
                 const SizedBox(height: 8),
-                Divider(color: Colors.grey.shade300, thickness: 1),
+                const Divider(color: Color(0xFFE5E7EC), thickness: 1),
               ],
 
               // 🔹 Rating & Return Button Section
@@ -123,59 +141,75 @@ class OrderDetailItemCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        showRating
-                            ? Column(
-                                children: [
-                                  RatingBar.builder(
-                                    initialRating: initialRating,
-                                    minRating: 1,
-                                    direction: Axis.horizontal,
-                                    allowHalfRating: false,
-                                    itemCount: 5,
-                                    itemSize: 24,
-                                    unratedColor: Colors.grey.shade300,
-                                    itemPadding: const EdgeInsets.symmetric(
-                                        horizontal: 2.0),
-                                    itemBuilder: (context, _) => Icon(
-                                        Icons.star,
-                                        color: AppColors.primary),
-                                    onRatingUpdate: (rating) {
-                                      if (onRatingChanged != null) {
-                                        onRatingChanged!(rating);
-                                      }
-                                    },
+                        if (showRating)
+                          Column(
+                            children: [
+                              IgnorePointer(
+                                ignoring: ratingReadOnly,
+                                child: RatingBar.builder(
+                                  initialRating: initialRating,
+                                  minRating: 1,
+                                  direction: Axis.horizontal,
+                                  allowHalfRating: false,
+                                  itemCount: 5,
+                                  itemSize: 24,
+                                  unratedColor: Colors.grey.shade300,
+                                  itemPadding: const EdgeInsets.symmetric(
+                                      horizontal: 2.0),
+                                  itemBuilder: (context, _) => Icon(Icons.star,
+                                      color: AppColors.primary),
+                                  onRatingUpdate: (rating) {
+                                    if (!ratingReadOnly &&
+                                        onRatingChanged != null) {
+                                      onRatingChanged!(rating);
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 4,
+                              ),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: ratingReadOnly ? null : onRatingTap,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(
+                                    ratingLabel,
+                                    style: UiTypography.cardMeta(
+                                            color: Colors.black87)
+                                        .copyWith(fontSize: 12.5),
                                   ),
-                                  SizedBox(
-                                    height: 4,
-                                  ),
-                                  const Text(
-                                    "Please rate the product",
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox(),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          const SizedBox(),
                         if (showReturnButton)
                           ElevatedButton(
                             onPressed: onReturnTap,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
+                              elevation: 0,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 18, vertical: 10),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               AppStrings.return_order,
-                              style: TextStyle(color: Colors.white),
+                              style:
+                                  UiTypography.cardAction(color: Colors.white)
+                                      .copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
                       ],
@@ -195,13 +229,13 @@ class OrderDetailItemCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300, width: 1),
-              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE5E7EC)),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -210,14 +244,15 @@ class OrderDetailItemCard extends StatelessWidget {
               children: [
                 Icon(Icons.circle, size: 8, color: getStatusColor(status)),
                 SizedBox(width: 6),
-                Text(
-                  status.isNotEmpty
-                      ? status[0].toUpperCase() + status.substring(1)
-                      : '',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                Flexible(
+                  child: Text(
+                    status.isNotEmpty
+                        ? status[0].toUpperCase() + status.substring(1)
+                        : '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: UiTypography.cardMeta(color: Colors.black87)
+                        .copyWith(fontSize: 13),
                   ),
                 )
               ],

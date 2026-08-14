@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import '../../utility/ui_typography.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard8 extends StatelessWidget {
   final Product product;
@@ -46,6 +48,9 @@ class ProductCard8 extends StatelessWidget {
   Widget build(BuildContext context) {
     final images = product.images ?? [];
     final cheapest = _cheapestVariant(product);
+    final rating = double.tryParse(
+      product.metadata?.reviewSummary?.averageRating ?? '',
+    );
 
     final calc = cheapest != null
         ? double.tryParse(
@@ -69,8 +74,15 @@ class ProductCard8 extends StatelessWidget {
         width: 113,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFEFEFEF)),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,11 +91,11 @@ class ProductCard8 extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(10)),
+                      const BorderRadius.vertical(top: Radius.circular(14)),
                   child: Container(
                     width: double.infinity,
                     height: 141,
-                    color: const Color(0xFFE1E4ED),
+                    color: AppColors.secondary,
                     child: images.isEmpty
                         ? const Center(
                             child: ImageFallbackWidget(
@@ -107,9 +119,9 @@ class ProductCard8 extends StatelessWidget {
                     height: 17,
                     width: 60,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFD4D5D8),
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
+                        topLeft: Radius.circular(14),
                         topRight: Radius.circular(2),
                         bottomRight: Radius.circular(2),
                       ),
@@ -118,10 +130,11 @@ class ProductCard8 extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(
                       '',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w600,
+                      style: UiTypography.cardMeta(
                         color: Colors.black,
+                      ).copyWith(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -132,8 +145,17 @@ class ProductCard8 extends StatelessWidget {
                   right: 0,
                   child: Container(
                     height: 30,
-                    color: const Color(0xFFD4D5D8),
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.45),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Row(
                       children: [
                         Expanded(
@@ -141,30 +163,33 @@ class ProductCard8 extends StatelessWidget {
                             product.description ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 8,
+                            style: UiTypography.cardMeta(
+                              color: Colors.white,
+                            ).copyWith(
+                              fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black,
                             ),
                           ),
                         ),
-                        Container(
-                          height: 16,
-                          width: 32,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE1E4ED),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            '4.2',
-                            style: FontUtils.secondaryFontStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF6D758F),
+                        if (rating != null && rating.isFinite && rating > 0)
+                          Container(
+                            height: 16,
+                            width: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              rating.toStringAsFixed(1),
+                              style: UiTypography.cardMeta(
+                                color: const Color(0xFF6D758F),
+                              ).copyWith(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -177,13 +202,20 @@ class ProductCard8 extends StatelessWidget {
                 product.title ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                style: UiTypography.cardTitle(
                   color: const Color(0xFF272727),
                 ),
               ),
             ),
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(7, 4, 7, 0),
+                child: buildVariantChips(info.variant!, info.count - 1),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(7, 6, 7, 0),
               child: Row(
@@ -193,21 +225,7 @@ class ProductCard8 extends StatelessWidget {
                       _fmt(calc ?? orig ?? 0),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                  const _SwatchDot(),
-                  const _SwatchDot(),
-                  const SizedBox(width: 2),
-                  Text(
-                    '+2',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 9,
-                      color: Colors.black.withOpacity(0.8),
+                      style: UiTypography.cardPrice(color: AppColors.primary),
                     ),
                   ),
                 ],
@@ -221,17 +239,18 @@ class ProductCard8 extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(orig ?? calc ?? 0),
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 10,
+                    style: UiTypography.cardMeta(
                       color: const Color(0xFFB1B5B8),
+                    ).copyWith(
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
                   Text(
                     percentOff != null ? '$percentOff% OFF' : '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 10,
-                      color: Colors.black.withOpacity(0.8),
+                    style: UiTypography.cardMeta(
+                      color: const Color(0xFF1FA971),
+                    ).copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -239,23 +258,6 @@ class ProductCard8 extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SwatchDot extends StatelessWidget {
-  const _SwatchDot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 13,
-      height: 13,
-      margin: const EdgeInsets.only(left: 2),
-      decoration: const BoxDecoration(
-        color: Color(0xFFD9D9D9),
-        shape: BoxShape.circle,
       ),
     );
   }
