@@ -404,8 +404,8 @@ class _DeliverySheetState extends State<_DeliverySheet> {
         _loadingSlots = false;
         if (res.blocked) { _blocked = res.reason ?? 'Not available on this date'; return; }
         if (res.error != null) { _slotError = res.error; return; }
-        _slots = res.slots;
-        _slotCount = res.slots.where((s) => s.available).length;
+        _slots = _filterSlotsForDate(res.slots, date, widget.config.pickupBufferHours);
+        _slotCount = _slots.where((s) => s.available).length;
         if (savedId != null && widget.current.deliveryDate == _fmt(date)) {
           final match = _slots.where((s) => s.id == savedId).toList();
           if (match.isNotEmpty) { _slotId = savedId; _slotLabel = match.first.label; }
@@ -707,8 +707,8 @@ class _PickupSheetState extends State<_PickupSheet> {
         _loadingSlots = false;
         if (res.blocked) { _blocked = res.reason ?? 'Not available on this date'; return; }
         if (res.error != null) { _slotError = res.error; return; }
-        _slots = res.slots;
-        _slotCount = res.slots.where((s) => s.available).length;
+        _slots = _filterSlotsForDate(res.slots, date, widget.config.pickupBufferHours);
+        _slotCount = _slots.where((s) => s.available).length;
         if (savedId != null && widget.current.pickupDate == _fmt(date)) {
           final match = _slots.where((s) => s.id == savedId).toList();
           if (match.isNotEmpty) { _slotId = savedId; _slotLabel = match.first.label; }
@@ -929,6 +929,27 @@ class _DateStrip extends StatelessWidget {
 //   09:00–10:00 → "9 - 10 AM"
 //   11:00–13:00 → "11 AM - 1 PM"
 //   minutes shown only when non-zero (e.g. "9:30 - 10:30 AM")
+/// For today, strips slots whose start time falls within [bufferHours] of now.
+/// Future dates pass through untouched.
+List<DeliverySlot> _filterSlotsForDate(
+    List<DeliverySlot> slots, DateTime date, int bufferHours) {
+  final now = DateTime.now();
+  final isToday = date.year == now.year &&
+      date.month == now.month &&
+      date.day == now.day;
+  if (!isToday) return slots;
+  final cutoff = now.add(Duration(hours: bufferHours));
+  return slots.where((s) {
+    final parts = s.startTime.split(':');
+    if (parts.length < 2) return true;
+    final h = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    if (h == null || m == null) return true;
+    final slotStart = DateTime(now.year, now.month, now.day, h, m);
+    return !slotStart.isBefore(cutoff);
+  }).toList();
+}
+
 String _formatSlot(DeliverySlot s) {
   final st = s.startTime.split(':');
   final et = s.endTime.split(':');

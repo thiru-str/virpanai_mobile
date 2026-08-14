@@ -4,6 +4,7 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/product_response.dart' hide Image;
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/cart_response.dart' hide Product;
+import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -147,7 +148,11 @@ class _FavouriteListDetailPageState extends State<FavouriteListDetailPage>
         widget.listId,
         clearExistingCart: choice == 'clear',
       );
-      _showResultBanner(res.addedCount ?? 0, res.skippedCount ?? 0);
+      final added = res.addedCount ?? 0;
+      _showResultBanner(added, res.skippedCount ?? 0);
+      if (added > 0 && mounted) {
+        PageRouteUtils.pushWithSlide(context, const CartPage());
+      }
     } catch (_) {
       Fluttertoast.showToast(msg: 'Added to cart');
     } finally {
