@@ -902,6 +902,14 @@ class _CheckOutPageState extends State<CheckOutPage> {
           apiLoading = false;
           addShippingOption = false;
         });
+        final msg = e.toString();
+        if (msg.contains('DELIVERY_INVALID_ADDRESS')) {
+          AppUtils.showToast(
+              'We couldn\'t locate your address. Please update it or re-pick from the map.');
+        } else if (msg.contains('DELIVERY_SERVICE_DOWN')) {
+          AppUtils.showToast(
+              'Delivery service temporarily unavailable. Please try again shortly.');
+        }
       }
       print(e);
     }
@@ -1046,7 +1054,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
   CheckOut.ShippingAddress convertToShippingAddress(
       RegisterResponse.Address address) {
     return CheckOut.ShippingAddress(
-      // Map the fields from Address to ShippingAddress
       address1: address.address1 ?? '',
       address2: address.address2 ?? '',
       firstName: address.firstName ?? '',
@@ -1057,6 +1064,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
       countryCode: address.countryCode ?? '',
       province: address.province ?? '',
       city: address.city ?? '',
+      latitude: address.metadata?.latitude,
+      longitude: address.metadata?.longitude,
     );
   }
 
