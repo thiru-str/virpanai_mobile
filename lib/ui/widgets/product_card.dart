@@ -336,7 +336,7 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0), // show calc, else original
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                    style: UiTypography.cardPrice(color: Colors.black),
                   ),
                   const SizedBox(width: 8),
                   if (hasDiscount && orig != null)

@@ -393,7 +393,7 @@ class _ProductCard1State extends State<ProductCard1> {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                    style: UiTypography.cardPrice(color: Colors.black),
                   ),
                   if (hasDiscount && orig != null) ...[
                     const SizedBox(height: 2),
