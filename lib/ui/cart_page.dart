@@ -1238,8 +1238,16 @@ class _CartPageState extends State<CartPage>
         }
       } catch (e) {
         setState(() => cartLoading = false);
-        AppUtils.showToast(
-            'Could not attach shipping method. Please try again.');
+        final msg = e.toString();
+        if (msg.contains('DELIVERY_INVALID_ADDRESS')) {
+          AppUtils.showToast(
+              'We couldn\'t locate your address. Please update it or re-pick from the map.');
+        } else if (msg.contains('DELIVERY_SERVICE_DOWN')) {
+          AppUtils.showToast(
+              'Delivery service temporarily unavailable. Please try again shortly.');
+        } else {
+          AppUtils.showToast('Could not attach shipping method. Please try again.');
+        }
         return;
       } finally {
         setState(() => cartLoading = false);
