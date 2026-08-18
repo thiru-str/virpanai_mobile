@@ -864,8 +864,18 @@ class _CartPageState extends State<CartPage>
                           ],
                         ),
                       ),
-                      bottomNavigationBar: SafeArea(
-                        child: _buildAjioBottomBar(),
+                      bottomNavigationBar: Builder(
+                        builder: (context) {
+                          final bottomPad =
+                              MediaQuery.viewPaddingOf(context).bottom;
+                          return ColoredBox(
+                            color: Colors.white,
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: bottomPad),
+                              child: _buildAjioBottomBar(),
+                            ),
+                          );
+                        },
                       ),
                     )
                   : Center(
@@ -1269,6 +1279,39 @@ class _CartPageState extends State<CartPage>
         cartLoading = false;
       });
     }
+  }
+
+  void _checkoutWithPaymentPicker() {
+    final providers = isSplitPaymentMode
+        ? paymentProviders.where((p) => p.id != 'pp_wallet_wallet').toList()
+        : paymentProviders;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => PaymentMethodsBottomSheet(
+        paymentProviders: providers,
+        providerId: pp_id,
+        walletBalance: walletBalance > 0 ? walletBalance : null,
+        showConfirmButton: true,
+        onPaymentSelected: (PaymentProvider paymentProvider) {
+          if (_displayTotalAmount() <= 0 &&
+              paymentProvider.id != 'pp_system_default') {
+            AppUtils.showToast(
+              'Your order is fully covered. Free orders can be placed only via Cash on Delivery.',
+            );
+            return;
+          }
+          () async {
+            if (pp_id != paymentProvider.id) {
+              await updatePaymentMethod(paymentProvider.id!);
+            }
+            placeOrder(paymentProvider.id!);
+          }();
+        },
+      ),
+    );
   }
 
   void showPaymentMethodsBottomSheet(
@@ -2077,7 +2120,7 @@ class _CartPageState extends State<CartPage>
                         return;
                       }
                       if (!addressLoading) {
-                        placeOrder(pp_id ?? 'pp_system_default');
+                        _checkoutWithPaymentPicker();
                       }
                     },
               style: ElevatedButton.styleFrom(
