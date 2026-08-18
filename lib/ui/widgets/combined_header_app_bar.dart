@@ -10,6 +10,8 @@ import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
 import '../../utility/ui_typography.dart';
 
+const Color _homeHeaderColor = Color(0xFFFEDA2E);
+
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   final String headerType;
@@ -95,7 +97,7 @@ class CombinedHeaderAppBar extends StatelessWidget
         children: [
           _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
           _buildIcon(Icons.shopping_cart,
-              color: AppColors.primary,
+              color: _homeHeaderColor,
               onPressed: onCartClick,
               cartCount: cartCount),
         ],
@@ -140,7 +142,7 @@ class CombinedHeaderAppBar extends StatelessWidget
                 ),
               ),
               _buildIcon(Icons.shopping_cart,
-                  color: AppColors.primary,
+                  color: _homeHeaderColor,
                   onPressed: onCartClick,
                   cartCount: cartCount),
             ],
@@ -162,7 +164,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             children: [
               _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
               _buildIcon(Icons.shopping_cart,
-                  color: AppColors.primary,
+                  color: _homeHeaderColor,
                   onPressed: onCartClick,
                   cartCount: cartCount),
             ],
@@ -216,11 +218,11 @@ class CombinedHeaderAppBar extends StatelessWidget
                 height: 32,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
+                  color: _homeHeaderColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(Icons.location_on_rounded,
-                    color: AppColors.primary, size: 18),
+                    color: _homeHeaderColor, size: 18),
               ),
               const SizedBox(width: 10),
             ],
@@ -257,7 +259,7 @@ class CombinedHeaderAppBar extends StatelessWidget
                       fontSize: 13,
                       color: hasAddress
                           ? AppColors.textColor.withValues(alpha: 0.7)
-                          : AppColors.primary,
+                          : _homeHeaderColor,
                     ),
                   ),
                 ],
@@ -296,7 +298,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   /// --- Header 8: Custom Search Header (like rolling search bar) ---
   AppBar _buildCustomSearchHeader(BuildContext context) {
     return _baseAppBar(
-      bgColor: AppColors.primary,
+      bgColor: _homeHeaderColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
