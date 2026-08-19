@@ -112,11 +112,15 @@ class _ProductListRow1State extends State<ProductListRow1> {
                 const SizedBox(height: 2),
                 Row(children: [
                   if (hasPackText(d.subTitle))
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Text(d.subTitle!,
-                          style: FontUtils.primaryFontStyle(
-                              fontSize: 11, color: cmsCardText(context, AppColors.textColor50))),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Text(d.subTitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: FontUtils.primaryFontStyle(
+                                fontSize: 11, color: cmsCardText(context, AppColors.textColor50))),
+                      ),
                     ),
                   if (rating != null && rating.isNotEmpty)
                     RatingChip(rating: rating),

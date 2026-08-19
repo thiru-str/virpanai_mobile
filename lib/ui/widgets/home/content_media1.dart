@@ -25,7 +25,7 @@ class Blog1 extends StatelessWidget {
           child: HomeMerchSectionHeader(title: content.layoutTitle ?? '', subtitle: content.layoutSubTitle ?? '',
             ctaText: content.layoutRedirectTitle ?? '')),
         const SizedBox(height: 12),
-        SizedBox(height: 220, child: ListView.separated(
+        SizedBox(height: 282, child: ListView.separated(
           scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 12),
           itemBuilder: (context, i) => SizedBox(width: 240, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

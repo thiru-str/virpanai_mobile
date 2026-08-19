@@ -38,7 +38,7 @@ class CollectionCover1 extends StatelessWidget {
                   fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white70)),
               const SizedBox(height: 12),
               Row(children: [
-                for (int i = 0; i < (items.length > 4 ? 4 : items.length); i++)
+                for (int i = 0; i < (items.length > 3 ? 3 : items.length); i++)
                   Padding(padding: const EdgeInsets.only(right: 8),
                     child: ClipRRect(borderRadius: BorderRadius.circular(10),
                       child: Container(height: 48, width: 48, color: Colors.white,

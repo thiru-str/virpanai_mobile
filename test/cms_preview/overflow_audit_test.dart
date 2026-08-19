@@ -214,12 +214,7 @@ bool _isCategory(String n) =>
 // for a dedicated responsive-layout pass; skipped here so the guard stays green
 // and catches NEW regressions in the 88 already-robust components. Removing a
 // name from this set (after fixing it) re-enables full-matrix enforcement.
-const _knownGaps = <String>{
-  'ProductListRow1', 'Combo1', 'FarmStory1', 'CollectionCover1', 'BeautyShades1',
-  'BeautyRail1', 'Blog1', 'Wishlist1', 'NewInTabs1', 'MixedDeals1',
-  'ElectronicsDeals1', 'ElectronicsGrid1', 'GroceryGrid1', 'CountBadgeRail1',
-  'TwoColProducts1', 'RankedGrid1',
-};
+const _knownGaps = <String>{};
 
 void main() {
   setUpAll(() async {

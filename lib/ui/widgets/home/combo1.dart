@@ -41,22 +41,31 @@ class Combo1 extends StatelessWidget {
             ),
             child: Row(
               children: [
-                for (int i = 0; i < items.length; i++) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      height: 56,
-                      width: 56,
-                      child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover),
-                    ),
+                // Images scroll horizontally so any number of combo items fits
+                // without pushing the price off-screen on narrow phones.
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(children: [
+                      for (int i = 0; i < items.length; i++) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: SizedBox(
+                            height: 56,
+                            width: 56,
+                            child: merchImageOrFallback(merchImage(items[i]), fit: BoxFit.cover),
+                          ),
+                        ),
+                        if (i != items.length - 1)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(Icons.add, size: 16, color: cmsCardText(context, AppColors.textColor50)),
+                          ),
+                      ],
+                    ]),
                   ),
-                  if (i != items.length - 1)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Icon(Icons.add, size: 16, color: cmsCardText(context, AppColors.textColor50)),
-                    ),
-                ],
-                const Spacer(),
+                ),
+                const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,

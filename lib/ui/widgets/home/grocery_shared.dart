@@ -41,6 +41,19 @@ class GroceryAddButton extends StatelessWidget {
   }
 }
 
+Positioned _tileBadge(BuildContext context, String badge) => Positioned(
+      left: 4,
+      top: 4,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration:
+            BoxDecoration(color: kFresh, borderRadius: BorderRadius.circular(6)),
+        child: Text(badge,
+            style: FontUtils.primaryFontStyle(
+                fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+      ),
+    );
+
 // Compact grocery product tile: square image, name, unit/weight, price + ADD.
 class GroceryTile extends StatelessWidget {
   final LayoutDatum data;
@@ -65,40 +78,33 @@ class GroceryTile extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: width == 0 ? MainAxisSize.max : MainAxisSize.min,
         children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: AspectRatio(
-                  aspectRatio: 1,
+          // Grid cells (width 0) give a bounded height → image fills leftover
+          // space so the tile can't overflow at any width/scale. Fixed-width
+          // rails (width > 0) sit in a min-size context → keep a square image.
+          if (width == 0)
+            Expanded(
+              child: Stack(fit: StackFit.expand, children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
                   child: merchImageOrFallback(image,
                       fit: BoxFit.cover, fallbackFit: BoxFit.contain),
                 ),
+                if (badge.isNotEmpty) _tileBadge(context, badge),
+              ]),
+            )
+          else
+            Stack(children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: AspectRatio(
+                    aspectRatio: 1.25,
+                    child: merchImageOrFallback(image,
+                        fit: BoxFit.cover, fallbackFit: BoxFit.contain)),
               ),
-              if (badge.isNotEmpty)
-                Positioned(
-                  left: 4,
-                  top: 4,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: kFresh,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      badge,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+              if (badge.isNotEmpty) _tileBadge(context, badge),
+            ]),
           const SizedBox(height: 8),
           Text(
             data.title ?? '',

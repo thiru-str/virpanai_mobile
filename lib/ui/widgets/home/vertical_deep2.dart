@@ -146,9 +146,9 @@ class BeautyShades1 extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cmsCardText(context, AppColors.textColor))),
               const SizedBox(height: 6),
               Row(children: [
-                for (int i = 0; i < _shades.length; i++)
+                for (int i = 0; i < (_shades.length > 5 ? 5 : _shades.length); i++)
                   Padding(padding: const EdgeInsets.only(right: 8),
-                    child: Container(height: 22, width: 22,
+                    child: Container(height: 20, width: 20,
                       decoration: BoxDecoration(color: Color(_shades[i]), shape: BoxShape.circle,
                         border: Border.all(color: i == 0 ? kInk : Colors.transparent, width: 2)))),
               ]),

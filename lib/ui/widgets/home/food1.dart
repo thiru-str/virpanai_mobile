@@ -363,12 +363,16 @@ class FarmStory1 extends StatelessWidget {
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.eco, size: 14, color: kOlive),
               const SizedBox(width: 6),
-              Text(content.layoutSubTitle!.trim().toUpperCase(),
-                  style: FontUtils.primaryFontStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.1,
-                      color: kOlive)),
+              Flexible(
+                child: Text(content.layoutSubTitle!.trim().toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FontUtils.primaryFontStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.1,
+                        color: kOlive)),
+              ),
             ]),
           ),
         const SizedBox(height: 10),
