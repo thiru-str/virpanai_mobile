@@ -14,6 +14,18 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+def signingProfile = project.findProperty('signingProfile') ?: localProperties.getProperty('signingProfile')
+def signingDir = project.findProperty('signingDir') ?: localProperties.getProperty('signingDir')
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = signingProfile && signingDir
+        ? file("${signingDir}/${signingProfile}.properties")
+        : rootProject.file('key.properties')
+
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+}
 
 def flutterVersionCode = project.hasProperty('flutter.versionCode') ? project['flutter.versionCode'].toInteger() : 1
 def flutterVersionName = project.hasProperty('flutter.versionName') ? project['flutter.versionName'] : "1.0.0"
@@ -22,7 +34,7 @@ def flutterTargetSdkVersion = project.hasProperty('flutter.targetSdkVersion') ? 
 def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? project['flutter.minSdkVersion'] : 21
 
 android {
-    namespace "com.waioz.cartel"
+    namespace "com.waioz.hakadts"
     compileSdk flutterCompileSdkVersion.toInteger()
     ndkVersion "27.0.12077973"
 
@@ -42,7 +54,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.waioz.cartel"
+        applicationId "com.waioz.hakadts"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
@@ -53,11 +65,28 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            if (!keystoreProperties.isEmpty()) {
+                def configuredStoreFile = keystoreProperties['storeFile']
+                def resolvedStoreFile = configuredStoreFile ? new File(configuredStoreFile) : null
+                if (resolvedStoreFile != null && !resolvedStoreFile.isAbsolute()) {
+                    resolvedStoreFile = signingDir
+                            ? new File(signingDir, configuredStoreFile)
+                            : file(configuredStoreFile)
+                }
+
+                storeFile resolvedStoreFile
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }
