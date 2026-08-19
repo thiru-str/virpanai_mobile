@@ -308,8 +308,10 @@ class _CustomPageState extends State<CustomPage> {
                                                 accent: parseCmsColor(
                                                     homePageContent
                                                         .layoutPrimaryColor),
-                                                child: getLayoutWidget(
-                                                    homePageContent),
+                                                child: clampCmsTextScale(
+                                                    context,
+                                                    getLayoutWidget(
+                                                        homePageContent)),
                                               );
                                             },
                                           ),

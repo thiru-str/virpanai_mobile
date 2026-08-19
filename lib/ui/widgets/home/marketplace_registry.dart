@@ -101,6 +101,20 @@ const Set<String> kMarketplaceNoDataLayouts = {
   'AnnouncementBar1', 'StickyOffer1', 'PromoMarquee1',
 };
 
+/// CMS commerce components use fixed heights / aspect ratios that can't absorb
+/// unbounded font scaling, so clamp the text scaler for the whole component
+/// feed. Still honours accessibility scaling up to +15% — beyond that the
+/// tightly-designed cards would overflow. Apply once per feed item.
+Widget clampCmsTextScale(BuildContext context, Widget child) {
+  final mq = MediaQuery.of(context);
+  return MediaQuery(
+    data: mq.copyWith(
+      textScaler: mq.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.1),
+    ),
+    child: child,
+  );
+}
+
 Widget? marketplaceHomeWidget(Content content,
     {void Function(int delta, String variantId)? onCartQtyChanged}) {
   switch (content.layoutName) {
