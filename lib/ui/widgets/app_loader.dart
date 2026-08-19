@@ -5,12 +5,12 @@ import 'package:waioz/utility/app_colors.dart';
 
 // Maligai items — font size tuned per emoji to match visual weight
 const _emojis = [
-  ('🌿', 20.0), // curry leaf — visually wide, keep smaller
-  ('🌾', 26.0), // rice & grains
-  ('🌶️', 30.0), // chilli — narrow shape, needs larger
-  ('🧅', 26.0), // onion & vegetables
-  ('🍪', 26.0), // biscuits & snacks
-  ('🧼', 26.0), // soap & household
+  ('🍜', 26.0), // instant foods — noodles
+  ('🍚', 26.0), // rice, oils & masala
+  ('🥤', 30.0), // tall narrow cup — needs larger
+  ('🍪', 26.0), // circular — balanced
+  ('🧴', 30.0), // tall narrow bottle — needs larger
+  ('☕', 28.0), // cup — slightly narrow
 ];
 
 class AppLoader extends StatefulWidget {
@@ -24,8 +24,6 @@ class _AppLoaderState extends State<AppLoader> with TickerProviderStateMixin {
   late final AnimationController _orbitCtrl;
   late final AnimationController _pulseCtrl;
   late final AnimationController _fadeCtrl;
-
-  // Stored to avoid per-frame allocation
   late final Animation<double> _pulseAnim;
   final _trackPainter = const _OrbitTrackPainter();
 
@@ -96,19 +94,10 @@ class _AppLoaderState extends State<AppLoader> with TickerProviderStateMixin {
                           final x = 105 + orbitR * cos(theta) - hitSize / 2;
                           final y = 105 + orbitR * sin(theta) - hitSize / 2;
 
-                          // Depth: back (sin=-1) → front (sin=+1)
-                          final depth = (sin(theta) + 1) / 2;
-                          final scale = 0.70 + depth * 0.50; // 0.70 → 1.20
-                          final opacity = 0.35 + depth * 0.65; // 0.35 → 1.00
-
                           return Positioned(
                             left: x,
                             top: y,
-                            child: Transform.scale(
-                              scale: scale,
-                              child: Opacity(
-                                opacity: opacity,
-                                child: SizedBox(
+                            child: SizedBox(
                                   width: hitSize,
                                   height: hitSize,
                                   child: Center(
@@ -120,8 +109,6 @@ class _AppLoaderState extends State<AppLoader> with TickerProviderStateMixin {
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
                             ),
                           );
                         }),
