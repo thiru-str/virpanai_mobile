@@ -60,8 +60,9 @@ String merchBadge(LayoutDatum data) {
 }
 
 String merchRating(LayoutDatum data) {
-  if (data.rating == null) return '';
-  return data.rating.toString();
+  final r = data.rating;
+  if (r == null || r <= 0) return '';
+  return r.toString();
 }
 
 class HomeMerchSectionHeader extends StatelessWidget {

@@ -14,7 +14,12 @@ import 'cms_text_color.dart';
 // the real cart via onCartQtyChanged(delta, variantId).
 
 String _price(String v) => CurrencyUtil.appendCurrency(v);
-String? _rating(LayoutDatum d) => d.rating?.toString();
+// Only surface a rating when it's a real, positive value — never render "0".
+String? _rating(LayoutDatum d) {
+  final r = d.rating;
+  if (r == null || r <= 0) return null;
+  return r.toString();
+}
 
 // ---------------------------------------------------------------- ListRow ----
 class ProductListRow1 extends StatefulWidget {
@@ -193,7 +198,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.82,
+          childAspectRatio: 0.68,
           children: [for (final d in rest) _smallCard(context, d, accent)],
         ),
       ]),
@@ -338,7 +343,8 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 330,
+          // Height budget: square image (220) + ~120 for text/price/stepper.
+          height: 340,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -363,7 +369,9 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AspectRatio(
-                          aspectRatio: 4 / 5,
+                          // Square keeps the card short enough that title +
+                          // rating + price never overflow the fixed height.
+                          aspectRatio: 1,
                           child: merchImageOrFallback(merchImage(d),
                               fit: BoxFit.cover)),
                       Expanded(

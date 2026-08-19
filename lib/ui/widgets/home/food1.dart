@@ -99,7 +99,7 @@ class NutritionFacts1 extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              mainAxisExtent: 118),
+              mainAxisExtent: 128),
           itemBuilder: (context, i) => Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -112,8 +112,10 @@ class NutritionFacts1 extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(items[i].title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: FontUtils.primaryFontStyle(
-                          fontSize: 28,
+                          fontSize: 26,
                           fontWeight: FontWeight.w800,
                           color: kOlive)),
                   const SizedBox(height: 4),
@@ -210,20 +212,28 @@ class Recipe1 extends StatelessWidget {
                               const Icon(Icons.schedule,
                                   size: 14, color: kOlive),
                               const SizedBox(width: 4),
-                              Text(items[i].featureText ?? '',
-                                  style: FontUtils.primaryFontStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: cmsCardText(context, AppColors.textColor50))),
+                              Flexible(
+                                child: Text(items[i].featureText ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FontUtils.primaryFontStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: cmsCardText(context, AppColors.textColor50))),
+                              ),
                               const SizedBox(width: 12),
                               const Icon(Icons.people_alt_outlined,
                                   size: 14, color: kOlive),
                               const SizedBox(width: 4),
-                              Text(items[i].subTitle ?? '',
-                                  style: FontUtils.primaryFontStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: cmsCardText(context, AppColors.textColor50))),
+                              Flexible(
+                                child: Text(items[i].subTitle ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FontUtils.primaryFontStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: cmsCardText(context, AppColors.textColor50))),
+                              ),
                             ]),
                           ]),
                     ),
@@ -380,20 +390,26 @@ class FarmStory1 extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 16),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Row(children: [
             for (final s in stats)
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.title ?? '',
-                    style: FontUtils.primaryFontStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: cmsText(context, AppColors.textColor))),
-                Text(s.featureText ?? '',
-                    style: FontUtils.primaryFontStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: cmsText(context, AppColors.textColor50))),
-              ]),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(s.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: cmsText(context, AppColors.textColor))),
+                  Text(s.featureText ?? '',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          color: cmsText(context, AppColors.textColor50))),
+                ]),
+              ),
           ]),
         ],
       ]),
