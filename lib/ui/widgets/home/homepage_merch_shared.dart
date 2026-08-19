@@ -86,81 +86,82 @@ class HomeMerchSectionHeader extends StatelessWidget {
     // CmsTextColor — recolour the title (which sits on the section background).
     // The subtitle sits inside a white pill, so it keeps its default colour.
     final cmsColor = CmsTextColor.of(context);
+    final accent = cmsAccent(context, AppColors.primary);
+    final titleColor = cmsColor ?? AppColors.textColor;
     final titleWidget = Text(
       title,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       textAlign: centered ? TextAlign.center : TextAlign.left,
       style: FontUtils.primaryFontStyle(
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: FontWeight.w800,
-        color: cmsColor ?? AppColors.textColor,
+        letterSpacing: -0.3,
+        color: titleColor,
       ),
     );
 
+    // Subtitle now sits UNDER the title as quiet supporting copy (no pill),
+    // for a clean native section-header hierarchy.
     final subtitleWidget = subtitle.trim().isEmpty
         ? const SizedBox.shrink()
         : Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: cmsCard(context, Colors.white),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.black12),
-              ),
-              child: Text(
-                subtitle,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2,
-                  color: cmsCardText(context, AppColors.textColor50),
-                ),
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: centered ? TextAlign.center : TextAlign.left,
+              style: FontUtils.primaryFontStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: titleColor.withOpacity(0.55),
               ),
             ),
           );
 
     if (centered) {
       return Column(
-        children: [
-          subtitleWidget,
-          titleWidget,
-        ],
+        children: [titleWidget, subtitleWidget],
       );
     }
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              subtitleWidget,
-              titleWidget,
-            ],
+            children: [titleWidget, subtitleWidget],
           ),
         ),
         if (ctaText.trim().isNotEmpty && onTap != null)
-          GestureDetector(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 12, top: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    ctaText,
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: cmsCardText(context, AppColors.textColor),
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: GestureDetector(
+              onTap: onTap,
+              child: Container(
+                padding:
+                    const EdgeInsets.only(left: 14, right: 10, top: 8, bottom: 8),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ctaText,
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 2),
-                  const Icon(Icons.chevron_right, size: 18),
-                ],
+                    const SizedBox(width: 2),
+                    Icon(Icons.arrow_forward_rounded, size: 15, color: accent),
+                  ],
+                ),
               ),
             ),
           ),
