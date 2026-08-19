@@ -483,7 +483,7 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.66),
+              childAspectRatio: 0.54),
           itemBuilder: (context, i) {
             final d = items[i];
             final id = d.id ?? '$i';

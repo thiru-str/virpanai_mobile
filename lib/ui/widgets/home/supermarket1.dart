@@ -87,11 +87,13 @@ class ProductMini1 extends StatelessWidget {
           itemCount: items.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+          // Responsive: cap card WIDTH (columns adapt) + FIXED height so the
+          // card never shrinks on narrow screens or overflows with scaled text.
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
               crossAxisSpacing: 10,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.51),
+              mainAxisExtent: 286),
           itemBuilder: (context, i) => _MiniProductCard(data: items[i]),
         ),
       ]),

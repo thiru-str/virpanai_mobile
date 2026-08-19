@@ -217,11 +217,13 @@ class _ProductStepper1State extends State<ProductStepper1> {
           itemCount: items.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+          // Responsive: cap card WIDTH (columns adapt to screen) + FIXED height
+          // so cards never shrink on narrow screens or overflow with scaled text.
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
               crossAxisSpacing: 10,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.52),
+              mainAxisExtent: 286),
           itemBuilder: (context, i) {
             final id = items[i].id ?? '$i';
             final vid = _variantOf(items[i]);
@@ -330,7 +332,7 @@ class CategoryCircle1 extends StatelessWidget {
                 subtitle: content.layoutSubTitle ?? ''),
           ),
         SizedBox(
-          height: 96,
+          height: 116,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),

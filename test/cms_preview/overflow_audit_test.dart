@@ -215,8 +215,7 @@ bool _isCategory(String n) =>
 // and catches NEW regressions in the 88 already-robust components. Removing a
 // name from this set (after fixing it) re-enables full-matrix enforcement.
 const _knownGaps = <String>{
-  'ProductStepper1', 'ProductMini1', 'ProductListRow1', 'ProductRatingGrid1',
-  'CategoryCircle1', 'Combo1', 'FarmStory1', 'CollectionCover1', 'BeautyShades1',
+  'ProductListRow1', 'Combo1', 'FarmStory1', 'CollectionCover1', 'BeautyShades1',
   'BeautyRail1', 'Blog1', 'Wishlist1', 'NewInTabs1', 'MixedDeals1',
   'ElectronicsDeals1', 'ElectronicsGrid1', 'GroceryGrid1', 'CountBadgeRail1',
   'TwoColProducts1', 'RankedGrid1',
