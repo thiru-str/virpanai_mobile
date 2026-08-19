@@ -31,39 +31,48 @@ class Certifications1 extends StatelessWidget {
             subtitle: content.layoutSubTitle ?? '',
             centered: true),
         const SizedBox(height: 14),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
+        // Full-width certification rows — balanced, no right-side dead space.
+        // (Chips/Wrap look awkward once each item carries a description.)
+        Column(
           children: [
-            for (final item in items)
+            for (int i = 0; i < items.length; i++)
               Container(
+                width: double.infinity,
+                margin: EdgeInsets.only(bottom: i == items.length - 1 ? 0 : 10),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: cmsCard(context, Colors.white),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: kOlive.withOpacity(0.25)),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: kOlive.withOpacity(0.20)),
                 ),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.verified_rounded, size: 18, color: kOlive),
-                  const SizedBox(width: 8),
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(item.title ?? '',
-                            style: FontUtils.primaryFontStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: cmsCardText(context, AppColors.textColor))),
-                        if ((item.featureText ?? '').trim().isNotEmpty)
-                          Text(item.featureText!.trim(),
+                child: Row(children: [
+                  const Icon(Icons.verified_rounded, size: 20, color: kOlive),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(items[i].title ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: FontUtils.primaryFontStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w400,
-                                  color: cmsCardText(context, AppColors.textColor50))),
-                      ]),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: cmsCardText(context, AppColors.textColor))),
+                          if ((items[i].featureText ?? '').trim().isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(items[i].featureText!.trim(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: FontUtils.primaryFontStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w400,
+                                    color: cmsCardText(context, AppColors.textColor50))),
+                          ],
+                        ]),
+                  ),
                 ]),
               ),
           ],
