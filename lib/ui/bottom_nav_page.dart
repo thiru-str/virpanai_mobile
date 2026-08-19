@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/tutorial/tutorial_coordinator.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
@@ -10,7 +11,6 @@ import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
-import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -99,15 +99,12 @@ class _BottomNavPageState extends State<BottomNavPage>
         getCustomerApi(), // Wait for customer API
         getReturnsApi()
       ]);
-      setState(() {
-        _isLoading = false;
-      });
     } catch (e) {
       print("Error initializing pages: $e");
-      setState(() {
-        _isLoading = false;
-      });
     }
+    final show = await TutorialCoordinator().shouldShow();
+    if (show) TutorialCoordinator().start();
+    if (mounted) setState(() { _isLoading = false; });
   }
 
   Widget _getPage() {

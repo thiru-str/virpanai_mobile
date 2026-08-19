@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:confetti/confetti.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:waioz/ui/tutorial/tutorial_coordinator.dart';
+import 'package:waioz/ui/tutorial/tutorial_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -59,7 +62,7 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TutorialMixin {
   CartResponse? cartResponse;
   CrossSellProductsResponse? crossSellProductsResponse;
   bool apiLoading = true;
@@ -97,6 +100,11 @@ class _CartPageState extends State<CartPage>
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
   final GlobalKey _priceDetailsSectionKey = GlobalKey();
+  final GlobalKey _fulfillmentKey = GlobalKey();
+  final GlobalKey _loyaltyKey = GlobalKey();
+  final GlobalKey _couponKey = GlobalKey();
+  final GlobalKey _checkoutBtnKey = GlobalKey();
+  final GlobalKey _cartEmptyKey = GlobalKey();
 
   @override
   void initState() {
@@ -299,6 +307,7 @@ class _CartPageState extends State<CartPage>
                           children: [
                             // Fulfillment method — right after address (Zepto pattern)
                             Padding(
+                              key: _fulfillmentKey,
                               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                               child: FulfillmentMethodWidget(
                                 cartMetadata: cartResponse?.cart?.metadata is Map<String, dynamic>
@@ -638,25 +647,28 @@ class _CartPageState extends State<CartPage>
                             // sits right under it so wallet + loyalty are visually
                             // grouped in the same "balance to redeem" section).
                             if (cartResponse?.cart?.id != null)
-                              LoyaltyCheckoutWidget(
-                                cartId: cartResponse!.cart!.id!,
-                                loyaltyApply: _loyaltyApplyMetadata(),
-                                cartTotal: cartResponse?.cart?.total ?? 0,
-                                walletAmount: _walletAmountFromMetadata(),
-                                walletApplied: _walletAmountFromMetadata() > 0,
-                                hasActiveCoupon:
-                                    (cartResponse?.cart?.promotions ?? [])
-                                        .isNotEmpty,
-                                onApplied: () {
-                                  getCartApi();
-                                },
-                                onRemoved: () {
-                                  getCartApi();
-                                },
+                              Container(
+                                key: _loyaltyKey,
+                                child: LoyaltyCheckoutWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  loyaltyApply: _loyaltyApplyMetadata(),
+                                  cartTotal: cartResponse?.cart?.total ?? 0,
+                                  walletAmount: _walletAmountFromMetadata(),
+                                  walletApplied: _walletAmountFromMetadata() > 0,
+                                  hasActiveCoupon:
+                                      (cartResponse?.cart?.promotions ?? [])
+                                          .isNotEmpty,
+                                  onApplied: () {
+                                    getCartApi();
+                                  },
+                                  onRemoved: () {
+                                    getCartApi();
+                                  },
+                                ),
                               ),
 
                             // Coupon Card (Ajio style)
-                            _buildCouponCard(),
+                            KeyedSubtree(key: _couponKey, child: _buildCouponCard()),
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
@@ -879,6 +891,7 @@ class _CartPageState extends State<CartPage>
                       ),
                     )
                   : Center(
+                      key: _cartEmptyKey,
                       child: isLoggedIn
                           ? NoOrdersWidget(
                               message: AppStrings.cart_empty,
@@ -1042,12 +1055,172 @@ class _CartPageState extends State<CartPage>
       _syncPricingStateFromCart();
       // Load wallet info after cart is ready
       await _loadWalletInfo();
+      _maybeStartCartTutorial();
     } catch (e) {
       setState(() {
         apiLoading = false;
       });
       debugPrint(' error in cart $e');
     }
+  }
+
+  void _maybeStartCartTutorial() => maybeStartTutorial(
+        TutorialPhase.cart, _showCartTutorial,
+        delay: const Duration(milliseconds: 600));
+
+  Future<void> _scrollToKey(GlobalKey key) async {
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+    await Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+      alignment: 0.1,
+    );
+    await Future.delayed(const Duration(milliseconds: 120));
+  }
+
+  void _showCartTutorial() {
+    final hasItems = cartResponse?.cart?.items?.isNotEmpty == true;
+    final targets = <TargetFocus>[];
+
+    final hasLoyalty = hasItems && _loyaltyKey.currentContext != null;
+    final hasCoupon = hasItems && _couponKey.currentContext != null;
+    final hasPrice = hasItems && _priceDetailsSectionKey.currentContext != null;
+
+    // Step 1 — Fulfillment (top of page, always visible)
+    if (hasItems && _fulfillmentKey.currentContext != null) {
+      targets.add(TargetFocus(
+        keyTarget: _fulfillmentKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
+        paddingFocus: 8,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (ctx, ctrl) => TutorialTooltip(
+              title: 'Delivery or Pickup',
+              body: 'Choose home delivery with a time slot, or collect yourself for free',
+              controller: ctrl,
+              onBeforeNext: () => _scrollToKey(
+                hasLoyalty ? _loyaltyKey : hasCoupon ? _couponKey : _priceDetailsSectionKey,
+              ),
+            ),
+          ),
+        ],
+      ));
+    }
+
+    // Step 2 — Loyalty (scroll into view)
+    if (hasLoyalty) {
+      targets.add(TargetFocus(
+        keyTarget: _loyaltyKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
+        paddingFocus: 8,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (ctx, ctrl) => TutorialTooltip(
+              title: 'Loyalty Points',
+              body: 'Use your earned points for a discount on this order',
+              controller: ctrl,
+              onBeforeNext: () => _scrollToKey(
+                hasCoupon ? _couponKey : _priceDetailsSectionKey,
+              ),
+            ),
+          ),
+        ],
+      ));
+    }
+
+    // Step 3 — Coupon (scroll into view, just below loyalty)
+    if (hasCoupon) {
+      targets.add(TargetFocus(
+        keyTarget: _couponKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
+        paddingFocus: 8,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (ctx, ctrl) => TutorialTooltip(
+              title: 'Apply Coupon',
+              body: 'Have a coupon code? Tap here to apply it and save on your order',
+              controller: ctrl,
+              onBeforeNext: hasPrice ? () => _scrollToKey(_priceDetailsSectionKey) : null,
+            ),
+          ),
+        ],
+      ));
+    }
+
+    // Step 4 — Price Breakdown (scroll into view)
+    if (hasPrice) {
+      targets.add(TargetFocus(
+        keyTarget: _priceDetailsSectionKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
+        paddingFocus: 8,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (ctx, ctrl) => TutorialTooltip(
+              title: 'Price Breakdown',
+              body: "See exactly what you're paying — items, delivery & any discounts",
+              controller: ctrl,
+            ),
+          ),
+        ],
+      ));
+    }
+
+    // Step 5 — Checkout button (sticky footer, always visible)
+    if (hasItems && _checkoutBtnKey.currentContext != null) {
+      targets.add(TargetFocus(
+        keyTarget: _checkoutBtnKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
+        paddingFocus: 8,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (ctx, ctrl) => TutorialTooltip(
+              title: 'Ready to Order?',
+              body: "Tap Checkout when you're done reviewing your cart",
+              controller: ctrl,
+              isLast: true,
+            ),
+          ),
+        ],
+      ));
+    }
+
+    if (targets.isEmpty) {
+      TutorialCoordinator().complete();
+      return;
+    }
+
+    // pulseEnable: false skips the pulse-reverse phase entirely.
+    // Duration.zero makes reverse+forward fire synchronously in the same frame —
+    // Flutter batches the setState calls so the overlay never renders transparent.
+    TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black,
+      opacityShadow: 0.80,
+      hideSkip: true,
+      pulseEnable: false,
+      focusAnimationDuration: Duration.zero,
+      unFocusAnimationDuration: Duration.zero,
+      onFinish: () {
+        TutorialCoordinator().advanceTo(TutorialPhase.wishlist);
+        eventBus.fire(TabSwitchEvent(3));
+      },
+      onSkip: () {
+        TutorialCoordinator().complete();
+        return true;
+      },
+    ).show(context: context);
   }
 
   Future<void> getCrossSellingProductsApi(String cartId) async {
@@ -2106,6 +2279,7 @@ class _CartPageState extends State<CartPage>
           Expanded(
             flex: 3,
             child: ElevatedButton(
+              key: _checkoutBtnKey,
               onPressed: cartLoading
                   ? null
                   : () {

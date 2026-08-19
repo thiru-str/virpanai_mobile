@@ -103,9 +103,14 @@ class SharedPreferencesUtil {
     final prefs = await SharedPreferences.getInstance();
 
     PublicDetailsResponse? publicDetailsResponse = await getPublicDetails();
+    final tutorialSeen = prefs.getBool('tutorial_seen_v1');
 
     // Clear all preferences
     await prefs.clear();
+
+    if (tutorialSeen == true) {
+      await prefs.setBool('tutorial_seen_v1', true);
+    }
 
     if (publicDetailsResponse != null) {
       await SharedPreferencesUtil().saveMap('public_details', publicDetailsResponse.toJson());

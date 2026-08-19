@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:waioz/ui/tutorial/tutorial_coordinator.dart';
+import 'package:waioz/ui/tutorial/tutorial_tooltip.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
@@ -39,7 +42,6 @@ import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
-import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -59,7 +61,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TutorialMixin {
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
@@ -84,6 +86,8 @@ class _HomePageState extends State<HomePage> {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   final ScrollController _scrollController = ScrollController();
+
+  final GlobalKey _searchBarKey = GlobalKey();
 
   @override
   void initState() {
@@ -130,6 +134,54 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
+  }
+
+  void _maybeStartHomeTutorial() => maybeStartTutorial(
+        TutorialPhase.home, _showHomeTutorial,
+        delay: const Duration(milliseconds: 600));
+
+  void _showHomeTutorial() {
+    final targets = <TargetFocus>[];
+
+    if (_searchBarKey.currentContext != null) {
+      targets.add(TargetFocus(
+        keyTarget: _searchBarKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 12,
+        paddingFocus: 8,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (ctx, ctrl) => TutorialTooltip(
+              title: 'Search Products',
+              body: 'Search for rice, oils, snacks & more',
+              controller: ctrl,
+            ),
+          ),
+        ],
+      ));
+    }
+
+    if (targets.isEmpty) {
+      TutorialCoordinator().advanceTo(TutorialPhase.categories);
+      eventBus.fire(TabSwitchEvent(1));
+      return;
+    }
+
+    TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black,
+      opacityShadow: 0.80,
+      hideSkip: true,
+      onFinish: () {
+        TutorialCoordinator().advanceTo(TutorialPhase.categories);
+        eventBus.fire(TabSwitchEvent(1));
+      },
+      onSkip: () {
+        TutorialCoordinator().complete();
+        return true;
+      },
+    ).show(context: context);
   }
 
   @override
@@ -189,6 +241,7 @@ class _HomePageState extends State<HomePage> {
         title: headerTitle,
         addressType: addressType,
         cartCount: cartItems ?? 0,
+        searchBarKey: _searchBarKey,
         onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
         onSearchClick: () => PageRouteUtils.pushWithFade(
           context,
@@ -616,6 +669,7 @@ class _HomePageState extends State<HomePage> {
         _isLoadingMore = false;
       });
 
+      _maybeStartHomeTutorial();
       getCartApi();
     } catch (e) {
       if (!mounted) return;

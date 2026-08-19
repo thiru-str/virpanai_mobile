@@ -1,6 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/ui/tutorial/tutorial_coordinator.dart';
+import 'package:waioz/ui/tutorial/tutorial_tooltip.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_response.dart';
@@ -40,9 +44,10 @@ class ProductPage extends StatefulWidget {
   State<ProductPage> createState() => _ProductPageState();
 }
 
-class _ProductPageState extends State<ProductPage> {
+class _ProductPageState extends State<ProductPage> with TutorialMixin {
   ProductsResponse? productsResponse;
   bool apiLoading = true;
+  final GlobalKey _firstProductKey = GlobalKey();
   TextEditingController searchController = TextEditingController();
   List<Product> filteredProducts = [];
   List<String> selectedCollectionsList = [];
@@ -694,7 +699,7 @@ class _ProductPageState extends State<ProductPage> {
                           return const ProductCardSkeleton();
                         }
                         final product = filteredProducts[index];
-                        return AppReveal(
+                        final card = AppReveal(
                           index: index % 10,
                           child: ProductView(
                             product: product,
@@ -710,6 +715,9 @@ class _ProductPageState extends State<ProductPage> {
                             },
                           ),
                         );
+                        return index == 0
+                            ? KeyedSubtree(key: _firstProductKey, child: card)
+                            : card;
                       },
                     ),
                     // Skeleton overlay during initial load
@@ -786,11 +794,12 @@ class _ProductPageState extends State<ProductPage> {
         return;
       }
 
+      final isFirstPage = currentPage == 0;
       setState(() {
         apiLoading = false;
         isPaginating = false;
 
-        if (currentPage == 0) {
+        if (isFirstPage) {
           filteredProducts = response.products ?? [];
         } else {
           filteredProducts.addAll(response.products ?? []);
@@ -798,6 +807,7 @@ class _ProductPageState extends State<ProductPage> {
 
         hasMore = (response.products?.length ?? 0) == pageSize;
       });
+      if (isFirstPage) _maybeStartProductTutorial();
     } catch (e) {
       // Only update state if this is the most recent request
       if (searchToken == null || searchToken == _searchToken) {
@@ -811,5 +821,64 @@ class _ProductPageState extends State<ProductPage> {
       }
       print(e);
     }
+  }
+
+  void _maybeStartProductTutorial() =>
+      maybeStartTutorial(TutorialPhase.product, _showProductTutorial);
+
+  void _showProductTutorial() {
+    if (_firstProductKey.currentContext == null) {
+      TutorialCoordinator().advanceTo(TutorialPhase.cart);
+      _addProductAndGoToCart();
+      return;
+    }
+
+    TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          keyTarget: _firstProductKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 12,
+          paddingFocus: 8,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (ctx, ctrl) => TutorialTooltip(
+                title: 'Browse Products',
+                body: 'Tap any product to see details and add it to your cart',
+                controller: ctrl,
+              ),
+            ),
+          ],
+        ),
+      ],
+      colorShadow: Colors.black,
+      opacityShadow: 0.80,
+      hideSkip: true,
+      onFinish: () {
+        TutorialCoordinator().advanceTo(TutorialPhase.cart);
+        _addProductAndGoToCart();
+      },
+      onSkip: () {
+        TutorialCoordinator().complete();
+        return true;
+      },
+    ).show(context: context);
+  }
+
+  Future<void> _addProductAndGoToCart() async {
+    try {
+      final cartResp = await ApiService().getCart(context);
+      if (cartResp.cart?.items?.isNotEmpty != true) {
+        final variantId =
+            filteredProducts.firstOrNull?.variants?.firstOrNull?.id;
+        if (variantId != null && mounted) {
+          await ApiService().addCart(context, 1, variantId);
+        }
+      }
+    } catch (_) {}
+    if (!mounted) return;
+    Navigator.pop(context);
+    eventBus.fire(TabSwitchEvent(2));
   }
 }

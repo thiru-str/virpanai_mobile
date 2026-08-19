@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:waioz/api/api_service.dart';
+import 'package:waioz/model/view_cart_model.dart';
+import 'package:waioz/ui/tutorial/tutorial_coordinator.dart';
+import 'package:waioz/ui/tutorial/tutorial_tooltip.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart' hide Product, Customer;
@@ -26,7 +30,7 @@ class MyFavoritesPage extends StatefulWidget {
 }
 
 class _MyFavoritesPageState extends State<MyFavoritesPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TutorialMixin {
   FavouriteListConfig config = FavouriteListConfig();
   List<CustomerWishlistGroup> groups = [];
   bool loading = true;
@@ -34,6 +38,8 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
   String? _simpleListId; // set in simple mode — renders detail page inline
   final _api = ApiService();
   late final AnimationController _fadeCtrl;
+  final GlobalKey _createBtnKey = GlobalKey();
+  final GlobalKey _pageBodyKey = GlobalKey();
 
   @override
   void initState() {
@@ -74,9 +80,78 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
       if (!config.enabled && groups.isNotEmpty && mounted) {
         setState(() => _simpleListId = groups.first.id!);
       }
+      _maybeStartWishlistTutorial();
     } catch (_) {
       if (mounted) setState(() => loading = false);
     }
+  }
+
+  void _maybeStartWishlistTutorial() =>
+      maybeStartTutorial(TutorialPhase.wishlist, _showWishlistTutorial);
+
+  void _showWishlistTutorial() {
+    final targetKey = _createBtnKey.currentContext != null
+        ? _createBtnKey
+        : _pageBodyKey.currentContext != null
+            ? _pageBodyKey
+            : null;
+
+    if (targetKey == null) {
+      TutorialCoordinator().complete();
+      return;
+    }
+
+    TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          keyTarget: targetKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 20,
+          paddingFocus: 8,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (ctx, ctrl) => TutorialTooltip(
+                title: 'Your Maligai List',
+                body: 'Save your favourite products here and add them all to cart in one tap',
+                controller: ctrl,
+                isLast: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+      colorShadow: Colors.black,
+      opacityShadow: 0.80,
+      hideSkip: true,
+      pulseEnable: false,
+      focusAnimationDuration: Duration.zero,
+      unFocusAnimationDuration: Duration.zero,
+      onFinish: () {
+        TutorialCoordinator().complete();
+        _clearAndGoHome();
+      },
+      onSkip: () {
+        TutorialCoordinator().complete();
+        _clearAndGoHome();
+        return true;
+      },
+    ).show(context: context);
+  }
+
+  Future<void> _clearAndGoHome() async {
+    try {
+      final cartResp = await _api.getCart(context);
+      final items = cartResp.cart?.items ?? [];
+      for (final item in items) {
+        if (item.id != null && mounted) {
+          await _api.removeCart(context, item.id!);
+        }
+      }
+    } catch (_) {}
+    if (!mounted) return;
+    eventBus.fire(ViewCartModel(0, []));
+    eventBus.fire(TabSwitchEvent(0));
   }
 
   Future<void> _createList() async {
@@ -290,6 +365,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: GestureDetector(
+                key: _createBtnKey,
                 onTap: _createList,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -313,13 +389,16 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
             ),
         ],
       ),
-      body: loading
-          ? _buildSkeleton()
-          : !loggedIn
-              ? _buildLoginPrompt()
-              : !config.enabled
-                  ? _buildSimpleModeEmpty()
-                  : _buildGroupList(),
+      body: KeyedSubtree(
+        key: _pageBodyKey,
+        child: loading
+            ? _buildSkeleton()
+            : !loggedIn
+                ? _buildLoginPrompt()
+                : !config.enabled
+                    ? _buildSimpleModeEmpty()
+                    : _buildGroupList(),
+      ),
     );
   }
 

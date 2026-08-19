@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
 import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/font_utils.dart';
-import '../../utility/page_route_utils.dart';
 import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
@@ -23,6 +20,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   final String addressType;
   final int cartCount;
   final bool showBack;
+  final GlobalKey? searchBarKey;
 
   const CombinedHeaderAppBar({
     Key? key,
@@ -37,6 +35,7 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.addressType = "",
     this.cartCount = 0,
     this.showBack = false,
+    this.searchBarKey,
   }) : super(key: key);
 
   @override
@@ -309,6 +308,7 @@ class CombinedHeaderAppBar extends StatelessWidget
           ),
           const SizedBox(height: 8),
           GestureDetector(
+            key: searchBarKey,
             onTap: onSearchClick,
             child: SearchBarWithRollingHint(onTap: onSearchClick),
           ),
@@ -348,6 +348,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   /// --- Shared Search Bar Widget ---
   Widget _buildSearchBar() {
     return GestureDetector(
+      key: searchBarKey,
       onTap: onSearchClick,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
