@@ -94,8 +94,7 @@ class _StepperCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        AspectRatio(
-          aspectRatio: 1,
+        Expanded(
           child: Stack(fit: StackFit.expand, children: [
             Container(
                 color: AppColors.secondary,
@@ -119,11 +118,11 @@ class _StepperCard extends StatelessWidget {
               ),
           ]),
         ),
-        Expanded(
-          child: Padding(
+        Padding(
             padding: const EdgeInsets.fromLTRB(7, 6, 7, 7),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_hasPack)
                     Text(data.subTitle!,
@@ -138,7 +137,7 @@ class _StepperCard extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: cmsCardText(context, AppColors.textColor))),
-                  const Spacer(),
+                  const SizedBox(height: 8),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -163,7 +162,6 @@ class _StepperCard extends StatelessWidget {
                       ]),
                 ]),
           ),
-        ),
       ]),
     );
   }

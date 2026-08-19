@@ -372,17 +372,14 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AspectRatio(
-                          // Square keeps the card short enough that title +
-                          // rating + price never overflow the fixed height.
-                          aspectRatio: 1,
+                      Expanded(
                           child: merchImageOrFallback(merchImage(d),
                               fit: BoxFit.cover)),
-                      Expanded(
-                        child: Padding(
+                      Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(d.title ?? '',
                                     maxLines: 1,
@@ -392,10 +389,10 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                                         fontWeight: FontWeight.w700,
                                         color: cmsCardText(context, AppColors.textColor))),
                                 if (rating != null && rating.isNotEmpty) ...[
-                                  const SizedBox(height: 3),
+                                  const SizedBox(height: 4),
                                   RatingChip(rating: rating),
                                 ],
-                                const Spacer(),
+                                const SizedBox(height: 10),
                                 Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -430,7 +427,6 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                                     ]),
                               ]),
                         ),
-                      ),
                     ]),
               );
             },
@@ -483,11 +479,13 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
           itemCount: items.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+          // Responsive columns + a FIXED height sized to the content, so the
+          // image absorbs any slack (below) — no width-derived dead space.
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 210,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.54),
+              mainAxisExtent: 272),
           itemBuilder: (context, i) {
             final d = items[i];
             final id = d.id ?? '$i';
@@ -506,11 +504,9 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Stack(children: [
-                      AspectRatio(
-                          aspectRatio: 1.15,
-                          child: merchImageOrFallback(merchImage(d),
-                              fit: BoxFit.cover)),
+                    Expanded(
+                      child: Stack(fit: StackFit.expand, children: [
+                      merchImageOrFallback(merchImage(d), fit: BoxFit.cover),
                       if ((off ?? '').isNotEmpty)
                         Positioned(
                           left: 6,
@@ -528,16 +524,17 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
                                     color: Colors.white)),
                           ),
                         ),
-                    ]),
-                    Expanded(
-                      child: Padding(
+                    ])),
+                    Padding(
                         padding: const EdgeInsets.all(8),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (rating != null && rating.isNotEmpty)
+                              if (rating != null && rating.isNotEmpty) ...[
                                 RatingChip(rating: rating, solid: true),
-                              const SizedBox(height: 3),
+                                const SizedBox(height: 6),
+                              ],
                               Text(d.title ?? '',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -545,7 +542,7 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: cmsCardText(context, AppColors.textColor))),
-                              const Spacer(),
+                              const SizedBox(height: 10),
                               Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -580,7 +577,6 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
                                   ]),
                             ]),
                       ),
-                    ),
                   ]),
             );
           },

@@ -118,8 +118,7 @@ class _MiniProductCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        AspectRatio(
-          aspectRatio: 1,
+        Expanded(
           child: Stack(fit: StackFit.expand, children: [
             Container(
               color: AppColors.secondary,
@@ -144,11 +143,11 @@ class _MiniProductCard extends StatelessWidget {
               ),
           ]),
         ),
-        Expanded(
-          child: Padding(
+        Padding(
             padding: const EdgeInsets.fromLTRB(7, 6, 7, 7),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // pack size like "1 kg" contains letters; skip a bare price number
                   if ((data.subTitle ?? '').isNotEmpty &&
@@ -166,7 +165,7 @@ class _MiniProductCard extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: cmsCardText(context, AppColors.textColor))),
-                  const Spacer(),
+                  const SizedBox(height: 8),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -204,7 +203,6 @@ class _MiniProductCard extends StatelessWidget {
                       ]),
                 ]),
           ),
-        ),
       ]),
     );
   }
