@@ -106,9 +106,8 @@ Future<void> _shoot(WidgetTester tester, String name, Widget child) async {
     ),
   );
   await tester.pumpAndSettle(const Duration(milliseconds: 300));
-  // Drain non-fatal layout overflow warnings (a few px on some marketplace
-  // grids) so they don't fail the test — the skeleton preview is unaffected.
-  while (tester.takeException() != null) {}
+  // NOTE: we intentionally do NOT drain exceptions here. A RenderFlex overflow
+  // is a real layout bug — let it FAIL the test so it can't ship a broken card.
   await expectLater(find.byKey(key), matchesGoldenFile('goldens/$name.png'));
 }
 
