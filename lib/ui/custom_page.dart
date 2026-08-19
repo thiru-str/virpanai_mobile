@@ -839,9 +839,14 @@ class _CustomPageState extends State<CustomPage> {
     try {
       final apiService = ApiService();
       await apiService.addCart(context, qty, variantId);
-      getCartApi();
     } catch (e) {
       print(e);
+    } finally {
+      // Always refresh the cart badge/nav after an add attempt. The item is on
+      // the backend even if the add response parsing hiccups, so re-fetching
+      // keeps the top-right count and bottom-nav in sync instantly (previously
+      // a thrown response skipped getCartApi, so it only updated on refresh).
+      getCartApi();
     }
   }
 }

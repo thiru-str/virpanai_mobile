@@ -919,9 +919,13 @@ class _HomePageState extends State<HomePage> {
     try {
       final apiService = ApiService();
       await apiService.addCart(context, qty, variantId);
-      getCartApi();
     } catch (e) {
       print(e);
+    } finally {
+      // Always refresh the cart badge/nav after an add attempt — even if the
+      // add response parsing hiccups the item is on the backend, so re-fetching
+      // keeps the top-right count and bottom-nav in sync instantly.
+      getCartApi();
     }
   }
 }
