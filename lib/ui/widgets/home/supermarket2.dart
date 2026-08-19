@@ -221,7 +221,7 @@ class _ProductStepper1State extends State<ProductStepper1> {
               crossAxisCount: 3,
               crossAxisSpacing: 10,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.53),
+              childAspectRatio: 0.52),
           itemBuilder: (context, i) {
             final id = items[i].id ?? '$i';
             final vid = _variantOf(items[i]);

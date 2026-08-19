@@ -44,13 +44,13 @@ class IconActionNav1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(color: cmsCard(context, Colors.white), borderRadius: BorderRadius.circular(16), border: Border.all(color: kInk.withOpacity(0.08))),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          for (int i = 0; i < items.length; i++) Column(mainAxisSize: MainAxisSize.min, children: [
+        child: Row(children: [
+          for (int i = 0; i < items.length; i++) Expanded(child: Column(mainAxisSize: MainAxisSize.min, children: [
             Container(height: 44, width: 44, decoration: BoxDecoration(color: kInk.withOpacity(0.05), borderRadius: BorderRadius.circular(14)),
               child: Icon(_ic[i % _ic.length], color: kInk, size: 22)),
             const SizedBox(height: 6),
-            Text(items[i].title ?? '', style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor))),
-          ]),
+            Text(items[i].title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cmsCardText(context, AppColors.textColor))),
+          ])),
         ]),
       ),
     );
