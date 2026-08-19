@@ -100,13 +100,14 @@ class StatBand1 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
         decoration: BoxDecoration(color: cmsPanel(context, kInk), borderRadius: BorderRadius.circular(20)),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          for (final item in items) Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(item.title ?? '', style: FontUtils.primaryFontStyle(fontSize: 26, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
+        child: Row(children: [
+          for (final item in items) Expanded(child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(item.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: FontUtils.primaryFontStyle(fontSize: 24, fontWeight: FontWeight.w800, color: cmsText(context, Colors.white))),
             const SizedBox(height: 2),
             Text((item.featureText ?? '').trim().isNotEmpty ? item.featureText!.trim() : (item.subTitle ?? ''),
+              maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
               style: FontUtils.primaryFontStyle(fontSize: 11, fontWeight: FontWeight.w400, color: cmsText(context, Colors.white60))),
-          ]),
+          ])),
         ]),
       ),
     );

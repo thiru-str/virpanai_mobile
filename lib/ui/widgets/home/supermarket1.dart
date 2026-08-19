@@ -91,7 +91,7 @@ class ProductMini1 extends StatelessWidget {
               crossAxisCount: 3,
               crossAxisSpacing: 10,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.56),
+              childAspectRatio: 0.51),
           itemBuilder: (context, i) => _MiniProductCard(data: items[i]),
         ),
       ]),
