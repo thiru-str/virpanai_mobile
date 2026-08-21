@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Static splash color shared by the native and Flutter splash screens. -->
+    <color name="splash_background">#F52929</color>
+</resources>
