@@ -48,8 +48,9 @@ class _QuantitySelectorState extends State<QuantitySelector> {
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(30),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,51 +63,47 @@ class _QuantitySelectorState extends State<QuantitySelector> {
               color: AppColors.textColor,
             ),
           ),
-          Row(
-            children: [
-              // Increment Button
-              IconButton(
-                onPressed: _increment,
-                icon: const Icon(Icons.add, color: Colors.white),
-                color: AppColors.primary, // Purple color
-                iconSize: 24,
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                    AppColors.primary, // Purple color
-                  ),
-                  shape: MaterialStateProperty.all<CircleBorder>(
-                    const CircleBorder(),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE5E7EC)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: Row(
+              children: [
+                // Decrement Button
+                IconButton(
+                  onPressed: _decrement,
+                  icon: Icon(Icons.remove_rounded, color: AppColors.primary),
+                  iconSize: 22,
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  splashRadius: 20,
+                ),
+                // Quantity Display
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    '$quantity',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textColor,
+                    ),
                   ),
                 ),
-              ),
-              // Quantity Display
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  '$quantity',
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor,
-                  ),
+                // Increment Button
+                IconButton(
+                  onPressed: _increment,
+                  icon: Icon(Icons.add_rounded, color: AppColors.primary),
+                  iconSize: 22,
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  splashRadius: 20,
                 ),
-              ),
-              // Decrement Button
-              IconButton(
-                onPressed: _decrement,
-                icon: const Icon(Icons.remove, color: Colors.white),
-                color: AppColors.primary, // Purple color
-                iconSize: 24,
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                    AppColors.primary, // Purple color
-                  ),
-                  shape: MaterialStateProperty.all<CircleBorder>(
-                    const CircleBorder(),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

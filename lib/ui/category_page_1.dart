@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
+import 'package:waioz/ui/widgets/no_orders_widget.dart';
 
 import '../api/api_service.dart';
 import '../model/product_categories_response.dart';
+import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
+import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
 
 class CategoryPage1 extends StatefulWidget {
@@ -24,6 +26,9 @@ class _CategoryPage1State extends State<CategoryPage1> {
   ProductCategoriesResponse? productCategoriesResponse;
   bool apiLoading = true;
   int selectedIndex = 0; // Track which main category is selected
+
+  List<ProductCategory> get _categories =>
+      productCategoriesResponse?.productCategories ?? const <ProductCategory>[];
 
   @override
   void initState() {
@@ -41,136 +46,169 @@ class _CategoryPage1State extends State<CategoryPage1> {
           Navigator.pop(context, true);
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       body: apiLoading
           ? Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             )
-          : Row(
-              children: [
-                // LEFT MAIN CATEGORY LIST
-                Container(
-                  width: 100,
-                  color: Color(0xFFF5FEF2),
-                  child: ListView.builder(
-                    itemCount:
-                        productCategoriesResponse!.productCategories!.length,
-                    itemBuilder: (context, index) {
-                      final mainCategory =
-                          productCategoriesResponse!.productCategories![index];
-                      final isSelected = index == selectedIndex;
+          : _categories.isEmpty
+              ? NoOrdersWidget(
+                  message: AppStrings.no_categories_found,
+                  buttonText: AppStrings.explore_categories,
+                  iconPath: AppAssets.ic_cart_empty,
+                  showExplore: widget.isFromBottomNav,
+                  onButtonTap: () {},
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // LEFT MAIN CATEGORY LIST
+                    Container(
+                      width: 112,
+                      color: Colors.white,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final mainCategory = _categories[index];
+                          final isSelected = index == selectedIndex;
 
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            selectedIndex = index;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                isSelected ? Colors.white : Color(0xFFF5FEF2),
-                            border: Border(
-                              left: BorderSide(
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedIndex = index;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                width: 4, // Blue indicator width
-                              ),
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 8),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (mainCategory.image != null &&
-                                  mainCategory.image!.isNotEmpty)
-                                CachedNetworkImage(
-                                    imageUrl: mainCategory.image!,
-                                    height: 40,
-                                    width: 40,
-                                    fit: BoxFit.contain),
-                              const SizedBox(height: 6),
-                              Text(
-                                mainCategory.name ?? '',
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : Colors.black,
+                                    ? const Color(0xFFF9F9FB)
+                                    : Colors.white,
+                                border: Border(
+                                  left: BorderSide(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : Colors.transparent,
+                                    width: 3,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // RIGHT SUBCATEGORY GRID
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Builder(
-                      builder: (_) {
-                        final selectedCategory = productCategoriesResponse!
-                            .productCategories![selectedIndex];
-
-                        final subCategories =
-                            selectedCategory.categoryChildren ?? [];
-
-                        if (subCategories.isEmpty) {
-                          return Center(
-                            child: Text(AppStrings.no_subcategories_found),
-                          );
-                        }
-
-                        return MasonryGridView.count(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          itemCount: subCategories.length,
-                          itemBuilder: (context, index) {
-                            final subCategory = subCategories[index];
-
-                            return SubCategoryTile(
-                              imagePath: subCategory.image ?? '',
-                              title: subCategory.name ?? '',
-                              onTap: () {
-                                if (subCategory.categoryChildren != null &&
-                                    subCategory.categoryChildren!.isNotEmpty) {
-                                  PageRouteUtils.pushWithFade(
-                                    context,
-                                    SubCategoryPage(
-                                      categoryTitle: subCategory.name!,
-                                      productCategory:
-                                          subCategory.categoryChildren!,
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 8),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (mainCategory.image != null &&
+                                      mainCategory.image!.isNotEmpty)
+                                    Container(
+                                      height: 48,
+                                      width: 48,
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppColors.primary
+                                                .withOpacity(0.08)
+                                            : const Color(0xFFF4F4F4),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: CachedNetworkImage(
+                                          imageUrl: mainCategory.image!,
+                                          fit: BoxFit.contain),
                                     ),
-                                  );
-                                } else {
-                                  PageRouteUtils.pushWithFade(
-                                    context,
-                                    ProductPage(categoryId: subCategory.id!),
-                                  );
-                                }
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    mainCategory.name ?? '',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: isSelected
+                                          ? AppColors.primary
+                                          : AppColors.textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Container(width: 1, color: const Color(0xFFE5E7EC)),
+
+                    // RIGHT SUBCATEGORY GRID
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Builder(
+                          builder: (_) {
+                            final safeSelectedIndex =
+                                selectedIndex >= _categories.length
+                                    ? 0
+                                    : selectedIndex;
+                            final selectedCategory =
+                                _categories[safeSelectedIndex];
+
+                            final subCategories =
+                                selectedCategory.categoryChildren ?? [];
+
+                            if (subCategories.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  AppStrings.no_subcategories_found,
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return MasonryGridView.count(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              itemCount: subCategories.length,
+                              itemBuilder: (context, index) {
+                                final subCategory = subCategories[index];
+
+                                return SubCategoryTile(
+                                  imagePath: subCategory.image ?? '',
+                                  title: subCategory.name ?? '',
+                                  onTap: () {
+                                    if (subCategory.categoryChildren != null &&
+                                        subCategory
+                                            .categoryChildren!.isNotEmpty) {
+                                      PageRouteUtils.pushWithFade(
+                                        context,
+                                        SubCategoryPage(
+                                          categoryTitle: subCategory.name!,
+                                          productCategory:
+                                              subCategory.categoryChildren!,
+                                        ),
+                                      );
+                                    } else {
+                                      PageRouteUtils.pushWithFade(
+                                        context,
+                                        ProductPage(
+                                            categoryId: subCategory.id!),
+                                      );
+                                    }
+                                  },
+                                );
                               },
                             );
                           },
-                        );
-                      },
-                    ),
-                  ),
-                )
-              ],
-            ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
     );
   }
 
@@ -206,26 +244,33 @@ class SubCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Grey Rounded Image Container
+          // Rounded image surface (premium card)
           Container(
             decoration: BoxDecoration(
-              color: Color(0xFFF5FEF2), // light grey background
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            padding: const EdgeInsets.all(12),
-            child: SizedBox(
-              height: 70,
-              width: 70,
+            padding: const EdgeInsets.all(14),
+            child: AspectRatio(
+              aspectRatio: 1,
               child: imagePath.isNotEmpty
                   ? CachedNetworkImage(imageUrl: imagePath, fit: BoxFit.contain)
-                  : const Icon(Icons.image_not_supported, size: 40),
+                  : Icon(Icons.image_not_supported,
+                      size: 40, color: Colors.grey.shade400),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
 
           // Title outside container
           Text(
@@ -233,10 +278,10 @@ class SubCategoryTile extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: FontUtils.primaryFontStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
             ),
           ),
         ],

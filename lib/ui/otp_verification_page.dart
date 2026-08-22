@@ -10,6 +10,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../utility/app_assets.dart';
@@ -98,9 +99,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     return GestureDetector(
       onTap: ()=> FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF9F9FB),
           elevation: 0,
           leading: IconButton(
             icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
@@ -110,32 +111,33 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           ),
         ),
         body: SafeArea(
+          top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 // Title
                 Text(
                   AppStrings.enter_otp_digit,
-                  style: FontUtils.primaryFontStyle(
+                  style: UiTypography.cardTitle().copyWith(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    height: 1.2,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 24),
-                // Form for phone input
+                const SizedBox(height: 12),
+                // Subtitle with destination number
                 Text(
-                  '${AppStrings.code_sent}\n ${widget.countryCode} ${widget.phoneNo}',
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 16,
-                    color: Colors.grey[700]!,
-                  ),
+                  '${AppStrings.code_sent}\n${widget.countryCode} ${widget.phoneNo}',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 14,
+                    color: AppColors.textColor50,
+                  ).copyWith(height: 1.5),
                 ),
                 const SizedBox(height: 32),
-                // OTP Fields
+                // OTP Fields — equal rounded-14 cells, active cell primary border
                 PinCodeTextField(
                   appContext: context,
                   length: 6, // Number of OTP digits
@@ -144,21 +146,26 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   keyboardType: TextInputType.number,
                   autoFocus: true,
                   animationType: AnimationType.none,
+                  cursorColor: AppColors.primary,
                   textStyle: FontUtils.primaryFontStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textColor,
                   ),
                   pinTheme: PinTheme(
                     shape: PinCodeFieldShape.box,
-                    borderRadius: BorderRadius.circular(8),
-                    fieldHeight: 50,
-                    fieldWidth: 50,
+                    borderRadius: BorderRadius.circular(14),
+                    fieldHeight: 52,
+                    fieldWidth: 48,
+                    borderWidth: 1.5,
+                    activeBorderWidth: 1.5,
+                    selectedBorderWidth: 1.5,
+                    inactiveBorderWidth: 1.5,
                     inactiveFillColor: Colors.white,
                     activeFillColor: Colors.white,
                     selectedFillColor: Colors.white,
-                    inactiveColor: AppColors.secondary,
-                    activeColor: AppColors.primary,
+                    inactiveColor: Colors.grey.shade300,
+                    activeColor: Colors.grey.shade300,
                     selectedColor: AppColors.primary,
                   ),
                   enableActiveFill: true,
@@ -169,45 +176,72 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     print(value);
                   },
                 ),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (!_isResendVisible)
                       Text(
-                        "Resend OTP in : 00:${_remainingSeconds.toString().padLeft(2, '0')}",
-                        style: const TextStyle(fontSize: 14),
+                        "Resend OTP in  00:${_remainingSeconds.toString().padLeft(2, '0')}",
+                        style: FontUtils.secondaryFontStyle(
+                          fontSize: 14,
+                          color: AppColors.textColor50,
+                        ),
                       ),
                     if (_isResendVisible)
                       GestureDetector(
                         onTap:resendOtp,
                         child: Text(
                           "Resend OTP",
-                          style: TextStyle(
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
                   ],
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 36),
+                // Verify CTA — full-width primary
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      elevation: 0,
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      // Validate OTP and proceed
+                      print('Submitted OTP: ${_otpController.text}');
+                      verifyOtp();
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Verify",
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded,
+                            color: Colors.white, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
-          ),
-        ),
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
-          child: FloatingActionButton(
-            shape: const CircleBorder(),
-            onPressed: () {
-              // Validate OTP and proceed
-              print('Submitted OTP: ${_otpController.text}');
-              verifyOtp();
-            },
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
           ),
         ),
         resizeToAvoidBottomInset:

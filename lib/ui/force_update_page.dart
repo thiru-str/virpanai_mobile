@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/mobile_frame_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class ForceUpdateScreen extends StatelessWidget {
   final VoidCallback onUpdateNow;
@@ -43,28 +45,27 @@ class ForceUpdateScreen extends StatelessWidget {
                 const SizedBox(height: 32),
 
                 /// Title (now on pure white background)
-                const Text(
+                Text(
                   "Update To The Latest Version Now!",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: UiTypography.cardTitle().copyWith(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
                     height: 1.3,
+                    letterSpacing: -0.3,
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
                 /// Description (pure white background)
-                const Text(
+                Text(
                   "A brand new version of the ${AppConfig.appName} app is available in the App Store. "
                       "Please update your app to use all of our amazing features.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: FontUtils.secondaryFontStyle(
                     fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.5,
-                  ),
+                    color: AppColors.textColor50,
+                  ).copyWith(height: 1.5),
                 ),
 
                 const SizedBox(height: 84),
@@ -74,20 +75,21 @@ class ForceUpdateScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 40),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 56,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
+                        elevation: 0,
+                        minimumSize: const Size(double.infinity, 54),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       onPressed: onUpdateNow,
-                      child: const Text(
+                      child: Text(
                         "Update now",
-                        style: TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class CheckoutFooter extends StatelessWidget {
   final String svgPath;
@@ -25,21 +27,21 @@ class CheckoutFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, -2),
-            blurRadius: 6,
+            color: Colors.black.withOpacity(0.08),
+            offset: const Offset(0, -4),
+            blurRadius: 16,
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Expanded(
@@ -51,8 +53,8 @@ class CheckoutFooter extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey.shade50,
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: SvgPicture.asset(
                       svgPath,
@@ -68,17 +70,14 @@ class CheckoutFooter extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             Text(
                               "Pay Using",
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black87,
-                              ),
+                              style: UiTypography.cardMeta(color: Colors.black54)
+                                  .copyWith(fontSize: 10),
                             ),
-                            Icon(
+                            const Icon(
                               Icons.arrow_drop_down,
                               size: 20,
                               color: Colors.black54,
@@ -89,11 +88,9 @@ class CheckoutFooter extends StatelessWidget {
                           children: [
                             Text(
                               paymentMethod,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                              style: UiTypography.cardAction(
                                 color: Colors.black,
-                              ),
+                              ).copyWith(fontSize: 12),
                             ),
                             const SizedBox(width: 2),
                             GestureDetector(
@@ -120,10 +117,11 @@ class CheckoutFooter extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                elevation: 0,
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
@@ -147,12 +145,11 @@ class CheckoutFooter extends StatelessWidget {
                         "$amount\nPlace Order",
                         key: const ValueKey("text"),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
-                          height: 1.3,
-                        ),
+                        ).copyWith(height: 1.3),
                       ),
               ),
             ),

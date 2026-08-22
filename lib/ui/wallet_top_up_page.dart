@@ -5,6 +5,11 @@ import 'package:waioz/model/wallet_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_utils.dart';
+import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
+
+const Color _kScaffoldBg = Color(0xFFF9F9FB);
+const Color _kHairline = Color(0xFFE5E7EC);
 
 class WalletTopUpPage extends StatefulWidget {
   const WalletTopUpPage({super.key});
@@ -152,158 +157,254 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
     _razorpay!.open(options);
   }
 
+  PreferredSizeWidget _appBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      scrolledUnderElevation: 0,
+      shadowColor: Colors.black.withOpacity(0.05),
+      surfaceTintColor: Colors.transparent,
+      iconTheme: IconThemeData(color: AppColors.primary),
+      title: Text(
+        'Add Money to Wallet',
+        style: UiTypography.cardTitle(color: Colors.black87)
+            .copyWith(fontSize: 20, height: 1.25, letterSpacing: -0.2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (loadingConfig) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Add Money to Wallet')),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: _kScaffoldBg,
+        appBar: _appBar(),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
     if (topupConfig != null && !topupConfig!.canTopUp) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Add Money to Wallet')),
-        body: const Center(
-          child: Text(
-            'Wallet top-up is currently not available',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+        backgroundColor: _kScaffoldBg,
+        appBar: _appBar(),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(Icons.lock_outline,
+                    size: 32, color: AppColors.primary.withOpacity(0.7)),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Wallet top-up is currently not available',
+                style: UiTypography.cardSubtitle(color: Colors.grey.shade600),
+              ),
+            ],
           ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Money to Wallet'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: _kScaffoldBg,
+      appBar: _appBar(),
+      body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Enter Amount',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-
-            // Amount Input
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                prefixText: '₹ ',
-                prefixStyle: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                hintText: '0.00',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
-                ),
-              ),
-              onChanged: (_) {
-                setState(() => selectedPreset = null);
-              },
-            ),
-
-            if (topupConfig != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Min: ₹${topupConfig!.minTopupAmount.toStringAsFixed(0)} · Max: ₹${topupConfig!.maxTopupAmount.toStringAsFixed(0)}',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-            ],
-
-            const SizedBox(height: 20),
-
-            // Quick Select label
-            if (presetAmounts.isNotEmpty) ...[
-              Text(
-                'Quick Select',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 8),
-            ],
-
-            // Preset Amounts
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: presetAmounts.map((amount) {
-                final isSelected = selectedPreset == amount;
-                return GestureDetector(
-                  onTap: () => _selectPreset(amount),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : Colors.transparent,
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : Colors.grey.shade300,
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Amount card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '₹$amount',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected ? Colors.white : Colors.black87,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Enter Amount',
+                            style: UiTypography.cardTitle().copyWith(
+                                fontSize: 18, letterSpacing: -0.2),
+                          ),
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _amountController,
+                            keyboardType: TextInputType.number,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              prefixText: '₹ ',
+                              prefixStyle: FontUtils.primaryFontStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                              ),
+                              hintText: '0.00',
+                              hintStyle: FontUtils.primaryFontStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.grey.shade400,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                    color: AppColors.primary, width: 1.5),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                            ),
+                            onChanged: (_) {
+                              setState(() => selectedPreset = null);
+                            },
+                          ),
+                          if (topupConfig != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Min: ₹${topupConfig!.minTopupAmount.toStringAsFixed(0)} · Max: ₹${topupConfig!.maxTopupAmount.toStringAsFixed(0)}',
+                              style: UiTypography.cardMeta(
+                                  color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+
+                    // Quick Select label
+                    if (presetAmounts.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      Text(
+                        'Quick Select',
+                        style: UiTypography.cardTitle()
+                            .copyWith(fontSize: 18, letterSpacing: -0.2),
+                      ),
+                      const SizedBox(height: 12),
+                      // Preset Amounts
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: presetAmounts.map((amount) {
+                          final isSelected = selectedPreset == amount;
+                          return GestureDetector(
+                            onTap: () => _selectPreset(amount),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOut,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 22,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: Text(
+                                '₹$amount',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
             ),
 
-            const Spacer(),
-
-            // Add Money Button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
+            // Add Money Button (bottom, thumb-reachable)
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: _kHairline)),
+              ),
               child: ElevatedButton(
                 onPressed: loading ? null : _handleTopUp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 54),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: loading
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 22,
+                        width: 22,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
                           color: Colors.white,
+                          strokeWidth: 2.5,
                         ),
                       )
                     : Text(
                         _amountController.text.isNotEmpty
                             ? 'Pay ₹${_amountController.text}'
-                            : 'Enter amount',
-                        style: const TextStyle(
+                            : 'Add money',
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
                       ),
               ),
             ),
-
-            const SizedBox(height: 16),
           ],
         ),
       ),

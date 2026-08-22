@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../utility/app_colors.dart';
 
@@ -23,10 +24,18 @@ class ReviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(14.0),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12.0),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,11 +70,8 @@ class ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                      style: UiTypography.cardTitle(color: Colors.black87)
+                          .copyWith(fontSize: 16),
                     ),
                     const SizedBox(height: 4),
                     Padding(
@@ -91,19 +97,13 @@ class ReviewCard extends StatelessWidget {
           // Review Text
           Text(
             reviewText,
-            style: FontUtils.primaryFontStyle(
-              fontSize: 14,
-              color: Colors.black54,
-            ),
+            style: UiTypography.cardSubtitle(color: Colors.black54),
           ),
           const SizedBox(height: 8),
           // Timestamp
           Text(
             timestamp,
-            style: FontUtils.primaryFontStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
+            style: UiTypography.cardMeta(color: Colors.grey),
           ),
         ],
       ),

@@ -5,19 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
+import 'package:waioz/model/shipping_response.dart' as PaymentSessionData;
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
+import 'package:waioz/ui/paytm_payment_page.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
+import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
 import 'package:waioz/ui/widgets/delivery_address_widget.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
+import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
+import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
+import 'package:waioz/ui/icici_payment_page.dart';
+import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -26,6 +33,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
@@ -63,6 +71,7 @@ class _CartPageState extends State<CartPage>
   String? pp_id;
   String? orderId;
   String? clientSecret;
+  PaymentSessionData.Data? paytmData;
   Razorpay razorpay = Razorpay();
   bool showPriceBreakdown = false;
 
@@ -165,12 +174,62 @@ class _CartPageState extends State<CartPage>
         return 'Wallet';
       case 'pp_razorpay_razorpay':
         return 'Razorpay';
+      case 'pp_payu_payu':
+        return 'PayU';
+      case 'pp_paytm_paytm':
+        return 'Paytm';
+      case 'pp_icici_icici':
+        return 'ICICI Bank';
       case 'pp_system_default':
         return 'Cash on Delivery';
       case 'pp_neft_neft':
         return 'Bank Transfer (NEFT)';
+      case 'pp_stripe_stripe':
+        return 'Credit / Debit Card';
       default:
         return AppStrings.cash_on_delivery;
+    }
+  }
+
+  IconData _providerIcon(String? id) {
+    switch (id) {
+      case 'pp_razorpay_razorpay':
+        return Icons.bolt_rounded;
+      case 'pp_payu_payu':
+        return Icons.credit_card_rounded;
+      case 'pp_paytm_paytm':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_icici_icici':
+        return Icons.account_balance_rounded;
+      case 'pp_neft_neft':
+        return Icons.swap_horiz_rounded;
+      case 'pp_wallet_wallet':
+        return Icons.account_balance_wallet_rounded;
+      case 'pp_stripe_stripe':
+        return Icons.credit_card_rounded;
+      default:
+        return Icons.local_shipping_rounded;
+    }
+  }
+
+  Color _providerColor(String? id) {
+    switch (id) {
+      case 'pp_razorpay_razorpay':
+        return const Color(0xFF2D81F7);
+      case 'pp_payu_payu':
+        return const Color(0xFF6CB33F);
+      case 'pp_paytm_paytm':
+        return const Color(0xFF00BAF2);
+      case 'pp_icici_icici':
+        return const Color(0xFFE87722);
+      case 'pp_neft_neft':
+        return const Color(0xFF1565C0);
+      case 'pp_wallet_wallet':
+        return const Color(0xFF2E7D32);
+      case 'pp_stripe_stripe':
+        return const Color(0xFF635BFF);
+      default:
+        return const Color(0xFF795548);
     }
   }
 
@@ -222,14 +281,14 @@ class _CartPageState extends State<CartPage>
           Navigator.pop(context, true);
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9FB),
       body: Stack(
         children: [
           apiLoading
               ? const CartPageSkeleton()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
-                      backgroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFF9F9FB),
                       body: SingleChildScrollView(
                         child: Column(
                           children: [
@@ -281,12 +340,12 @@ class _CartPageState extends State<CartPage>
                                         const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     itemCount: cartResponse!.cart!.items!
-                                        .where((item) => !item.isPlatformFee)
+                                        .where((item) => !item.isVirtualItem)
                                         .length,
                                     itemBuilder: (context, index) {
                                       final productItems = cartResponse!
                                           .cart!.items!
-                                          .where((item) => !item.isPlatformFee)
+                                          .where((item) => !item.isVirtualItem)
                                           .toList();
                                       final cartItem = productItems[index];
                                       final originalIndex = cartResponse!
@@ -309,6 +368,17 @@ class _CartPageState extends State<CartPage>
                                                   .toStringAsFixed(2)),
                                           quantity: cartItem.quantity!,
                                           isUpdating: cartItem.isUpdating!,
+                                          onTap: cartItem.productId != null
+                                              ? () async {
+                                                  await PageRouteUtils.push(
+                                                    context,
+                                                    ProductDetailPage(
+                                                        productId:
+                                                            cartItem.productId!),
+                                                  );
+                                                  if (mounted) getCartApi();
+                                                }
+                                              : null,
                                           onRemoveAll: () {
                                             setState(() {
                                               cartResponse!
@@ -450,11 +520,46 @@ class _CartPageState extends State<CartPage>
                                 walletBalance > 0)
                               _buildWalletCard(),
 
+                            // Loyalty Points Card (matches wallet card design,
+                            // sits right under it so wallet + loyalty are visually
+                            // grouped in the same "balance to redeem" section).
+                            if (cartResponse?.cart?.id != null)
+                              LoyaltyCheckoutWidget(
+                                cartId: cartResponse!.cart!.id!,
+                                loyaltyApply: _loyaltyApplyMetadata(),
+                                cartTotal: cartResponse?.cart?.total ?? 0,
+                                walletAmount: _walletAmountFromMetadata(),
+                                walletApplied: _walletAmountFromMetadata() > 0,
+                                hasActiveCoupon:
+                                    (cartResponse?.cart?.promotions ?? [])
+                                        .isNotEmpty,
+                                onApplied: () {
+                                  getCartApi();
+                                },
+                                onRemoved: () {
+                                  getCartApi();
+                                },
+                              ),
+
                             // Coupon Card (Ajio style)
                             _buildCouponCard(),
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
+
+                            // Free delivery progress banner — hides itself when
+                            // no shipping address or no slabs configured.
+                            if ((cartResponse?.cart?.id ?? '').isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 4),
+                                child: FreeDeliveryBannerWidget(
+                                  cartId: cartResponse!.cart!.id!,
+                                  cartTotal: cartResponse?.cart?.itemSubtotal ??
+                                      cartResponse?.cart?.subtotal ??
+                                      0,
+                                ),
+                              ),
 
                             // Price Details (view only)
                             AppReveal(
@@ -470,19 +575,19 @@ class _CartPageState extends State<CartPage>
                                   key: _priceDetailsSectionKey,
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
-                                  padding: const EdgeInsets.all(16.0),
+                                  padding: const EdgeInsets.all(18.0),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 18,
+                                        offset: const Offset(0, 8),
                                       ),
                                     ],
-                                    border:
-                                        Border.all(color: Colors.grey.shade200),
+                                    border: Border.all(
+                                        color: const Color(0xFFE5E7EC)),
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
@@ -490,13 +595,14 @@ class _CartPageState extends State<CartPage>
                                     children: [
                                       Padding(
                                         padding:
-                                            const EdgeInsets.only(bottom: 8),
+                                            const EdgeInsets.only(bottom: 12),
                                         child: Text(
                                           'Price Details',
-                                          style: FontUtils.primaryFontStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textColor,
-                                            fontSize: 15,
+                                          style:
+                                              UiTypography.cardTitle().copyWith(
+                                            fontSize: 16,
+                                            height: 1.25,
+                                            letterSpacing: -0.2,
                                           ),
                                         ),
                                       ),
@@ -508,7 +614,7 @@ class _CartPageState extends State<CartPage>
                                                       _numOrZero(cartResponse
                                                           ?.cart?.items
                                                           ?.where((item) => item
-                                                              .isPlatformFee)
+                                                              .isVirtualItem)
                                                           .fold<num>(
                                                               0,
                                                               (sum, item) =>
@@ -530,21 +636,11 @@ class _CartPageState extends State<CartPage>
                                                   (item) =>
                                                       item.isPlatformFee) ??
                                               false) &&
-                                          (cartResponse!.cart!.items!
-                                                      .firstWhere((item) =>
-                                                          item.isPlatformFee)
-                                                      .total ??
-                                                  0) >
-                                              0)
+                                          _platformFeeTotal() > 0)
                                         _priceRow(
                                             AppStrings.platform_fee,
                                             CurrencyUtil.appendCurrency(
-                                                (cartResponse!.cart!.items!
-                                                            .firstWhere(
-                                                                (item) => item
-                                                                    .isPlatformFee)
-                                                            .total ??
-                                                        0)
+                                                _platformFeeTotal()
                                                     .toStringAsFixed(2))),
                                       if (_numOrZero(
                                               cartResponse?.cart?.taxTotal) >
@@ -563,42 +659,93 @@ class _CartPageState extends State<CartPage>
                                         _priceRow(
                                           'Coupon Savings',
                                           '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                          valueColor: Colors.green.shade700,
+                                          valueColor: const Color(0xFF1FA971),
+                                        ),
+                                      // Loyalty points discount (negative line item added by API)
+                                      if ((cartResponse?.cart?.items?.any(
+                                              (item) =>
+                                                  item.isLoyaltyDiscount) ??
+                                          false))
+                                        Builder(builder: (_) {
+                                          final li = cartResponse!.cart!.items!
+                                              .firstWhere((item) =>
+                                                  item.isLoyaltyDiscount);
+                                          final amt = (li.total ?? 0).abs();
+                                          final pts =
+                                              li.metadata?.pointsApplied ?? 0;
+                                          return _priceRow(
+                                            'Loyalty Points ($pts pts)',
+                                            '- ${CurrencyUtil.appendCurrency(amt.toStringAsFixed(2))}',
+                                            valueColor: AppColors.primary,
+                                          );
+                                        }),
+                                      if (_loyaltyDiscount > 0)
+                                        _priceRow(
+                                          'Loyalty Points ($_loyaltyPointsApplied pts)',
+                                          '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                          valueColor: AppColors.primary,
                                         ),
                                       if (splitActive && splitWalletAmount > 0)
                                         _priceRow(
                                           'Wallet',
                                           '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
-                                          valueColor: Colors.blue.shade700,
+                                          valueColor: AppColors.primary,
                                         ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 6),
+                                      const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 10),
                                         child: Divider(
-                                            color: Colors.grey.shade300,
+                                            color: Color(0xFFE5E7EC),
                                             height: 1),
                                       ),
-                                      _priceRow(
-                                          'Total Amount',
-                                          CurrencyUtil.appendCurrency(
-                                              (splitActive
-                                                      ? (_numOrZero(cartResponse
-                                                                  ?.cart
-                                                                  ?.total) -
-                                                              splitWalletAmount)
-                                                          .clamp(0,
-                                                              double.infinity)
-                                                      : _numOrZero(cartResponse
-                                                          ?.cart?.total))
-                                                  .toStringAsFixed(2)),
-                                          isBold: true,
-                                          fontSize: 13),
-                                      const SizedBox(height: 6),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Total Amount',
+                                            style: UiTypography.cardTitle()
+                                                .copyWith(
+                                              fontSize: 16,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Flexible(
+                                            child: Text(
+                                              CurrencyUtil.appendCurrency(
+                                                  _displayTotalAmount()
+                                                      .toStringAsFixed(2)),
+                                              maxLines: 1,
+                                              textAlign: TextAlign.right,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: UiTypography.cardPrice(
+                                                      color: AppColors.primary)
+                                                  .copyWith(fontSize: 20),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
                                     ],
                                   ),
                                 ),
                               ),
                             ),
+                            // Loyalty earn preview — based on actual paid amount (item subtotal minus loyalty discount)
+                            if ((cartResponse?.cart?.itemSubtotal ??
+                                    cartResponse?.cart?.total ??
+                                    0) >
+                                0)
+                              LoyaltyEarnPreview(
+                                cartId: cartResponse!.cart!.id,
+                                orderTotal: cartResponse?.cart?.itemSubtotal ??
+                                    cartResponse?.cart?.subtotal ??
+                                    cartResponse?.cart?.total ??
+                                    0,
+                              ),
                             const SizedBox(height: 80),
                           ],
                         ),
@@ -683,27 +830,25 @@ class _CartPageState extends State<CartPage>
         walletUsageLimit = walletData.walletUsageLimit;
       });
 
-      final isDismissed = (cartResponse?.cart?.metadata as Map?)
-          ?['wallet_auto_apply_dismissed'] == true;
-      final existingSplit = (cartResponse?.cart?.metadata as Map?)
-          ?['wallet_split'];
+      final isDismissed = (cartResponse?.cart?.metadata
+              as Map?)?['wallet_auto_apply_dismissed'] ==
+          true;
+      final existingSplit =
+          (cartResponse?.cart?.metadata as Map?)?['wallet_split'];
       final existingWalletAmount = (existingSplit is Map)
           ? (existingSplit['wallet_amount'] ?? 0).toDouble()
           : 0.0;
 
-      // Restore existing wallet split from cart metadata (user already applied earlier)
-      if (isSplitPaymentMode && !isDismissed && existingWalletAmount > 0) {
-        setState(() {
-          splitActive = true;
-          splitWalletAmount = existingWalletAmount;
-          splitGatewayAmount = (existingSplit['gateway_amount'] ?? 0).toDouble();
-          splitFullCoverage = splitGatewayAmount == 0;
-        });
-      }
-      // Auto-apply if enabled, not already applied, and customer hasn't dismissed
-      else if (isSplitPaymentMode && autoApply && balance > 0 &&
-          cartResponse?.cart?.id != null && !isDismissed && !splitActive) {
-        await _applyWalletSplit(silent: true);
+      if (isSplitPaymentMode && !isDismissed) {
+        if (existingWalletAmount > 0) {
+          _syncPricingStateFromCart();
+        } else if (autoApply &&
+            balance > 0 &&
+            cartResponse?.cart?.id != null &&
+            !splitActive) {
+          // First-time auto-apply
+          await _applyWalletSplit(silent: true);
+        }
       }
     } catch (e) {
       debugPrint('Wallet load error: $e');
@@ -714,17 +859,12 @@ class _CartPageState extends State<CartPage>
     if (cartResponse?.cart?.id == null) return;
     setState(() => walletToggling = true);
     try {
+      final wasAlreadyActive = splitActive;
       final result =
           await ApiService().applyWalletSplit(context, cartResponse!.cart!.id!);
       if (!mounted) return;
       if (result.walletApplied) {
-        final wasAlreadyActive = splitActive;
-        setState(() {
-          splitActive = true;
-          splitWalletAmount = result.walletAmount;
-          splitGatewayAmount = result.gatewayAmount;
-          splitFullCoverage = result.fullWalletCoverage;
-        });
+        await getCartApi();
         // Only play confetti on first apply, not on recalculation
         if (!wasAlreadyActive && !silent) {
           _confettiController.play();
@@ -743,12 +883,7 @@ class _CartPageState extends State<CartPage>
     try {
       await ApiService().removeWalletSplit(context, cartResponse!.cart!.id!);
       if (!mounted) return;
-      setState(() {
-        splitActive = false;
-        splitWalletAmount = 0;
-        splitGatewayAmount = 0;
-        splitFullCoverage = false;
-      });
+      await getCartApi();
     } catch (e) {
       debugPrint('Remove wallet split error: $e');
     } finally {
@@ -764,12 +899,12 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void getCartApi() async {
+  Future<void> getCartApi() async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       final cartId = cartResponse?.cart?.id;
-      emitEvent(cartResponse!);
+      if (cartResponse != null) emitEvent(cartResponse!);
       if (cartId != null && cartId.isNotEmpty) {
         unawaited(getCrossSellingProductsApi(cartId));
       } else {
@@ -787,8 +922,9 @@ class _CartPageState extends State<CartPage>
             '';
         apiLoading = false;
       });
+      _syncPricingStateFromCart();
       // Load wallet info after cart is ready
-      _loadWalletInfo();
+      await _loadWalletInfo();
     } catch (e) {
       setState(() {
         apiLoading = false;
@@ -810,14 +946,15 @@ class _CartPageState extends State<CartPage>
   }
 
   void emitEvent(CartResponse cartResponse) {
-    final productItems =
-        cartResponse.cart!.items!.where((item) => !item.isPlatformFee).toList();
+    final productItems = (cartResponse.cart?.items ?? [])
+        .where((item) => !item.isVirtualItem)
+        .toList();
     final totalQty = productItems
         .map((item) => item.quantity ?? 0)
         .fold<int>(0, (sum, qty) => sum + qty);
     print('total qty ${totalQty}');
     eventBus.fire(ViewCartModel(
-        totalQty, productItems.map((item) => item.thumbnail!).toList()));
+        totalQty, productItems.map((item) => item.thumbnail ?? '').toList()));
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
@@ -826,7 +963,8 @@ class _CartPageState extends State<CartPage>
         cartLoading = true;
       });
       final ApiService apiService = ApiService();
-      final response = await apiService.addPromoCode(context, promoCode, removeCodes: removeCodes);
+      final response = await apiService.addPromoCode(context, promoCode,
+          removeCodes: removeCodes);
       if ((response.cart?.promotions?.firstOrNull?.code ?? '').isNotEmpty) {
         AppUtils.showToast(
             '${response.cart?.promotions?.firstOrNull?.code ?? ''} ${AppStrings.promo_code_applied_success}');
@@ -834,8 +972,9 @@ class _CartPageState extends State<CartPage>
       } else {
         AppUtils.showToast(AppStrings.promo_code_not_applied);
       }
+      await getCartApi();
+      if (!mounted) return;
       setState(() {
-        cartResponse = response;
         cartLoading = false;
       });
     } catch (e) {
@@ -858,14 +997,11 @@ class _CartPageState extends State<CartPage>
       if ((response.cart?.promotions?.firstOrNull?.code ?? '').isEmpty) {
         AppUtils.showToast(AppStrings.promo_code_removed_success);
       }
+      await getCartApi();
+      if (!mounted) return;
       setState(() {
-        cartResponse = response;
         cartLoading = false;
       });
-      // Recalculate wallet split if active (cart total changed after coupon removal)
-      if (splitActive) {
-        await _applyWalletSplit(silent: true);
-      }
     } catch (e) {
       setState(() {
         cartLoading = false;
@@ -874,24 +1010,19 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-
-
   void updateCart(int qty, String cartItemId, int index) async {
     try {
       debugPrint('calling update');
       final ApiService apiService = ApiService();
-      cartResponse = await apiService.updateCart(context, qty, cartItemId);
+      await apiService.updateCart(context, qty, cartItemId);
+      await getCartApi();
+      if (!mounted) return;
       setState(() {
-        cartResponse;
-        setState(() {
+        if (cartResponse?.cart?.items != null &&
+            index < cartResponse!.cart!.items!.length) {
           cartResponse!.cart!.items![index].isUpdating = false;
-        });
+        }
       });
-      emitEvent(cartResponse!);
-      // Recalculate wallet split if active (cart total changed)
-      if (splitActive) {
-        await _applyWalletSplit(silent: true);
-      }
     } catch (e) {
       setState(() {
         cartResponse!.cart!.items![index].isUpdating = false;
@@ -904,9 +1035,7 @@ class _CartPageState extends State<CartPage>
     try {
       final ApiService apiService = ApiService();
       await apiService.removeCart(context, cartItemId);
-      getCartApi();
-      // Wallet split will be recalculated when getCartApi completes and
-      // _loadWalletData runs (triggered by getCartApi → _initCart flow)
+      await getCartApi();
     } catch (e) {
       setState(() {
         setState(() {
@@ -937,8 +1066,10 @@ class _CartPageState extends State<CartPage>
           final existing = cartResponse?.cart?.promotions
                   ?.map((p) => p.code ?? '')
                   .where((c) => c.isNotEmpty && c != code)
-                  .toList() ?? [];
-          await Future(() => addPromoCode(code, removeCodes: existing.isNotEmpty ? existing : null));
+                  .toList() ??
+              [];
+          await Future(() => addPromoCode(code,
+              removeCodes: existing.isNotEmpty ? existing : null));
         },
         onRemove: (codes) async {
           await Future(() => removePromoCode(codes));
@@ -962,11 +1093,16 @@ class _CartPageState extends State<CartPage>
   void updateAddress(RegisterResponse.Address address) async {
     try {
       final ApiService apiService = ApiService();
-      cartResponse = await apiService.updateAddress(
+      await apiService.updateAddress(
           context, convertToShippingAddress(address));
+      // Pull fresh cart from /store/custom-carts/{id} so the platform fee,
+      // qty_tiered adjustments and wallet split land on the response.
+      // Medusa's native POST /store/carts/{id} (used by updateAddress) does
+      // NOT trigger our recompute pipeline — using its response directly
+      // would leave the price summary stale until the next page load.
+      await getCartApi();
       setState(() {
         addressLoading = false;
-        cartResponse;
       });
     } catch (e) {
       setState(() {
@@ -994,6 +1130,11 @@ class _CartPageState extends State<CartPage>
   }
 
   Future<void> updatePaymentMethod(String paymentProviderId) async {
+    // ICICI is redirect-based — session created at place-order time, not here.
+    if (paymentProviderId == 'pp_icici_icici') {
+      setState(() => pp_id = 'pp_icici_icici');
+      return;
+    }
     try {
       setState(() {
         cartLoading = true;
@@ -1009,6 +1150,9 @@ class _CartPageState extends State<CartPage>
             response.paymentCollection?.paymentSessions?.firstOrNull?.data?.id;
         clientSecret = response.paymentCollection?.paymentSessions?.firstOrNull
             ?.data?.clientSecret;
+        paytmData = paymentProviderId == 'pp_paytm_paytm'
+            ? response.paymentCollection?.paymentSessions?.firstOrNull?.data
+            : null;
       });
       getCartApi();
     } catch (e) {
@@ -1025,15 +1169,24 @@ class _CartPageState extends State<CartPage>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return PaymentMethodsBottomSheet(
           paymentProviders: paymentProviders,
           providerId: pp_id,
           walletBalance: walletBalance > 0 ? walletBalance : null,
           onPaymentSelected: (PaymentProvider paymentProvider) {
+            // When wallet + loyalty already cover the full order, the gateway
+            // payable is 0. Real gateways reject 0-amount sessions, so the
+            // customer's selection would silently flip back to COD. Tell them
+            // why instead of letting the UI pretend the change took.
+            if (_displayTotalAmount() <= 0 &&
+                paymentProvider.id != 'pp_system_default') {
+              AppUtils.showToast(
+                'Your order is fully covered. Free orders can be placed only via Cash on Delivery.',
+              );
+              return;
+            }
             if (pp_id != paymentProvider.id) {
               updatePaymentMethod(paymentProvider.id!);
             }
@@ -1059,7 +1212,73 @@ class _CartPageState extends State<CartPage>
     );
   }
 
+  /// Fetches available shipping options and attaches the first one to the cart.
+  /// Retries once on failure. Returns true if a method was successfully
+  /// attached (or was already present after the retry), false otherwise.
+  Future<bool> _tryAttachShipping() async {
+    final api = ApiService();
+    for (int attempt = 0; attempt < 2; attempt++) {
+      try {
+        final shipping = await api.getShippingInfo(context);
+        final first = shipping.shippingOptions?.isNotEmpty == true
+            ? shipping.shippingOptions!.first
+            : null;
+        if (first?.id == null) {
+          AppUtils.showToast('No shipping method available for this address.');
+          return false;
+        }
+        await api.updateShippingMethod(context, first!.id!);
+        await getCartApi();
+        if (cartResponse?.cart?.shippingMethods?.isNotEmpty == true) {
+          return true;
+        }
+      } catch (e) {
+        if (attempt == 1) {
+          final msg = e.toString();
+          if (msg.contains('DELIVERY_INVALID_ADDRESS')) {
+            AppUtils.showToast(
+                'We couldn\'t locate your address. Please update it or re-pick from the map.');
+          } else if (msg.contains('DELIVERY_SERVICE_DOWN')) {
+            AppUtils.showToast(
+                'Delivery service temporarily unavailable. Please try again shortly.');
+          } else {
+            AppUtils.showToast('Could not attach shipping method. Please try again.');
+          }
+          return false;
+        }
+        // First attempt failed — wait briefly then retry once
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    }
+    AppUtils.showToast('Could not attach shipping method. Please try again.');
+    return false;
+  }
+
   void placeOrder(String paymentProviderId) async {
+    // Refresh cart first — in-memory state may be stale; the shipping method
+    // may already have been attached server-side since the last fetch.
+    setState(() => cartLoading = true);
+    await getCartApi();
+
+    final hasShipping =
+        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    if (!hasShipping) {
+      // Attempt to fetch shipping options and attach the first available one.
+      // Retries once on transient failure (network blip, Maps quota, etc.)
+      // before surfacing the error to the user.
+      final attached = await _tryAttachShipping();
+      if (!attached) {
+        setState(() => cartLoading = false);
+        return;
+      }
+    } else {
+      setState(() => cartLoading = false);
+    }
+
+    if (paymentProviderId == 'pp_icici_icici') {
+      _makeIciciPayment();
+      return;
+    }
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         makeRazorPayCall(orderId!);
@@ -1076,6 +1295,86 @@ class _CartPageState extends State<CartPage>
       case 'pp_wallet_wallet':
         _makeWalletPayment();
         break;
+      case 'pp_paytm_paytm':
+        makePaytmCall();
+        break;
+    }
+  }
+
+  void makePaytmCall() {
+    final data = paytmData ??
+        cartResponse?.cart?.paymentCollection?.paymentSessions
+            ?.where((session) => session.providerId == 'pp_paytm_paytm')
+            .firstOrNull
+            ?.data;
+    if (data == null ||
+        data.host == null ||
+        data.mid == null ||
+        (data.orderId ?? data.id) == null ||
+        (data.txnToken ?? data.token) == null ||
+        data.amount == null) {
+      AppUtils.showToast(
+          'Paytm payment session is incomplete. Please try again.');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaytmPaymentPage(
+          data: data,
+          onSuccess: () {
+            Navigator.pop(context);
+            completeCart();
+          },
+          onFailure: (message) {
+            Navigator.pop(context);
+            AppUtils.showToast(message);
+            getCartApi();
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _makeIciciPayment() async {
+    setState(() => cartLoading = true);
+    try {
+      final redirectUrl = await ApiService().initiateIciciPayment(context);
+      debugPrint('ICICI redirect URL: $redirectUrl');
+      if (!mounted) return;
+      setState(() => cartLoading = false);
+
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IciciPaymentPage(
+            redirectUrl: redirectUrl,
+            onSuccess: (orderId) {
+              Navigator.pop(context);
+              PageRouteUtils.pushAndRemoveUntil(
+                context,
+                OrderPlacedPage(orderId: orderId),
+              );
+            },
+            onFailure: () {
+              Navigator.pop(context);
+              AppUtils.showToast('ICICI payment failed or was cancelled.');
+              getCartApi();
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() => cartLoading = false);
+      AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+      debugPrint('ICICI payment error: $e');
     }
   }
 
@@ -1116,7 +1415,14 @@ class _CartPageState extends State<CartPage>
           children: [
             Icon(Icons.account_balance_wallet, color: AppColors.primary),
             const SizedBox(width: 8),
-            const Text('Insufficient Balance', style: TextStyle(fontSize: 16)),
+            const Expanded(
+              child: Text(
+                'Insufficient Balance',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -1242,6 +1548,8 @@ class _CartPageState extends State<CartPage>
         getCartApi();
         return;
       }
+      // Clear the completed cart so the next add-to-cart uses a fresh one
+      await SharedPreferencesUtil().saveString('cart_id', '');
       PageRouteUtils.pushAndRemoveUntil(
           context,
           OrderPlacedPage(
@@ -1373,6 +1681,104 @@ class _CartPageState extends State<CartPage>
 
   num _numOrZero(num? value) => value ?? 0;
 
+  Map<String, dynamic> _cartMetadataMap() {
+    final metadata = cartResponse?.cart?.metadata;
+    if (metadata is Map<String, dynamic>) {
+      return metadata;
+    }
+    if (metadata is Map) {
+      return Map<String, dynamic>.from(metadata);
+    }
+    return const {};
+  }
+
+  double _doubleFromDynamic(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '0') ?? 0;
+  }
+
+  double _platformFeeTotal() {
+    return (cartResponse?.cart?.items ?? [])
+        .where((item) => item.isPlatformFee)
+        .fold<double>(0, (sum, item) => sum + _doubleFromDynamic(item.total));
+  }
+
+  double _loyaltyDiscountAmount() {
+    return _loyaltyDiscount.toDouble();
+  }
+
+  /// Pass-through of cart.metadata.loyalty_checkout_apply for the
+  /// LoyaltyCheckoutWidget so it stays in sync with backend recalcs.
+  Map<String, dynamic>? _loyaltyApplyMetadata() {
+    final meta = cartResponse?.cart?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      return Map<String, dynamic>.from(meta['loyalty_checkout_apply'] as Map);
+    }
+    return null;
+  }
+
+  /// Loyalty discount from cart metadata (same pattern as wallet_split)
+  num get _loyaltyDiscount {
+    final meta = cartResponse?.cart?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      // Field is "points_to_apply" (deferred debit) or "points_applied" (legacy)
+      final pts = apply['points_to_apply'] ?? apply['points_applied'] ?? 0;
+      if ((pts as num) > 0) return (apply['discount_amount'] ?? 0) as num;
+    }
+    return 0;
+  }
+
+  double _walletAmountFromMetadata() {
+    final metadata = _cartMetadataMap();
+    if (metadata['wallet_auto_apply_dismissed'] == true) {
+      return 0;
+    }
+    final walletSplit = metadata['wallet_split'];
+    if (walletSplit is Map) {
+      return _doubleFromDynamic(walletSplit['wallet_amount']);
+    }
+    return 0;
+  }
+
+  int get _loyaltyPointsApplied {
+    final meta = cartResponse?.cart?.metadata;
+    if (meta is Map && meta['loyalty_checkout_apply'] is Map) {
+      final apply = meta['loyalty_checkout_apply'];
+      final pts = apply['points_to_apply'] ?? apply['points_applied'] ?? 0;
+      if ((pts as num) > 0) return pts.toInt();
+    }
+    return 0;
+  }
+
+  double _displayTotalAmount() {
+    final total = _doubleFromDynamic(cartResponse?.cart?.total);
+    final walletAmount =
+        splitActive ? splitWalletAmount : _walletAmountFromMetadata();
+    final loyaltyAmount = _loyaltyDiscountAmount();
+    return (total - walletAmount - loyaltyAmount).clamp(0, double.infinity);
+  }
+
+  void _syncPricingStateFromCart() {
+    final metadata = _cartMetadataMap();
+    final walletSplit = metadata['wallet_split'];
+    final isDismissed = metadata['wallet_auto_apply_dismissed'] == true;
+    final walletAmount = walletSplit is Map
+        ? _doubleFromDynamic(walletSplit['wallet_amount'])
+        : 0.0;
+    final gatewayAmount = walletSplit is Map
+        ? _doubleFromDynamic(walletSplit['gateway_amount'])
+        : 0.0;
+
+    if (!mounted) return;
+    setState(() {
+      splitActive = !isDismissed && walletAmount > 0;
+      splitWalletAmount = splitActive ? walletAmount : 0;
+      splitGatewayAmount = splitActive ? gatewayAmount : 0;
+      splitFullCoverage = splitActive && gatewayAmount <= 0;
+    });
+  }
+
   // ===== Payment Method Card =====
   Widget _buildPaymentMethodCard() {
     final providerName = _getProviderName(pp_id, paymentProviders);
@@ -1381,58 +1787,62 @@ class _CartPageState extends State<CartPage>
         : paymentProviders;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: InkWell(
         onTap: () => showPaymentMethodsBottomSheet(context, providers),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
+                  color: _providerColor(pp_id).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.payment_outlined,
-                    color: AppColors.primary, size: 18),
+                child: Icon(_providerIcon(pp_id),
+                    color: _providerColor(pp_id), size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Payment Method',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                      style: UiTypography.cardTitle().copyWith(
+                        fontSize: 15,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       providerName,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: UiTypography.cardMeta(),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Text(
+                'Change',
+                style: UiTypography.cardAction(color: AppColors.primary),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded,
+                  color: AppColors.primary, size: 20),
             ],
           ),
         ),
@@ -1443,29 +1853,27 @@ class _CartPageState extends State<CartPage>
   // ===== Ajio-style Bottom Bar =====
   Widget _buildAjioBottomBar() {
     final amount = CurrencyUtil.appendCurrency(
-      (splitActive
-              ? (cartResponse!.cart!.total! - splitWalletAmount)
-                  .clamp(0, double.infinity)
-              : cartResponse!.cart!.total!)
-          .toStringAsFixed(2),
+      _displayTotalAmount().toStringAsFixed(2),
     );
     final providerName = _getProviderName(pp_id, paymentProviders);
 
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EC))),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, -2),
-            blurRadius: 8,
+            color: Color(0x14000000),
+            offset: Offset(0, -4),
+            blurRadius: 18,
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Amount + View details
+          // Left: Total amount + View details
           Expanded(
             flex: 2,
             child: Column(
@@ -1473,29 +1881,41 @@ class _CartPageState extends State<CartPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  'Total',
+                  style: UiTypography.cardMeta(),
+                ),
+                const SizedBox(height: 1),
+                Text(
                   amount,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: UiTypography.cardPrice(color: AppColors.textColor)
+                      .copyWith(fontSize: 22, letterSpacing: -0.3),
                 ),
                 GestureDetector(
                   onTap: _scrollToPriceDetails,
-                  child: Text(
-                    'View details',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View details',
+                          style: UiTypography.cardMeta(color: AppColors.primary)
+                              .copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        Icon(Icons.keyboard_arrow_up_rounded,
+                            color: AppColors.primary, size: 16),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Right: Place Order button with payment method
+          const SizedBox(width: 14),
+          // Right: dominant Checkout CTA with payment method
           Expanded(
             flex: 3,
             child: ElevatedButton(
@@ -1513,14 +1933,17 @@ class _CartPageState extends State<CartPage>
                         return;
                       }
                       if (!addressLoading) {
-                        placeOrder(pp_id!);
+                        placeOrder(pp_id ?? 'pp_system_default');
                       }
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 54),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: AnimatedSwitcher(
@@ -1528,15 +1951,14 @@ class _CartPageState extends State<CartPage>
                 child: cartLoading
                     ? const SizedBox(
                         key: ValueKey('loader'),
-                        height: 36,
+                        height: 38,
                         child: Center(
                           child: SizedBox(
-                            height: 18,
-                            width: 18,
+                            height: 22,
+                            width: 22,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              color: Colors.white,
+                              strokeWidth: 2.5,
                             ),
                           ),
                         ),
@@ -1545,18 +1967,28 @@ class _CartPageState extends State<CartPage>
                         key: const ValueKey('text'),
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Place Order',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Checkout',
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white, size: 18),
+                            ],
                           ),
                           Text(
                             providerName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 10,
+                              fontSize: 11,
                               color: Colors.white70,
                               height: 1.3,
                             ),
@@ -1572,24 +2004,34 @@ class _CartPageState extends State<CartPage>
   }
 
   Widget _priceRow(String label, String value,
-      {Color? valueColor, bool isBold = false, double fontSize = 13}) {
+      {Color? valueColor, bool isBold = false, double fontSize = 14}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
-          Text(value,
-              style: FontUtils.primaryFontStyle(
-                fontSize: fontSize,
-                color: valueColor ?? AppColors.textColor,
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              )),
+          Expanded(
+            child: Text(label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: fontSize,
+                  color: AppColors.textColor.withOpacity(0.65),
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
+                ).copyWith(height: 1.5)),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value,
+                maxLines: 2,
+                textAlign: TextAlign.right,
+                overflow: TextOverflow.ellipsis,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: fontSize,
+                  color: valueColor ?? AppColors.textColor,
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+                )),
+          ),
         ],
       ),
     );
@@ -1603,72 +2045,76 @@ class _CartPageState extends State<CartPage>
     final canUseCoupon = allowCouponWithWallet || !splitActive;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
       ),
       child: InkWell(
         onTap: canUseCoupon ? () => showPromoCodeBottomSheet(context) : null,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color:
-                      isApplied ? Colors.green.shade50 : Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isApplied
+                      ? const Color(0xFFE7F7F0)
+                      : AppColors.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  Icons.local_offer_outlined,
-                  color: isApplied
-                      ? Colors.green.shade600
-                      : Colors.orange.shade700,
-                  size: 18,
+                  Icons.local_offer_rounded,
+                  color:
+                      isApplied ? const Color(0xFF1FA971) : AppColors.primary,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Coupon',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                      isApplied ? 'Coupon Applied' : 'Apply Coupon',
+                      style: UiTypography.cardTitle().copyWith(
+                        fontSize: 15,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     isApplied
                         ? Text(
                             '${coupon!.code} · Save ${CurrencyUtil.appendCurrency(discount.toStringAsFixed(2))}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.green.shade600),
+                            style: UiTypography.cardMeta(
+                                color: const Color(0xFF1FA971)),
                           )
                         : Text(
                             canUseCoupon
-                                ? 'Apply coupon code'
+                                ? 'Have a code? Tap to add and save'
                                 : 'Remove wallet to apply coupon',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600),
+                            style: UiTypography.cardMeta(),
                           ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Text(
+                isApplied ? 'Change' : 'Add',
+                style: UiTypography.cardAction(color: AppColors.primary),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded,
+                  color: AppColors.primary, size: 20),
             ],
           ),
         ),
@@ -1682,63 +2128,58 @@ class _CartPageState extends State<CartPage>
     final canUseWallet = allowCouponWithWallet || !couponApplied;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
         border: Border.all(
-          color: splitActive
-              ? AppColors.primary.withOpacity(0.4)
-              : Colors.grey.shade200,
+          color: splitActive ? AppColors.primary : const Color(0xFFE5E7EC),
           width: splitActive ? 1.5 : 1,
         ),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: canUseWallet
                         ? AppColors.primary.withOpacity(0.1)
                         : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.account_balance_wallet_outlined,
+                    Icons.account_balance_wallet_rounded,
                     color: canUseWallet ? AppColors.primary : Colors.grey,
-                    size: 18,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Use Wallet Balance',
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                        style: UiTypography.cardTitle(
                           color:
                               canUseWallet ? AppColors.textColor : Colors.grey,
-                        ),
+                        ).copyWith(fontSize: 15, letterSpacing: -0.2),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         'Available: ${CurrencyUtil.appendCurrency(walletBalance.toStringAsFixed(2))}',
-                        style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600),
+                        style: UiTypography.cardMeta(),
                       ),
                       if (walletUsageLimit != null &&
                           walletUsageLimit!.enabled &&
@@ -1784,26 +2225,27 @@ class _CartPageState extends State<CartPage>
             ),
           ),
           if (splitActive && splitWalletAmount > 0) ...[
-            Divider(height: 1, color: Colors.grey.shade100),
+            const Divider(height: 1, color: Color(0xFFE5E7EC)),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE7F7F0),
                 borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                    BorderRadius.vertical(bottom: Radius.circular(15)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline,
-                      color: Colors.green.shade600, size: 14),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.w500),
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF1FA971), size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))} will be deducted from your wallet',
+                      style:
+                          UiTypography.cardMeta(color: const Color(0xFF1FA971))
+                              .copyWith(fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ],
               ),

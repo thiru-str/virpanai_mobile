@@ -57,11 +57,19 @@ class RatingWidget extends StatelessWidget {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: AppStrings.write_your_review,
-              fillColor: Colors.grey.shade300,
+              fillColor: Colors.white,
               filled: true,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(14.0),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EC)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.0),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EC)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.0),
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),
@@ -70,8 +78,9 @@ class RatingWidget extends StatelessWidget {
             onPressed: onSubmit,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary, // Purple color for button
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(16.0),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
             ),

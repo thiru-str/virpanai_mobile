@@ -524,23 +524,31 @@ class Item {
   };
 
   bool get isPlatformFee => metadata?.type == 'platform_fee';
+  bool get isLoyaltyDiscount => metadata?.type == 'loyalty_discount';
+  bool get isVirtualItem => isPlatformFee || isLoyaltyDiscount;
 }
 
 
 class Metadata {
   String? type;
   num? percentage;
+  num? pointsApplied;
+  num? discountAmount;
 
-  Metadata({this.type, this.percentage});
+  Metadata({this.type, this.percentage, this.pointsApplied, this.discountAmount});
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     type: json["type"],
     percentage: json["percentage"],
+    pointsApplied: json["points_applied"],
+    discountAmount: json["discount_amount"],
   );
 
   Map<String, dynamic> toJson() => {
     "type": type,
     "percentage": percentage,
+    "points_applied": pointsApplied,
+    "discount_amount": discountAmount,
   };
 }
 
@@ -963,7 +971,7 @@ class ShippingMethod {
   });
 
   factory ShippingMethod.fromJson(Map<String, dynamic> json) => ShippingMethod(
-    amount: json["amount"],
+    amount: (json["amount"] as num?)?.toInt(),
     isTaxInclusive: json["is_tax_inclusive"],
     shippingOptionId: json["shipping_option_id"],
     id: json["id"],

@@ -184,7 +184,9 @@ class LayoutDatum {
         redirectData: json["redirect_data"] == null
             ? null
             : RedirectData.fromJson(json["redirect_data"]),
-        rating: json["rating"],
+        rating: json["rating"] is num
+            ? json["rating"] as num
+            : num.tryParse(json["rating"]?.toString() ?? ''),
         variantDetails: json["variant_details"] == null
             ? null
             : VariantDetails.fromJson(json["variant_details"]),

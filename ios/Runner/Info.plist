@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>VirpanAI</string>
+	<string>HAKADTS</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -40,7 +40,7 @@
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>FlutterDeepLinkingEnabled</key>
-    <false/>
+	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -51,7 +51,9 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>We access camera permission for take and upload a photo of your payment proof for verification.</string>
+	<string>We access camera permission for take and upload a photo of your payment proof for verification, and to scan referral QR codes during signup.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>We use your contacts to help you find your referrer easily during signup. Your contacts are not stored or shared.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We use your location to ensure accurate delivery to your current address.</string>
 	<key>NSLocationUsageDescription</key>

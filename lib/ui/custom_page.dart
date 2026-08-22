@@ -103,8 +103,55 @@ class _CustomPageState extends State<CustomPage> {
     getCustomPageApi();
   }
 
+  List<Content> get _visibleComponents {
+    final content = customPageResponse?.content ?? const <Content>[];
+    return content.where(_shouldRenderComponent).toList();
+  }
+
+  bool _shouldRenderComponent(Content content) {
+    const supportedLayouts = {
+      "item1",
+      "Slider2",
+      "item2",
+      "item3",
+      "item4",
+      "item5",
+      "item6",
+      "item7",
+      "item8",
+      "Slider3",
+      "Grid1",
+      "Grid2",
+      "Grid3",
+      "Grid5",
+      "Grid6",
+      "Grid7",
+      "Grid8",
+      "Grid10",
+      "Grid11",
+      "Banner2",
+      "Slider1",
+      "Slider6",
+      "Slider7",
+      "Slider9",
+      "Banner1",
+      "Banner3",
+      "Banner4",
+      "item9",
+      "item11",
+      "item12",
+      "item13",
+      "item14",
+    };
+
+    return supportedLayouts.contains(content.layoutName) &&
+        (content.layoutData?.isNotEmpty ?? false);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final visibleComponents = _visibleComponents;
+
     return PopScope(
         canPop: false, // Disable default back button
         onPopInvoked: (didPop) async {
@@ -141,7 +188,7 @@ class _CustomPageState extends State<CustomPage> {
                               setState(() => apiLoading = true);
                               await getCustomPageApi();
                             },
-                            child: customPageResponse?.content?.isEmpty == true
+                            child: visibleComponents.isEmpty
                                 ? Center(
                                     child: NoOrdersWidget(
                                         message: AppStrings.components_empty,
@@ -161,16 +208,13 @@ class _CustomPageState extends State<CustomPage> {
                                               horizontal: 0.0, vertical: 16.0),
                                           child: ListView.builder(
                                             scrollDirection: Axis.vertical,
-                                            itemCount: customPageResponse
-                                                    ?.content?.length ??
-                                                0,
+                                            itemCount: visibleComponents.length,
                                             shrinkWrap: true,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
                                             itemBuilder: (context, index) {
                                               final homePageContent =
-                                                  customPageResponse
-                                                      ?.content?[index];
+                                                  visibleComponents[index];
                                               return getLayoutWidget(
                                                   homePageContent);
                                             },
@@ -477,13 +521,19 @@ class _CustomPageState extends State<CustomPage> {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
       setState(() {
-        cartItems = cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).length;
+        cartItems = cartResponse?.cart?.items
+            ?.where((item) => !item.isPlatformFee)
+            .length;
         cartItemImages = cartResponse?.cart?.items
             ?.where((item) => !item.isPlatformFee)
             .map((item) => item.thumbnail ?? "")
             .toList();
       });
-      if ((cartResponse?.cart?.items?.where((item) => !item.isPlatformFee).length ?? 0) > 0) {
+      if ((cartResponse?.cart?.items
+                  ?.where((item) => !item.isPlatformFee)
+                  .length ??
+              0) >
+          0) {
         final qtyMap = <String, int>{};
         for (var item in cartResponse?.cart?.items ?? []) {
           qtyMap[item.variantId] = item.quantity;

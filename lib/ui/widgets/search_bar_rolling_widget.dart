@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class SearchBarWithRollingHint extends StatefulWidget {
   final VoidCallback? onTap;
@@ -85,7 +86,7 @@ class _SearchBarWithRollingHintState extends State<SearchBarWithRollingHint> wit
                   child: Text(
                     _hints[_currentIndex],
                     key: ValueKey(_hints[_currentIndex]),
-                    style: const TextStyle(color: Colors.grey),
+                    style: UiTypography.searchHint(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -98,7 +99,6 @@ class _SearchBarWithRollingHintState extends State<SearchBarWithRollingHint> wit
     );
   }
 }
-
 
 
 
