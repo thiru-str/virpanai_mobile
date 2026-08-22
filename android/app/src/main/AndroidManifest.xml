@@ -12,7 +12,6 @@
     <uses-feature android:name="android.hardware.location.network"/>
     <uses-feature android:name="android.hardware.camera" tools:node="remove"/>
     <uses-feature android:name="android.hardware.nfc" tools:node="remove"/>
-
     <application
         android:label="HAKA DTS"
         android:name="${applicationName}"
