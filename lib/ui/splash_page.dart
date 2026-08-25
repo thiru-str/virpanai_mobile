@@ -2,22 +2,16 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
-import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
 import '../api/push_notification_service.dart';
 import '../model/public_detail_model.dart';
 import '../utility/shared_preferences_util.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utility/version_utils.dart';
 import 'force_update_page.dart';
