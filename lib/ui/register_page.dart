@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -362,23 +361,11 @@ class _RegisterPageState extends State<RegisterPage> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        suffixIcon: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: 'Scan QR',
-              icon: Icon(Icons.qr_code_scanner_rounded,
-                  color: AppColors.primary, size: 22),
-              onPressed: _scanQrCode,
-            ),
-            IconButton(
-              tooltip: 'Pick from contacts',
-              icon: Icon(Icons.contacts_rounded,
-                  color: AppColors.primary, size: 22),
-              onPressed: _pickFromContacts,
-            ),
-            const SizedBox(width: 4),
-          ],
+        suffixIcon: IconButton(
+          tooltip: 'Scan QR',
+          icon: Icon(Icons.qr_code_scanner_rounded,
+              color: AppColors.primary, size: 22),
+          onPressed: _scanQrCode,
         ),
       ),
     );
@@ -390,105 +377,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
     if (result != null && result.trim().isNotEmpty && mounted) {
       referralCodeController.text = result.trim();
-    }
-  }
-
-  Future<void> _pickFromContacts() async {
-    // Pre-prompt soft sheet — explain why we need contacts before the system dialog.
-    final proceed = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Icon(Icons.contacts_rounded, color: AppColors.primary, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              'Find your referrer easily',
-              style: FontUtils.primaryFontStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Pick a contact whose phone number is registered as a referrer. '
-              'We do not store or share your contact list.',
-              style: FontUtils.secondaryFontStyle(
-                fontSize: 13,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Not now'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Allow'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-    if (proceed != true || !mounted) return;
-
-    final granted = await FlutterContacts.requestPermission(readonly: true);
-    if (!granted) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text(
-            'Permission denied. You can still type the referral code manually.'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ));
-      return;
-    }
-
-    try {
-      final contact = await FlutterContacts.openExternalPick();
-      if (contact == null || !mounted) return;
-      final full = await FlutterContacts.getContact(contact.id);
-      final phone = full?.phones.isNotEmpty == true
-          ? full!.phones.first.number
-          : (contact.phones.isNotEmpty ? contact.phones.first.number : '');
-      if (phone.trim().isNotEmpty) {
-        referralCodeController.text = phone.trim();
-      }
-    } catch (_) {
-      // External pick may not be available on all OEMs — fall through silently.
     }
   }
 
