@@ -32,10 +32,7 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _SplashPageState extends State<SplashPage> {
   bool _resolvedSkipLogin = false;
 
   @override
@@ -45,21 +42,6 @@ class _SplashPageState extends State<SplashPage>
     Future.microtask(() async {
       await PushNotificationService().initialize(context);
     });
-
-    // Initialize animation controller
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    // Define animation (zoom in)
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-
-    // Start the animation
-    _controller.forward();
 
     // Navigate to next page after animation
     navToNextPage();
@@ -71,16 +53,6 @@ class _SplashPageState extends State<SplashPage>
       backgroundColor: AppColors.primary,
       body: Stack(
         children: [
-          Center(
-            child: ScaleTransition(
-              scale: _animation,
-              child: SvgPicture.asset(
-                AppAssets.app_logo,
-                height: 120,
-                width: 158,
-              ),
-            ),
-          ),
           const Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -236,9 +208,4 @@ class _SplashPageState extends State<SplashPage>
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 }
