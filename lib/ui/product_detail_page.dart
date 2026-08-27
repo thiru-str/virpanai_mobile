@@ -81,6 +81,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int selectedQuantity = 1;
   bool stockNotAvailable = false;
 
+  int _cartLineItemQty = 0;
+  String? _cartLineItemId;
+
   bool showVariantSelection = false;
 
   int? cartItems;
@@ -131,6 +134,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     try {
       await getProductsApi();
+      // Await cart so qty is ready before the loader hides — avoids the
+      // flash of 0→N qty after the product is visible.
+      if (isLoggedIn) await getCartApi();
       if (mounted) {
         setState(() => apiLoading = false);
       }
@@ -138,10 +144,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       // Load non-critical sections in background after primary PDP is visible.
       unawaited(getRelatedProductsApi());
       unawaited(getUpSellingProductsApi());
-      if (isLoggedIn) {
-        unawaited(getReviewApi());
-        unawaited(getCartApi());
-      }
+      if (isLoggedIn) unawaited(getReviewApi());
       unawaited(getProductsInfoApi());
     } catch (e) {
       print("Error fetching initial data: $e");
@@ -671,15 +674,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ? () {
                         setState(() {
                           selectedUnitQuantity = preset;
+                          selectedQuantity = 1;
+                          _syncCartStateForVariant();
                           stockNotAvailable = !isStockAvailable(selectedVariant);
                           final maxQty = getMaxQuantity(
                             selectedVariant,
                             cartResponse?.cart?.items ?? [],
                           );
-                          if (maxQty > 0 && selectedQuantity > maxQty) {
-                            selectedQuantity = maxQty;
-                          } else if (maxQty <= 0) {
-                            selectedQuantity = 1;
+                          if (productPresentInCart != true) {
+                            if (maxQty > 0 && selectedQuantity > maxQty) {
+                              selectedQuantity = maxQty;
+                            } else if (maxQty <= 0) {
+                              selectedQuantity = 1;
+                            }
                           }
                         });
                       }
@@ -727,6 +734,39 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  // Syncs cart state for the currently selected variant.
+  // Must be called inside setState.
+  void _syncCartStateForVariant() {
+    if (selectedVariantId == null || cartResponse?.cart?.items == null) {
+      productPresentInCart = false;
+      _cartLineItemQty = 0;
+      _cartLineItemId = null;
+      return;
+    }
+    final items = cartResponse!.cart!.items!;
+    final isUnitBased =
+        isUnitBasedVariant(selectedVariant) && selectedUnitQuantity != null;
+    final Item? match = items.cast<Item?>().firstWhere(
+      (item) {
+        if (item?.variantId != selectedVariantId) {
+          return false;
+        }
+        if (!isUnitBased) {
+          return true;
+        }
+        return item?.metadata?.unitBasedInventory == true &&
+            item?.metadata?.unitQuantity == selectedUnitQuantity;
+      },
+      orElse: () => null,
+    );
+    _cartLineItemQty = match?.quantity ?? 0;
+    _cartLineItemId = match?.id;
+    productPresentInCart = _cartLineItemQty > 0;
+    if (_cartLineItemQty > 0) {
+      selectedQuantity = _cartLineItemQty;
+    }
+  }
+
   void updateVariant() {
     if (selectedOptions.values.any((v) => v == null)) {
       setState(() {
@@ -744,6 +784,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       selectedUnitQuantity = getDefaultUnitQuantity(matchedVariant);
       stockNotAvailable = !isStockAvailable(selectedVariant);
       selectedQuantity = 1;
+      _syncCartStateForVariant();
     });
 
     print("Selected Variant ID: ${selectedVariant?.id}");
@@ -818,8 +859,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
     }
 
-    // default max = 10
-    return (10 - cartQuantity).clamp(0, 10);
+    // no inventory tracking — allow up to 99
+    return (99 - cartQuantity).clamp(0, 99);
   }
 
   void _clampSelectedQuantity() {
@@ -994,6 +1035,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildQuantitySelector() {
+    final int _stepperMax = (productPresentInCart == true)
+        ? (selectedVariant?.inventoryQuantity ?? 99)
+        : getMaxQuantity(selectedVariant, cartResponse?.cart?.items ?? []);
+
     return Row(
       children: [
         // Quantity stepper (− / value / +)
@@ -1029,9 +1074,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
               _buildStepperButton(
                 icon: Icons.add_rounded,
-                enabled: selectedQuantity < 10,
+                enabled: selectedQuantity < _stepperMax,
                 onTap: () {
-                  if (selectedQuantity < 10) {
+                  if (selectedQuantity < _stepperMax) {
                     setState(() => selectedQuantity++);
                   }
                 },
@@ -1101,6 +1146,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       return;
                     }
+                    if (productPresentInCart == true && _cartLineItemId != null) {
+                      // Update existing cart item to new total qty
+                      setState(() => quantityLoading = true);
+                      try {
+                        await ApiService().updateCart(
+                            context, selectedQuantity, _cartLineItemId!);
+                        await getCartApi();
+                      } catch (_) {}
+                      if (mounted) setState(() => quantityLoading = false);
+                      return;
+                    }
                     if ((addOnProductsCount ?? 0) > 0) {
                       final selectedAddOns = await showAddOnBottomSheet(
                         context,
@@ -1149,7 +1205,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ? AppStrings.select_variant
                               : stockNotAvailable
                                   ? AppStrings.out_of_stock
-                                  : AppStrings.add_to_cart,
+                                  : (productPresentInCart == true
+                                      ? AppStrings.update_cart
+                                      : AppStrings.add_to_cart),
                           style: FontUtils.primaryFontStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -1486,10 +1544,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final response = await apiService.getCart(context);
       setState(() {
         cartResponse = response;
-        productPresentInCart = cartResponse?.cart?.items
-                ?.any((item) => item.variantId == selectedVariantId) ??
-            false;
-        _clampSelectedQuantity();
+        _syncCartStateForVariant();
+        if (productPresentInCart != true) {
+          _clampSelectedQuantity();
+        }
         emitEvent(cartResponse!);
       });
     } catch (e) {
@@ -1499,6 +1557,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
       setState(() {
         productPresentInCart = false;
+        _cartLineItemQty = 0;
+        _cartLineItemId = null;
       });
     }
   }
