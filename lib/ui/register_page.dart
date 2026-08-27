@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -398,67 +400,111 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Handle
+              Container(
+                width: 40,
                 height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Icon(Icons.contacts_rounded, color: AppColors.primary, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              'Find your referrer easily',
-              style: FontUtils.primaryFontStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Pick a contact whose phone number is registered as a referrer. '
-              'We do not store or share your contact list.',
-              style: FontUtils.secondaryFontStyle(
-                fontSize: 13,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Not now'),
-                  ),
+              const SizedBox(height: 28),
+              // Icon badge
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                child: Icon(
+                  Icons.contacts_rounded,
+                  color: AppColors.primary,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Find your referrer easily',
+                textAlign: TextAlign.center,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Pick a contact whose phone number is\nregistered as a referrer.',
+                textAlign: TextAlign.center,
+                style: FontUtils.secondaryFontStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 28),
+              // Allow button — full width
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Allow'),
+                    elevation: 0,
+                  ),
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(
+                    'Allow access',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              // Not now — text link
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Not now',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ),
+              // Privacy note
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.lock_outline, size: 12, color: Colors.grey.shade400),
+                  const SizedBox(width: 4),
+                  Text(
+                    'We never store or share your contacts',
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+          ),
         ),
       ),
     );
@@ -477,18 +523,34 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     try {
-      final contact = await FlutterContacts.openExternalPick();
-      if (contact == null || !mounted) return;
-      final full = await FlutterContacts.getContact(contact.id);
-      final phone = full?.phones.isNotEmpty == true
-          ? full!.phones.first.number
-          : (contact.phones.isNotEmpty ? contact.phones.first.number : '');
-      if (phone.trim().isNotEmpty) {
-        referralCodeController.text = phone.trim();
+      if (Platform.isIOS) {
+        // iOS native picker goes directly to Contacts — no app chooser issue.
+        final contact = await FlutterContacts.openExternalPick();
+        if (contact == null || !mounted) return;
+        final full = await FlutterContacts.getContact(contact.id);
+        final phone = full?.phones.isNotEmpty == true
+            ? full!.phones.first.number
+            : (contact.phones.isNotEmpty ? contact.phones.first.number : '');
+        if (phone.trim().isNotEmpty) {
+          referralCodeController.text = phone.trim();
+        }
+      } else {
+        // Android: load contacts in-app to avoid the OS app chooser (which can
+        // show unrelated apps like TeraBox that also handle the pick intent).
+        final contacts =
+            await FlutterContacts.getContacts(withProperties: true);
+        if (!mounted) return;
+        final phone = await showModalBottomSheet<String>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _ContactPickerSheet(contacts: contacts),
+        );
+        if (phone != null && phone.trim().isNotEmpty && mounted) {
+          referralCodeController.text = phone.trim();
+        }
       }
-    } catch (_) {
-      // External pick may not be available on all OEMs — fall through silently.
-    }
+    } catch (_) {}
   }
 
   void register() async {
@@ -719,6 +781,109 @@ class _QrScannerSheetState extends State<_QrScannerSheet> {
       body: MobileScanner(
         controller: _controller,
         onDetect: _onDetect,
+      ),
+    );
+  }
+}
+
+class _ContactPickerSheet extends StatefulWidget {
+  final List<Contact> contacts;
+  const _ContactPickerSheet({required this.contacts});
+
+  @override
+  State<_ContactPickerSheet> createState() => _ContactPickerSheetState();
+}
+
+class _ContactPickerSheetState extends State<_ContactPickerSheet> {
+  String _query = '';
+
+  List<Contact> get _filtered {
+    final withPhone = widget.contacts.where((c) => c.phones.isNotEmpty).toList();
+    if (_query.isEmpty) return withPhone;
+    final q = _query.toLowerCase();
+    return withPhone.where((c) {
+      return c.displayName.toLowerCase().contains(q) ||
+          c.phones.any((p) => p.number.contains(q));
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (_, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                'Select a contact',
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Search by name or number',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: _filtered.length,
+                itemBuilder: (_, i) {
+                  final c = _filtered[i];
+                  final phone = c.phones.first.number;
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      child: Text(
+                        c.displayName.isNotEmpty
+                            ? c.displayName[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(c.displayName),
+                    subtitle: Text(phone),
+                    onTap: () => Navigator.pop(context, phone),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
