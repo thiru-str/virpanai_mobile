@@ -71,27 +71,14 @@ class _FilterPageState extends State<FilterPage> {
 
   static const sortOptions = [AppStrings.low_high, AppStrings.high_low];
 
-  List<Map<String, dynamic>> get _sidebarItems {
-    final items = <Map<String, dynamic>>[];
-    if (collectionsList.isNotEmpty || selectedCollections.isNotEmpty) {
-      items.add({
-        'label': AppStrings.collections,
-        'section': FilterSection.collections
-      });
-    }
-    if (categoryList.isNotEmpty || selectedCategories.isNotEmpty) {
-      items.add({
-        'label': AppStrings.categories,
-        'section': FilterSection.categories
-      });
-    }
-    if (tagsList.isNotEmpty || selectedTags.isNotEmpty) {
-      items.add({'label': AppStrings.tags, 'section': FilterSection.tags});
-    }
-    items.add({'label': AppStrings.price, 'section': FilterSection.price});
-    items.add({'label': AppStrings.sort_by, 'section': FilterSection.sortBy});
-    return items;
-  }
+  // Collections, Categories, and Tags remain part of the filter state and API
+  // payload, but are intentionally hidden from this screen's navigation.
+  // This keeps existing category-scoped product behavior unchanged while the
+  // customer-facing Filter page exposes only Price and Sort by.
+  List<Map<String, dynamic>> get _sidebarItems => [
+        {'label': AppStrings.price, 'section': FilterSection.price},
+        {'label': AppStrings.sort_by, 'section': FilterSection.sortBy},
+      ];
 
   void _selectFallbackSectionIfNeeded() {
     if (!_sidebarItems.any((item) => item['section'] == selectedSection)) {
@@ -164,8 +151,8 @@ class _FilterPageState extends State<FilterPage> {
                 id: facet.id, name: facet.label, count: facet.count))
             .toList();
         collectionsList = response.collections
-            .map((facet) =>
-                Collection(id: facet.id, title: facet.label, count: facet.count))
+            .map((facet) => Collection(
+                id: facet.id, title: facet.label, count: facet.count))
             .toList();
         tagsList = response.tags
             .map((facet) => ProductTag(
@@ -186,7 +173,6 @@ class _FilterPageState extends State<FilterPage> {
       });
     }
   }
-
 
   // Count of currently selected filters (for the "Clear all" affordance).
   int get _activeFilterCount {
@@ -331,9 +317,8 @@ class _FilterPageState extends State<FilterPage> {
             : _buildSearchableFilterList(
                 hint: AppStrings.search_categories,
                 items: categoryList
-                    .where((e) => (e.name ?? '')
-                        .toLowerCase()
-                        .contains(facetSearchQuery))
+                    .where((e) =>
+                        (e.name ?? '').toLowerCase().contains(facetSearchQuery))
                     .map((e) => e.id ?? '')
                     .toList(),
                 selectedSet: selectedCategories,

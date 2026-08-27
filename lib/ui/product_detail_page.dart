@@ -772,7 +772,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             const SizedBox(width: 6),
             Text(
-              'Optional',
+              '(Optional)',
               style: UiTypography.cardMeta(
                 color: AppColors.textColor50,
               ).copyWith(fontSize: 13),
