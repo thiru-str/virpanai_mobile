@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:waioz/model/preference_snapshot.dart';
+
 OrderDetailResponse orderDetailResponseFromJson(String str) => OrderDetailResponse.fromJson(json.decode(str));
 
 String orderDetailResponseToJson(OrderDetailResponse data) => json.encode(data.toJson());
@@ -272,6 +274,7 @@ class ItemMetadata {
   int? baseUnitGrams;
   String? unitType;
   String? displayUnit;
+  PreferenceSnapshot? preference;
 
   ItemMetadata({
     this.type,
@@ -281,6 +284,7 @@ class ItemMetadata {
     this.baseUnitGrams,
     this.unitType,
     this.displayUnit,
+    this.preference,
   });
 
   factory ItemMetadata.fromJson(Map<String, dynamic> json) => ItemMetadata(
@@ -292,6 +296,7 @@ class ItemMetadata {
     baseUnitGrams: _toInt(json["base_unit_grams"]),
     unitType: json["unit_type"]?.toString(),
     displayUnit: json["display_unit"]?.toString(),
+    preference: PreferenceSnapshot.fromDynamic(json["preference"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -302,6 +307,7 @@ class ItemMetadata {
     "base_unit_grams": baseUnitGrams,
     "unit_type": unitType,
     "display_unit": displayUnit,
+    if (preference != null) "preference": preference!.toJson(),
   };
 
   static int? _toInt(dynamic value) {

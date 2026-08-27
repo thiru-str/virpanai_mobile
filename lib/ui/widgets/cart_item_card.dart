@@ -12,6 +12,7 @@ class CartItemCard extends StatelessWidget {
   final String size;
   final String color;
   final String price;
+  final String preference;
   final String error;
   final int quantity;
   final bool isUpdating; // New field
@@ -27,6 +28,7 @@ class CartItemCard extends StatelessWidget {
     required this.size,
     required this.color,
     required this.price,
+    this.preference = '',
     this.error = '',
     required this.quantity,
     this.isUpdating = false,
@@ -118,6 +120,17 @@ class CartItemCard extends StatelessWidget {
                               color: Colors.black54,
                             ),
                           ),
+                          if (preference.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Preference: $preference',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: UiTypography.cardMeta(
+                                color: AppColors.textColor50,
+                              ).copyWith(fontSize: 13),
+                            ),
+                          ],
                         ],
                       ),
                     ),

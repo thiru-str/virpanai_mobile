@@ -78,6 +78,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   ProductResponse.Variant? selectedVariant;
   String? selectedVariantId;
   int? selectedUnitQuantity;
+  String selectedPreferenceProductId = '';
   int selectedQuantity = 1;
   bool stockNotAvailable = false;
 
@@ -562,6 +563,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         const SizedBox(height: 18),
         if (showVariantSelection) buildDynamicVariantSelection(),
         if (isUnitBasedVariant(selectedVariant)) buildUnitPresetSection(),
+        buildPreferenceSection(),
         Text(
           AppStrings.select_qty,
           style: UiTypography.cardTitle().copyWith(fontSize: 16),
@@ -673,10 +675,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 onTap: inStock
                     ? () {
                         setState(() {
+                          if (selectedUnitQuantity != preset) {
+                            selectedPreferenceProductId = '';
+                          }
                           selectedUnitQuantity = preset;
                           selectedQuantity = 1;
                           _syncCartStateForVariant();
-                          stockNotAvailable = !isStockAvailable(selectedVariant);
+                          stockNotAvailable =
+                              !isStockAvailable(selectedVariant);
                           final maxQty = getMaxQuantity(
                             selectedVariant,
                             cartResponse?.cart?.items ?? [],
@@ -734,6 +740,141 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  num? _getPreferencePrice(ProductResponse.Product preference) {
+    final prices = (preference.variants ?? [])
+        .map((variant) {
+          final calculated = variant.calculatedPrice;
+          return calculated?.calculatedAmount ??
+              num.tryParse(calculated?.rawCalculatedAmount?.value ?? '');
+        })
+        .whereType<num>()
+        .toList()
+      ..sort((first, second) => first.compareTo(second));
+
+    return prices.isEmpty ? null : prices.first;
+  }
+
+  Widget buildPreferenceSection() {
+    final preferences = addOnProductsResponse?.preferenceProducts ?? [];
+    if (preferences.isEmpty) {
+      return const SizedBox();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Select Preference',
+              style: UiTypography.cardTitle().copyWith(fontSize: 16),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Optional',
+              style: UiTypography.cardMeta(
+                color: AppColors.textColor50,
+              ).copyWith(fontSize: 13),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: const Color(0xFFE5E7EC)),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            children: List.generate(preferences.length, (index) {
+              final preference = preferences[index];
+              final preferenceId = preference.id ?? '';
+              final isSelected = selectedPreferenceProductId == preferenceId;
+              final price = _getPreferencePrice(preference);
+
+              return Column(
+                children: [
+                  Semantics(
+                    button: true,
+                    selected: isSelected,
+                    label: preference.title ?? 'Preference',
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: preferenceId.isEmpty
+                          ? null
+                          : () {
+                              setState(() {
+                                selectedPreferenceProductId =
+                                    isSelected ? '' : preferenceId;
+                                selectedQuantity = 1;
+                                _syncCartStateForVariant();
+                                if (productPresentInCart != true) {
+                                  _clampSelectedQuantity();
+                                }
+                              });
+                            },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
+                        child: Row(
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.grey.shade400,
+                                  width: isSelected ? 6 : 1.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                preference.title ?? 'Untitled preference',
+                                style: UiTypography.cardSubtitle(
+                                  color: AppColors.textColor,
+                                ).copyWith(fontSize: 15),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              price == null
+                                  ? 'Price unavailable'
+                                  : '+${CurrencyUtil.appendCurrency(price.toStringAsFixed(2))}',
+                              textAlign: TextAlign.right,
+                              style: UiTypography.cardMeta(
+                                color: AppColors.textColor50,
+                              ).copyWith(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (index != preferences.length - 1)
+                    const Divider(
+                      height: 1,
+                      color: Color(0xFFE5E7EC),
+                    ),
+                ],
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
   // Syncs cart state for the currently selected variant.
   // Must be called inside setState.
   void _syncCartStateForVariant() {
@@ -749,6 +890,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final Item? match = items.cast<Item?>().firstWhere(
       (item) {
         if (item?.variantId != selectedVariantId) {
+          return false;
+        }
+        final itemPreferenceId = item?.metadata?.preference?.productId ?? '';
+        if (itemPreferenceId != selectedPreferenceProductId) {
           return false;
         }
         if (!isUnitBased) {
@@ -869,9 +1014,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       cartResponse?.cart?.items ?? const [],
     );
 
-    final normalizedQty = maxQty <= 0
-        ? 1
-        : selectedQuantity.clamp(1, maxQty).toInt();
+    final normalizedQty =
+        maxQty <= 0 ? 1 : selectedQuantity.clamp(1, maxQty).toInt();
 
     if (selectedQuantity != normalizedQty) {
       selectedQuantity = normalizedQty;
@@ -1146,7 +1290,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       return;
                     }
-                    if (productPresentInCart == true && _cartLineItemId != null) {
+                    if (productPresentInCart == true &&
+                        _cartLineItemId != null) {
                       // Update existing cart item to new total qty
                       setState(() => quantityLoading = true);
                       try {
@@ -1396,9 +1541,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         }
       }
 
-      if ((response.addOnProductCount ?? 0) > 0) {
-        unawaited(_loadAddOnProducts(variantId));
-      }
+      // The shared endpoint returns both regular Add-ons and Preferences.
+      // Always load it because a product can have Preferences without any
+      // regular Add-on products.
+      unawaited(_loadAddOnProducts(variantId));
       if ((response.relatedProductCount ?? 0) > 0 &&
           (relatedProductsResponse?.products?.isEmpty ?? true)) {
         unawaited(getRelatedProductsApi());
@@ -1431,8 +1577,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final products = response.products ?? [];
       setState(() {
         addOnProductsResponse = response;
-        // All addon products are out of stock — skip the popup
-        if (products.isEmpty) addOnProductsCount = 0;
+        // Only regular Add-ons control the existing popup. Preferences are
+        // rendered independently on the Product Details page.
+        addOnProductsCount = products.length;
       });
     } catch (e) {
       // Add-on load is non-blocking for primary PDP render.
@@ -1474,17 +1621,34 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           qty: mainQty,
           variantId: mainVariantId,
           unitQuantity: selectedUnitQuantity!,
+          preferenceProductId: selectedPreferenceProductId,
         );
       } else {
-        await apiService.addCart(context, mainQty, mainVariantId);
+        await apiService.addCart(
+          context,
+          mainQty,
+          mainVariantId,
+          preferenceProductId: selectedPreferenceProductId,
+        );
       }
 
       // Add each add-on (with default quantity 1)
       for (final product in addOns) {
         if ((product.variants?.isNotEmpty ?? false)) {
-          final variantId = product.variants?.first.id ?? null;
+          final addOnVariant = product.variants!.first;
+          final variantId = addOnVariant.id;
           if (variantId != null) {
-            await apiService.addCart(context, mainQty, variantId);
+            final minimumPreset = getMinimumUnitQuantity(addOnVariant);
+            if (minimumPreset != null) {
+              await apiService.addUnitBasedCart(
+                context,
+                qty: mainQty,
+                variantId: variantId,
+                unitQuantity: minimumPreset,
+              );
+            } else {
+              await apiService.addCart(context, mainQty, variantId);
+            }
           }
         }
       }
@@ -1676,7 +1840,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     setState(() {
       cartItems = totalQty;
-      cartItemImages = productItems.map((item) => item.thumbnail ?? "").toList();
+      cartItemImages =
+          productItems.map((item) => item.thumbnail ?? "").toList();
     });
     final qtyMap = <String, int>{};
     final unitLineQtyMap = <String, int>{};
@@ -1731,6 +1896,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
 
     return presets.first;
+  }
+
+  int? getMinimumUnitQuantity(ProductResponse.Variant? variant) {
+    if (!isUnitBasedVariant(variant)) {
+      return null;
+    }
+
+    final presets = getPresetOptions(variant)
+        .where((preset) => preset > 0)
+        .toList()
+      ..sort();
+
+    return presets.isEmpty ? null : presets.first;
   }
 
   int? calculatePresetPrice(ProductResponse.Variant variant, int unitQuantity) {
