@@ -26,11 +26,12 @@ class ForceUpdateScreen extends StatelessWidget {
                 /// Gradient section (only for illustration)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.1),
+                        AppColors.primary.withValues(alpha: 0.1),
                         Colors.white,
                       ],
                       begin: Alignment.topCenter,
@@ -58,8 +59,8 @@ class ForceUpdateScreen extends StatelessWidget {
 
                 /// Description (pure white background)
                 Text(
-                  "A brand new version of the VirpanAI app is available in the App Store. "
-                      "Please update your app to use all of our amazing features.",
+                  "A brand new version of the TryFresh app is available in the App Store. "
+                  "Please update your app to use all of our amazing features.",
                   textAlign: TextAlign.center,
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 14,
@@ -103,7 +104,3 @@ class ForceUpdateScreen extends StatelessWidget {
     );
   }
 }
-
-
-
-

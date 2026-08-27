@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.waioz" "\0"
-            VALUE "FileDescription", "waioz" "\0"
+            VALUE "FileDescription", "TryFresh" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "waioz" "\0"
+            VALUE "InternalName", "TryFresh" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.waioz. All rights reserved." "\0"
-            VALUE "OriginalFilename", "waioz.exe" "\0"
-            VALUE "ProductName", "waioz" "\0"
+            VALUE "OriginalFilename", "TryFresh.exe" "\0"
+            VALUE "ProductName", "TryFresh" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
