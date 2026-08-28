@@ -3,6 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
@@ -15,6 +21,7 @@ import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
+import 'package:waioz/ui/widgets/cashfree_emi_options.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -68,6 +75,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   ShippingOption? shippingOption;
 
   Razorpay razorpay = Razorpay();
+  final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
 
   // Split payment state
   bool splitActive = false;
@@ -85,6 +93,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   @override
   void initState() {
     super.initState();
+    _cashfree.setCallback(_verifyCashfreePayment, _cashfreeError);
     cartResponse = widget.cartResponse;
     getShippingInfo();
     _loadWalletBalance();
@@ -97,8 +106,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   @override
   Widget build(BuildContext context) {
     final num cartTotal = cartResponse?.cart?.total ?? 0;
-    final num payableAmount =
-        splitActive ? splitGatewayAmount : cartTotal;
+    final num payableAmount = splitActive ? splitGatewayAmount : cartTotal;
     return Scaffold(
         appBar: CommonHeaderAppBar(
           title: AppStrings.check_out,
@@ -130,6 +138,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                 const SizedBox(height: 10),
                                 _buildPaymentSelectorCard(),
                               ],
+                              CashfreeEmiOptions(amount: payableAmount),
 
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
@@ -161,11 +170,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Loyalty checkout apply widget
                               LoyaltyCheckoutWidget(
                                 cartId: cartResponse!.cart!.id!,
-                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
+                                loyaltyApply: cartResponse?.cart
+                                        ?.metadata?['loyalty_checkout_apply']
+                                    as Map<String, dynamic>?,
                                 cartTotal: cartResponse?.cart?.total,
-                                walletAmount: splitActive ? splitWalletAmount : 0,
-                                walletApplied: splitActive && splitWalletAmount > 0,
-                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                walletAmount:
+                                    splitActive ? splitWalletAmount : 0,
+                                walletApplied:
+                                    splitActive && splitWalletAmount > 0,
+                                hasActiveCoupon:
+                                    (cartResponse?.cart?.promotions ?? [])
+                                        .isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -201,8 +216,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                           ? SizedBox(
                               height: 54,
                               child: Center(
-                                child: Lottie.asset(AppAssets.place_order_lottie,
-                                    height: 54, fit: BoxFit.contain),
+                                child: Lottie.asset(
+                                    AppAssets.place_order_lottie,
+                                    height: 54,
+                                    fit: BoxFit.contain),
                               ),
                             )
                           : Column(
@@ -259,10 +276,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       updatePaymentMethod(pp_id!);
                                     }
                                   },
-                                  icon: const Icon(
-                                      Icons.lock_outline_rounded,
-                                      color: Colors.white,
-                                      size: 20),
+                                  icon: const Icon(Icons.lock_outline_rounded,
+                                      color: Colors.white, size: 20),
                                   label: Text(
                                     splitActive && splitFullCoverage
                                         ? 'Pay from Wallet'
@@ -435,6 +450,27 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
 
+  void _openCashfree(
+      String orderId, String paymentSessionId, String? environment) {
+    try {
+      final session = CFSessionBuilder()
+          .setEnvironment(environment == 'production'
+              ? CFEnvironment.PRODUCTION
+              : CFEnvironment.SANDBOX)
+          .setOrderId(orderId)
+          .setPaymentSessionId(paymentSessionId)
+          .build();
+      _cashfree
+          .doPayment(CFWebCheckoutPaymentBuilder().setSession(session).build());
+    } on CFException catch (e) {
+      AppUtils.showToast(e.message);
+    }
+  }
+
+  void _verifyCashfreePayment(String _orderId) => completeCart();
+  void _cashfreeError(CFErrorResponse error, String _orderId) =>
+      AppUtils.showToast(error.getMessage() ?? 'Cashfree payment failed');
+
   void makeStripeCall(String clientSecret) async {
     try {
       // Initialize the payment sheet with client secret
@@ -565,9 +601,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
                         Text(
                           CurrencyUtil.appendCurrency(
                               walletBalance.toStringAsFixed(2)),
-                          style: UiTypography.cardPrice(
-                                  color: AppColors.textColor)
-                              .copyWith(fontSize: 18),
+                          style:
+                              UiTypography.cardPrice(color: AppColors.textColor)
+                                  .copyWith(fontSize: 18),
                         ),
                       ],
                     ),
@@ -1014,6 +1050,14 @@ class _CheckOutPageState extends State<CheckOutPage> {
           makeRazorPayCall(orderId);
         }
         break;
+      case 'pp_cashfree_cashfree':
+        final data =
+            apiResponse.paymentCollection?.paymentSessions?.firstOrNull?.data;
+        if (data?.orderId != null && data?.paymentSessionId != null) {
+          _openCashfree(
+              data!.orderId!, data.paymentSessionId!, data.environment);
+        }
+        break;
       case 'pp_stripe_stripe':
         String? clientSecret = extractClientSecret(apiResponse);
         if (clientSecret != null) {
@@ -1044,7 +1088,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() => placeOrderApiLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 

@@ -29,6 +29,13 @@ _ProviderMeta _meta(String? id, {String? walletBalanceLabel}) {
         icon: Icons.bolt_rounded,
         color: Color(0xFF2D81F7),
       );
+    case 'pp_cashfree_cashfree':
+      return const _ProviderMeta(
+        displayName: 'Cashfree',
+        subtitle: 'UPI · Cards · Net banking · EMI',
+        icon: Icons.account_balance_wallet_rounded,
+        color: Color(0xFF6C3BFF),
+      );
     case 'pp_payu_payu':
       return const _ProviderMeta(
         displayName: 'PayU',

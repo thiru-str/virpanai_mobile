@@ -42,6 +42,7 @@ import '../utility/common_html.dart';
 import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
 import 'widgets/loyalty_earn_preview.dart';
+import 'widgets/cashfree_emi_options.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -496,6 +497,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                 ],
               ),
+              CashfreeEmiOptions(
+                  amount: double.tryParse(selectedVariant
+                              ?.calculatedPrice?.rawCalculatedAmount?.value ??
+                          '0') ??
+                      0),
             ],
           ),
         ),
@@ -675,9 +681,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
     final items = cartResponse!.cart!.items!;
     final Item? match = items.cast<Item?>().firstWhere(
-      (item) => item?.variantId == selectedVariantId,
-      orElse: () => null,
-    );
+          (item) => item?.variantId == selectedVariantId,
+          orElse: () => null,
+        );
     _cartLineItemQty = match?.quantity ?? 0;
     _cartLineItemId = match?.id;
     productPresentInCart = _cartLineItemQty > 0;
@@ -1021,7 +1027,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       return;
                     }
-                    if (productPresentInCart == true && _cartLineItemId != null) {
+                    if (productPresentInCart == true &&
+                        _cartLineItemId != null) {
                       // Update existing cart item to new total qty
                       setState(() => quantityLoading = true);
                       try {
