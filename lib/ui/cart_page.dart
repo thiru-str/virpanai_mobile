@@ -144,6 +144,10 @@ class _DeliveryScheduleBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final maximumSheetHeight = MediaQuery.sizeOf(context).height * 0.88;
+    final sheetHeight =
+        (maximumSheetHeight - keyboardInset).clamp(0.0, maximumSheetHeight);
     final slots = _slotsData?.slots.where((slot) => slot.available).toList() ??
         const <DeliveryTimeSlot>[];
     final allowInstructions =
@@ -152,8 +156,11 @@ class _DeliveryScheduleBottomSheetState
     final error = _slotsData?.error;
 
     return SafeArea(
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.88,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        height: sheetHeight,
+        margin: EdgeInsets.only(bottom: keyboardInset),
         decoration: const BoxDecoration(
           color: Color(0xFFF9F9FB),
           borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
@@ -342,8 +349,20 @@ class _DeliveryScheduleBottomSheetState
                       TextField(
                         controller: _instructionsCtrl,
                         maxLines: 2,
+                        scrollPadding: const EdgeInsets.only(bottom: 24),
+                        cursorColor: AppColors.primary,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textColor,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Delivery instructions (optional)',
+                          hintStyle: FontUtils.primaryFontStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textColor50,
+                          ),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(

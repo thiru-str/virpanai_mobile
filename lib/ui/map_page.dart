@@ -151,6 +151,7 @@ class _MapPageState extends State<MapPage> {
   /// Update Marker & Address on Map Drag
   void _onCameraMove(CameraPosition position) {
     setState(() {
+      _currentPosition = position.target;
       _marker = Marker(
         markerId: MarkerId("movedLocation"),
         position: position.target,
