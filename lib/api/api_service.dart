@@ -772,13 +772,24 @@ class ApiService {
   }
 
   Future<CartResponse> addCart(
-      BuildContext context, int qty, String variantId) async {
+    BuildContext context,
+    int qty,
+    String variantId, {
+    String? preferenceProductId,
+  }) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final payload = {
+      "variant_id": variantId,
+      "quantity": qty,
+      "metadata": {},
+      if (preferenceProductId != null && preferenceProductId.isNotEmpty)
+        "preference_product_id": preferenceProductId,
+    };
     try {
       return await _makePostRequest(
         'store/custom-carts/$cartId/line-items',
-        {"variant_id": variantId, "quantity": qty, "metadata": {}},
+        payload,
         (json) => CartResponse.fromJson(json),
         context,
       );
@@ -793,7 +804,7 @@ class ApiService {
             await SharedPreferencesUtil().saveString('cart_id', newCartId);
             return await _makePostRequest(
               'store/custom-carts/$newCartId/line-items',
-              {"variant_id": variantId, "quantity": qty, "metadata": {}},
+              payload,
               (json) => CartResponse.fromJson(json),
               context,
             );
@@ -811,6 +822,7 @@ class ApiService {
     required int qty,
     required String variantId,
     required int unitQuantity,
+    String? preferenceProductId,
   }) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
@@ -821,6 +833,8 @@ class ApiService {
         "variant_id": variantId,
         "unit_quantity": unitQuantity,
         "quantity": qty,
+        if (preferenceProductId != null && preferenceProductId.isNotEmpty)
+          "preference_product_id": preferenceProductId,
       },
       (json) => CartResponse.fromJson(json),
       context,

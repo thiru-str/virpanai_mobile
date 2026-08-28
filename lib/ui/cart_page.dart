@@ -1015,9 +1015,19 @@ class _CartPageState extends State<CartPage>
                                           error: cartItem.error ?? '',
                                           size: _buildCartItemSize(cartItem),
                                           color: 'color',
+                                          preference: cartItem
+                                                  .metadata
+                                                  ?.preference
+                                                  ?.title ??
+                                              '',
                                           price: CurrencyUtil.appendCurrency(
-                                              (cartItem.unitPrice! *
-                                                      cartItem.quantity!)
+                                              (((cartItem.unitPrice ?? 0) *
+                                                          (cartItem.quantity ??
+                                                              0)) -
+                                                      (cartItem.metadata
+                                                              ?.preference
+                                                              ?.amount ??
+                                                          0))
                                                   .toStringAsFixed(2)),
                                           quantity: cartItem.quantity!,
                                           isUpdating: cartItem.isUpdating!,
@@ -1273,8 +1283,17 @@ class _CartPageState extends State<CartPage>
                                                               (sum, item) =>
                                                                   sum +
                                                                   (item.total ??
-                                                                      0))))
+                                                                      0))) -
+                                                      _preferenceAddonsTotal())
                                                   .toStringAsFixed(2))),
+                                      if (_hasPreference)
+                                        _priceRow(
+                                          'Addons',
+                                          CurrencyUtil.appendCurrency(
+                                            _preferenceAddonsTotal()
+                                                .toStringAsFixed(2),
+                                          ),
+                                        ),
                                       _priceRow(
                                           AppStrings.shipping,
                                           _numOrZero(cartResponse?.cart
@@ -2454,6 +2473,17 @@ class _CartPageState extends State<CartPage>
     return (cartResponse?.cart?.items ?? [])
         .where((item) => item.isPlatformFee)
         .fold<double>(0, (sum, item) => sum + _doubleFromDynamic(item.total));
+  }
+
+  bool get _hasPreference => (cartResponse?.cart?.items ?? [])
+      .any((item) => item.metadata?.preference != null);
+
+  double _preferenceAddonsTotal() {
+    return (cartResponse?.cart?.items ?? []).fold<double>(
+      0,
+      (sum, item) =>
+          sum + (item.metadata?.preference?.amount.toDouble() ?? 0),
+    );
   }
 
   double _loyaltyDiscountAmount() {

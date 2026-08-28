@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:waioz/model/order_history_reponse.dart';
+import 'package:waioz/model/preference_snapshot.dart';
 
 import '../model/shipping_response.dart';
 
@@ -609,6 +610,7 @@ class Metadata {
   int? baseUnitGrams;
   String? unitType;
   String? displayUnit;
+  PreferenceSnapshot? preference;
 
   Metadata({
     this.type,
@@ -620,6 +622,7 @@ class Metadata {
     this.baseUnitGrams,
     this.unitType,
     this.displayUnit,
+    this.preference,
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
@@ -633,6 +636,7 @@ class Metadata {
         baseUnitGrams: _toInt(json["base_unit_grams"]),
         unitType: json["unit_type"]?.toString(),
         displayUnit: json["display_unit"]?.toString(),
+        preference: PreferenceSnapshot.fromDynamic(json["preference"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -645,6 +649,7 @@ class Metadata {
         "base_unit_grams": baseUnitGrams,
         "unit_type": unitType,
         "display_unit": displayUnit,
+        if (preference != null) "preference": preference!.toJson(),
       };
 
   static int? _toInt(dynamic value) {

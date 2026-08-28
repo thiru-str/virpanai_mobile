@@ -10,6 +10,7 @@ class OrderDetailItemCard extends StatelessWidget {
   final String imageUrl;
   final String productName;
   final String variant;
+  final String preference;
   final String price;
   final String status;
   final double initialRating;
@@ -26,6 +27,7 @@ class OrderDetailItemCard extends StatelessWidget {
     required this.imageUrl,
     required this.productName,
     required this.variant,
+    this.preference = '',
     required this.price,
     required this.status,
     this.initialRating = 0.0,
@@ -123,6 +125,17 @@ class OrderDetailItemCard extends StatelessWidget {
                           style:
                               UiTypography.cardSubtitle(color: Colors.black54),
                         ),
+                        if (preference.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Preference: $preference',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: UiTypography.cardMeta(
+                              color: AppColors.textColor50,
+                            ).copyWith(fontSize: 13),
+                          ),
+                        ],
                       ],
                     ),
                   ),

@@ -69,6 +69,16 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     return 0;
   }
 
+  bool get _hasPreference =>
+      (order?.items ?? []).any((item) => item.metadata?.preference != null);
+
+  double get _preferenceAddonsTotal =>
+      (order?.items ?? []).fold<double>(
+        0,
+        (sum, item) =>
+            sum + (item.metadata?.preference?.amount.toDouble() ?? 0),
+      );
+
   Map<String, String> paymentTypeMap = {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
@@ -274,10 +284,18 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                                 (sum, item) =>
                                                     sum +
                                                     ((item.unitPrice ?? 0) *
-                                                        (item.quantity ?? 0)))))
-                                    .toString()),
+                                                        (item.quantity ?? 0)))) -
+                                        _preferenceAddonsTotal)
+                                    .toStringAsFixed(2)),
                               ),
                             ),
+                            if (_hasPreference)
+                              CartCalculation(
+                                keyText: 'Addons:',
+                                valueText: CurrencyUtil.appendCurrency(
+                                  _preferenceAddonsTotal.toStringAsFixed(2),
+                                ),
+                              ),
                             if ((order?.prices?.discountTotal ?? 0) > 0)
                               CartCalculation(
                                 keyText: order?.couponCode != null
@@ -560,12 +578,15 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                         : 'Please rate the product',
                 imageUrl: itemDetail.thumbnail ?? '',
                 variant: _buildOrderItemVariant(itemDetail),
+                preference: itemDetail.metadata?.preference?.title ?? '',
                 productName:
                     '${itemDetail.quantity ?? ''} x ${itemDetail.productTitle ?? ''}',
                 status: itemDetail.status ?? '',
                 price: CurrencyUtil.appendCurrency(
-                  ((itemDetail.unitPrice ?? 0) * (itemDetail.quantity ?? 0))
-                      .toString(),
+                  (((itemDetail.unitPrice ?? 0) *
+                              (itemDetail.quantity ?? 0)) -
+                          (itemDetail.metadata?.preference?.amount ?? 0))
+                      .toStringAsFixed(2),
                 ),
                 onRatingTap: () => _showReviewBottomSheet(itemDetail),
                 onRatingChanged: (rating) => _showReviewBottomSheet(
