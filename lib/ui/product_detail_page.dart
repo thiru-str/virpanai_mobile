@@ -180,7 +180,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             },
             onFavTap: addFavourite,
             onShareTap: () {
-              AppLinkHelper.shareProductInvite(widget.productId);
+              AppLinkHelper.shareProductInvite(widget.productId, context: context);
             },
             isFavorite: isFavorite, // Pass the updated favorite status here
           ),
