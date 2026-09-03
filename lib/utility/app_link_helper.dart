@@ -1,10 +1,11 @@
+import 'dart:io';
+
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
-import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../main.dart';
@@ -57,21 +58,33 @@ class AppLinkHelper {
   }
 
   static Future<void> shareProductInvite(
-      String productId,
-      ) async {
+    String productId, {
+    BuildContext? context,
+  }) async {
     try {
 
       final Uri link = Uri.parse('${AppConfig.baseUrl}products/$productId');
 
       final String message = 'Check out this product on ${AppConfig.appName}! 🛍️\n\n$link';
 
+      // iOS 26+ requires a source rect for the share sheet to appear.
+      Rect? origin;
+      if (Platform.isIOS && context != null) {
+        final size = MediaQuery.sizeOf(context);
+        origin = Rect.fromCenter(
+          center: Offset(size.width / 2, size.height / 4),
+          width: 1,
+          height: 1,
+        );
+      }
+
       await Share.share(
         message,
-        subject: 'Look what I found on ${AppConfig.appName}!',
+        subject: 'Check out this product on ${AppConfig.appName}!',
+        sharePositionOrigin: origin,
       );
-    } catch (e, stack) {
-      debugPrint('❌ Failed to share booking invite: $e');
-      // Optionally show toast or dialog
+    } catch (e) {
+      debugPrint('❌ Failed to share product: $e');
     }
   }
 
