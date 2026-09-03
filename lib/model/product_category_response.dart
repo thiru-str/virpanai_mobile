@@ -34,6 +34,7 @@ class ProductCategory {
   DateTime? createdAt;
   DateTime? updatedAt;
   dynamic metadata;
+  int? count;
   CategoryChild? parentCategory;
   List<CategoryChild>? categoryChildren;
 
@@ -47,6 +48,7 @@ class ProductCategory {
     this.createdAt,
     this.updatedAt,
     this.metadata,
+    this.count,
     this.parentCategory,
     this.categoryChildren,
   });
@@ -61,6 +63,7 @@ class ProductCategory {
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     metadata: json["metadata"],
+    count: json["count"] is num ? (json["count"] as num).toInt() : null,
     parentCategory: json["parent_category"] == null ? null : CategoryChild.fromJson(json["parent_category"]),
     categoryChildren: json["category_children"] == null ? [] : List<CategoryChild>.from(json["category_children"]!.map((x) => CategoryChild.fromJson(x))),
   );
@@ -75,6 +78,7 @@ class ProductCategory {
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "metadata": metadata,
+    "count": count,
     "parent_category": parentCategory,
     "category_children": categoryChildren == null ? [] : List<dynamic>.from(categoryChildren!.map((x) => x.toJson())),
   };

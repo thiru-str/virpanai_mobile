@@ -6,6 +6,7 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
 import '../../utility/ui_typography.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard9 extends StatelessWidget {
   final Product product;
@@ -56,7 +57,9 @@ class ProductCard9 extends StatelessWidget {
     final rating = double.tryParse(
       product.metadata?.reviewSummary?.averageRating?.toString() ?? '',
     );
-    final totalReviews = product.metadata?.reviewSummary?.totalReviews ?? '';
+    final totalReviews = int.tryParse(
+      product.metadata?.reviewSummary?.totalReviews ?? '',
+    );
 
     final calc = cheapest != null
         ? double.tryParse(
@@ -154,6 +157,15 @@ class ProductCard9 extends StatelessWidget {
                 ),
               ),
             ),
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                child: buildVariantChips(info.variant!, info.count - 1),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(6, 8, 6, 0),
               child: Wrap(
@@ -184,44 +196,47 @@ class ProductCard9 extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 39,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE1E4ED),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      (rating != null ? rating.toStringAsFixed(1) : '4.2'),
-                      style: UiTypography.cardMeta(
-                        color: const Color(0xFF6D758F),
-                      ).copyWith(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+            if (rating != null && rating.isFinite && rating > 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 39,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE1E4ED),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        rating.toStringAsFixed(1),
+                        style: UiTypography.cardMeta(
+                          color: const Color(0xFF6D758F),
+                        ).copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    child: Text(
-                      totalReviews.isNotEmpty ? '$totalReviews Ratings' : '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: UiTypography.cardMeta(
-                        color: Colors.black,
-                      ).copyWith(
-                        fontSize: 11,
+                    if (totalReviews != null && totalReviews > 0) ...[
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          '$totalReviews Ratings',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: UiTypography.cardMeta(
+                            color: Colors.black,
+                          ).copyWith(
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  ],
+                ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
               child: Text(

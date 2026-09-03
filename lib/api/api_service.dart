@@ -27,6 +27,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
+import 'package:waioz/model/product_filter_facets_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
@@ -114,7 +115,16 @@ class ApiService {
         },
       ));
       if (response.statusCode == 200) {
-        AppLogger.logFullJson(response.data);
+        if (endpoint == 'store/get_home_page/v8') {
+          final payload = response.data as Map<String, dynamic>?;
+          final content = payload?['content'];
+          AppLogger.print(
+            'Home page response:',
+            'status=${payload?['status']}, components=${content is List ? content.length : 0}',
+          );
+        } else {
+          AppLogger.logFullJson(response.data);
+        }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
@@ -522,7 +532,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if (sortBy != null) {
+    if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -613,8 +623,8 @@ class ApiService {
       {
         'limit': limit,
         'offset': offset,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
         if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
       },
       (json) => HomePageResponse.fromJson(json),
@@ -698,6 +708,25 @@ class ApiService {
     );
   }
 
+  Future<ReturnSuccessResponse> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => ReturnSuccessResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> getWishList(
       BuildContext context, String? customerID) async {
     await addToken();
@@ -715,12 +744,35 @@ class ApiService {
       BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/line-items',
-      {"variant_id": variantId, "quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
+    try {
+      return await _makePostRequest(
+        'store/custom-carts/$cartId/line-items',
+        {"variant_id": variantId, "quantity": qty, "metadata": {}},
+        (json) => CartResponse.fromJson(json),
+        context,
+      );
+    } catch (e) {
+      // Cart is inactive (completed after a previous order) — auto-recover by
+      // fetching a fresh cart from the home page endpoint, then retry once.
+      if (e.toString().contains('status code: 409')) {
+        try {
+          final homeResponse = await getHomePage(context);
+          final newCartId = homeResponse.global?.cartId;
+          if (newCartId != null && newCartId.isNotEmpty && newCartId != cartId) {
+            await SharedPreferencesUtil().saveString('cart_id', newCartId);
+            return await _makePostRequest(
+              'store/custom-carts/$newCartId/line-items',
+              {"variant_id": variantId, "quantity": qty, "metadata": {}},
+              (json) => CartResponse.fromJson(json),
+              context,
+            );
+          }
+        } catch (_) {
+          // Refresh failed — fall through to rethrow original error
+        }
+      }
+      rethrow;
+    }
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
@@ -1069,12 +1121,44 @@ class ApiService {
     );
   }
 
-  Future<TagsResponse> listTags(BuildContext context) async {
+  Future<TagsResponse> listTags(BuildContext context,
+      {String? categoryIds}) async {
+    final queryParams = <String, dynamic>{"fields": "id,value"};
+    final categories = (categoryIds ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (categories.isNotEmpty) {
+      queryParams['category_id[]'] = categories;
+    }
+
     return _makeGetRequest<TagsResponse>(
-      'store/product-tags',
-      '?fields=id,value',
+      categories.isEmpty ? 'store/product-tags' : 'store/product-filter-tags',
       null,
+      queryParams,
       (json) => TagsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductFilterFacetsResponse> listProductFilterFacets(
+    BuildContext context, {
+    List<String> categoryIds = const [],
+    List<String> collectionIds = const [],
+    List<String> tagIds = const [],
+  }) async {
+    final queryParams = <String, dynamic>{
+      if (categoryIds.isNotEmpty) 'category_id[]': categoryIds,
+      if (collectionIds.isNotEmpty) 'collection_id[]': collectionIds,
+      if (tagIds.isNotEmpty) 'tag_id[]': tagIds,
+    };
+
+    return _makeGetRequest<ProductFilterFacetsResponse>(
+      'store/product-filter-facets',
+      null,
+      queryParams,
+      (json) => ProductFilterFacetsResponse.fromJson(json),
       context,
     );
   }
