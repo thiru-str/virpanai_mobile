@@ -66,6 +66,12 @@ class _ProductCard2State extends State<ProductCard2> {
     final product = widget.product;
     final images = product.images ?? [];
     final cheapest = _cheapestVariant(product);
+    final rating = double.tryParse(
+      product.metadata?.reviewSummary?.averageRating ?? '',
+    );
+    final totalReviews = int.tryParse(
+      product.metadata?.reviewSummary?.totalReviews ?? '',
+    );
 
     final calc = cheapest != null
         ? double.tryParse(cheapest.calculatedPrice?.calculatedAmount?.toString() ?? '')
@@ -228,21 +234,43 @@ class _ProductCard2State extends State<ProductCard2> {
             ),
 
             // ---- Ratings ----
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                children: List.generate(5, (index) {
-                  double rating = 3.0 ?? 3.0;
-                  return Icon(
-                    index < rating.floor()
-                        ? Icons.star
-                        : (index < rating ? Icons.star_half : Icons.star_border),
-                    color: AppColors.primary,
-                    size: 16,
-                  );
-                }),
+            if (rating != null && rating.isFinite && rating > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.star, color: Colors.green, size: 14),
+                      if (totalReviews != null && totalReviews > 0) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '($totalReviews)',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
 
             const SizedBox(height: 8),
 
