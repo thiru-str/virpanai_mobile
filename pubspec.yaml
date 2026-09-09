@@ -93,7 +93,6 @@ dependencies:
 dependency_overrides:
   stripe_platform_interface: ^10.2.0
   stripe_android: ^10.2.0
-  html: 0.15.6
 
 dev_dependencies:
   flutter_test:
