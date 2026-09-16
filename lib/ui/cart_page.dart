@@ -19,6 +19,7 @@ import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
+import 'package:waioz/ui/widgets/cashfree_emi_options.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
@@ -562,6 +563,11 @@ class _CartPageState extends State<CartPage>
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
+
+                            CashfreeEmiOptions(
+                              amount: _displayTotalAmount(),
+                              placement: 'cart',
+                            ),
 
                             // Free delivery progress banner — hides itself when
                             // no shipping address or no slabs configured.

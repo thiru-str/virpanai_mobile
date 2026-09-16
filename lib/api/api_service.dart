@@ -1027,6 +1027,21 @@ class ApiService {
     return Map<String, dynamic>.from(response.data as Map);
   }
 
+  Future<Map<String, dynamic>> getCashfreeBnplConfig() async {
+    await addToken();
+    final response = await _dio.get('store/cashfree/bnpl-config');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeDisplayOptions(num amount) async {
+    await addToken();
+    final response = await _dio.get(
+      'store/cashfree/display-options',
+      queryParameters: {'amount': amount},
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   Future<PublicDetailsResponse> getPublicDetails() async {
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',

@@ -138,7 +138,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                 const SizedBox(height: 10),
                                 _buildPaymentSelectorCard(),
                               ],
-                              CashfreeEmiOptions(amount: payableAmount),
+                              CashfreeEmiOptions(
+                                amount: payableAmount,
+                                placement: 'checkout',
+                              ),
 
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
