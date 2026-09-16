@@ -24,7 +24,9 @@ def flutterMinSdkVersion = project.hasProperty('flutter.minSdkVersion') ? projec
 android {
     namespace "com.waioz.cartel"
     compileSdk flutterCompileSdkVersion.toInteger()
-    ndkVersion "27.0.12077973"
+    // flutter_cashfree_pg_sdk (jni) requires NDK 28.2.13676358. Android NDK
+    // versions are backward compatible, so use the highest required version.
+    ndkVersion "28.2.13676358"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
