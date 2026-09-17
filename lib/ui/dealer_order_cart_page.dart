@@ -36,6 +36,10 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
   bool _showInlineCouponEntry = false;
   bool _inlineCouponApplying = false;
   bool _sendingOrderOtp = false;
+  Map<String, dynamic>? _benefits;
+  bool _benefitsLoading = true;
+  String? _benefitAction;
+  bool _walletAutoApplyAttempted = false;
 
   @override
   void initState() {
@@ -58,7 +62,106 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
       _refreshCart(),
       _loadShippingOptions(),
       _loadPaymentMethods(),
+      _loadBenefits(),
     ]);
+  }
+
+  Future<void> _loadBenefits() async {
+    final cartId = _cart['id']?.toString();
+    if (cartId == null || !mounted) return;
+    setState(() => _benefitsLoading = true);
+    try {
+      final response = await _api.getDealerOrderBenefits(context, cartId);
+      if (!mounted) return;
+      final rawBenefits = response['benefits'];
+      setState(() {
+        final refreshedCart = response['cart'];
+        if (refreshedCart is Map) {
+          _cart = Map<String, dynamic>.from(refreshedCart);
+        }
+        _benefits =
+            rawBenefits is Map ? Map<String, dynamic>.from(rawBenefits) : null;
+      });
+      final wallet = rawBenefits is Map ? rawBenefits['wallet'] : null;
+      if (wallet is Map &&
+          wallet['should_auto_apply'] == true &&
+          !_walletAutoApplyAttempted) {
+        _walletAutoApplyAttempted = true;
+        await _updateBenefit('wallet', 'apply');
+      }
+    } catch (_) {
+      // Shared API layer displays the backend error.
+    } finally {
+      if (mounted) setState(() => _benefitsLoading = false);
+    }
+  }
+
+  Future<void> _updateBenefit(String type, String action) async {
+    final cartId = _cart['id']?.toString();
+    if (cartId == null || _benefitAction != null || !mounted) return;
+    setState(() => _benefitAction = type);
+    try {
+      var response =
+          await _api.updateDealerOrderBenefit(context, cartId, type, action);
+      if (!mounted) return;
+      if (response['_http_status'] == 409) {
+        final settled = await _refreshBenefitsAfterBusy(cartId, type, action);
+        if (!mounted || settled) return;
+        response =
+            await _api.updateDealerOrderBenefit(context, cartId, type, action);
+        if (!mounted) return;
+        if (response['_http_status'] == 409) {
+          AppUtils.showToast('The cart is still updating. Please try again.');
+          return;
+        }
+      }
+      setState(() {
+        final updatedCart = response['cart'];
+        if (updatedCart is Map) {
+          _cart = Map<String, dynamic>.from(updatedCart);
+        }
+        final updatedBenefits = response['benefits'];
+        if (updatedBenefits is Map) {
+          _benefits = Map<String, dynamic>.from(updatedBenefits);
+        }
+      });
+    } catch (_) {
+      // Shared API layer displays the backend error.
+    } finally {
+      if (mounted) setState(() => _benefitAction = null);
+    }
+  }
+
+  Future<bool> _refreshBenefitsAfterBusy(
+      String cartId, String type, String action) async {
+    try {
+      // Wait on the lightweight lock in one request, hydrate once, then retry
+      // only when the requested state was not completed by the first caller.
+      final response = await _api.getDealerOrderBenefits(
+        context,
+        cartId,
+        waitForIdle: true,
+      );
+      if (!mounted) return true;
+      setState(() {
+        final refreshedCart = response['cart'];
+        if (refreshedCart is Map) {
+          _cart = Map<String, dynamic>.from(refreshedCart);
+        }
+        final refreshedBenefits = response['benefits'];
+        if (refreshedBenefits is Map) {
+          _benefits = Map<String, dynamic>.from(refreshedBenefits);
+        }
+      });
+      if (response['processing'] == true) return false;
+      final refreshed = response['benefits'];
+      final benefit = refreshed is Map ? refreshed[type] : null;
+      final isApplied = benefit is Map && benefit['applied'] == true;
+      return action == 'apply' ? isApplied : !isApplied;
+    } catch (_) {
+      // Lock contention is internal and must not produce a dealer toast.
+      return true;
+    }
   }
 
   Future<void> _refreshCart() async {
@@ -380,6 +483,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
       if (updatedCart is Map) {
         setState(() => _cart = Map<String, dynamic>.from(updatedCart));
       }
+      _loadBenefits();
       return true;
     } catch (_) {
       return false;
@@ -397,6 +501,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
       if (updatedCart is Map) {
         setState(() => _cart = Map<String, dynamic>.from(updatedCart));
       }
+      _loadBenefits();
       return true;
     } catch (_) {
       return false;
@@ -584,6 +689,13 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
     final allItems = _cart['items'] as List<dynamic>? ?? [];
     final products =
         allItems.where((item) => !_isPlatformFeeItem(item)).toList();
+    final productSubtotal = products.fold<double>(0, (sum, rawItem) {
+      final item = rawItem as Map;
+      if (item['subtotal'] != null) {
+        return sum + _amount(item['subtotal']);
+      }
+      return sum + (_amount(item['unit_price']) * _amount(item['quantity']));
+    });
     final platformFee = allItems.where(_isPlatformFeeItem).fold<double>(
           0,
           (sum, item) =>
@@ -597,6 +709,8 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
         _amount((metadata['wallet_split'] as Map?)?['wallet_amount']);
     final loyalty = _amount(
         (metadata['loyalty_checkout_apply'] as Map?)?['discount_amount']);
+    final payableAmount =
+        (_amount(_cart['total']) - wallet - loyalty).clamp(0, double.infinity);
     final shippingAmount = _amount(_cart['shipping_total']);
     final shippingMethods = _cart['shipping_methods'] as List<dynamic>? ?? [];
     final hasSelectedShippingMethod =
@@ -649,6 +763,10 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                   final variantId = item['variant_id']?.toString();
                   final updating = _updatingVariantId == variantId;
                   final quantity = _integer(item['quantity']);
+                  final lineSubtotal = _amount(item['subtotal'] ??
+                      _amount(item['unit_price']) * quantity);
+                  final lineTotal = _amount(item['total'] ?? lineSubtotal);
+                  final hasLineDiscount = lineTotal < lineSubtotal;
                   final variantTitle = item['variant_title']?.toString() ?? '';
                   final isDefault =
                       variantTitle.toLowerCase() == 'default variant';
@@ -740,15 +858,32 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              _money(item['total'] ??
-                                  item['subtotal'] ??
-                                  _amount(item['unit_price']) * quantity),
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textColor,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                if (hasLineDiscount) ...[
+                                  Text(
+                                    _money(lineSubtotal),
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textColor50,
+                                    ).copyWith(
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                Text(
+                                  _money(lineTotal),
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textColor,
+                                  ),
+                                ),
+                              ],
                             ),
                             IconButton(
                               onPressed: updating || variantId == null
@@ -766,6 +901,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                 _couponCard(),
                 _paymentMethodCard(),
                 _shippingMethodCard(),
+                _walletAndLoyaltyCard(),
                 Container(
                   margin: const EdgeInsets.only(top: 12),
                   padding: const EdgeInsets.all(16),
@@ -783,8 +919,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                             color: AppColors.textColor,
                           )),
                       const SizedBox(height: 14),
-                      _priceRow(
-                          'Subtotal', _cart['subtotal'] ?? _cart['item_total']),
+                      _priceRow('Subtotal', productSubtotal),
                       if (hasSelectedShippingMethod)
                         _priceRow(
                           'Shipping',
@@ -807,7 +942,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                       if (wallet > 0) _priceRow('Wallet', -wallet),
                       if (loyalty > 0) _priceRow('Loyalty', -loyalty),
                       const Divider(height: 26),
-                      _priceRow('Total amount', _cart['total'], bold: true),
+                      _priceRow('Total amount', payableAmount, bold: true),
                     ],
                   ),
                 ),
@@ -831,7 +966,7 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_money(_cart['total']),
+                          Text(_money(payableAmount),
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -849,6 +984,8 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
                       flex: 2,
                       child: ElevatedButton(
                         onPressed: _sendingOrderOtp ||
+                                _benefitsLoading ||
+                                _benefitAction != null ||
                                 !hasSelectedShippingMethod ||
                                 _selectedPaymentMethodId == null
                             ? null
@@ -1225,6 +1362,158 @@ class _DealerOrderCartPageState extends State<DealerOrderCartPage> {
             ],
           ),
         ),
+      );
+
+  Widget _walletAndLoyaltyCard() {
+    final wallet = _benefits?['wallet'];
+    final loyalty = _benefits?['loyalty'];
+    final walletData = wallet is Map ? wallet : const {};
+    final loyaltyData = loyalty is Map ? loyalty : const {};
+    final metadata =
+        _cart['metadata'] is Map ? _cart['metadata'] as Map : const {};
+    final walletMeta = metadata['wallet_split'] is Map
+        ? metadata['wallet_split'] as Map
+        : const {};
+    final loyaltyMeta = metadata['loyalty_checkout_apply'] is Map
+        ? metadata['loyalty_checkout_apply'] as Map
+        : const {};
+    final walletApplied = _amount(walletMeta['wallet_amount']) > 0 &&
+        metadata['wallet_auto_apply_dismissed'] != true;
+    final loyaltyApplied = _amount(loyaltyMeta['points_to_apply']) > 0;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: _benefitsLoading
+          ? Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
+            )
+          : Column(
+              children: [
+                if (walletData['enabled'] == true)
+                  _benefitRow(
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Wallet',
+                    subtitle: walletApplied
+                        ? '${_money(walletMeta['wallet_amount'])} applied'
+                        : 'Balance ${_money(walletData['balance'])}',
+                    blockedReason: walletData['blocked_reason']?.toString(),
+                    applied: walletApplied,
+                    busy: _benefitAction == 'wallet',
+                    disabled: _benefitAction != null ||
+                        (!walletApplied &&
+                            (_amount(walletData['balance']) <= 0 ||
+                                walletData['blocked_reason'] != null)),
+                    onTap: () => _updateBenefit(
+                        'wallet', walletApplied ? 'remove' : 'apply'),
+                  ),
+                if (walletData['enabled'] == true &&
+                    loyaltyData['enabled'] == true)
+                  const Divider(height: 24),
+                if (loyaltyData['enabled'] == true)
+                  _benefitRow(
+                    icon: Icons.star_outline,
+                    title: 'Loyalty points',
+                    subtitle: loyaltyApplied
+                        ? '${_integer(loyaltyMeta['points_to_apply'])} points applied'
+                        : '${_integer(loyaltyData['points_balance'])} points available',
+                    blockedReason: loyaltyData['blocked_reason']?.toString(),
+                    applied: loyaltyApplied,
+                    busy: _benefitAction == 'loyalty',
+                    disabled: _benefitAction != null ||
+                        (!loyaltyApplied &&
+                            (_integer(loyaltyData['points_balance']) <= 0 ||
+                                loyaltyData['blocked_reason'] != null)),
+                    onTap: () => _updateBenefit(
+                        'loyalty', loyaltyApplied ? 'remove' : 'apply'),
+                  ),
+                if (walletData['enabled'] != true &&
+                    loyaltyData['enabled'] != true)
+                  Text('Wallet and loyalty are not available',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 12,
+                        color: AppColors.textColor50,
+                      )),
+              ],
+            ),
+    );
+  }
+
+  Widget _benefitRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool applied,
+    required bool busy,
+    required bool disabled,
+    required VoidCallback onTap,
+    String? blockedReason,
+  }) =>
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.primary, size: 22),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textColor,
+                    )),
+                Text(subtitle,
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 11,
+                      color: AppColors.textColor50,
+                    )),
+                if (blockedReason?.isNotEmpty == true)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(blockedReason!,
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 10,
+                          color: Colors.redAccent,
+                        )),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: disabled ? null : onTap,
+            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+            child: busy
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                : Text(applied ? 'Remove' : 'Use',
+                    style: FontUtils.primaryFontStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          disabled ? AppColors.textColor50 : AppColors.primary,
+                    )),
+          ),
+        ],
       );
 
   Widget _shippingMethodCard() => Container(

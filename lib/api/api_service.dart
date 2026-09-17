@@ -80,6 +80,7 @@ class ApiService {
     T Function(Map<String, dynamic>) fromJson,
     BuildContext context, {
     Duration? receiveTimeout,
+    Set<int> returnErrorStatuses = const {},
   }) async {
     var toastShown = false;
     String? failureMessage;
@@ -102,6 +103,10 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         AppLogger.print('API Response:', '${response.data}');
         return fromJson(response.data);
+      } else if (returnErrorStatuses.contains(response.statusCode)) {
+        final data = Map<String, dynamic>.from(response.data as Map);
+        data['_http_status'] = response.statusCode;
+        return fromJson(data);
       } else if (response.statusCode == 401) {
         await _handleLogout(context, response.data['error']);
         failureMessage =
@@ -1169,6 +1174,31 @@ class ApiService {
       },
       (json) => json,
       context,
+    );
+  }
+
+  Future<Map<String, dynamic>> getDealerOrderBenefits(
+      BuildContext context, String cartId,
+      {bool waitForIdle = false}) async {
+    await addToken();
+    return _makeGetRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/benefits',
+      null,
+      waitForIdle ? {'wait_for_idle': 'true'} : null,
+      (json) => json,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> updateDealerOrderBenefit(
+      BuildContext context, String cartId, String type, String action) async {
+    await addToken();
+    return _makePostRequest<Map<String, dynamic>>(
+      'dealer/order-carts/$cartId/benefits',
+      {'type': type, 'action': action},
+      (json) => json,
+      context,
+      returnErrorStatuses: const {409},
     );
   }
 

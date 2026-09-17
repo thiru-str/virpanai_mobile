@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -15,18 +13,18 @@ import '../utility/app_strings.dart';
 import '../utility/font_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
-
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashPage extends StatefulWidget {
   final bool skipLogin;
-  const SplashPage({super.key,this.skipLogin = false});
+  const SplashPage({super.key, this.skipLogin = false});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -58,6 +56,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
       ),
     );
 
@@ -65,7 +65,10 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       body: Container(
         color: Colors.white,
         child: Center(
-          child: SvgPicture.asset(AppAssets.app_logo,height: 250,),
+          child: SvgPicture.asset(
+            AppAssets.app_logo,
+            height: 250,
+          ),
         ),
       ),
     );
@@ -73,7 +76,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   void navToNextPage() async {
     String? token = await SharedPreferencesUtil().getString('token');
-    Widget nextPage = token == null ? widget.skipLogin ? const Dashboard():  WelcomePage() : const Dashboard();
+    Widget nextPage = token == null
+        ? widget.skipLogin
+            ? const Dashboard()
+            : WelcomePage()
+        : const Dashboard();
 
     // Delay navigation until the animation completes
     await Future.delayed(const Duration(seconds: 3));
@@ -89,6 +96,3 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     super.dispose();
   }
 }
-
-
-
