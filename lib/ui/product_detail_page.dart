@@ -19,6 +19,7 @@ import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/add_on_product_card.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
+import 'package:waioz/ui/widgets/cashfree_emi_options.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/login_prompt.dart';
 import 'package:waioz/ui/widgets/rating_widget.dart';
@@ -421,6 +422,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
         ),
+        CashfreeEmiOptions(
+          amount: double.tryParse(selectedVariant
+                  ?.calculatedPrice?.rawCalculatedAmount?.value ??
+              '0') ?? 0,
+        ),
         // Loyalty earn preview — points this product earns
         if ((num.tryParse(selectedVariant
                         ?.calculatedPrice?.rawCalculatedAmount?.value ??
@@ -484,6 +490,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return null;
   }
 
+  bool _isPlaceholderOption(ProductOption option) {
+    final values = option.values;
+    final variants = product?.variants;
+    if (option.title?.trim().toLowerCase() != 'default option' ||
+        values == null ||
+        values.length != 1 ||
+        values.first.value?.trim().toLowerCase() != 'default option value' ||
+        variants == null ||
+        variants.isEmpty) {
+      return false;
+    }
+
+    // Hide the placeholder only when it is the same implicit choice for
+    // every variant. Its value stays selected for variant matching.
+    return variants.every((variant) =>
+        variant.options?.any((value) =>
+            value.optionId == option.id && value.id == values.first.id) ??
+        false);
+  }
+
   Widget buildCartSection() {
     if (product?.variants?.isEmpty ?? true) {
       return const SizedBox();
@@ -512,6 +538,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     List<Widget> sections = [];
 
     for (var option in product!.options!) {
+      if (_isPlaceholderOption(option)) continue;
       final title = option.title ?? '';
 
       sections.add(Column(
@@ -903,48 +930,41 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       if (product != null &&
           product!.variants != null &&
           product!.variants!.isNotEmpty) {
-        // Case 1: Single "default variant"
-        if (product!.variants!.length == 1 &&
-            product!.variants!.first.title!.toLowerCase() ==
-                "default variant") {
+        final initialVariant = product!.variants!.length == 1
+            ? product!.variants!.first
+            : getCheapestAvailableVariant(product!);
+
+        if (initialVariant != null) {
           setState(() {
-            selectedVariantId = product!.variants!.first.id;
-            selectedVariant = product!.variants!.first;
-            showVariantSelection = false;
-            stockNotAvailable = !isStockAvailable(product!.variants!.first);
-          });
-        } else {
-          final cheapestAvailable = getCheapestAvailableVariant(product!);
+            selectedVariant = initialVariant;
+            selectedVariantId = initialVariant.id;
+            stockNotAvailable = !isStockAvailable(initialVariant);
 
-          if (cheapestAvailable != null) {
-            setState(() {
-              selectedVariant = cheapestAvailable;
-              selectedVariantId = cheapestAvailable.id;
-              stockNotAvailable = !isStockAvailable(cheapestAvailable);
+            // Include hidden placeholder values so selecting a visible option
+            // still resolves to the right variant.
+            selectedOptions = {};
+            for (final opt in initialVariant.options ?? []) {
+              final productOption = product!.options
+                  ?.where((po) => po.id == opt.optionId)
+                  .cast<ProductOption?>()
+                  .firstOrNull;
 
-              // fill selectedOptions for UI highlighting
-              selectedOptions = {};
-              for (final opt in cheapestAvailable.options ?? []) {
-                final productOption = product!.options
-                    ?.where((po) => po.id == opt.optionId)
-                    .cast<ProductOption?>()
-                    .firstOrNull;
+              if (productOption == null) continue;
 
-                if (productOption == null) continue;
+              final matchedValue = productOption.values
+                  ?.where((v) => v.id == opt.id)
+                  .cast<Value?>()
+                  .firstOrNull;
 
-                final matchedValue = productOption.values
-                    ?.where((v) => v.id == opt.id)
-                    .cast<Value?>()
-                    .firstOrNull;
-
-                if (matchedValue != null) {
-                  selectedOptions[productOption.id!] = matchedValue;
-                }
+              if (matchedValue != null) {
+                selectedOptions[productOption.id!] = matchedValue;
               }
+            }
 
-              showVariantSelection = true;
-            });
-          }
+            showVariantSelection =
+                product!.options?.any((option) => !_isPlaceholderOption(option)) ??
+                    false;
+          });
         }
       } else {
         setState(() {

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/public_detail_model.dart';
+import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/soft_update_bottom_sheet.dart';
@@ -37,6 +38,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _resolvedSkipLogin = false;
 
   @override
   void initState() {
@@ -84,10 +86,13 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 
   void navToNextPage() async {
-    final versionCheckJson = widget.publicDetailsResponse
-        ?.storeDetails
-        ?.storeMetadata
-        ?.versionCheck;
+    final publicDetails = await _resolvePublicDetails();
+    _resolvedSkipLogin =
+        publicDetails?.storeDetails?.storeMetadata?.skipLogin ??
+            widget.skipLogin;
+
+    final versionCheckJson =
+        publicDetails?.storeDetails?.storeMetadata?.versionCheck;
 
     debugPrint('min build calling ${versionCheckJson}');
 
@@ -129,7 +134,26 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       debugPrint('min build calling');
     }
 
-    _navigateToHome();
+    _navigateToHome(skipLogin: _resolvedSkipLogin);
+  }
+
+  Future<PublicDetailsResponse?> _resolvePublicDetails() async {
+    final prefs = SharedPreferencesUtil();
+    final cachedPublicDetails =
+        widget.publicDetailsResponse ?? await prefs.getPublicDetails();
+
+    final hasSkipLogin = await prefs.containsKey('skip_login');
+    if (cachedPublicDetails != null && hasSkipLogin) {
+      return cachedPublicDetails;
+    }
+
+    try {
+      final freshPublicDetails = await ApiService().getPublicDetails();
+      await prefs.savePublicDetails(freshPublicDetails);
+      return freshPublicDetails;
+    } catch (_) {
+      return cachedPublicDetails;
+    }
   }
 
   void _openStore() {
@@ -164,7 +188,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
           onUpdateNow: _openStore,
           onContinue: () {
             Navigator.pop(context);
-            _navigateToHome();
+            _navigateToHome(skipLogin: _resolvedSkipLogin);
           },
         ),
       );
@@ -185,10 +209,10 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     return false;
   }
 
-  void _navigateToHome() async {
+  void _navigateToHome({required bool skipLogin}) async {
     String? token = await SharedPreferencesUtil().getString('token');
     Widget nextPage = token == null
-        ? widget.skipLogin ? const BottomNavPage() : WelcomePage()
+        ? skipLogin ? const BottomNavPage() : WelcomePage()
         : const BottomNavPage();
 
     if (mounted) {

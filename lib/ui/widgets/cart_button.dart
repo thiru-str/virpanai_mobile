@@ -24,8 +24,9 @@ class CartButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary, // Purple color
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(16),
           ),
           minimumSize: const Size(double.infinity, 56), // Full width button
         ),
@@ -35,11 +36,19 @@ class CartButton extends StatelessWidget {
           children: [
             Text(
               amount, // Price
-              style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+              style: FontUtils.primaryFontStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
             Text(
               title, // Button label
-              style: FontUtils.primaryFontStyle(fontSize: 18, color: Colors.white),
+              style: FontUtils.primaryFontStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
           ],
         ),

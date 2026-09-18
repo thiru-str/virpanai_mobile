@@ -109,6 +109,10 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
         return "Cash on Delivery";
       case "pp_razorpay_razorpay":
         return "Razorpay";
+      case "pp_cashfree_cashfree":
+        return "Cashfree";
+      case "pp_paytm_paytm":
+        return "Paytm";
       case "pp_neft_neft":
         return "Bank Transfer (NEFT)";
       case "pp_wallet_wallet":
@@ -133,6 +137,12 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
 
       case "pp_wallet_wallet":
         return Icon(Icons.account_balance_wallet, size: 24, color: AppColors.primary);
+
+      case "pp_cashfree_cashfree":
+        return Icon(Icons.account_balance_wallet_rounded, size: 24, color: AppColors.primary);
+
+      case "pp_paytm_paytm":
+        return Icon(Icons.account_balance_wallet_rounded, size: 24, color: AppColors.primary);
 
       default:
         return SvgPicture.asset(AppAssets.ic_payment_cash, width: 24, height: 24,colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),);

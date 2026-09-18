@@ -38,10 +38,17 @@ class AddressCard extends StatelessWidget {
           const SizedBox(height: 10,),
           Row(
             children: [
-              Icon(
-                icon,
-                color: AppColors.primary,
-                size: 24,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -56,7 +63,7 @@ class AddressCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            margin: const EdgeInsets.only(left: 36.0),
+            margin: const EdgeInsets.only(left: 48.0),
             child: Text(
               address,
               style:  FontUtils.primaryFontStyle(
@@ -69,7 +76,7 @@ class AddressCard extends StatelessWidget {
           Visibility(
             visible: isFromEdit,
             child: Container(
-              margin: const EdgeInsets.only(left: 36.0),
+              margin: const EdgeInsets.only(left: 48.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

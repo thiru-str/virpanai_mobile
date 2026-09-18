@@ -42,6 +42,7 @@ class Collection {
   String? handle;
   DateTime? createdAt;
   DateTime? updatedAt;
+  int? count;
 
   Collection({
     this.id,
@@ -49,6 +50,7 @@ class Collection {
     this.handle,
     this.createdAt,
     this.updatedAt,
+    this.count,
   });
 
   factory Collection.fromJson(Map<String, dynamic> json) => Collection(
@@ -57,6 +59,7 @@ class Collection {
     handle: json["handle"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    count: json["count"] is num ? (json["count"] as num).toInt() : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -65,5 +68,6 @@ class Collection {
     "handle": handle,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
+    "count": count,
   };
 }

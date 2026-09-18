@@ -4,6 +4,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
@@ -20,6 +26,7 @@ import 'package:waioz/ui/widgets/fulfillment_method_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
+import 'package:waioz/ui/widgets/cashfree_emi_options.dart';
 import 'package:waioz/ui/widgets/check_out_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/custom_popup_widget.dart';
@@ -73,6 +80,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   ShippingOption? shippingOption;
 
   Razorpay razorpay = Razorpay();
+  final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
 
   // Split payment state
   bool splitActive = false;
@@ -94,6 +102,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   @override
   void initState() {
     super.initState();
+    _cashfree.setCallback(_verifyCashfreePayment, _cashfreeError);
     cartResponse = widget.cartResponse;
     final m = cartResponse?.cart?.metadata;
     if (m is Map) {
@@ -242,6 +251,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                               context, providers);
                                         }
                                       }),
+
+                                CashfreeEmiOptions(
+                                  amount: splitActive
+                                      ? splitGatewayAmount
+                                      : (cartResponse?.cart?.total ?? 0),
+                                  placement: 'checkout',
+                                ),
 
                                 // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                                 if (pp_id == 'pp_wallet_wallet' && !splitActive)
@@ -418,6 +434,27 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
+
+  void _openCashfree(
+      String orderId, String paymentSessionId, String? environment) {
+    try {
+      final session = CFSessionBuilder()
+          .setEnvironment(environment == 'production'
+              ? CFEnvironment.PRODUCTION
+              : CFEnvironment.SANDBOX)
+          .setOrderId(orderId)
+          .setPaymentSessionId(paymentSessionId)
+          .build();
+      _cashfree
+          .doPayment(CFWebCheckoutPaymentBuilder().setSession(session).build());
+    } on CFException catch (e) {
+      AppUtils.showToast(e.message);
+    }
+  }
+
+  void _verifyCashfreePayment(String _orderId) => completeCart();
+  void _cashfreeError(CFErrorResponse error, String _orderId) =>
+      AppUtils.showToast(error.getMessage() ?? 'Cashfree payment failed');
 
   void makeStripeCall(String clientSecret) async {
     try {
@@ -971,6 +1008,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
         String? orderId = extractOrderId(apiResponse);
         if (orderId != null) {
           makeRazorPayCall(orderId);
+        }
+        break;
+      case 'pp_cashfree_cashfree':
+        final session = apiResponse.paymentCollection?.paymentSessions
+            ?.where((item) => item.providerId == 'pp_cashfree_cashfree')
+            .firstOrNull;
+        final data = session?.data;
+        if (data?.orderId != null && data?.paymentSessionId != null) {
+          _openCashfree(data!.orderId!, data.paymentSessionId!, data.environment);
+        } else {
+          AppUtils.showToast('Cashfree payment session is unavailable. Please try again.');
         }
         break;
       case 'pp_stripe_stripe':

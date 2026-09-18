@@ -283,6 +283,3 @@ class _ProductCard4State extends State<ProductCard4> {
     );
   }
 }
-
-
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../../utility/app_assets.dart';
 
@@ -88,10 +89,9 @@ Widget _buildIcon(
             ),
             child: Text(
               cartCount > 99 ? '99+' : '$cartCount', // clamp big numbers
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+              style: UiTypography.cardMeta(color: Colors.white).copyWith(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
               ),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
@@ -112,6 +112,5 @@ Widget _buildIcon(
     ),
   );
 }
-
 
 

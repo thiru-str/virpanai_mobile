@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
+import '../../utility/ui_typography.dart';
+import 'product_card_variant_chips.dart';
 
 class ProductCard9 extends StatelessWidget {
   final Product product;
@@ -55,7 +57,9 @@ class ProductCard9 extends StatelessWidget {
     final rating = double.tryParse(
       product.metadata?.reviewSummary?.averageRating?.toString() ?? '',
     );
-    final totalReviews = product.metadata?.reviewSummary?.totalReviews ?? '';
+    final totalReviews = int.tryParse(
+      product.metadata?.reviewSummary?.totalReviews ?? '',
+    );
 
     final calc = cheapest != null
         ? double.tryParse(
@@ -79,7 +83,15 @@ class ProductCard9 extends StatelessWidget {
         width: 195,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFFD9D9D9)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,10 +99,14 @@ class ProductCard9 extends StatelessWidget {
             Stack(
               children: [
                 Container(
-                  margin: const EdgeInsets.fromLTRB(6, 5, 6, 0),
+                  margin: const EdgeInsets.fromLTRB(6, 6, 6, 0),
                   width: double.infinity,
                   height: 187,
-                  color: const Color(0xFFE1E4ED),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: images.isEmpty
                       ? const Center(
                           child: ImageFallbackWidget(
@@ -112,14 +128,14 @@ class ProductCard9 extends StatelessWidget {
                   child: Container(
                     width: 84,
                     height: 23,
-                    color: const Color(0xFFD4D5D8),
+                    color: Colors.transparent,
                     alignment: Alignment.center,
                     child: Text(
                       '',
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                      style: UiTypography.cardMeta(
                         color: Colors.black,
+                      ).copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -132,13 +148,24 @@ class ProductCard9 extends StatelessWidget {
                 product.title ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                style: UiTypography.cardTitle(
                   color: const Color(0xFF272727),
+                ).copyWith(
+                  fontSize: 15,
+                  height: 1.2,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
+            // ---- Variant chips ----
+            Builder(builder: (_) {
+              final info = variantInfo(product);
+              if (info.variant == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                child: buildVariantChips(info.variant!, info.count - 1),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(6, 8, 6, 0),
               child: Wrap(
@@ -147,76 +174,77 @@ class ProductCard9 extends StatelessWidget {
                 children: [
                   Text(
                     _fmt(calc ?? orig ?? 0),
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black.withOpacity(0.8),
-                    ),
+                    style: UiTypography.cardPrice(color: AppColors.primary),
                   ),
                   Text(
                     _fmt(orig ?? calc ?? 0),
-                    style: FontUtils.secondaryFontStyle(
+                    style: UiTypography.cardMeta(
+                      color: Colors.grey,
+                    ).copyWith(
                       fontSize: 13,
-                      color: const Color(0xFF7E7D7D),
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
                   Text(
                     percentOff != null ? '$percentOff% off' : '',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black.withOpacity(0.8),
+                    style: UiTypography.cardMeta(
+                      color: const Color(0xFF1FA971),
+                    ).copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 39,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE1E4ED),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      (rating != null ? rating.toStringAsFixed(1) : '4.2'),
-                      style: FontUtils.secondaryFontStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF6D758F),
+            if (rating != null && rating.isFinite && rating > 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 39,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE1E4ED),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        rating.toStringAsFixed(1),
+                        style: UiTypography.cardMeta(
+                          color: const Color(0xFF6D758F),
+                        ).copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    child: Text(
-                      totalReviews.isNotEmpty ? '$totalReviews Ratings' : '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                    if (totalReviews != null && totalReviews > 0) ...[
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          '$totalReviews Ratings',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: UiTypography.cardMeta(
+                            color: Colors.black,
+                          ).copyWith(
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  ],
+                ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(6, 10, 6, 0),
               child: Text(
                 '',
-                style: FontUtils.secondaryFontStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                style: UiTypography.cardMeta(
                   color: Colors.black.withOpacity(0.8),
+                ).copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -232,20 +260,20 @@ class ProductCard9 extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: onAddToCart,
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.black),
+                              backgroundColor: Colors.white,
+                              side: BorderSide(
+                                  color: AppColors.primary, width: 1.5),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             child: Text(
                               'Add to Cart',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                              ),
+                              style:
+                                  UiTypography.cardAction(color: AppColors.primary)
+                                      .copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ),

@@ -8,6 +8,7 @@ import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
+import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -16,6 +17,8 @@ class CombinedHeaderAppBar extends StatelessWidget
   final Function(String)? onSearchTextChanged;
   final VoidCallback? onSearchClick;
   final VoidCallback? onBackTap;
+  final VoidCallback? onLocationTap;
+  final VoidCallback? onProfileTap;
   final String title;
   final String addressType;
   final int cartCount;
@@ -28,6 +31,8 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.onSearchTextChanged,
     this.onSearchClick,
     this.onBackTap,
+    this.onLocationTap,
+    this.onProfileTap,
     this.title = "",
     this.addressType = "",
     this.cartCount = 0,
@@ -176,53 +181,90 @@ class CombinedHeaderAppBar extends StatelessWidget
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Icon(Icons.location_pin, color: Colors.grey, size: 36),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                addressType,
-                                style: FontUtils.secondaryFontStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: AppColors.textColor,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down,
-                                  color: AppColors.textColor, size: 20),
-                            ],
-                          ),
-                          Text(
-                            title,
-                            style: FontUtils.secondaryFontStyle(
-                              fontSize: 14,
-                              color: AppColors.textColor,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildIcon(Icons.account_circle, color: Colors.grey, size: 40),
+              Expanded(child: _locationRow()),
+              _buildIcon(Icons.account_circle,
+                  color: Colors.grey, size: 32, onPressed: onProfileTap),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           _buildSearchBar(),
         ],
+      ),
+    );
+  }
+
+  /// Reusable location row — tappable, ellipsised, empty state.
+  /// [showLeadingIcon] paints the brand-tinted pin on the left; header-7 sets
+  /// it to false because it already has a profile icon there.
+  Widget _locationRow({bool showLeadingIcon = true}) {
+    final bool hasAddress = title.trim().isNotEmpty;
+    final String label =
+        addressType.trim().isNotEmpty ? addressType : AppStrings.fast_delivery;
+
+    return InkWell(
+      onTap: onLocationTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (showLeadingIcon) ...[
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.location_on_rounded,
+                    color: AppColors.primary, size: 18),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.secondaryFontStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.keyboard_arrow_down,
+                          color: AppColors.textColor, size: 18),
+                    ],
+                  ),
+                  Text(
+                    hasAddress ? title : AppStrings.set_delivery_address,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 13,
+                      color: hasAddress
+                          ? AppColors.textColor.withValues(alpha: 0.7)
+                          : AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -230,46 +272,23 @@ class CombinedHeaderAppBar extends StatelessWidget
   /// --- Header 7: Profile + Address + Search ---
   AppBar _buildHeader7(BuildContext context) {
     return _baseAppBar(
-      child: GestureDetector(
-        onTap: () {
-          PageRouteUtils.pushWithSlide(context, SearchAddressPage());
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _buildIcon(Icons.account_circle, color: Colors.grey, size: 40),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(AppStrings.fast_delivery,
-                        style: FontUtils.secondaryFontStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor)),
-                    Row(
-                      children: [
-                        Text(
-                          title.isEmpty
-                              ? "14/1, 3rd Cross Street, P And..."
-                              : title,
-                          style: FontUtils.secondaryFontStyle(
-                              color: AppColors.textColor),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.keyboard_arrow_down,
-                            color: AppColors.textColor, size: 20),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            _buildSearchBar(),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: onProfileTap,
+                child: Icon(Icons.account_circle,
+                    color: Colors.grey, size: 36),
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: _locationRow(showLeadingIcon: false)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildSearchBar(),
+        ],
       ),
     );
   }
@@ -339,18 +358,17 @@ class CombinedHeaderAppBar extends StatelessWidget
         height: 44,
         decoration: BoxDecoration(
           color: AppColors.searchBarColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.textColor),
+            Icon(Icons.search, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 AppStrings.search,
-                style: FontUtils.secondaryFontStyle(
-                  color: AppColors.textColor.withOpacity(0.7),
-                ),
+                style: UiTypography.searchHint(),
               ),
             ),
           ],

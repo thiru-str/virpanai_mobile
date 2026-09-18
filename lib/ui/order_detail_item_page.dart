@@ -14,6 +14,8 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/app_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
 import '../utility/shared_preferences_util.dart';
@@ -74,6 +76,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_razorpay_razorpay": "Razorpay",
     "pp_neft_neft": "NEFT",
     "pp_payu_payu": "PayU",
+    "pp_paytm_paytm": "Paytm",
     "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;
@@ -130,6 +133,35 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
       }
       print(e);
     }
+  }
+
+  Future<Map<String, double>> _fetchCustomerReviewRatings(
+    ApiService apiService,
+    Data? orderData,
+  ) async {
+    final productIds = (orderData?.items ?? [])
+        .where((item) => item.status == 'delivered')
+        .map((item) => item.productId ?? '')
+        .where((productId) => productId.isNotEmpty)
+        .toSet();
+
+    final ratings = <String, double>{};
+    await Future.wait(productIds.map((productId) async {
+      try {
+        final reviewResponse =
+            await apiService.getProductReviews(context, productId);
+        final customerReview = reviewResponse.data?.customerReview;
+        final reviewId = customerReview?.id ?? '';
+        final rating = double.tryParse(customerReview?.rating ?? '');
+        if (reviewId.isNotEmpty && rating != null) {
+          ratings[productId] = rating;
+        }
+      } catch (e) {
+        debugPrint('review rating load error: $e');
+      }
+    }));
+
+    return ratings;
   }
 
   @override
@@ -405,9 +437,10 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: FontUtils.primaryFontStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.bold,
+      style: UiTypography.cardTitle().copyWith(
+        fontSize: 18,
+        height: 1.25,
+        letterSpacing: -0.2,
       ),
     );
   }

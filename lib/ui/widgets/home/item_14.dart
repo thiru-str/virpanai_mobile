@@ -196,7 +196,7 @@ class _Item14Card extends StatelessWidget {
                 children: [
                   Text(
                     CurrencyUtil.appendCurrency(selling.toStringAsFixed(0)),
-                    style: const TextStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
@@ -206,7 +206,7 @@ class _Item14Card extends StatelessWidget {
                   if (hasDiscount)
                     Text(
                       CurrencyUtil.appendCurrency(original.toStringAsFixed(0)),
-                      style: const TextStyle(
+                      style: FontUtils.secondaryFontStyle(
                         fontSize: 12,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
@@ -222,10 +222,11 @@ class _Item14Card extends StatelessWidget {
                       ),
                       child: Text(
                         "$percentOff% OFF",
-                        style: const TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 10,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),

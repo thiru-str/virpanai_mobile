@@ -194,9 +194,9 @@ class _Item11CardState extends State<_Item11Card> {
                       child: Text(
                         "$percentOff%\nOFF",
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 8,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),

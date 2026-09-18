@@ -109,6 +109,7 @@ class StoreMetadata {
   String? invoiceUrl;
   num? minimumOrderValue;
   String? selfPickupAddress;
+  String? favouriteListName;
 
   StoreMetadata({
     this.skipLogin,
@@ -116,6 +117,7 @@ class StoreMetadata {
     this.invoiceUrl,
     this.minimumOrderValue,
     this.selfPickupAddress,
+    this.favouriteListName,
   });
 
   factory StoreMetadata.fromJson(Map<String, dynamic> json) => StoreMetadata(
@@ -124,6 +126,7 @@ class StoreMetadata {
         invoiceUrl: json["invoice_url"],
         minimumOrderValue: json["minimum_order_value"],
         selfPickupAddress: json["self_pickup_address"],
+        favouriteListName: json["favourite_list_name"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -132,6 +135,7 @@ class StoreMetadata {
         "invoice_url": invoiceUrl,
         "minimum_order_value": minimumOrderValue,
         "self_pickup_address": selfPickupAddress,
+        "favourite_list_name": favouriteListName,
       };
 }
 

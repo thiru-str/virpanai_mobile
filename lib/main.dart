@@ -19,6 +19,7 @@ import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../ui/splash_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
@@ -53,6 +54,7 @@ Future<void> main() async {
     // Render immediately using cached config (if present), then refresh in background.
     final PublicDetailsResponse? cachedPublicDetails =
         await SharedPreferencesUtil().getPublicDetails();
+
     await ExtensionsUtil.refresh();
     _applyThemeFromPublicDetails(cachedPublicDetails);
     final bool skipLogin = await prefs.getBool('skip_login') ??
@@ -129,7 +131,7 @@ Future<void> _savePublicDetailsToPrefs(PublicDetailsResponse details) async {
   final prefs = SharedPreferencesUtil();
   await prefs.saveMap('public_details', details.toJson());
   await prefs.saveString('publishable_key', details.token ?? '');
-  await prefs.saveBool('google_map_usage', false);
+  await prefs.saveBool('google_map_usage', details.googleMapUsage ?? false);
   await prefs.saveString('app_header', details.theme?.header ?? '');
   await prefs.saveString('product_view', details.theme?.productView ?? '');
   await prefs.saveString(

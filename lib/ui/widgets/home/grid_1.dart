@@ -205,9 +205,10 @@ class _Grid1Card extends StatelessWidget {
                       ),
                       child: Text(
                         layoutData.salesText ?? '',
-                        style: const TextStyle(
+                        style: FontUtils.secondaryFontStyle(
                           fontSize: 10,
                           color: Colors.white,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -236,7 +237,7 @@ class _Grid1Card extends StatelessWidget {
                               layoutData.featureText ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: FontUtils.secondaryFontStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -260,7 +261,8 @@ class _Grid1Card extends StatelessWidget {
                                   const SizedBox(width: 2),
                                   Text(
                                     _generateRandomRating(),
-                                    style: const TextStyle(fontSize: 10),
+                                    style: FontUtils.secondaryFontStyle(
+                                        fontSize: 10),
                                   ),
                                 ],
                               ),
@@ -342,8 +344,9 @@ class _Grid1Card extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       layoutData.prices?.discountPercentage ?? '',
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         color: Colors.green.shade700,
                       ),
                     ),

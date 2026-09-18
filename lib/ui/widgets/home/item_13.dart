@@ -176,12 +176,13 @@ class _Item13Card extends StatelessWidget {
                       height: 24,
                       color: Colors.green,
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         AppStrings.new_tag,
-                        style: TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           color: Colors.white,
                           fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
@@ -203,12 +204,12 @@ class _Item13Card extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.star, size: 14, color: Colors.brown),
-                    SizedBox(width: 4),
+                  children: [
+                    const Icon(Icons.star, size: 14, color: Colors.brown),
+                    const SizedBox(width: 4),
                     Text(
                       "5 (2)",
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
@@ -226,10 +227,11 @@ class _Item13Card extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 layoutData.title ?? '',
-                style: const TextStyle(
+                style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
+                  letterSpacing: 0.1,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -245,7 +247,7 @@ class _Item13Card extends StatelessWidget {
                 children: [
                   Text(
                     CurrencyUtil.appendCurrency(selling.toStringAsFixed(0)),
-                    style: const TextStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
@@ -255,7 +257,7 @@ class _Item13Card extends StatelessWidget {
                   if (hasDiscount)
                     Text(
                       CurrencyUtil.appendCurrency(original.toStringAsFixed(0)),
-                      style: const TextStyle(
+                      style: FontUtils.secondaryFontStyle(
                         fontSize: 12,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
@@ -271,10 +273,11 @@ class _Item13Card extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
-                  style: const TextStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.green,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
@@ -286,12 +289,13 @@ class _Item13Card extends StatelessWidget {
                 onPressed: onTap,
                 icon: const Icon(Icons.shopping_cart_outlined,
                     size: 16, color: Colors.brown),
-                label: const Text(
+                label: Text(
                   AppStrings.add_to_cart,
-                  style: TextStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: Colors.brown,
+                    letterSpacing: 0.2,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(

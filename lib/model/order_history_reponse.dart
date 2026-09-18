@@ -137,6 +137,10 @@ class Metadata {
   String? type;
   num? percentage;
   Map<String, dynamic>? walletSplit;
+  // Deferred-debit intent for loyalty checkout-apply. Set on the order at
+  // checkout time and consulted by the list/detail UIs to compute the
+  // actually-paid amount (order.total minus wallet minus loyalty discount).
+  // See [[feedback-loyalty-deferred-debit]] in memory.
   Map<String, dynamic>? loyaltyCheckoutApply;
 
   Metadata({

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:waioz/model/delivery_schedule_response.dart';
 
 import 'package:dio/dio.dart';
@@ -30,6 +29,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
+import 'package:waioz/model/product_filter_facets_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
@@ -116,8 +116,17 @@ class ApiService {
           return status != null && status < 500;
         },
       ));
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.logFullJson(response.data);
+      if (response.statusCode == 200) {
+        if (endpoint == 'store/get_home_page/v8') {
+          final payload = response.data as Map<String, dynamic>?;
+          final content = payload?['content'];
+          AppLogger.print(
+            'Home page response:',
+            'status=${payload?['status']}, components=${content is List ? content.length : 0}',
+          );
+        } else {
+          AppLogger.logFullJson(response.data);
+        }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
@@ -511,7 +520,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if (sortBy != null) {
+    if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -592,11 +601,21 @@ class ApiService {
   }
 
   Future<HomePageResponse> getHomePage(BuildContext context,
-      {int offset = 0, int limit = 0}) async {
+      {int offset = 0,
+      int limit = 0,
+      double? latitude,
+      double? longitude,
+      String? pincode}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-      {'limit': limit, 'offset': offset},
+      {
+        'limit': limit,
+        'offset': offset,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
@@ -674,6 +693,25 @@ class ApiService {
       productId,
       null,
       (json) => ReviewResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => Map<String, dynamic>.from(json),
       context,
     );
   }
@@ -889,14 +927,37 @@ class ApiService {
       BuildContext context, int qty, String variantId) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    final response = await _makePostRequest(
-      'store/custom-carts/$cartId/line-items',
-      {"variant_id": variantId, "quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
-    unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
-    return response;
+    try {
+      final response = await _makePostRequest(
+        'store/custom-carts/$cartId/line-items',
+        {"variant_id": variantId, "quantity": qty, "metadata": {}},
+        (json) => CartResponse.fromJson(json),
+        context,
+      );
+      unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
+      return response;
+    } catch (e) {
+      if (e.toString().contains('status code: 409')) {
+        try {
+          final homeResponse = await getHomePage(context);
+          final newCartId = homeResponse.global?.cartId;
+          if (newCartId != null && newCartId.isNotEmpty && newCartId != cartId) {
+            await SharedPreferencesUtil().saveString('cart_id', newCartId);
+            final response = await _makePostRequest(
+              'store/custom-carts/$newCartId/line-items',
+              {"variant_id": variantId, "quantity": qty, "metadata": {}},
+              (json) => CartResponse.fromJson(json),
+              context,
+            );
+            unawaited(StoreesService.instance.trackCartCreatedIfNeeded(response));
+            return response;
+          }
+        } catch (_) {
+          // Preserve the original cart error if recovery fails.
+        }
+      }
+      rethrow;
+    }
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
@@ -1148,6 +1209,28 @@ class ApiService {
     return response;
   }
 
+  Future<Map<String, dynamic>> getCashfreeEmiOptions(num amount) async {
+    await addToken();
+    final response = await _dio
+        .get('store/cashfree/emi-options', queryParameters: {'amount': amount});
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeBnplConfig() async {
+    await addToken();
+    final response = await _dio.get('store/cashfree/bnpl-config');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeDisplayOptions(num amount) async {
+    await addToken();
+    final response = await _dio.get(
+      'store/cashfree/display-options',
+      queryParameters: {'amount': amount},
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   Future<PublicDetailsResponse> getPublicDetails() async {
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',
@@ -1251,12 +1334,44 @@ class ApiService {
     );
   }
 
-  Future<TagsResponse> listTags(BuildContext context) async {
+  Future<TagsResponse> listTags(BuildContext context,
+      {String? categoryIds}) async {
+    final queryParams = <String, dynamic>{"fields": "id,value"};
+    final categories = (categoryIds ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (categories.isNotEmpty) {
+      queryParams['category_id[]'] = categories;
+    }
+
     return _makeGetRequest<TagsResponse>(
-      'store/product-tags',
-      '?fields=id,value',
+      categories.isEmpty ? 'store/product-tags' : 'store/product-filter-tags',
       null,
+      queryParams,
       (json) => TagsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductFilterFacetsResponse> listProductFilterFacets(
+    BuildContext context, {
+    List<String> categoryIds = const [],
+    List<String> collectionIds = const [],
+    List<String> tagIds = const [],
+  }) async {
+    final queryParams = <String, dynamic>{
+      if (categoryIds.isNotEmpty) 'category_id[]': categoryIds,
+      if (collectionIds.isNotEmpty) 'collection_id[]': collectionIds,
+      if (tagIds.isNotEmpty) 'tag_id[]': tagIds,
+    };
+
+    return _makeGetRequest<ProductFilterFacetsResponse>(
+      'store/product-filter-facets',
+      null,
+      queryParams,
+      (json) => ProductFilterFacetsResponse.fromJson(json),
       context,
     );
   }
