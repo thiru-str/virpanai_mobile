@@ -330,9 +330,6 @@ class _FilterPageState extends State<FilterPage> {
                         e.title != null &&
                         e.title!.toLowerCase().contains(facetSearchQuery))
                     .map((e) => MapEntry(e.id!, e.title!))),
-                countMap: Map.fromEntries(collectionsList
-                    .where((e) => e.id != null)
-                    .map((e) => MapEntry(e.id!, e.count))),
                 onSelectionChanged: _loadFacets,
               );
       case FilterSection.categories:
@@ -353,9 +350,6 @@ class _FilterPageState extends State<FilterPage> {
                         e.name != null &&
                         e.name!.toLowerCase().contains(facetSearchQuery))
                     .map((e) => MapEntry(e.id!, e.name!))),
-                countMap: Map.fromEntries(categoryList
-                    .where((e) => e.id != null)
-                    .map((e) => MapEntry(e.id!, e.count))),
                 onSelectionChanged: _loadFacets,
               );
       case FilterSection.tags:
@@ -377,9 +371,6 @@ class _FilterPageState extends State<FilterPage> {
                         e.value != null &&
                         e.value!.toLowerCase().contains(facetSearchQuery))
                     .map((e) => MapEntry(e.id!, e.value!))),
-                countMap: Map.fromEntries(tagsList
-                    .where((e) => e.id != null)
-                    .map((e) => MapEntry(e.id!, e.count))),
               );
       case FilterSection.price:
         return _buildPriceFilter();
@@ -393,7 +384,6 @@ class _FilterPageState extends State<FilterPage> {
     required List<String> items,
     required Set<String> selectedSet,
     required Map<String, String> labelMap,
-    required Map<String, int?> countMap,
     VoidCallback? onSelectionChanged,
   }) {
     return Column(
@@ -403,7 +393,6 @@ class _FilterPageState extends State<FilterPage> {
         Expanded(
           child: _buildFilterList(items, selectedSet,
               labelMap: labelMap,
-              countMap: countMap,
               onSelectionChanged: onSelectionChanged),
         ),
       ],
@@ -454,7 +443,6 @@ class _FilterPageState extends State<FilterPage> {
     List<String> items,
     Set<String> selectedSet, {
     Map<String, String>? labelMap,
-    Map<String, int?>? countMap,
     VoidCallback? onSelectionChanged,
   }) {
     return ListView.separated(
@@ -467,7 +455,6 @@ class _FilterPageState extends State<FilterPage> {
         final displayName = labelMap?[id] ?? id;
         return FilterOption(
           title: displayName,
-          count: countMap?[id],
           selected: isSelected,
           onSelected: () {
             setState(() {
@@ -755,13 +742,11 @@ class SidebarItem extends StatelessWidget {
 
 class FilterOption extends StatelessWidget {
   final String title;
-  final int? count;
   final bool selected;
   final VoidCallback onSelected;
 
   const FilterOption({
     required this.title,
-    this.count,
     required this.selected,
     required this.onSelected,
   });
@@ -770,7 +755,6 @@ class FilterOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return _SelectableRow(
       label: title,
-      count: count,
       selected: selected,
       isRadio: false,
       onTap: onSelected,
@@ -782,14 +766,12 @@ class FilterOption extends StatelessWidget {
 /// options (checkbox style) and sort options (radio style).
 class _SelectableRow extends StatelessWidget {
   final String label;
-  final int? count;
   final bool selected;
   final bool isRadio;
   final VoidCallback onTap;
 
   const _SelectableRow({
     required this.label,
-    this.count,
     required this.selected,
     required this.isRadio,
     required this.onTap,
@@ -814,26 +796,6 @@ class _SelectableRow extends StatelessWidget {
                 ),
               ),
             ),
-            if (count != null) ...[
-              const SizedBox(width: 8),
-              Container(
-                constraints: const BoxConstraints(minWidth: 24),
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '$count',
-                  textAlign: TextAlign.center,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-              ),
-            ],
             const SizedBox(width: 8),
             _indicator(),
           ],

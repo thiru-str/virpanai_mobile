@@ -5,6 +5,7 @@ class AppConfig {
   static const String baseUrl = 'https://dev.api.ecommerce.gowelmart.com/';
   // static const String baseUrl = 'https://apiecommerce.gowelmart.com/';
   // static const String baseUrl = 'http://192.168.0.19:9001/';
+  // static const String baseUrl = 'http://10.249.73.106:9001/';
   static const String storeesBaseUrl = 'https://api-storees.gowelmart.com/api/v1';
   static const String storeesApiKey =
       'sk_live_f279e18448823a9083d62e17720a06b6865e55f619fe62ae';
