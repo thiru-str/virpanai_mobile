@@ -393,6 +393,7 @@ class _ProductPageState extends State<ProductPage> {
                           index: index % 10,
                           child: ProductCard4(
                             product: product,
+                            imageBackgroundColor: Colors.white,
                             isLoggedIn: _isLoggedIn,
                             favConfig: _favConfig,
                             isFavorite:

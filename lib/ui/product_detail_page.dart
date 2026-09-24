@@ -304,7 +304,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             },
             child: Container(
               width: 180,
-              decoration: BoxDecoration(color: AppColors.secondary),
+              decoration: const BoxDecoration(color: Colors.white),
               child: isVideo
                   ? Stack(
                       alignment: Alignment.center,
@@ -330,8 +330,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     )
                   : CachedNetworkImage(
                       imageUrl: url,
+                      width: 180,
                       height: 250,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       errorWidget: (_, __, ___) =>
                           const ImageFallbackWidget(h: 250),
                     ),

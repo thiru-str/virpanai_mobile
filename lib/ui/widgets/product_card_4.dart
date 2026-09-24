@@ -17,6 +17,7 @@ class ProductCard4 extends StatefulWidget {
   final bool isFavorite;
   final FavouriteListConfig? favConfig;
   final bool isLoggedIn;
+  final Color imageBackgroundColor;
 
   const ProductCard4({
     Key? key,
@@ -27,6 +28,7 @@ class ProductCard4 extends StatefulWidget {
     this.isFavorite = false,
     this.favConfig,
     this.isLoggedIn = false,
+    this.imageBackgroundColor = const Color(0xFFF5F5F5),
   }) : super(key: key);
 
   @override
@@ -94,7 +96,7 @@ class _ProductCard4State extends State<ProductCard4> {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                   child: Container(
                     height: 140,
-                    color: Colors.grey[100],
+                    color: widget.imageBackgroundColor,
                     child: images.isEmpty
                         ? const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain)
                         : PageView.builder(
