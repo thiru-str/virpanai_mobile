@@ -921,7 +921,7 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<void> getCartApi() async {
+  Future<bool> getCartApi() async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
@@ -951,11 +951,13 @@ class _CartPageState extends State<CartPage>
       _syncPricingStateFromCart();
       // Load wallet info after cart is ready
       await _loadWalletInfo();
+      return true;
     } catch (e) {
       setState(() {
         apiLoading = false;
       });
       debugPrint(' error in cart $e');
+      return false;
     }
   }
 
@@ -1307,7 +1309,22 @@ class _CartPageState extends State<CartPage>
     // Refresh cart first — in-memory state may be stale; the shipping method
     // may already have been attached server-side since the last fetch.
     setState(() => cartLoading = true);
-    await getCartApi();
+    final refreshed = await getCartApi();
+
+    if (!refreshed) {
+      if (mounted) setState(() => cartLoading = false);
+      AppUtils.showToast(
+          'Unable to verify the latest cart availability. Please try again.');
+      return;
+    }
+
+    // The cart may have become stale while the app was backgrounded. Re-check
+    // the freshly fetched inventory result before opening an external gateway.
+    if (cartResponse?.cart?.error == true) {
+      if (mounted) setState(() => cartLoading = false);
+      AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+      return;
+    }
 
     final hasShipping =
         (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
