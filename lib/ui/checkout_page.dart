@@ -217,12 +217,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       style: UiTypography.cardMeta(
                                           color: AppColors.textColor50),
                                     ),
-                                    Text(
-                                      CurrencyUtil.appendCurrency(
-                                          payableAmount.toStringAsFixed(2)),
-                                      style: UiTypography.cardPrice(
-                                              color: AppColors.primary)
-                                          .copyWith(fontSize: 20),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        CurrencyUtil.appendCurrency(
+                                            payableAmount.toStringAsFixed(2)),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                        style: UiTypography.cardPrice(
+                                                color: AppColors.primary)
+                                            .copyWith(fontSize: 20),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -555,36 +561,46 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Available Balance',
-                            style: UiTypography.cardMeta(
-                                color: AppColors.textColor50)),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyUtil.appendCurrency(
-                              walletBalance.toStringAsFixed(2)),
-                          style: UiTypography.cardPrice(
-                                  color: AppColors.textColor)
-                              .copyWith(fontSize: 18),
-                        ),
-                      ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Available Balance',
+                              style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50)),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyUtil.appendCurrency(
+                                walletBalance.toStringAsFixed(2)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: UiTypography.cardPrice(
+                                    color: AppColors.textColor)
+                                .copyWith(fontSize: 18),
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('Order Total',
-                            style: UiTypography.cardMeta(
-                                color: AppColors.textColor50)),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyUtil.appendCurrency(
-                              cartTotal.toStringAsFixed(2)),
-                          style: UiTypography.cardAction(
-                              color: AppColors.textColor),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Order Total',
+                              style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50)),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyUtil.appendCurrency(
+                                cartTotal.toStringAsFixed(2)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                            style: UiTypography.cardAction(
+                                color: AppColors.textColor),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

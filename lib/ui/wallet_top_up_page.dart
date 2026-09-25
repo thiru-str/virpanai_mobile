@@ -397,6 +397,8 @@ class _WalletTopUpPageState extends State<WalletTopUpPage> {
                         _amountController.text.isNotEmpty
                             ? 'Pay ₹${_amountController.text}'
                             : 'Add money',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,

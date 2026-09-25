@@ -272,6 +272,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 Text(
                   fullName,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: UiTypography.cardTitle().copyWith(
                     fontSize: 18,
@@ -282,6 +283,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 4),
                 Text(
                   customer?.email ?? "",
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: UiTypography.cardSubtitle(),
                 ),
@@ -368,6 +370,8 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 child: Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: UiTypography.cardTitle().copyWith(
                     fontSize: 15,
                     height: 1.25,
