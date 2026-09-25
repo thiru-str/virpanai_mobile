@@ -129,17 +129,25 @@ class _ProductCard5State extends State<ProductCard5> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  _fmt(calc ?? orig ?? 0),
-                  style: UiTypography.cardPrice(color: AppColors.textColor)
-                      .copyWith(fontWeight: FontWeight.w600),
+                Flexible(
+                  child: Text(
+                    _fmt(calc ?? orig ?? 0),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: UiTypography.cardPrice(color: AppColors.textColor)
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 if (hasDiscount && orig != null) ...[
                   const SizedBox(width: 8),
-                  Text(
-                    _fmt(orig),
-                    style: UiTypography.cardMeta(color: Colors.grey).copyWith(
-                      decoration: TextDecoration.lineThrough,
+                  Flexible(
+                    child: Text(
+                      _fmt(orig),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
+                        decoration: TextDecoration.lineThrough,
+                      ),
                     ),
                   ),
                 ],

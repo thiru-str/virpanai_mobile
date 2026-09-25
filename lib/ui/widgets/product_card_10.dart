@@ -188,18 +188,28 @@ class _ProductCard10State extends State<ProductCard10> {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text(
-                    _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(color: const Color(0xFFE53935))
-                        .copyWith(fontSize: 20, fontWeight: FontWeight.w800),
+                  Flexible(
+                    child: Text(
+                      _fmt(calc ?? orig ?? 0),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: UiTypography.cardPrice(
+                              color: const Color(0xFFE53935))
+                          .copyWith(fontSize: 20, fontWeight: FontWeight.w800),
+                    ),
                   ),
                   if (hasDiscount && orig != null) ...[
                     const SizedBox(width: 8),
-                    Text(
-                      _fmt(orig),
-                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
-                        decoration: TextDecoration.lineThrough,
-                        fontSize: 13,
+                    Flexible(
+                      child: Text(
+                        _fmt(orig),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            UiTypography.cardMeta(color: Colors.grey).copyWith(
+                          decoration: TextDecoration.lineThrough,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],

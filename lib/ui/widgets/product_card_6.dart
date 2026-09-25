@@ -178,9 +178,14 @@ class _ProductCard6State extends State<ProductCard6> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        _fmt(calc ?? orig ?? 0),
-                        style: UiTypography.cardPrice(color: AppColors.primary),
+                      Flexible(
+                        child: Text(
+                          _fmt(calc ?? orig ?? 0),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              UiTypography.cardPrice(color: AppColors.primary),
+                        ),
                       ),
                       if (hasDiscount && orig != null) ...[
                         const SizedBox(width: 8),

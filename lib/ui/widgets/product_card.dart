@@ -190,16 +190,24 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Row(
                 children: [
-                  Text(
-                    _fmt(calc ?? orig ?? 0), // show calc, else original
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                  Flexible(
+                    child: Text(
+                      _fmt(calc ?? orig ?? 0), // show calc, else original
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: UiTypography.cardPrice(color: AppColors.primary),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   if (hasDiscount && orig != null)
-                    Text(
-                      _fmt(orig),
-                      style: UiTypography.cardMeta().copyWith(
-                        decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Text(
+                        _fmt(orig),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: UiTypography.cardMeta().copyWith(
+                          decoration: TextDecoration.lineThrough,
+                        ),
                       ),
                     ),
                 ],

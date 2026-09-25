@@ -200,16 +200,25 @@ class _ProductCard4State extends State<ProductCard4> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 children: [
-                  Text(
-                    _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                  Flexible(
+                    child: Text(
+                      _fmt(calc ?? orig ?? 0),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: UiTypography.cardPrice(color: AppColors.primary),
+                    ),
                   ),
                   const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
-                    Text(
-                      _fmt(orig),
-                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
-                        decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Text(
+                        _fmt(orig),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            UiTypography.cardMeta(color: Colors.grey).copyWith(
+                          decoration: TextDecoration.lineThrough,
+                        ),
                       ),
                     ),
                 ],
