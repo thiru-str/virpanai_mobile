@@ -1000,6 +1000,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
 
     final ApiService apiService = ApiService();
+
+    // Cashfree captures payment before Medusa completes the cart. Refresh and
+    // stop here when the server already knows an item is unavailable.
+    if (paymentProviderId == 'pp_cashfree_cashfree') {
+      try {
+        setState(() => placeOrderApiLoading = true);
+        cartResponse = await apiService.getCart(context);
+        if (cartResponse?.cart?.error == true) {
+          AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+          return;
+        }
+      } catch (e) {
+        debugPrint('Cashfree cart validation failed: $e');
+        return;
+      } finally {
+        if (mounted) setState(() => placeOrderApiLoading = false);
+      }
+    }
+
     dynamic apiResponse = await apiService.updatePaymentMethod(
         context, paymentProviderId, cartResponse!);
 
