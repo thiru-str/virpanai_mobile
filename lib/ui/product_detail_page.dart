@@ -375,8 +375,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         if (displayUrls.length > 1) ...[
           const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Wrap (not Row) so the dots reflow to a second line instead of
+          // overflowing horizontally when a product has many media items.
+          Wrap(
+            alignment: WrapAlignment.center,
+            runSpacing: 6,
             children: List.generate(displayUrls.length, (index) {
               final isActive = index == safeIndex;
               return AnimatedContainer(

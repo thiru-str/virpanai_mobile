@@ -94,28 +94,35 @@ class ViewCartWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10), // Space between images and text
-          // View cart text
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppStrings.view_cart,
-                style: FontUtils.primaryFontStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          // View cart text — Flexible + ellipsis so a long/localized label
+          // can't overflow the pill on a narrow device.
+          Flexible(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.view_cart,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FontUtils.primaryFontStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                '$totalItems ${totalItems == 1 ? "Item" : "Items"}',
-                style: FontUtils.primaryFontStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 13,
+                Text(
+                  '$totalItems ${totalItems == 1 ? "Item" : "Items"}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FontUtils.primaryFontStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(width: 14),
           // Action button

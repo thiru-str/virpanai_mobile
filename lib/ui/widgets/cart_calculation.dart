@@ -24,17 +24,29 @@ class CartCalculation extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            keyText,
-            style: keyStyle ??
-                UiTypography.cardMeta(color: AppColors.textColor50)
-                    .copyWith(fontSize: 15),
+          // Flex both sides + ellipsis so a long label ("Loyalty Points (…)")
+          // and a long amount can't overflow the summary row on small screens.
+          Expanded(
+            child: Text(
+              keyText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: keyStyle ??
+                  UiTypography.cardMeta(color: AppColors.textColor50)
+                      .copyWith(fontSize: 15),
+            ),
           ),
-          Text(
-            valueText,
-            style: valueStyle ??
-                UiTypography.cardAction(color: AppColors.textColor)
-                    .copyWith(fontSize: 15),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              valueText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: valueStyle ??
+                  UiTypography.cardAction(color: AppColors.textColor)
+                      .copyWith(fontSize: 15),
+            ),
           ),
         ],
       ),
@@ -67,20 +79,28 @@ class CartPaymentMethodWidget extends StatelessWidget {
           style: UiTypography.cardMeta(color: AppColors.textColor50)
               .copyWith(fontSize: 15),
         ),
-        GestureDetector(
-          onTap: isActionable ? onTap : null, // Actionable if NEFT
-          child: Container(
-            padding: isActionable
-                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
-                : null,
-            decoration: BoxDecoration(
-              color: isActionable ? backgroundColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              paymentMethod,
-              style: UiTypography.cardAction(
-                color: AppColors.primary,
+        const SizedBox(width: 8),
+        // Flex the method chip + ellipsis so long provider names
+        // ("Credit / Debit Card") don't overflow the row.
+        Flexible(
+          child: GestureDetector(
+            onTap: isActionable ? onTap : null, // Actionable if NEFT
+            child: Container(
+              padding: isActionable
+                  ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
+                  : null,
+              decoration: BoxDecoration(
+                color: isActionable ? backgroundColor : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                paymentMethod,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: UiTypography.cardAction(
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ),

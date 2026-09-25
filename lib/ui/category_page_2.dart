@@ -140,17 +140,22 @@ class _CategoryPage2State extends State<CategoryPage2> {
                                               color: Colors.grey.shade400),
                                     ),
                                     const SizedBox(height: 8),
-                                    SizedBox(
-                                      width: 76,
-                                      child: Text(
-                                        parent.name ?? '',
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: FontUtils.primaryFontStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textColor,
+                                    // Flexible so the 2-line name ellipsizes
+                                    // within the fixed 124px strip instead of
+                                    // overflowing vertically at large font scale.
+                                    Flexible(
+                                      child: SizedBox(
+                                        width: 76,
+                                        child: Text(
+                                          parent.name ?? '',
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: FontUtils.primaryFontStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textColor,
+                                          ),
                                         ),
                                       ),
                                     )
