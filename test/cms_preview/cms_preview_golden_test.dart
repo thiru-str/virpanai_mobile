@@ -59,6 +59,8 @@ import 'package:waioz/ui/widgets/home/finish_b.dart';
 import 'package:waioz/ui/widgets/home/finish_c.dart';
 import 'package:waioz/ui/widgets/home/finish_d.dart';
 import 'package:waioz/ui/widgets/home/premium_app_headers.dart';
+import 'package:waioz/ui/widgets/home/premium/premium_home1.dart';
+import 'package:waioz/ui/widgets/home/premium/premium_content1.dart';
 
 Future<ByteData> _bytes(String path) async =>
     ByteData.view((await File(path).readAsBytes()).buffer);
@@ -329,6 +331,18 @@ void main() {
       _shoot(t, 'item15', Item15(content: _mockContent('item15', 'Premium Shelf', 'Handpicked for you', 'View collection'))));
   testWidgets('item16', (t) async =>
       _shoot(t, 'item16', Item16(content: _mockContent('item16', 'Editorial Discovery', 'Lead + companions', 'See more'))));
+
+  // ---- PREMIUM batch 1 (foundation demo) ----
+  testWidgets('PremiumProductRail1', (t) async => _shoot(t, 'PremiumProductRail1',
+      PremiumProductRail1(content: _mockContent('PremiumProductRail1', 'Pre-Workout & Energy', 'Explosive energy, focus & pumps', 'Shop pre-workout'))));
+  testWidgets('PremiumProductGrid1', (t) async => _shoot(t, 'PremiumProductGrid1',
+      PremiumProductGrid1(content: _mockContent('PremiumProductGrid1', 'Best of Wellness', 'Creatine & recovery essentials', 'View all'))));
+  testWidgets('PremiumBundle1', (t) async => _shoot(t, 'PremiumBundle1',
+      PremiumBundle1(content: _grocery('PremiumBundle1', 'Build Your Training Stack', 'Pre-workout + creatine, better together', '', _mockItems().take(3).toList()))));
+  testWidgets('PremiumReviews1', (t) async => _shoot(t, 'PremiumReviews1',
+      PremiumReviews1(content: _grocery('PremiumReviews1', 'From the Members', 'Real results, real people', '', _reviews))));
+  testWidgets('PremiumTrust1', (t) async => _shoot(t, 'PremiumTrust1',
+      PremiumTrust1(content: _grocery('PremiumTrust1', '', '', '', _trust))));
 
   // ---- Grocery / supermarket batch ----
   testWidgets('CategoryChips1', (t) async =>
