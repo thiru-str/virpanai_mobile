@@ -1408,45 +1408,66 @@ class _CartPageState extends State<CartPage>
         _makeWalletPayment();
         break;
       case 'pp_paytm_paytm':
-        makePaytmCall();
+        await makePaytmCall();
         break;
     }
   }
 
-  void makePaytmCall() {
-    final data = paytmData ??
-        cartResponse?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_paytm_paytm')
-            .firstOrNull
-            ?.data;
-    if (data == null ||
-        data.host == null ||
-        data.mid == null ||
-        (data.orderId ?? data.id) == null ||
-        (data.txnToken ?? data.token) == null ||
-        data.amount == null) {
-      AppUtils.showToast(
-          'Paytm payment session is incomplete. Please try again.');
-      return;
-    }
+  Future<void> makePaytmCall() async {
+    if (cartResponse == null) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PaytmPaymentPage(
-          data: data,
-          onSuccess: () {
-            Navigator.pop(context);
-            completeCart();
-          },
-          onFailure: (message) {
-            Navigator.pop(context);
-            AppUtils.showToast(message);
-            getCartApi();
-          },
+    setState(() => cartLoading = true);
+
+    try {
+      // Paytm transaction tokens are short-lived. Always create a fresh
+      // session when checkout starts instead of reusing the one created when
+      // Paytm was selected earlier.
+      final response = await ApiService().updatePaymentMethod(
+          context, 'pp_paytm_paytm', cartResponse!);
+      final data = response.paymentCollection?.paymentSessions
+          ?.where((session) => session.providerId == 'pp_paytm_paytm')
+          .firstOrNull
+          ?.data;
+
+      if (data == null ||
+          data.host == null ||
+          data.mid == null ||
+          (data.orderId ?? data.id) == null ||
+          (data.txnToken ?? data.token) == null ||
+          data.amount == null) {
+        AppUtils.showToast(
+            'Paytm payment session is incomplete. Please try again.');
+        return;
+      }
+
+      paytmData = data;
+      if (!mounted) return;
+      setState(() => cartLoading = false);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaytmPaymentPage(
+            data: data,
+            onSuccess: () {
+              Navigator.pop(context);
+              completeCart();
+            },
+            onFailure: (message) {
+              Navigator.pop(context);
+              AppUtils.showToast(message);
+              getCartApi();
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      AppUtils.showToast('Unable to start Paytm payment. Please try again.');
+    } finally {
+      if (mounted && cartLoading) {
+        setState(() => cartLoading = false);
+      }
+    }
   }
 
   Future<void> _makeIciciPayment() async {
