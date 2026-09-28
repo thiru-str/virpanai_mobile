@@ -61,6 +61,8 @@ import 'package:waioz/ui/widgets/home/finish_d.dart';
 import 'package:waioz/ui/widgets/home/premium_app_headers.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_home1.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content1.dart';
+import 'package:waioz/ui/widgets/home/premium/premium_home2.dart';
+import 'package:waioz/ui/widgets/home/premium/premium_content2.dart';
 
 Future<ByteData> _bytes(String path) async =>
     ByteData.view((await File(path).readAsBytes()).buffer);
@@ -343,6 +345,18 @@ void main() {
       PremiumReviews1(content: _grocery('PremiumReviews1', 'From the Members', 'Real results, real people', '', _reviews))));
   testWidgets('PremiumTrust1', (t) async => _shoot(t, 'PremiumTrust1',
       PremiumTrust1(content: _grocery('PremiumTrust1', '', '', '', _trust))));
+  testWidgets('PremiumHero1', (t) async => _shoot(t, 'PremiumHero1',
+      PremiumHero1(content: _mockContent('PremiumHero1', 'The Strength Edit', 'New collection', 'Shop the edit'))));
+  testWidgets('PremiumCategoryGrid1', (t) async => _shoot(t, 'PremiumCategoryGrid1',
+      PremiumCategoryGrid1(content: _grocery('PremiumCategoryGrid1', 'Shop by Goal', 'Find your fit', 'All categories', _catItems))));
+  testWidgets('PremiumSpotlight1', (t) async => _shoot(t, 'PremiumSpotlight1',
+      PremiumSpotlight1(content: _mockContent('PremiumSpotlight1', 'C4 Sport Pre-Workout', 'Bestseller', 'Shop now'))));
+  testWidgets('PremiumOfferDuo1', (t) async => _shoot(t, 'PremiumOfferDuo1',
+      PremiumOfferDuo1(content: _grocery('PremiumOfferDuo1', '', '', '', _mockItems().take(2).toList()))));
+  testWidgets('PremiumFaq1', (t) async => _shoot(t, 'PremiumFaq1',
+      PremiumFaq1(content: _grocery('PremiumFaq1', 'Frequently Asked', 'Authenticity, dosage & delivery', '', _faqs))));
+  testWidgets('PremiumAppDownload1', (t) async => _shoot(t, 'PremiumAppDownload1',
+      PremiumAppDownload1(content: _mockContent('PremiumAppDownload1', 'Get the Activ Fuelz App', 'Launch offers, new stock alerts & easy reorders', ''))));
 
   // ---- Grocery / supermarket batch ----
   testWidgets('CategoryChips1', (t) async =>

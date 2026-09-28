@@ -82,7 +82,7 @@ class PImage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [PColor.accentWash(0.08), PColor.accentWash(0.04), const Color(0xFFF1F1F4)],
+            colors: [PColor.accentWash(0.16), PColor.accentWash(0.09), const Color(0xFFEBEBF1)],
           ),
         ),
       );
