@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -22,6 +25,8 @@ class PaytmPaymentPage extends StatefulWidget {
 }
 
 class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
+  static const _upiChannel = MethodChannel('com.waioz.cartel/upi');
+
   late final WebViewController _controller;
   bool _loading = true;
   bool _done = false;
@@ -38,6 +43,10 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
         'PaytmCallback',
         onMessageReceived: (message) => _handleMessage(message.message),
       )
+      ..addJavaScriptChannel(
+        'PaytmUpiIntentBridge',
+        onMessageReceived: (message) => _openUpiApp(message.message),
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) {
@@ -50,7 +59,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
               setState(() => _loading = false);
             }
           },
-          onNavigationRequest: (request) {
+          onNavigationRequest: (request) async {
             final url = request.url;
 
             if (url.contains('/order/confirmed/')) {
@@ -65,11 +74,100 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
               return NavigationDecision.prevent;
             }
 
+            if (_isUpiIntentUrl(url)) {
+              await _openUpiApp(url);
+              return NavigationDecision.prevent;
+            }
+
             return NavigationDecision.navigate;
           },
         ),
-      )
-      ..loadHtmlString(_html());
+      );
+
+    _loadCheckout();
+  }
+
+  static const _upiSchemes = {'upi', 'tez', 'phonepe', 'paytmmp', 'gpay'};
+
+  static const _upiAvailabilityUris = {
+    'upi': 'upi://pay',
+    'tez': 'tez://upi/pay',
+    'phonepe': 'phonepe://pay',
+    'paytmmp': 'paytmmp://pay',
+    'gpay': 'gpay://upi/pay',
+  };
+
+  bool _isUpiIntentUrl(String url) {
+    final scheme = Uri.tryParse(url)?.scheme.toLowerCase();
+    return scheme == 'intent' || _upiSchemes.contains(scheme);
+  }
+
+  Future<void> _loadCheckout() async {
+    final supportedSchemes = <String>{};
+
+    for (final entry in _upiAvailabilityUris.entries) {
+      try {
+        if (await canLaunchUrl(Uri.parse(entry.value))) {
+          supportedSchemes.add(entry.key);
+        }
+      } catch (_) {
+        // An unavailable app is reported to Paytm by omitting its scheme.
+      }
+    }
+
+    if (!mounted) return;
+    await _controller.loadHtmlString(
+      _html(supportedUpiSchemes: supportedSchemes),
+    );
+  }
+
+  Uri? _upiUri(String rawUrl) {
+    final uri = Uri.tryParse(rawUrl);
+    if (uri == null) return null;
+
+    final scheme = uri.scheme.toLowerCase();
+    if (_upiSchemes.contains(scheme)) return uri;
+
+    // Android intent URLs commonly wrap a normal UPI URL as:
+    // intent://pay?...#Intent;scheme=upi;package=...;end
+    if (scheme == 'intent') {
+      final marker = rawUrl.indexOf('#Intent;');
+      if (marker == -1) return null;
+
+      final intentMetadata = rawUrl.substring(marker + '#Intent;'.length);
+      final declaredScheme = RegExp(
+        r'(?:^|;)scheme=([^;]+)',
+      ).firstMatch(intentMetadata)?.group(1)?.toLowerCase();
+      if (declaredScheme == null || !_upiSchemes.contains(declaredScheme)) {
+        return null;
+      }
+
+      final intentTarget = rawUrl.substring('intent://'.length, marker);
+      return Uri.tryParse('$declaredScheme://$intentTarget');
+    }
+
+    return null;
+  }
+
+  Future<void> _openUpiApp(String rawUrl) async {
+    final uri = _upiUri(rawUrl);
+    if (uri == null) return;
+
+    try {
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final result = await _upiChannel.invokeMapMethod<String, dynamic>(
+          'launchUpi',
+          {'url': uri.toString()},
+        );
+
+        if (!mounted || _done || result?['launched'] != true) return;
+        return;
+      }
+
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Keep Paytm checkout available when no UPI app can handle the intent.
+    }
   }
 
   void _handleMessage(String message) {
@@ -80,8 +178,10 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
     final data = payload['data'];
     final status = data is Map
         ? (data['STATUS'] ??
-            data['status'] ??
-            (data['resultInfo'] is Map ? data['resultInfo']['resultStatus'] : null))
+              data['status'] ??
+              (data['resultInfo'] is Map
+                  ? data['resultInfo']['resultStatus']
+                  : null))
         : null;
 
     if (event == 'checkoutReady') {
@@ -92,17 +192,27 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
       return;
     }
 
+    final normalizedStatus = status?.toString().toUpperCase();
     if (event == 'transactionStatus' &&
-        ['TXN_SUCCESS', 'PENDING', 'success'].contains(status?.toString())) {
+        ['TXN_SUCCESS', 'SUCCESS'].contains(normalizedStatus)) {
       _done = true;
       widget.onSuccess();
       return;
     }
 
+    if (event == 'transactionStatus' && normalizedStatus == 'PENDING') {
+      return;
+    }
+
     final eventName = payload['eventName']?.toString();
     if (event == 'notifyMerchant' &&
-        ['APP_CLOSED', 'SESSION_EXPIRED', 'PAYTM_EXPIRY', 'TXN_ABORT', 'TXN_FAILURE']
-            .contains(eventName)) {
+        [
+          'APP_CLOSED',
+          'SESSION_EXPIRED',
+          'PAYTM_EXPIRY',
+          'TXN_ABORT',
+          'TXN_FAILURE',
+        ].contains(eventName)) {
       _done = true;
       widget.onFailure(_notifyMessage(eventName));
       return;
@@ -113,10 +223,10 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
       final resultInfo = data is Map ? data['resultInfo'] : null;
       widget.onFailure(
         (data is Map
-                ? (data['RESPMSG'] ??
-                    (resultInfo is Map ? resultInfo['resultMsg'] : null))
-                : null)
-            ?.toString() ??
+                    ? (data['RESPMSG'] ??
+                          (resultInfo is Map ? resultInfo['resultMsg'] : null))
+                    : null)
+                ?.toString() ??
             'Paytm payment was not completed.',
       );
     }
@@ -132,9 +242,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Are you sure you want to exit?'),
-          content: const Text(
-            'You will be taken back to the previous screen',
-          ),
+          content: const Text('You will be taken back to the previous screen'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -159,7 +267,8 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
   String _failureMessageFromUrl(String url) {
     final uri = Uri.tryParse(url);
     final params = uri?.queryParameters ?? const <String, String>{};
-    final message = params['message'] ??
+    final message =
+        params['message'] ??
         params['error'] ??
         params['error_message'] ??
         params['RESPMSG'];
@@ -185,11 +294,12 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
     }
   }
 
-  String _html() {
+  String _html({required Set<String> supportedUpiSchemes}) {
     final data = widget.data;
     final token = data.txnToken ?? data.token ?? '';
     final orderId = data.orderId ?? data.id ?? '';
-    final scriptUrl = '${data.host}/merchantpgpui/checkoutjs/merchants/${data.mid}.js';
+    final scriptUrl =
+        '${data.host}/merchantpgpui/checkoutjs/merchants/${data.mid}.js';
     final config = jsonEncode({
       'flow': 'DEFAULT',
       'root': '',
@@ -201,6 +311,40 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
       },
       'merchant': {'redirect': false},
     });
+    final supportedSchemes = jsonEncode({
+      for (final scheme in supportedUpiSchemes) scheme: true,
+    });
+    final upiIntentBridge = supportedUpiSchemes.contains('upi')
+        ? '''
+  <script>
+    // Paytm checks for this Android WebView interface before enabling UPI
+    // intent. The Flutter channel opens the supplied UPI URL outside WebView,
+    // allowing Android to show all installed UPI apps.
+    var supportedUpiSchemes = $supportedSchemes;
+    window.checkoutUpiIntent = {
+      openUpiApp: function(url) {
+        try {
+          if (!url || !window.PaytmUpiIntentBridge) {
+            return false;
+          }
+          var value = String(url);
+          var separator = value.indexOf(':');
+          var scheme = separator > 0
+            ? value.substring(0, separator).toLowerCase()
+            : '';
+          if (!supportedUpiSchemes[scheme]) {
+            return false;
+          }
+          PaytmUpiIntentBridge.postMessage(value);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+    };
+  </script>
+'''
+        : '';
 
     return '''
 <!doctype html>
@@ -219,6 +363,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
       inset: 0;
     }
   </style>
+$upiIntentBridge
   <script src="$scriptUrl"></script>
 </head>
 <body>
@@ -297,11 +442,11 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
         backgroundColor: Colors.white,
         body: Stack(
           children: [
-            SafeArea(
-              child: WebViewWidget(controller: _controller),
-            ),
+            SafeArea(child: WebViewWidget(controller: _controller)),
             if (_loading)
-              Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
           ],
         ),
       ),
