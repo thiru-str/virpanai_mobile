@@ -4,7 +4,7 @@ import '../../utility/app_colors.dart';
 import '../../utility/font_utils.dart';
 
 class DeliveryToggle extends StatelessWidget {
-  final bool isDelivery;
+  final bool? isDelivery;
   final ValueChanged<bool> onChanged;
   final bool isLoading;
 
@@ -62,8 +62,9 @@ class DeliveryToggle extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color:
-                              !isDelivery ? AppColors.primary : Colors.transparent,
+                          color: isDelivery == false
+                              ? AppColors.primary
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -71,8 +72,9 @@ class DeliveryToggle extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color:
-                                !isDelivery ? Colors.white : Colors.black87,
+                            color: isDelivery == false
+                                ? Colors.white
+                                : Colors.black87,
                           ),
                         ),
                       ),
@@ -83,8 +85,9 @@ class DeliveryToggle extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color:
-                              isDelivery ? AppColors.primary : Colors.transparent,
+                          color: isDelivery == true
+                              ? AppColors.primary
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -92,8 +95,9 @@ class DeliveryToggle extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color:
-                                isDelivery ? Colors.white : Colors.black87,
+                            color: isDelivery == true
+                                ? Colors.white
+                                : Colors.black87,
                           ),
                         ),
                       ),

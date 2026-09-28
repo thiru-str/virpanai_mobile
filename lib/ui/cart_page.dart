@@ -334,6 +334,9 @@ class _CartPageState extends State<CartPage>
     return isDelivery;
   }
 
+  bool get _hasSelectedShippingMethod =>
+      cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false;
+
   void _scrollToPriceDetails() {
     final ctx = _priceDetailsSectionKey.currentContext;
     if (ctx == null) return;
@@ -2146,7 +2149,7 @@ class _CartPageState extends State<CartPage>
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: DeliveryToggle(
-        isDelivery: isDelivery,
+        isDelivery: _hasSelectedShippingMethod ? isDelivery : null,
         isLoading: shippingMethodLoading,
         onChanged: (value) {
           final selectedId = value ? deliveryOption : pickupOption;
