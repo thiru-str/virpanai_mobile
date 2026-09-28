@@ -165,6 +165,10 @@ import 'food1.dart';
 import 'supermarket1.dart';
 import 'supermarket2.dart';
 import 'product_cards1.dart';
+import 'premium/premium_home1.dart';
+import 'premium/premium_home2.dart';
+import 'premium/premium_content1.dart';
+import 'premium/premium_content2.dart';
 
 // Marketplace home-component registry. Maps a CMS `layout_name` to its widget
 // so the production home page renders the new components (grocery, multi-
@@ -215,6 +219,10 @@ const List<String> kMarketplaceLayouts = [
   'ProductStepper1', 'CategoryCircle1', 'CategoryPills1', 'ReorderRail1',
   // reusable product components (any genre)
   'ProductListRow1', 'ProductHeroGrid1', 'ProductCarouselXL1', 'ProductRatingGrid1',
+  // PREMIUM native (2026-09) — built on the premium design kit (premium/*)
+  'PremiumProductRail1', 'PremiumProductGrid1', 'PremiumBundle1', 'PremiumSpotlight1',
+  'PremiumHero1', 'PremiumCategoryGrid1', 'PremiumOfferDuo1',
+  'PremiumReviews1', 'PremiumTrust1', 'PremiumFaq1', 'PremiumAppDownload1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -270,6 +278,9 @@ const Set<String> kMarketplaceNoDataLayouts = {
   'CategoryScrollStrip1', 'CategoryMegaGrid1', 'CategoryTwoColImage1',
   'CustomCardSlider1', 'CustomStoryRail1', 'CustomFeatureList1',
   'PromoStripBanner1', 'OfferGridBanner1', 'FullWidthBanner1',
+  // premium copy/config-driven (no catalog product binding needed)
+  'PremiumHero1', 'PremiumCategoryGrid1', 'PremiumOfferDuo1',
+  'PremiumReviews1', 'PremiumTrust1', 'PremiumFaq1', 'PremiumAppDownload1',
 };
 
 /// CMS commerce components use fixed heights / aspect ratios that can't absorb
@@ -763,6 +774,29 @@ Widget? marketplaceHomeWidget(Content content,
       return LoyaltyPointsBanner1(content: content);
     case 'SocialFollowBanner1':
       return SocialFollowBanner1(content: content);
+    // PREMIUM native (built on premium/premium_kit.dart)
+    case 'PremiumProductRail1':
+      return PremiumProductRail1(content: content);
+    case 'PremiumProductGrid1':
+      return PremiumProductGrid1(content: content);
+    case 'PremiumBundle1':
+      return PremiumBundle1(content: content);
+    case 'PremiumSpotlight1':
+      return PremiumSpotlight1(content: content);
+    case 'PremiumHero1':
+      return PremiumHero1(content: content);
+    case 'PremiumCategoryGrid1':
+      return PremiumCategoryGrid1(content: content);
+    case 'PremiumOfferDuo1':
+      return PremiumOfferDuo1(content: content);
+    case 'PremiumReviews1':
+      return PremiumReviews1(content: content);
+    case 'PremiumTrust1':
+      return PremiumTrust1(content: content);
+    case 'PremiumFaq1':
+      return PremiumFaq1(content: content);
+    case 'PremiumAppDownload1':
+      return PremiumAppDownload1(content: content);
     default:
       return null;
   }
