@@ -94,6 +94,9 @@ class _CartPageState extends State<CartPage>
   final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
   String? cashfreePaymentSessionId;
   String? cashfreeEnvironment;
+  Future<bool>? _cartRefreshInFlight;
+  bool _cartRefreshQueued = false;
+  bool _refreshShippingInfoAfterCartFetch = false;
   bool showPriceBreakdown = false;
 
   // Wallet split state
@@ -948,7 +951,7 @@ class _CartPageState extends State<CartPage>
             cartResponse?.cart?.id != null &&
             !splitActive) {
           // First-time auto-apply
-          await _applyWalletSplit(silent: true);
+          await _applyWalletSplit(silent: true, refreshCart: false);
         }
       }
     } catch (e) {
@@ -956,7 +959,10 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<void> _applyWalletSplit({bool silent = false}) async {
+  Future<void> _applyWalletSplit({
+    bool silent = false,
+    bool refreshCart = true,
+  }) async {
     if (cartResponse?.cart?.id == null) return;
     setState(() => walletToggling = true);
     try {
@@ -965,7 +971,11 @@ class _CartPageState extends State<CartPage>
           await ApiService().applyWalletSplit(context, cartResponse!.cart!.id!);
       if (!mounted) return;
       if (result.walletApplied) {
-        await getCartApi();
+        if (refreshCart) {
+          await getCartApi();
+        } else {
+          _cartRefreshQueued = true;
+        }
         // Only play confetti on first apply, not on recalculation
         if (!wasAlreadyActive && !silent) {
           _confettiController.play();
@@ -1000,7 +1010,40 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<bool> getCartApi({bool refreshShippingInfo = true}) async {
+  Future<bool> getCartApi({bool refreshShippingInfo = true}) {
+    _refreshShippingInfoAfterCartFetch |= refreshShippingInfo;
+    final activeRefresh = _cartRefreshInFlight;
+    if (activeRefresh != null) {
+      _cartRefreshQueued = true;
+      return activeRefresh;
+    }
+
+    final refresh = _runCartRefreshes();
+    _cartRefreshInFlight = refresh;
+    refresh.whenComplete(() {
+      if (identical(_cartRefreshInFlight, refresh)) {
+        _cartRefreshInFlight = null;
+      }
+    });
+    return refresh;
+  }
+
+  Future<bool> _runCartRefreshes() async {
+    var success = false;
+    do {
+      _cartRefreshQueued = false;
+      success = await _fetchCartApi();
+    } while (success && _cartRefreshQueued);
+
+    final refreshShippingInfo = _refreshShippingInfoAfterCartFetch;
+    _refreshShippingInfoAfterCartFetch = false;
+    if (success && refreshShippingInfo) {
+      getShippingInfo();
+    }
+    return success;
+  }
+
+  Future<bool> _fetchCartApi() async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
@@ -1033,9 +1076,6 @@ class _CartPageState extends State<CartPage>
       _syncPricingStateFromCart();
       // Load wallet info after cart is ready
       await _loadWalletInfo();
-      if (refreshShippingInfo) {
-        getShippingInfo();
-      }
       return true;
     } catch (e) {
       setState(() {
@@ -1189,7 +1229,7 @@ class _CartPageState extends State<CartPage>
         cartLoading = false;
       });
       // Refresh cart to ensure UI matches backend state after failure
-      getCartApi();
+      await getCartApi();
       print(e);
     }
   }
@@ -1370,7 +1410,7 @@ class _CartPageState extends State<CartPage>
             ? selectedSession?.data?.environment
             : null;
       });
-      getCartApi();
+      await getCartApi();
     } catch (e) {
       if (mounted) setState(() => pp_id = previousProviderId);
       print(e);
@@ -1523,23 +1563,35 @@ class _CartPageState extends State<CartPage>
         makeRazorPayCall(orderId!);
         break;
       case 'pp_cashfree_cashfree':
-        final cashfreeSession = cartResponse
-            ?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
-            .firstOrNull;
-        final cashfreeOrderId = cashfreeSession?.data?.orderId ??
-            cashfreeSession?.data?.id ??
-            orderId;
-        final paymentSessionId =
-            cashfreeSession?.data?.paymentSessionId ?? cashfreePaymentSessionId;
-        final environment =
-            cashfreeSession?.data?.environment ?? cashfreeEnvironment;
-        if (cashfreeOrderId == null || paymentSessionId == null) {
+        if (mounted) setState(() => cartLoading = true);
+        try {
+          // Create/reconcile the Cashfree session at the last possible moment
+          // and use only this response. Never open the SDK with a token cached
+          // by an earlier cart fetch because pricing subscribers can replace
+          // pending Medusa payment sessions.
+          final response = await ApiService()
+              .updatePaymentMethod(context, paymentProviderId, cartResponse!);
+          final cashfreeSession = response.paymentCollection?.paymentSessions
+              ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
+              .firstOrNull;
+          final data = cashfreeSession?.data;
+          final cashfreeOrderId = data?.orderId ?? data?.id;
+          final paymentSessionId = data?.paymentSessionId;
+          if (cashfreeOrderId == null || paymentSessionId == null) {
+            throw StateError('Cashfree payment session is unavailable.');
+          }
+
+          cashfreePaymentSessionId = paymentSessionId;
+          cashfreeEnvironment = data?.environment;
+          orderId = cashfreeOrderId;
+          _openCashfree(cashfreeOrderId, paymentSessionId, data?.environment);
+        } catch (e) {
+          debugPrint('Cashfree checkout initialization failed: $e');
           AppUtils.showToast(
-              'Cashfree payment session is unavailable. Please select Cashfree again.');
-          return;
+              'Unable to start Cashfree checkout. Please try again.');
+        } finally {
+          if (mounted) setState(() => cartLoading = false);
         }
-        _openCashfree(cashfreeOrderId, paymentSessionId, environment);
         break;
       case 'pp_stripe_stripe':
         makeStripeCall(clientSecret!);
@@ -1557,45 +1609,66 @@ class _CartPageState extends State<CartPage>
         _makeIciciPayment();
         break;
       case 'pp_paytm_paytm':
-        makePaytmCall();
+        await makePaytmCall();
         break;
     }
   }
 
-  void makePaytmCall() {
-    final data = paytmData ??
-        cartResponse?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_paytm_paytm')
-            .firstOrNull
-            ?.data;
-    if (data == null ||
-        data.host == null ||
-        data.mid == null ||
-        (data.orderId ?? data.id) == null ||
-        (data.txnToken ?? data.token) == null ||
-        data.amount == null) {
-      AppUtils.showToast(
-          'Paytm payment session is incomplete. Please try again.');
-      return;
-    }
+  Future<void> makePaytmCall() async {
+    if (cartResponse == null) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PaytmPaymentPage(
-          data: data,
-          onSuccess: () {
-            Navigator.pop(context);
-            completeCart();
-          },
-          onFailure: (message) {
-            Navigator.pop(context);
-            AppUtils.showToast(message);
-            getCartApi();
-          },
+    setState(() => cartLoading = true);
+
+    try {
+      // Paytm transaction tokens are short-lived. Always create a fresh
+      // session when checkout starts instead of reusing the one created when
+      // Paytm was selected earlier.
+      final response = await ApiService()
+          .updatePaymentMethod(context, 'pp_paytm_paytm', cartResponse!);
+      final data = response.paymentCollection?.paymentSessions
+          ?.where((session) => session.providerId == 'pp_paytm_paytm')
+          .firstOrNull
+          ?.data;
+
+      if (data == null ||
+          data.host == null ||
+          data.mid == null ||
+          (data.orderId ?? data.id) == null ||
+          (data.txnToken ?? data.token) == null ||
+          data.amount == null) {
+        AppUtils.showToast(
+            'Paytm payment session is incomplete. Please try again.');
+        return;
+      }
+
+      paytmData = data;
+      if (!mounted) return;
+      setState(() => cartLoading = false);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaytmPaymentPage(
+            data: data,
+            onSuccess: () {
+              Navigator.pop(context);
+              completeCart();
+            },
+            onFailure: (message) {
+              Navigator.pop(context);
+              AppUtils.showToast(message);
+              getCartApi();
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      AppUtils.showToast('Unable to start Paytm payment. Please try again.');
+    } finally {
+      if (mounted && cartLoading) {
+        setState(() => cartLoading = false);
+      }
+    }
   }
 
   Future<void> _makeIciciPayment() async {
