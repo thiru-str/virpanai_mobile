@@ -83,6 +83,7 @@ class _CartPageState extends State<CartPage>
   final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
   String? cashfreePaymentSessionId;
   String? cashfreeEnvironment;
+  Future<bool>? _cartRefreshInFlight;
   bool showPriceBreakdown = false;
 
   // Wallet split state
@@ -921,7 +922,21 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<bool> getCartApi() async {
+  Future<bool> getCartApi() {
+    final activeRefresh = _cartRefreshInFlight;
+    if (activeRefresh != null) return activeRefresh;
+
+    final refresh = _fetchCartApi();
+    _cartRefreshInFlight = refresh;
+    refresh.whenComplete(() {
+      if (identical(_cartRefreshInFlight, refresh)) {
+        _cartRefreshInFlight = null;
+      }
+    });
+    return refresh;
+  }
+
+  Future<bool> _fetchCartApi() async {
     try {
       final ApiService apiService = ApiService();
       cartResponse = await apiService.getCart(context);
@@ -1022,7 +1037,7 @@ class _CartPageState extends State<CartPage>
         cartLoading = false;
       });
       // Refresh cart to ensure UI matches backend state after failure
-      getCartApi();
+      await getCartApi();
       print(e);
     }
   }
@@ -1203,7 +1218,7 @@ class _CartPageState extends State<CartPage>
             ? selectedSession?.data?.environment
             : null;
       });
-      getCartApi();
+      await getCartApi();
     } catch (e) {
       if (mounted) setState(() => pp_id = previousProviderId);
       print(e);
@@ -1350,23 +1365,35 @@ class _CartPageState extends State<CartPage>
         makeRazorPayCall(orderId!);
         break;
       case 'pp_cashfree_cashfree':
-        final cashfreeSession = cartResponse
-            ?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
-            .firstOrNull;
-        final cashfreeOrderId = cashfreeSession?.data?.orderId ??
-            cashfreeSession?.data?.id ??
-            orderId;
-        final paymentSessionId =
-            cashfreeSession?.data?.paymentSessionId ?? cashfreePaymentSessionId;
-        final environment =
-            cashfreeSession?.data?.environment ?? cashfreeEnvironment;
-        if (cashfreeOrderId == null || paymentSessionId == null) {
+        if (mounted) setState(() => cartLoading = true);
+        try {
+          // Create/reconcile the Cashfree session at the last possible moment
+          // and use only this response. Never open the SDK with a token cached
+          // by an earlier cart fetch because pricing subscribers can replace
+          // pending Medusa payment sessions.
+          final response = await ApiService()
+              .updatePaymentMethod(context, paymentProviderId, cartResponse!);
+          final cashfreeSession = response.paymentCollection?.paymentSessions
+              ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
+              .firstOrNull;
+          final data = cashfreeSession?.data;
+          final cashfreeOrderId = data?.orderId ?? data?.id;
+          final paymentSessionId = data?.paymentSessionId;
+          if (cashfreeOrderId == null || paymentSessionId == null) {
+            throw StateError('Cashfree payment session is unavailable.');
+          }
+
+          cashfreePaymentSessionId = paymentSessionId;
+          cashfreeEnvironment = data?.environment;
+          orderId = cashfreeOrderId;
+          _openCashfree(cashfreeOrderId, paymentSessionId, data?.environment);
+        } catch (e) {
+          debugPrint('Cashfree checkout initialization failed: $e');
           AppUtils.showToast(
-              'Cashfree payment session is unavailable. Please select Cashfree again.');
-          return;
+              'Unable to start Cashfree checkout. Please try again.');
+        } finally {
+          if (mounted) setState(() => cartLoading = false);
         }
-        _openCashfree(cashfreeOrderId, paymentSessionId, environment);
         break;
       case 'pp_stripe_stripe':
         makeStripeCall(clientSecret!);

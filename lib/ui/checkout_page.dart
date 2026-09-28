@@ -1073,11 +1073,16 @@ class _CheckOutPageState extends State<CheckOutPage> {
         }
         break;
       case 'pp_cashfree_cashfree':
-        final data =
-            apiResponse.paymentCollection?.paymentSessions?.firstOrNull?.data;
+        final data = apiResponse.paymentCollection?.paymentSessions
+            ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
+            .firstOrNull
+            ?.data;
         if (data?.orderId != null && data?.paymentSessionId != null) {
           _openCashfree(
               data!.orderId!, data.paymentSessionId!, data.environment);
+        } else {
+          AppUtils.showToast(
+              'Cashfree payment session is unavailable. Please try again.');
         }
         break;
       case 'pp_stripe_stripe':
