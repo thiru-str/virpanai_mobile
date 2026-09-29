@@ -56,6 +56,7 @@ class ProductRecommendationSection extends StatelessWidget {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(
               products.length,
               (index) {
@@ -64,8 +65,10 @@ class ProductRecommendationSection extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 10),
                   child: SizedBox(
                     width: 180,
+                    height: 260,
                     child: ProductCard4(
                       product: product,
+                      imageBackgroundColor: Colors.white,
                       onTapCard: () async {
                         await PageRouteUtils.pushWithSlide(
                           context,
