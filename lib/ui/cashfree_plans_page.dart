@@ -245,7 +245,9 @@ class _CashfreePlansPageState extends State<CashfreePlansPage> {
                   _string(plan['interest_rate'] ?? plan['interest']);
               final monthly = _string(plan['monthly_emi'] ??
                   plan['emi_amount'] ??
-                  plan['emiAmount']);
+                  plan['emiAmount'] ??
+                  plan['monthlyEmi'] ??
+                  plan['emi']);
               final details = <String>[
                 if (tenure != null) '$tenure months',
                 if (interest != null) '$interest% p.a.',
