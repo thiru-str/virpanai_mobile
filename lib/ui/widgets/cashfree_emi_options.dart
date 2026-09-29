@@ -1,11 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/cashfree_plans_page.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/app_config.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class CashfreeEmiOptions extends StatefulWidget {
   final num amount;
@@ -22,57 +19,113 @@ class CashfreeEmiOptions extends StatefulWidget {
 
 class _CashfreeEmiOptionsState extends State<CashfreeEmiOptions> {
   Future<Map<String, dynamic>>? _emiOptions;
-  late Future<Map<String, dynamic>> _bnplConfig;
-
-  @override
-  void initState() {
-    super.initState();
-    _bnplConfig = widget.placement == 'checkout'
-        ? Future.value({'enabled': false})
-        : ApiService().getCashfreeBnplConfig();
-  }
+  Future<Map<String, dynamic>>? _displayOptions;
 
   @override
   void didUpdateWidget(covariant CashfreeEmiOptions oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.amount != widget.amount) {
+    if (oldWidget.amount != widget.amount ||
+        oldWidget.placement != widget.placement) {
       _emiOptions = null;
+      _displayOptions = null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.amount <= 0) return const SizedBox.shrink();
-    Widget content;
-    if (widget.placement != 'checkout') {
-      content = FutureBuilder<Map<String, dynamic>>(
-        future: _bnplConfig,
-        builder: (context, snapshot) {
-          final config = snapshot.data;
-          final clientId = config?['client_id']?.toString();
-          if (config?['enabled'] == true &&
-              config?['environment'] == 'production' &&
-              clientId != null &&
-              clientId.isNotEmpty) {
-            return _CashfreeBnplWebWidget(
-              key: ValueKey('$clientId:${widget.amount}'),
-              clientId: clientId,
-              amount: widget.amount,
-              fallbackBuilder: _buildEligibilityList,
-            );
-          }
-          return _buildEligibilityList();
-        },
-      );
-    } else {
-      content = _buildEligibilityList();
-    }
+    final content = widget.placement == 'checkout'
+        ? _buildEligibilityList()
+        : _buildCompactPreview();
     return widget.placement == 'cart'
         ? Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: content,
           )
         : content;
+  }
+
+  Widget _buildCompactPreview() {
+    _displayOptions ??= ApiService().getCashfreeDisplayOptions(widget.amount);
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _displayOptions,
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        final emiOptions = _asList(data?['emi_options']);
+        if (data?['enabled'] != true || emiOptions.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final lowestMonthlyEmi = _lowestMonthlyEmi(emiOptions);
+        final label = lowestMonthlyEmi == null
+            ? 'EMI plans available'
+            : 'EMI starts at ${_formatCurrency(lowestMonthlyEmi)}/month';
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: Color(0xFF596273),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () =>
+                        Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => CashfreePlansPage(
+                          amount: widget.amount,
+                          initialTab: 'emiDetails',
+                        ),
+                      ),
+                    ),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.primary),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'View EMI Plans',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            Icon(Icons.chevron_right,
+                                size: 19, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildEligibilityList() {
@@ -125,154 +178,49 @@ class _CashfreeEmiOptionsState extends State<CashfreeEmiOptions> {
       },
     );
   }
-}
 
-/// Cashfree publishes BNPL Plus for native web, not a dedicated Flutter SDK.
-/// Render that public-ID-only widget in the app's existing WebView stack.
-/// Checkout payments still use the Cashfree Flutter payment SDK separately.
-class _CashfreeBnplWebWidget extends StatefulWidget {
-  final String clientId;
-  final num amount;
-  final Widget Function() fallbackBuilder;
+  static List<Map<String, dynamic>> _asList(dynamic value) => value is List
+      ? value
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList()
+      : <Map<String, dynamic>>[];
 
-  const _CashfreeBnplWebWidget({
-    super.key,
-    required this.clientId,
-    required this.amount,
-    required this.fallbackBuilder,
-  });
-
-  @override
-  State<_CashfreeBnplWebWidget> createState() => _CashfreeBnplWebWidgetState();
-}
-
-class _CashfreeBnplWebWidgetState extends State<_CashfreeBnplWebWidget> {
-  late final WebViewController _controller;
-  double _height = 140;
-  bool _failed = false;
-  bool _openingPlans = false;
-
-  Future<void> _openPlans(String tab) async {
-    if (!mounted || _openingPlans) return;
-    _openingPlans = true;
-    try {
-      await Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute<void>(
-          builder: (_) => CashfreePlansPage(
-            amount: widget.amount,
-            initialTab: tab,
-          ),
-        ),
-      );
-    } finally {
-      _openingPlans = false;
-    }
+  static double? _asAmount(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value == null) return null;
+    final normalized = value.toString().replaceAll(RegExp(r'[^0-9.-]'), '');
+    final amount = double.tryParse(normalized);
+    return amount != null && amount > 0 ? amount : null;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..addJavaScriptChannel(
-        'CashfreeBnplHeight',
-        onMessageReceived: (message) {
-          final height = double.tryParse(message.message);
-          if (height != null && mounted) {
-            final nextHeight = height.clamp(100.0, 640.0);
-            if ((_height - nextHeight).abs() > 3) {
-              setState(() => _height = nextHeight);
-            }
-          }
-        },
-      )
-      ..addJavaScriptChannel(
-        'CashfreeBnplStatus',
-        onMessageReceived: (message) {
-          if (message.message == 'failed' && mounted) {
-            setState(() => _failed = true);
-          }
-        },
-      )
-      ..addJavaScriptChannel(
-        'CashfreeBnplModal',
-        onMessageReceived: (message) {
-          _openPlans(message.message);
-        },
-      )
-      ..loadHtmlString(_html(), baseUrl: AppConfig.baseUrl);
-  }
-
-  String _html() {
-    // jsonEncode escapes the public App ID and amount for JavaScript. No
-    // Cashfree secret or webhook credential is ever sent to this WebView.
-    final clientId = jsonEncode(widget.clientId);
-    final amount = jsonEncode(widget.amount.toString());
-    return '''<!doctype html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>html,body{margin:0;padding:0;background:transparent;overflow:auto}
-#cashfree-widget{width:100%;min-height:100px}
-#cashfree-widget iframe{width:100%}</style>
-<script src="https://sdk.cashfree.com/js/widget/1.0.2/cashfree-widget.prod.js"></script>
-</head><body><div id="cashfree-widget"></div><script>
-(function(){
-  window.addEventListener('message', function(event) {
-    if (event.origin !== 'https://cf-widget-frame.cashfree.com') return;
-    if (event.data && event.data.isModelOpen) {
-      // Keep Cashfree's compact preview, but show its read-only offers and EMI
-      // data in a native screen. Its web-only detail iframe adds a dim backdrop.
-      event.stopImmediatePropagation();
-      CashfreeBnplModal.postMessage(String(event.data.opentab || 'offerDetails'));
-    }
-  }, true);
-  var lastHeight = 0;
-  function reportHeight(){
-    var h = Math.ceil(Math.max(document.body.scrollHeight,
-      document.getElementById('cashfree-widget').scrollHeight));
-    if (h > 0 && Math.abs(h - lastHeight) > 3) {
-      lastHeight = h;
-      CashfreeBnplHeight.postMessage(String(h));
-    }
-  }
-  window.addEventListener('load', function(){
-    if (typeof CF_Widget !== 'function') {
-      CashfreeBnplStatus.postMessage('failed');
-      return;
-    }
-    try {
-      CF_Widget({clientID:$clientId, amount:$amount,
-        offers:'true', payLater:'true', emi:'true',
-        theme:{widgetColor:'#ffffff',linkColor:'#5b21b6',
-          cfLogoTheme:'dark',isLogoActive:true}}).load();
-      if (typeof ResizeObserver === 'function') {
-        new ResizeObserver(reportHeight).observe(document.body);
+  static double? _lowestMonthlyEmi(List<Map<String, dynamic>> options) {
+    final monthlyAmounts = <double>[];
+    for (final option in options) {
+      final details = option['entity_details'];
+      final detailsMap = details is Map ? details : const <String, dynamic>{};
+      final plans = _asList(detailsMap['emi_plans'] ??
+          detailsMap['payment_method_details'] ??
+          option['schemes']);
+      for (final plan in plans) {
+        final amount = _asAmount(plan['monthly_emi'] ??
+            plan['emi_amount'] ??
+            plan['emiAmount'] ??
+            plan['monthlyEmi'] ??
+            plan['emi']);
+        if (amount != null) monthlyAmounts.add(amount);
       }
-      if (typeof MutationObserver === 'function') {
-        new MutationObserver(reportHeight).observe(document.body,
-          {childList:true,subtree:true,attributes:true});
-      }
-      reportHeight();
-      setTimeout(function(){
-        if (!document.getElementById('cashfree-widget').hasChildNodes()) {
-          CashfreeBnplStatus.postMessage('failed');
-        }
-      }, 15000);
-    } catch (e) {
-      CashfreeBnplStatus.postMessage('failed');
     }
-  });
-})();
-</script></body></html>''';
+    if (monthlyAmounts.isEmpty) return null;
+    return monthlyAmounts.reduce((a, b) => a < b ? a : b);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_failed) return widget.fallbackBuilder();
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      height: _height,
-      child: WebViewWidget(controller: _controller),
-    );
+  static String _formatCurrency(double value) {
+    final decimalDigits = value == value.roundToDouble() ? 0 : 2;
+    return NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: decimalDigits,
+    ).format(value);
   }
 }
