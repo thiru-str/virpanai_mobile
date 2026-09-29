@@ -4,8 +4,5 @@
 <dict>
 	<key>aps-environment</key>
 	<string>development</string>
-	<array>
-    		<string>applinks:virpanai.waioz.com</string>
-    	</array>
 </dict>
 </plist>
