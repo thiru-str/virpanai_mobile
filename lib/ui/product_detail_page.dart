@@ -95,6 +95,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   FavouriteListConfig _favConfig = FavouriteListConfig();
 
   Map<String, File?>? videoThumbnails;
+  final PageController _productMediaController = PageController();
+  int _currentMediaIndex = 0;
 
   @override
   void initState() {
@@ -127,6 +129,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   void dispose() {
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
+    _productMediaController.dispose();
     quantityController.dispose();
     super.dispose();
   }
@@ -281,66 +284,151 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ? allMedia
         : (product?.images ?? []).map((img) => img.url ?? '').toList();
 
-    return SizedBox(
-      height: 250,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: displayUrls.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          final url = displayUrls[index];
-          final isVideo = url.toLowerCase().endsWith('.mp4');
+    if (displayUrls.isEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: const ColoredBox(
+          color: Colors.white,
+          child: SizedBox(
+            width: double.infinity,
+            height: 340,
+            child: ImageFallbackWidget(fit: BoxFit.contain),
+          ),
+        ),
+      );
+    }
 
-          return GestureDetector(
-            onTap: () {
-              PageRouteUtils.pushWithFade(
-                context,
-                FullscreenImageCarousel(
-                  imageUrls: displayUrls,
-                  initialIndex: index,
-                  videoThumbnails: videoThumbnails,
+    final safeMediaIndex =
+        _currentMediaIndex.clamp(0, displayUrls.length - 1).toInt();
+
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            width: double.infinity,
+            height: 340,
+            color: Colors.white,
+            child: Stack(
+              children: [
+                PageView.builder(
+                  controller: _productMediaController,
+                  itemCount: displayUrls.length,
+                  onPageChanged: (index) {
+                    if (!mounted) return;
+                    setState(() => _currentMediaIndex = index);
+                  },
+                  itemBuilder: (context, index) {
+                    final url = displayUrls[index];
+                    final isVideo = url.toLowerCase().endsWith('.mp4');
+
+                    return GestureDetector(
+                      onTap: () {
+                        PageRouteUtils.pushWithFade(
+                          context,
+                          FullscreenImageCarousel(
+                            imageUrls: displayUrls,
+                            initialIndex: index,
+                            videoThumbnails: videoThumbnails,
+                          ),
+                        );
+                      },
+                      child: isVideo
+                          ? Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                if (videoThumbnails?[url] != null)
+                                  Image.file(
+                                    videoThumbnails![url]!,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.contain,
+                                    filterQuality: FilterQuality.high,
+                                  )
+                                else
+                                  const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                const Icon(
+                                  Icons.play_circle_fill,
+                                  size: 56,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: url,
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.contain,
+                              alignment: Alignment.center,
+                              filterQuality: FilterQuality.high,
+                              errorWidget: (_, __, ___) =>
+                                  const ImageFallbackWidget(
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                    );
+                  },
+                ),
+                if (displayUrls.length > 1)
+                  Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF5F6068).withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          '${safeMediaIndex + 1}/${displayUrls.length}',
+                          style: FontUtils.primaryFontStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )),
+              ],
+            ),
+          ),
+        ),
+        if (displayUrls.length > 1) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(displayUrls.length, (index) {
+              final isSelected = index == safeMediaIndex;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                width: isSelected ? 20 : 6,
+                height: 6,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : const Color(0xFFD8D8DD),
+                  borderRadius: BorderRadius.circular(6),
                 ),
               );
-            },
-            child: Container(
-              width: 180,
-              decoration: const BoxDecoration(color: Colors.white),
-              child: isVideo
-                  ? Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (videoThumbnails?[url] != null)
-                          Image.file(
-                            videoThumbnails![url]!,
-                            width: 180,
-                            height: 250,
-                            fit: BoxFit.cover,
-                          )
-                        else
-                          Container(
-                            width: 180,
-                            height: 250,
-                            color: Colors.black12,
-                            alignment: Alignment.center,
-                            child: const CircularProgressIndicator(),
-                          ),
-                        const Icon(Icons.play_circle_fill,
-                            size: 50, color: Colors.white),
-                      ],
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: url,
-                      width: 180,
-                      height: 250,
-                      fit: BoxFit.contain,
-                      errorWidget: (_, __, ___) =>
-                          const ImageFallbackWidget(h: 250),
-                    ),
-            ),
-          );
-        },
-      ),
+            }),
+          ),
+        ],
+      ],
     );
+  }
+
+  void _showFirstProductMedia() {
+    _currentMediaIndex = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_productMediaController.hasClients) return;
+      _productMediaController.jumpToPage(0);
+    });
   }
 
   Widget buildRelatedProducts() {
@@ -607,7 +695,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         selectedVariant = null;
         selectedVariantId = null;
         stockNotAvailable = false;
+        _currentMediaIndex = 0;
       });
+      _showFirstProductMedia();
       return;
     }
 
@@ -617,7 +707,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       selectedVariant = matchedVariant;
       selectedVariantId = matchedVariant?.id;
       stockNotAvailable = !isStockAvailable(selectedVariant);
+      _currentMediaIndex = 0;
     });
+    _showFirstProductMedia();
 
     print("Selected Variant ID: ${selectedVariant?.id}");
     print("Stock not available: ${!isStockAvailable(selectedVariant)}");
