@@ -36,6 +36,7 @@ _ProviderMeta _meta(String? id, {String? walletBalanceLabel}) {
       return const _ProviderMeta(
         displayName: 'Cashfree',
         subtitle: 'UPI · Cards · Net banking · EMI',
+        ctaLabel: 'Pay Online · Cashfree',
         icon: Icons.account_balance_wallet_rounded,
         color: Color(0xFF6C3BFF),
       );
