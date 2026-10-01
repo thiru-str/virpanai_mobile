@@ -25,7 +25,12 @@ class PushNotificationService {
   FlutterLocalNotificationsPlugin();
 
   Future<void> initialize(BuildContext context) async {
-    // Request notification permissions (especially for iOS)
+    // Always create the notification channel first — FCM background messages
+    // use it before the app fully initialises, so it must exist even if the
+    // user hasn't granted permission yet.
+    await _initLocalNotifications();
+
+    // Request notification permissions (especially for iOS and Android 13+)
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
       badge: true,
@@ -36,9 +41,6 @@ class PushNotificationService {
       debugPrint('User declined or has not accepted permission');
       return;
     }
-
-    // Initialize local notifications
-    await _initLocalNotifications();
 
     // // Get FCM token
     // String? token = await _firebaseMessaging.getToken();

@@ -883,8 +883,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   bottom: MediaQuery.of(context).padding.bottom + 16,
                 ),
                 child: GestureDetector(
-                  onTap: () {
-                    PageRouteUtils.pushWithSlide(context, const CartPage());
+                  onTap: () async {
+                    await PageRouteUtils.pushWithSlide(context, const CartPage());
+                    if (mounted) await getCartApi();
                   },
                   child: ViewCartWidget(
                       totalItems: cartItems ?? 0, itemImages: cartItemImages),
@@ -1035,9 +1036,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         await ApiService().updateCart(
                             context, selectedQuantity, _cartLineItemId!);
                         await getCartApi();
-                      } catch (_) {}
-                      if (mounted) setState(() => quantityLoading = false);
-                      return;
+                        if (mounted) setState(() => quantityLoading = false);
+                        return;
+                      } catch (_) {
+                        // Line item was removed from cart (e.g. cleared on cart page)
+                        // — reset stale state and fall through to add as new item
+                        await getCartApi();
+                        if (mounted) {
+                          setState(() {
+                            _cartLineItemId = null;
+                            productPresentInCart = false;
+                            quantityLoading = false;
+                          });
+                        }
+                      }
                     }
                     if ((addOnProductsCount ?? 0) > 0) {
                       final selectedAddOns = await showAddOnBottomSheet(
