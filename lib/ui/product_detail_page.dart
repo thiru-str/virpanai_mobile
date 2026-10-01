@@ -41,6 +41,8 @@ import '../utility/full_screen_carousel.dart';
 import 'bottom_nav_page.dart';
 import 'widgets/favourite_heart_button.dart';
 import 'favourite_list_detail_page.dart';
+import 'widgets/loyalty_earn_preview.dart';
+import 'widgets/cashfree_emi_options.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -851,6 +853,113 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  Widget buildProductDetails() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                product?.title ?? '',
+                style: UiTypography.cardTitle(
+                  color: AppColors.textColor,
+                ).copyWith(
+                  fontSize: 22,
+                  height: 1.25,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    getDisplayedPrice(),
+                    style: UiTypography.cardPrice(
+                      color: AppColors.primary,
+                    ).copyWith(
+                      fontSize: 22,
+                    ),
+                  ),
+                  Visibility(
+                    visible: selectedVariant != null &&
+                        selectedVariant!
+                                .calculatedPrice?.rawCalculatedAmount?.value !=
+                            selectedVariant!
+                                .calculatedPrice?.rawOriginalAmount?.value,
+                    child: Text(
+                      CurrencyUtil.appendCurrency(selectedVariant
+                              ?.calculatedPrice?.rawOriginalAmount?.value ??
+                          '0'),
+                      style: UiTypography.cardMeta(
+                        color: Colors.grey,
+                      ).copyWith(
+                        fontSize: 14,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  ),
+                  if (getDiscountPercent() != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7F7F0),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${getDiscountPercent()}% OFF',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1FA971),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              CashfreeEmiOptions(
+                  amount: double.tryParse(selectedVariant
+                              ?.calculatedPrice?.rawCalculatedAmount?.value ??
+                          '0') ??
+                      0),
+            ],
+          ),
+        ),
+        if ((num.tryParse(selectedVariant
+                        ?.calculatedPrice?.rawCalculatedAmount?.value ??
+                    '') ??
+                0) >
+            0)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: LoyaltyEarnPreview(
+              orderTotal: num.tryParse(selectedVariant!
+                      .calculatedPrice!.rawCalculatedAmount!.value!) ??
+                  0,
+              productId: widget.productId,
+            ),
+          ),
+      ],
+    );
+  }
 
   String getDisplayedPrice() {
     if (selectedVariant != null) {
@@ -1007,9 +1116,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
     final items = cartResponse!.cart!.items!;
     final Item? match = items.cast<Item?>().firstWhere(
-      (item) => item?.variantId == selectedVariantId,
-      orElse: () => null,
-    );
+          (item) => item?.variantId == selectedVariantId,
+          orElse: () => null,
+        );
     _cartLineItemQty = match?.quantity ?? 0;
     _cartLineItemId = match?.id;
     productPresentInCart = _cartLineItemQty > 0;
@@ -1387,7 +1496,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       return;
                     }
-                    if (productPresentInCart == true && _cartLineItemId != null) {
+                    if (productPresentInCart == true &&
+                        _cartLineItemId != null) {
                       // Update existing cart item to new total qty
                       setState(() => quantityLoading = true);
                       try {
