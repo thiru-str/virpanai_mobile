@@ -954,7 +954,9 @@ class ApiService {
         try {
           final homeResponse = await getHomePage(context);
           final newCartId = homeResponse.global?.cartId;
-          if (newCartId != null && newCartId.isNotEmpty && newCartId != cartId) {
+          if (newCartId != null &&
+              newCartId.isNotEmpty &&
+              newCartId != cartId) {
             await SharedPreferencesUtil().saveString('cart_id', newCartId);
             return await _makePostRequest(
               'store/custom-carts/$newCartId/line-items',
@@ -1212,6 +1214,28 @@ class ApiService {
       (json) => PlaceOrderResponse.fromJson(json),
       context,
     );
+  }
+
+  Future<Map<String, dynamic>> getCashfreeEmiOptions(num amount) async {
+    await addToken();
+    final response = await _dio
+        .get('store/cashfree/emi-options', queryParameters: {'amount': amount});
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeBnplConfig() async {
+    await addToken();
+    final response = await _dio.get('store/cashfree/bnpl-config');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeDisplayOptions(num amount) async {
+    await addToken();
+    final response = await _dio.get(
+      'store/cashfree/display-options',
+      queryParameters: {'amount': amount},
+    );
+    return Map<String, dynamic>.from(response.data as Map);
   }
 
   Future<PublicDetailsResponse> getPublicDetails() async {
@@ -1611,7 +1635,8 @@ class ApiService {
     // PDP passes product_id so backend can short-circuit when the merchant
     // has restricted earning to specific products / categories — keeps the
     // "you'll earn …" strip honest with what the order subscriber will do.
-    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (productId != null && productId.isNotEmpty)
+      params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
