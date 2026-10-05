@@ -61,6 +61,7 @@ dependencies:
   flutter_polyline_points: ^2.0.0
   permission_handler: ^11.0.1
   image_picker: ^1.1.2
+  file_picker: ^8.1.7
   collection: ^1.18.0
   url_launcher: ^6.3.1
   dotted_line: ^3.0.1
@@ -92,6 +93,8 @@ dependencies:
 
 
 dependency_overrides:
+  # flutter_html 3.0.0 uses html's internal qs.matches, removed in 0.15.7.
+  html: 0.15.6
   stripe_platform_interface: ^10.2.0
   stripe_android: ^10.2.0
 
