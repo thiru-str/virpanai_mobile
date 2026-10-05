@@ -389,27 +389,29 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: FontUtils.primaryFontStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textColor,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                ),
               ),
             ),
-          ),
-          Container(
-            height: 3,
-            color: selected ? AppColors.primary : Colors.transparent,
-          ),
-        ],
+            Container(
+              height: 3,
+              color: selected ? AppColors.primary : Colors.transparent,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -486,7 +488,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                     key: (c.id != null && _selectedSubId == c.id) ? _selectedSubKey : null,
                     child: _subChip(
                       label: c.name ?? '',
-                      selected: _selectedSubId == c.id,
+                      selected: c.id != null && _selectedSubId == c.id,
                       onTap: () => _onSubTap(c.id),
                     ),
                   );
