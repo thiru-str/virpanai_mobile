@@ -280,7 +280,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     if (main) _scrollRowToSelected(_mainRowCtrl, _selectedMainKey,
         _selectedMainId, _mainCategories, _mainChipAvgWidth);
     if (sub) _scrollRowToSelected(_subRowCtrl, _selectedSubKey,
-        _selectedSubId, _visibleSubs, _subChipAvgWidth);
+        _selectedSubId, _visibleSubs, _subChipAvgWidth, separatorWidth: 14);
   }
 
   void _scrollRowToSelected(
@@ -288,8 +288,9 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     GlobalKey key,
     String? selectedId,
     List<ProductCategory> items,
-    double avgChipWidth,
-  ) {
+    double avgChipWidth, {
+    double separatorWidth = 0,
+  }) {
     if (selectedId == null || !ctrl.hasClients) return;
     final idx = items.indexWhere((c) => c.id == selectedId);
     if (idx < 0) return;
@@ -300,17 +301,10 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     // accessing maxScrollExtent before that throws a StateError.
     if (!ctrl.position.hasContentDimensions) return;
     final screenW = MediaQuery.of(context).size.width;
-    final estimated = (idx + 1) * avgChipWidth - screenW / 2;
+    // Account for separators: each chip has a separator before it except "All".
+    final approxOffset = (idx + 1) * avgChipWidth + idx * separatorWidth;
+    final estimated = approxOffset - screenW / 2;
     ctrl.jumpTo(estimated.clamp(0.0, ctrl.position.maxScrollExtent));
-
-    // Stage 2 — wait for the chip to render, then center it precisely.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final ctx = key.currentContext;
-      if (ctx == null) return;
-      Scrollable.ensureVisible(ctx,
-          alignment: 0.5, duration: Duration.zero);
-    });
   }
 
   List<ProductCategory> get _visibleSubs {
@@ -324,15 +318,13 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
       _selectedSubId = null; // reset sub when main changes
     });
     _refetchForChips();
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _ensureSelectedVisible(main: true, sub: false));
+    // No auto-scroll: user tapped a visible chip, scrolling would move it out of view.
   }
 
   void _onSubTap(String? id) {
     setState(() => _selectedSubId = id);
     _refetchForChips();
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _ensureSelectedVisible(main: false, sub: true));
+    // No auto-scroll: user tapped a visible chip, scrolling would move it out of view.
   }
 
   void _refetchForChips() {
@@ -401,8 +393,8 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                 textAlign: TextAlign.center,
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textColor,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? AppColors.primary : AppColors.textColor,
                 ),
               ),
             ),
