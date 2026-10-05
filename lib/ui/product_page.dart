@@ -446,7 +446,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                 }
                 final c = _mainCategories[i - 1];
                 return KeyedSubtree(
-                  key: _selectedMainId == c.id ? _selectedMainKey : null,
+                  key: (c.id != null && _selectedMainId == c.id) ? _selectedMainKey : null,
                   child: _mainChip(
                     label: c.name ?? '',
                     selected: _selectedMainId == c.id,
@@ -484,7 +484,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                   }
                   final c = subs[i - 1];
                   return KeyedSubtree(
-                    key: _selectedSubId == c.id ? _selectedSubKey : null,
+                    key: (c.id != null && _selectedSubId == c.id) ? _selectedSubKey : null,
                     child: _subChip(
                       label: c.name ?? '',
                       selected: _selectedSubId == c.id,
