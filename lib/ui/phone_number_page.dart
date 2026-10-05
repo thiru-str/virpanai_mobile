@@ -352,9 +352,19 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         passwordController.text,
       );
 
-      if (!response.newUser!) {
-        SharedPreferencesUtil().saveString('token', response.token!);
+      if (!mounted) return;
+      if (response.hasFailure) {
+        setState(() => apiCalling = false);
+        AppUtils.showToast(response.failureMessage);
+        return;
       }
+      final token = response.token;
+      if (token == null || token.isEmpty) {
+        setState(() => apiCalling = false);
+        AppUtils.showToast(response.failureMessage);
+        return;
+      }
+      await SharedPreferencesUtil().saveString('token', token);
       // SharedPreferencesUtil()
       //     .saveMap('customer', response.customer!.toJson());
 

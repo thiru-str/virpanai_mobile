@@ -463,6 +463,82 @@ class ApiService {
     return response;
   }
 
+  Future<Map<String, dynamic>> registerHealthcareUser(
+    BuildContext context,
+    Map<String, dynamic> payload,
+  ) async {
+    return _makePostRequest<Map<String, dynamic>>(
+      "store/healthcare-user/register",
+      payload,
+      (data) => data,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> uploadHealthcareDocument(
+    BuildContext context,
+    File file,
+    String documentType,
+  ) async {
+    try {
+      await setPublishableKey();
+
+      final originalName = file.path.split(RegExp(r'[/\\]')).last;
+      final safeName = originalName.replaceAll(
+        RegExp(r'[^a-zA-Z0-9.\-_]'),
+        '_',
+      );
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          file.path,
+          filename: safeName,
+        ),
+        'originalFileName':
+            'healthcare-$documentType-${DateTime.now().microsecondsSinceEpoch}-$safeName',
+        'upload_context': 'healthcare',
+        'document_type': documentType,
+      });
+
+      AppLogger.print(
+        'API Request:',
+        '${_dio.options.baseUrl}public/uploads',
+      );
+      final response = await _dio.post(
+        'public/uploads',
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is Map) {
+        final payload = Map<String, dynamic>.from(response.data as Map);
+        final uploadedFile = payload['file'];
+        if (uploadedFile is Map && uploadedFile['id'] != null) {
+          return Map<String, dynamic>.from(uploadedFile);
+        }
+      }
+
+      final message = _extractErrorMessage(response.data);
+      AppUtils.showToast(message);
+      throw Exception(message);
+    } catch (error, stacktrace) {
+      AppLogger.print('Healthcare document upload failed:', '$error');
+      AppErrorReporter.instance.recordHandled(
+        error,
+        stacktrace,
+        reason: 'Healthcare document upload failed',
+        attributes: {
+          'endpoint': 'public/uploads',
+          'document_type': documentType,
+          'method': 'POST',
+        },
+      );
+      rethrow;
+    }
+  }
+
   Future<RefreshTokenResponse> refreshToken(
     BuildContext context,
     String token,

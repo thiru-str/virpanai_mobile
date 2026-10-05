@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waioz/model/email_register_response.dart';
+import 'package:waioz/model/healthcare_registration_payload.dart';
 import 'package:waioz/model/refresh_token_response.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
@@ -21,6 +23,13 @@ import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import '../utility/ui_typography.dart';
 import 'bottom_nav_page.dart';
+
+class _HealthcareDocument {
+  final String id;
+  final String name;
+
+  const _HealthcareDocument({required this.id, required this.name});
+}
 
 class RegisterPage extends StatefulWidget {
   final String countryCode;
@@ -49,11 +58,27 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
   final TextEditingController referralCodeController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController aadhaarNumberController = TextEditingController();
+  final TextEditingController drugLicenceNumberController =
+      TextEditingController();
+  final TextEditingController drugLicenceValidFromController =
+      TextEditingController();
+  final TextEditingController drugLicenceValidToController =
+      TextEditingController();
+  final TextEditingController panNumberController = TextEditingController();
+  final TextEditingController gstNumberController = TextEditingController();
 
   bool apiCalling = false;
   RegisterResponse? registerResponse;
   EmailRegisterResponse? emailRegisterResponse;
   bool isEmailLogin = false;
+  bool _loginTypeLoaded = false;
+  bool _healthcareSubmitted = false;
+  String _userType = 'general_user';
+  final Map<String, List<_HealthcareDocument>> _healthcareDocuments = {};
+  final Map<String, bool> _uploadingHealthcareDocuments = {};
+  final Set<String> _healthcareDocumentErrors = {};
   String? _phoneNo;
   String? _countryCode;
 
@@ -69,13 +94,32 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> getLoginType() async {
     final loginType =
         await SharedPreferencesUtil().getBool('email_login') ?? false;
+    if (!mounted) return;
     setState(() {
       isEmailLogin = loginType;
+      _loginTypeLoaded = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_loginTypeLoaded) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF9F9FB),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (!isEmailLogin) {
+      return _buildHealthcareRegistrationPage();
+    }
+
+    return _buildLegacyRegistrationPage();
+  }
+
+  Widget _buildLegacyRegistrationPage() {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -342,6 +386,594 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // Item 7 — Referral input with inline QR scan + contact picker icons.
   // Field accepts either a unique code or a phone number; backend resolves.
+  Widget _buildHealthcareRegistrationPage() {
+    if (_healthcareSubmitted) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF9F9FB),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle_outline_rounded,
+                        color: AppColors.primary, size: 64),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Registration Submitted',
+                      textAlign: TextAlign.center,
+                      style: UiTypography.cardTitle().copyWith(fontSize: 24),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Your account is pending administrator approval.',
+                      textAlign: TextAlign.center,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 14,
+                        color: AppColors.textColor50,
+                      ).copyWith(height: 1.5),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context)
+                            .popUntil((route) => route.isFirst),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text('Back to log in'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final isDoctor = _userType == 'doctor';
+    final isUploading =
+        _uploadingHealthcareDocuments.values.any((value) => value);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9F9FB),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF9F9FB),
+          elevation: 0,
+          leading: IconButton(
+            icon: SvgPicture.asset(
+              AppAssets.ic_arrow_svg,
+              height: 16,
+              width: 16,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Complete Registration',
+                  style: UiTypography.cardTitle().copyWith(
+                    fontSize: 24,
+                    height: 1.2,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isDoctor
+                      ? 'Doctor registration'
+                      : 'General user registration',
+                  style: FontUtils.secondaryFontStyle(
+                    fontSize: 14,
+                    color: AppColors.textColor50,
+                  ).copyWith(height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Choose User Type',
+                        style: FontUtils.primaryFontStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildUserTypeOption(
+                              value: 'general_user',
+                              label: 'General User',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildUserTypeOption(
+                              value: 'doctor',
+                              label: 'Doctor',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        hintText: 'Full Name',
+                        controller: fullNameController,
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                                ? 'Please enter Full Name'
+                                : null,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        hintText: AppStrings.email,
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textCapitalization: TextCapitalization.none,
+                        validator: (value) {
+                          final email = value?.trim() ?? '';
+                          if (email.isEmpty) return 'Please enter Email';
+                          if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                              .hasMatch(email)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                      ),
+                      if (isDoctor) ...[
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: 'Aadhaar Number',
+                          controller: aadhaarNumberController,
+                          validator: _requiredHealthcareField('Aadhaar Number'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildHealthcareDocumentField(
+                          field: 'aadhaar_document',
+                          label: 'Aadhaar Upload',
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: 'Drug Licence Number',
+                          controller: drugLicenceNumberController,
+                          validator:
+                              _requiredHealthcareField('Drug Licence Number'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildHealthcareDocumentField(
+                          field: 'drug_licence_document',
+                          label: 'Drug Licence Upload',
+                        ),
+                        const SizedBox(height: 16),
+                        _buildHealthcareDateField(
+                          label: 'Drug Licence Valid From',
+                          controller: drugLicenceValidFromController,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildHealthcareDateField(
+                          label: 'Drug Licence Valid To',
+                          controller: drugLicenceValidToController,
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: 'PAN Number',
+                          controller: panNumberController,
+                          textCapitalization: TextCapitalization.characters,
+                          validator: _requiredHealthcareField('PAN Number'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildHealthcareDocumentField(
+                          field: 'pan_document',
+                          label: 'PAN Upload',
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: 'GST Number',
+                          controller: gstNumberController,
+                          textCapitalization: TextCapitalization.characters,
+                          validator: _requiredHealthcareField('GST Number'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildHealthcareDocumentField(
+                          field: 'gst_document',
+                          label: 'GST Upload',
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (apiCalling || isUploading)
+                  SizedBox(
+                    height: 54,
+                    child: Center(
+                      child: SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  ElevatedButton(
+                    onPressed: _submitHealthcareRegistration,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      elevation: 0,
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      'Submit Registration',
+                      style: FontUtils.primaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String? Function(String?) _requiredHealthcareField(String label) {
+    return (value) =>
+        value == null || value.trim().isEmpty ? 'Please enter $label' : null;
+  }
+
+  Widget _buildUserTypeOption({required String value, required String label}) {
+    final selected = _userType == value;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => _changeHealthcareUserType(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.06)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? AppColors.primary : const Color(0xFFE5E7EC),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: selected ? AppColors.primary : Colors.grey.shade500,
+            ),
+            Expanded(
+              child: Text(
+                label,
+                style: FontUtils.primaryFontStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _changeHealthcareUserType(String value) {
+    setState(() {
+      _userType = value;
+      if (value != 'doctor') _healthcareDocumentErrors.clear();
+    });
+  }
+
+  Widget _buildHealthcareDateField({
+    required String label,
+    required TextEditingController controller,
+  }) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      onTap: () => _selectHealthcareDate(controller),
+      decoration: InputDecoration(
+        hintText: label,
+        hintStyle: UiTypography.searchHint(),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        suffixIcon: const Icon(Icons.calendar_month_outlined),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EC)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EC)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+      ),
+      validator: _requiredHealthcareField(label),
+    );
+  }
+
+  Future<void> _selectHealthcareDate(
+    TextEditingController controller,
+  ) async {
+    var initialDate = DateTime.now();
+    if (controller.text.isNotEmpty) {
+      initialDate = DateTime.tryParse(controller.text) ?? initialDate;
+    }
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1950),
+      lastDate: DateTime(2100),
+    );
+    if (selected == null || !mounted) return;
+    final month = selected.month.toString().padLeft(2, '0');
+    final day = selected.day.toString().padLeft(2, '0');
+    setState(() => controller.text = '${selected.year}-$month-$day');
+  }
+
+  Widget _buildHealthcareDocumentField({
+    required String field,
+    required String label,
+  }) {
+    final documents = _healthcareDocuments[field] ?? const [];
+    final uploading = _uploadingHealthcareDocuments[field] == true;
+    final hasError = _healthcareDocumentErrors.contains(field);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: hasError ? Colors.red.shade600 : const Color(0xFFE5E7EC),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: FontUtils.primaryFontStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: uploading
+                ? null
+                : () => _pickAndUploadHealthcareDocuments(field),
+            icon: uploading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.upload_file_outlined),
+            label: Text(uploading ? 'Uploading...' : 'Choose files'),
+          ),
+          Text(
+            'Images or PDF files',
+            style: FontUtils.secondaryFontStyle(
+              fontSize: 12,
+              color: AppColors.textColor50,
+            ),
+          ),
+          if (documents.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ...documents.map(
+              (document) => Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_rounded,
+                        color: Colors.green.shade600, size: 18),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        document.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.secondaryFontStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (hasError) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Please upload $label',
+              style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickAndUploadHealthcareDocuments(String field) async {
+    final selection = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'],
+    );
+    if (selection == null || selection.files.isEmpty || !mounted) return;
+
+    setState(() => _uploadingHealthcareDocuments[field] = true);
+    final uploaded = <_HealthcareDocument>[];
+    try {
+      for (final selectedFile in selection.files) {
+        if (selectedFile.path == null) continue;
+        final response = await ApiService().uploadHealthcareDocument(
+          context,
+          File(selectedFile.path!),
+          field,
+        );
+        final id = response['id']?.toString() ?? '';
+        if (id.isNotEmpty) {
+          uploaded.add(_HealthcareDocument(id: id, name: selectedFile.name));
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _healthcareDocuments[field] = [
+          ...?_healthcareDocuments[field],
+          ...uploaded,
+        ];
+        if (uploaded.isNotEmpty) _healthcareDocumentErrors.remove(field);
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('File upload failed: ${_cleanError(error)}'),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingHealthcareDocuments[field] = false);
+      }
+    }
+  }
+
+  Future<void> _submitHealthcareRegistration() async {
+    FocusScope.of(context).unfocus();
+    final formValid = _formKey.currentState?.validate() ?? false;
+    const requiredDocuments = [
+      'aadhaar_document',
+      'drug_licence_document',
+      'pan_document',
+      'gst_document',
+    ];
+    final missingDocuments = _userType == 'doctor'
+        ? requiredDocuments
+            .where((field) => (_healthcareDocuments[field] ?? []).isEmpty)
+            .toSet()
+        : <String>{};
+
+    setState(() {
+      _healthcareDocumentErrors
+        ..clear()
+        ..addAll(missingDocuments);
+    });
+    if (!formValid || missingDocuments.isNotEmpty) return;
+
+    final payload = buildHealthcareRegistrationPayload(
+      phone: widget.phoneNo,
+      countryCode: widget.countryCode,
+      fullName: fullNameController.text,
+      email: emailController.text,
+      userType: _userType,
+      aadhaarNumber: aadhaarNumberController.text,
+      drugLicenceNumber: drugLicenceNumberController.text,
+      drugLicenceValidFrom: drugLicenceValidFromController.text,
+      drugLicenceValidTo: drugLicenceValidToController.text,
+      panNumber: panNumberController.text,
+      gstNumber: gstNumberController.text,
+      documentIds: {
+        for (final field in requiredDocuments) field: _documentIds(field),
+      },
+    );
+
+    setState(() => apiCalling = true);
+    try {
+      final response =
+          await ApiService().registerHealthcareUser(context, payload);
+      if (!mounted) return;
+      if (response['success'] == true) {
+        setState(() => _healthcareSubmitted = true);
+      } else {
+        throw Exception(response['message'] ?? 'Registration failed');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_cleanError(error)),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => apiCalling = false);
+    }
+  }
+
+  List<String> _documentIds(String field) => (_healthcareDocuments[field] ?? [])
+      .map((document) => document.id)
+      .toList();
+
+  String _cleanError(Object error) =>
+      error.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+
   Widget _buildReferralField() {
     return TextField(
       controller: referralCodeController,
@@ -492,7 +1124,8 @@ class _RegisterPageState extends State<RegisterPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_outline, size: 12, color: Colors.grey.shade400),
+                  Icon(Icons.lock_outline,
+                      size: 12, color: Colors.grey.shade400),
                   const SizedBox(width: 4),
                   Text(
                     'We never store or share your contacts',
@@ -796,7 +1429,8 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
   String _query = '';
 
   List<Contact> get _filtered {
-    final withPhone = widget.contacts.where((c) => c.phones.isNotEmpty).toList();
+    final withPhone =
+        widget.contacts.where((c) => c.phones.isNotEmpty).toList();
     if (_query.isEmpty) return withPhone;
     final q = _query.toLowerCase();
     return withPhone.where((c) {

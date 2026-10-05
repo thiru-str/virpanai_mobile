@@ -37,8 +37,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   final TextEditingController _otpController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
-  bool apiCalling = true;
+  bool apiCalling = false;
   VerifyOtpResponse? verifyOtpResponse;
+  String? _loginErrorMessage;
 
   int _remainingSeconds = 30;
   Timer? _timer;
@@ -174,8 +175,33 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   },
                   onChanged: (value) {
                     print(value);
+                    if (_loginErrorMessage != null) {
+                      setState(() => _loginErrorMessage = null);
+                    }
                   },
                 ),
+                if (_loginErrorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Text(
+                      _loginErrorMessage!,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 13,
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -216,25 +242,32 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: () {
-                      // Validate OTP and proceed
-                      print('Submitted OTP: ${_otpController.text}');
-                      verifyOtp();
-                    },
+                    onPressed: apiCalling ? null : verifyOtp,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Verify",
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                        if (apiCalling)
+                          const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        else ...[
+                          Text(
+                            "Verify",
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded,
-                            color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded,
+                              color: Colors.white, size: 20),
+                        ],
                       ],
                     ),
                   ),
@@ -279,30 +312,46 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   }
 
   void verifyOtp() async {
+    if (apiCalling) return;
+    setState(() {
+      apiCalling = true;
+      _loginErrorMessage = null;
+    });
+
     try {
       final ApiService apiService = ApiService();
       verifyOtpResponse = await apiService.verifyOtp(
           context, widget.countryCode, widget.phoneNo, _otpController.text);
+      if (!mounted) return;
       setState(() {
         apiCalling = false;
       });
 
-      if (!verifyOtpResponse!.newUser!) {
-        SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
-      } else {
-        //redirect to create account page
-        if (mounted) {
-          PageRouteUtils.pushWithSlide(
-              context,
-              RegisterPage(
-                phoneNo: widget.phoneNo,
-                countryCode: widget.countryCode,
-                token: verifyOtpResponse!.token!,
-                redirectPage: widget.redirectPage,
-              ));
-        }
+      final response = verifyOtpResponse!;
+      if (response.hasFailure) {
+        _setLoginError(response.failureMessage);
         return;
       }
+
+      if (response.newUser == true) {
+        //redirect to create account page
+        PageRouteUtils.pushWithSlide(
+            context,
+            RegisterPage(
+              phoneNo: widget.phoneNo,
+              countryCode: widget.countryCode,
+              token: response.token ?? '',
+              redirectPage: widget.redirectPage,
+            ));
+        return;
+      }
+
+      final token = response.token;
+      if (token == null || token.isEmpty) {
+        _setLoginError(response.failureMessage);
+        return;
+      }
+      await SharedPreferencesUtil().saveString('token', token);
 
       if (mounted) {
         if (widget.redirectPage != null) {
@@ -319,11 +368,17 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         }
       }
     } catch (e) {
-      setState(() {
-        apiCalling = false;
-      });
-      print(e);
+      if (!mounted) return;
+      _setLoginError(e.toString().replaceFirst('Exception: ', ''));
     }
+  }
+
+  void _setLoginError(String message) {
+    if (!mounted) return;
+    setState(() {
+      apiCalling = false;
+      _loginErrorMessage = message;
+    });
   }
 
   void getHomePageApi() async {
