@@ -295,6 +295,10 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     if (idx < 0) return;
 
     // Stage 1 — jump near the target so the lazy ListView builds the chip.
+    // Guard hasContentDimensions: on high-refresh-rate devices (90/120Hz) the
+    // postFrameCallback can fire before the first layout completes, and
+    // accessing maxScrollExtent before that throws a StateError.
+    if (!ctrl.position.hasContentDimensions) return;
     final screenW = MediaQuery.of(context).size.width;
     final estimated = (idx + 1) * avgChipWidth - screenW / 2;
     ctrl.jumpTo(estimated.clamp(0.0, ctrl.position.maxScrollExtent));
@@ -385,32 +389,27 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: IntrinsicWidth(
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: FontUtils.primaryFontStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor,
-                  ),
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: FontUtils.primaryFontStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textColor,
               ),
-              Container(
-                height: 3,
-                color: selected ? AppColors.primary : Colors.transparent,
-              ),
-            ],
+            ),
           ),
-        ),
+          Container(
+            height: 3,
+            color: selected ? AppColors.primary : Colors.transparent,
+          ),
+        ],
       ),
     );
   }
@@ -464,7 +463,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
             ),
             Container(
               color: Colors.white,
-              height: 38,
+              height: 44,
               child: ListView.separated(
                 controller: _subRowCtrl,
                 scrollDirection: Axis.horizontal,
