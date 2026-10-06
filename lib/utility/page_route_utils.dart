@@ -44,6 +44,13 @@ class PageRouteUtils {
     Widget page, {
     Duration duration = const Duration(milliseconds: 300),
   }) {
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      return Navigator.push(
+        context,
+        MaterialPageRoute<T>(builder: (context) => page),
+      );
+    }
+
     return Navigator.push(
       context,
       PageRouteBuilder(
@@ -76,6 +83,13 @@ class PageRouteUtils {
     Duration duration = const Duration(milliseconds: 300),
     Offset begin = const Offset(1, 0), // Slide from the left
   }) {
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      return Navigator.push(
+        context,
+        MaterialPageRoute<T>(builder: (context) => page),
+      );
+    }
+
     return Navigator.push(
       context,
       PageRouteBuilder(

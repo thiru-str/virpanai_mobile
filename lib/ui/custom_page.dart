@@ -151,13 +151,16 @@ class _CustomPageState extends State<CustomPage> {
   @override
   Widget build(BuildContext context) {
     final visibleComponents = _visibleComponents;
+    final navigator = Navigator.of(context);
+    final canUseNativeIosBack =
+        Theme.of(context).platform == TargetPlatform.iOS && navigator.canPop();
 
     return PopScope(
-        canPop: false, // Disable default back button
-        onPopInvoked: (didPop) async {
+        canPop: canUseNativeIosBack,
+        onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
-          if (Navigator.of(context).canPop()) {
-            Navigator.pop(context); // Normal back navigation
+          if (navigator.canPop()) {
+            navigator.pop(); // Normal back navigation
           } else {
             // Redirect to home when no backstack exists
             PageRouteUtils.pushAndRemoveUntil(context, BottomNavPage());

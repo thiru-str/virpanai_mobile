@@ -531,15 +531,13 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (_currentStep > 0) {
-          FocusScope.of(context).unfocus();
-          _formKey.currentState?.reset();
-          setState(() => _currentStep -= 1);
-          return false; // prevent page exit
-        }
-        return true; // allow exit if already at step 0
+    return PopScope(
+      canPop: _currentStep == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || _currentStep == 0) return;
+        FocusScope.of(context).unfocus();
+        _formKey.currentState?.reset();
+        setState(() => _currentStep -= 1);
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
