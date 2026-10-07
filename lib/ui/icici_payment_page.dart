@@ -90,7 +90,7 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final page = Scaffold(
       backgroundColor: const Color(0xFFF9F9FB),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -162,6 +162,14 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
             ),
         ],
       ),
+    );
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) widget.onFailure();
+      },
+      child: page,
     );
   }
 }
