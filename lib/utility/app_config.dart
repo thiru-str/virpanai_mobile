@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 
 class AppConfig {
   static const String appName = 'GoWelMart';
-  static const String baseUrl = 'https://dev.api.ecommerce.gowelmart.com/';
-  // static const String baseUrl = 'https://apiecommerce.gowelmart.com/';
+  // static const String baseUrl = 'https://dev.api.ecommerce.gowelmart.com/';
+  static const String baseUrl = 'https://apiecommerce.gowelmart.com/';
   // static const String baseUrl = 'http://192.168.0.19:9001/';
   // static const String baseUrl = 'http://10.249.73.106:9001/';
   static const String storeesBaseUrl = 'https://api-storees.gowelmart.com/api/v1';
