@@ -26,6 +26,11 @@ class TabSwitchEvent {
   TabSwitchEvent(this.tabIndex);
 }
 
+class LocationAvailabilityEvent {
+  final bool showComingSoon;
+  LocationAvailabilityEvent(this.showComingSoon);
+}
+
 class ProfileEvent {
   final Customer? customer;
   ProfileEvent(this.customer);

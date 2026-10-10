@@ -1,7 +1,8 @@
 // lib/assets.dart
+import 'app_config.dart';
 
 class AppStrings {
-  static const String welcome_to_store = 'TryFresh';
+  static const String welcome_to_store = AppConfig.appName;
   static const String get_your_product = 'Get your product as fast as one hour';
 
   static const String transation_details = 'Transaction details';

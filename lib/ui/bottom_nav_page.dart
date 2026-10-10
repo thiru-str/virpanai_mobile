@@ -8,6 +8,8 @@ import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
+import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
@@ -34,6 +36,8 @@ class _BottomNavPageState extends State<BottomNavPage>
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
   bool _isLoading = true;
+  bool _showComingSoon = false;
+  StreamSubscription<LocationAvailabilityEvent>? _locationAvailabilitySub;
 
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
@@ -76,6 +80,14 @@ class _BottomNavPageState extends State<BottomNavPage>
   }
 
   void listenToEvents() {
+    _locationAvailabilitySub = eventBus.on<LocationAvailabilityEvent>().listen((event) {
+      if (mounted) {
+        setState(() {
+          _showComingSoon = event.showComingSoon;
+          if (_showComingSoon) _currentIndex = 0;
+        });
+      }
+    });
     _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
       if (mounted) {
         setState(() {
@@ -85,6 +97,12 @@ class _BottomNavPageState extends State<BottomNavPage>
     });
     _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
       if (mounted) {
+        if (event.tabIndex < 0 || event.tabIndex > 4) return;
+        if (_showComingSoon && event.tabIndex > 0 && event.tabIndex < 4) return;
+        if (!isLoggedIn && event.tabIndex >= 3) {
+          PageRouteUtils.pushWithFade(context, WelcomePage());
+          return;
+        }
         setState(() {
           _currentIndex = event.tabIndex;
         });
@@ -132,6 +150,7 @@ class _BottomNavPageState extends State<BottomNavPage>
     _eventSubscription
         .cancel(); // Cancel the subscription to prevent memory leaks
     _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
+    _locationAvailabilitySub?.cancel();
     super.dispose();
   }
 
@@ -178,7 +197,7 @@ class _BottomNavPageState extends State<BottomNavPage>
                     child: _getPage(),
                   ),
           ),
-          bottomNavigationBar: ColoredBox(
+          bottomNavigationBar: _showComingSoon ? null : ColoredBox(
             color: Colors.white,
             child: SafeArea(
             top: false,

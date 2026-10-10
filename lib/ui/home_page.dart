@@ -40,6 +40,7 @@ import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
+import 'package:waioz/ui/widgets/location_coming_soon.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -62,6 +63,8 @@ class _HomePageState extends State<HomePage> {
   HomePageResponse? homePageResponse;
   CartResponse? cartResponse;
   bool apiLoading = true;
+  String? _homeError;
+  bool _showComingSoon = false;
   bool _locationChangeInProgress = false;
   String headerTitle = "";
   String addressType = "";
@@ -200,21 +203,15 @@ class _HomePageState extends State<HomePage> {
         addressType: addressType,
         deliveryEta: homePageResponse?.global?.approximateDeliveryTime ?? "",
         cartCount: cartItems ?? 0,
-        onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
-        onSearchClick: () => PageRouteUtils.pushWithFade(
-          context,
-          const ProductPage(),
-        ),
-        onLocationTap: () async {
-          if (_locationChangeInProgress) return;
-          final result = await PageRouteUtils.pushWithSlide(
-            context,
-            const SearchAddressPage(),
-          );
-          final selectedAddress = _normalizeSelectedAddress(result);
-          if (selectedAddress == null || !mounted) return;
-          await _handleLocationSelection(selectedAddress);
+        onCartClick: () {
+          if (_showComingSoon) { _selectLocation(); return; }
+          eventBus.fire(TabSwitchEvent(2));
         },
+        onSearchClick: () {
+          if (_showComingSoon) { _selectLocation(); return; }
+          PageRouteUtils.pushWithFade(context, const ProductPage());
+        },
+        onLocationTap: _selectLocation,
         onProfileTap: () => eventBus.fire(TabSwitchEvent(4)),
       );
     }
@@ -251,7 +248,9 @@ class _HomePageState extends State<HomePage> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Column(
                         children: [
-                          if (visibleContent.isEmpty)
+                          if (_showComingSoon)
+                            LocationComingSoon(onChangeLocation: _selectLocation)
+                          else if (visibleContent.isEmpty)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(
                                   20.0, 32.0, 20.0, 28.0),
@@ -261,10 +260,21 @@ class _HomePageState extends State<HomePage> {
                                       MediaQuery.of(context).size.height * 0.55,
                                 ),
                                 child: NoOrdersWidget(
-                                  message: AppStrings.components_empty,
-                                  buttonText: AppStrings.explore_categories,
+                                  message: _homeError ?? AppStrings.components_empty,
+                                  buttonText: _homeError != null
+                                      ? 'Change location'
+                                      : AppStrings.explore_categories,
                                   iconPath: AppAssets.ic_cart_empty,
-                                  onButtonTap: () {
+                                  onButtonTap: () async {
+                                    if (_homeError != null) {
+                                      final result = await PageRouteUtils.pushWithSlide(
+                                        context, const SearchAddressPage());
+                                      final selectedAddress = _normalizeSelectedAddress(result);
+                                      if (selectedAddress != null && mounted) {
+                                        await _handleLocationSelection(selectedAddress);
+                                      }
+                                      return;
+                                    }
                                     eventBus.fire(TabSwitchEvent(1));
                                   },
                                 ),
@@ -596,10 +606,29 @@ class _HomePageState extends State<HomePage> {
   }) async {
     try {
       if (!isLoadMore) {
-        setState(() => apiLoading = true);
+        setState(() {
+          apiLoading = true;
+          _homeError = null;
+        });
       }
 
       final apiService = ApiService();
+      if (!isLoadMore) {
+        final details = await apiService.getPublicDetails(
+          latitude: _selectedLat, longitude: _selectedLng);
+        if (!mounted) return;
+        _showComingSoon = details.isLocationComingSoon;
+        eventBus.fire(LocationAvailabilityEvent(_showComingSoon));
+        if (_showComingSoon) {
+          setState(() {
+            homePageResponse = null;
+            apiLoading = false;
+            _isLoadingMore = false;
+            _hasMore = false;
+          });
+          return;
+        }
+      }
       final newResponse = await apiService.getHomePage(
         context,
         limit: limit,
@@ -612,6 +641,7 @@ class _HomePageState extends State<HomePage> {
       /// FIRST PAGE
       if (!isLoadMore) {
         homePageResponse = newResponse; // normal full load
+        _hasMore = (newResponse.content?.length ?? 0) >= limit;
       } else {
         /// LOAD MORE PAGE – append data
         final oldList = homePageResponse?.content ?? [];
@@ -646,6 +676,13 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         apiLoading = false;
         _isLoadingMore = false;
+        _hasMore = false;
+        if (!isLoadMore) {
+          homePageResponse = null;
+          _homeError = e.toString().contains('Location not serviceable')
+              ? 'Coming soon! Choose a location within our store service areas.'
+              : 'Unable to load products. Please check your connection and try again.';
+        }
       });
       print(e);
     }
@@ -834,6 +871,14 @@ class _HomePageState extends State<HomePage> {
     return result == true;
   }
 
+  Future<void> _selectLocation() async {
+    if (_locationChangeInProgress) return;
+    final result = await PageRouteUtils.pushWithSlide(context, const SearchAddressPage());
+    final selectedAddress = _normalizeSelectedAddress(result);
+    if (selectedAddress == null || !mounted) return;
+    await _handleLocationSelection(selectedAddress);
+  }
+
   Future<void> _handleLocationSelection(
     Map<String, dynamic> nextAddress,
   ) async {
@@ -860,6 +905,13 @@ class _HomePageState extends State<HomePage> {
         longitude: nextLng,
       );
       final nextStoreId = nextLocationDetails.storeId?.trim() ?? '';
+
+      if (nextLocationDetails.isLocationComingSoon) {
+        await SharedPreferencesUtil().saveMap('selected_address', nextAddress);
+        _offset = 0;
+        await initializePages();
+        return;
+      }
 
       if (nextStoreId.isEmpty) {
         AppUtils.showToast('No store found for the selected location.');

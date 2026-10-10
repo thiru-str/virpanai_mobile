@@ -10,6 +10,12 @@ String publicDetailsResponseToJson(PublicDetailsResponse data) => json.encode(da
 
 class PublicDetailsResponse {
   bool? maintainance;
+  bool? serviceable;
+  String? locationDisplayMode;
+  bool? showComingSoon;
+
+  bool get isLocationComingSoon =>
+      showComingSoon ?? (serviceable == false && locationDisplayMode != 'show_products');
   String? token;
   Theme? theme;
   bool? googleMapUsage;
@@ -26,6 +32,9 @@ class PublicDetailsResponse {
 
   PublicDetailsResponse({
     this.maintainance,
+    this.serviceable,
+    this.locationDisplayMode,
+    this.showComingSoon,
     this.token,
     this.theme,
     this.googleMapUsage,
@@ -43,6 +52,9 @@ class PublicDetailsResponse {
 
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
       maintainance: json["maintainance"],
+      serviceable: json["serviceable"],
+      locationDisplayMode: json["location_display_mode"],
+      showComingSoon: json["show_coming_soon"],
       token: json["token"],
       theme: json["theme"] == null ? null : Theme.fromJson(json["theme"]),
       googleMapUsage: json["googleMapUsage"],
@@ -62,6 +74,9 @@ class PublicDetailsResponse {
 
   Map<String, dynamic> toJson() => {
     "maintainance": maintainance,
+    "serviceable": serviceable,
+    "location_display_mode": locationDisplayMode,
+    "show_coming_soon": showComingSoon,
     "token": token,
     "theme": theme?.toJson(),
     "googleMapUsage": googleMapUsage,

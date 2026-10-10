@@ -1,11 +1,11 @@
 {
-    "name": "TryFresh",
-    "short_name": "TryFresh",
+    "name": "VirpanAI",
+    "short_name": "VirpanAI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "TryFresh mobile app.",
+    "description": "VirpanAI mobile app.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

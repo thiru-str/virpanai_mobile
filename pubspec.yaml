@@ -91,6 +91,8 @@ dependencies:
 
 
 dependency_overrides:
+  # flutter_html 3.0.0 calls a selector helper removed in html 0.15.7.
+  html: 0.15.6
   stripe_platform_interface: ^10.2.0
   stripe_android: ^10.2.0
 

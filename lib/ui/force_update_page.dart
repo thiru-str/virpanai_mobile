@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/mobile_frame_widget.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
@@ -59,7 +60,7 @@ class ForceUpdateScreen extends StatelessWidget {
 
                 /// Description (pure white background)
                 Text(
-                  "A brand new version of the TryFresh app is available in the App Store. "
+                  "A brand new version of the ${AppConfig.appName} app is available in the App Store. "
                   "Please update your app to use all of our amazing features.",
                   textAlign: TextAlign.center,
                   style: FontUtils.secondaryFontStyle(
