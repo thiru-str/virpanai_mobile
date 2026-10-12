@@ -114,7 +114,7 @@ class ProductDetailSettings {
       ProductDetailSettings(
         name: json["name"],
         pdImgView: json["pd_img_view"],
-        rzpIsEnabled: json["rzp_isEnabled"],
+        rzpIsEnabled: json["rzp_isEnabled"]?.toString(),
         deliveryAndShipping: json["delivery_and_shipping"],
         warrantyInformation: json["warranty_information"],
         pdWhatsappSettings: json["pd_whatsapp_settings"] == null
