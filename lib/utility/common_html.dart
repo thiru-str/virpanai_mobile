@@ -2,25 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CommonHtmlWidget extends StatelessWidget {
+String _cleanHtml(String content) {
+  final RegExp styleRegExp = RegExp(r'style="[^"]*"');
+  return content.replaceAll(styleRegExp, '');
+}
+
+class CommonHtmlWidget extends StatefulWidget {
   final String htmlContent;
 
-  // Constructor to accept the HTML content
   const CommonHtmlWidget({
     super.key,
     required this.htmlContent,
   });
 
-  // Function to clean the HTML by removing inline styles
-  String cleanHtml(String content) {
-    final RegExp styleRegExp = RegExp(r'style="[^"]*"');
-    return content.replaceAll(styleRegExp, '');
+  @override
+  State<CommonHtmlWidget> createState() => _CommonHtmlWidgetState();
+}
+
+class _CommonHtmlWidgetState extends State<CommonHtmlWidget> {
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer heavy HTML parsing to after the first frame so the page paints
+    // immediately without blocking the main thread.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _ready = true);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_ready) return const SizedBox(height: 60);
     return Html(
-      data: cleanHtml(htmlContent),
+      data: _cleanHtml(widget.htmlContent),
       style: {
         "img": Style(
           display: Display.block, // Ensures it behaves as a block element

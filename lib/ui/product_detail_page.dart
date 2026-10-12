@@ -179,8 +179,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
 
       // Load non-critical sections in background after primary PDP is visible.
-      unawaited(getRelatedProductsApi());
-      unawaited(getUpSellingProductsApi());
+      // getProductsInfoApi triggers related/upselling after checking their counts.
       if (isLoggedIn) unawaited(getReviewApi());
       unawaited(getProductsInfoApi());
     } catch (e) {
@@ -1068,8 +1067,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   onTap: () {
                     setState(() {
                       selectedOptions[option.id!] = optionValue;
-                      updateVariant();
                     });
+                    updateVariant();
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
