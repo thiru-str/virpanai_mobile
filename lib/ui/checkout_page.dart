@@ -36,6 +36,8 @@ import 'package:lottie/lottie.dart';
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
+import '../utility/cart_store.dart';
+import 'order_failed_page.dart';
 import '../utility/currency_util.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -928,43 +930,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
-  void placeOrder() async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.placeOrder(context, pp_id!);
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: '',
-          ));
-    } catch (e) {
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      print(e);
-    }
-  }
-
+  // No order exists unless the backend says so; a failed completion is
+  // explained on the failure screen or as a message.
   void completeCart() async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.completeCart(context);
-      setState(() {
-        placeOrderApiLoading = false;
-      });
+    final result = await ApiService().completeCart(context);
+    if (!mounted) return;
+    setState(() => placeOrderApiLoading = false);
+    final orderId = result.orderId;
+    if (orderId != null) {
+      CartStore.instance.clear();
       PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: response.order?.id ?? '',
-          ));
-    } catch (e) {
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      print(e);
+          context, OrderPlacedPage(orderId: orderId));
+      return;
+    }
+    final failure = result.failure!;
+    getCartApi();
+    if (failure.showsFailureScreen) {
+      PageRouteUtils.push(context, OrderFailedPage(failure: failure));
+    } else {
+      AppUtils.showToast(failure.message);
     }
   }
 
@@ -1011,8 +995,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
 
     final ApiService apiService = ApiService();
-    dynamic apiResponse = await apiService.updatePaymentMethod(
-        context, paymentProviderId, cartResponse!);
+    dynamic apiResponse =
+        await apiService.updatePaymentMethod(context, paymentProviderId);
 
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
@@ -1062,12 +1046,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
             redirectUrl: redirectUrl,
             onSuccess: (orderId) {
               Navigator.pop(context);
+              CartStore.instance.clear();
               PageRouteUtils.pushAndRemoveUntil(
                 context,
                 OrderPlacedPage(orderId: orderId),
               );
             },
-            onFailure: () {
+            onFailure: (_) {
               Navigator.pop(context);
               AppUtils.showToast('ICICI payment failed or was cancelled.');
               getCartApi();

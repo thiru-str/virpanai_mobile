@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/checkout_completion.dart';
 import 'package:waioz/utility/font_utils.dart';
 
 /// Opens ICICI's hosted payment page in a WebView.
@@ -15,7 +16,9 @@ import 'package:waioz/utility/font_utils.dart';
 class IciciPaymentPage extends StatefulWidget {
   final String redirectUrl;
   final void Function(String orderId) onSuccess;
-  final void Function() onFailure;
+  /// Receives the settled failure when the backend's callback redirect
+  /// carried one (no order was created), or null when the shopper left.
+  final void Function(CompletionFailure? failure) onFailure;
 
   const IciciPaymentPage({
     super.key,
@@ -53,7 +56,7 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
             }
 
             if (url.contains('/order/transaction/failed/')) {
-              widget.onFailure();
+              widget.onFailure(CompletionFailure.fromFailedRedirect(url));
               return NavigationDecision.prevent;
             }
 
@@ -100,7 +103,7 @@ class _IciciPaymentPageState extends State<IciciPaymentPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           color: const Color(0xFF272727),
-          onPressed: () => widget.onFailure(),
+          onPressed: () => widget.onFailure(null),
         ),
         title: Row(
           children: [
