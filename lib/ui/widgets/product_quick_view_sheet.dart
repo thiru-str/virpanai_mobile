@@ -5,7 +5,8 @@ import 'package:waioz/utility/image_fallback_widget.dart';
 import '../../api/api_service.dart';
 import 'package:waioz/model/product_response.dart' as ProductResponse;
 
-import '../../model/view_cart_model.dart';
+import '../../utility/cart_optimistic.dart';
+import '../../utility/cart_store.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/currency_util.dart';
 
@@ -295,18 +296,21 @@ class _ProductQuickViewSheetState extends State<ProductQuickViewSheet> {
     return ElevatedButton(
       onPressed: selectedVariantId == null
           ? null
-          : () async {
-              final apiService = ApiService();
-              await apiService.addCart(
-                  context, selectedQuantity, selectedVariantId!);
-              final cartResponse = await apiService.getCart(context);
-              eventBus.fire(ViewCartModel(
-                cartResponse.cart?.items?.where((i) => !i.isPlatformFee).length ?? 0,
-                cartResponse.cart?.items
-                    ?.where((i) => !i.isPlatformFee)
-                    .map((i) => i.thumbnail ?? "")
-                    .toList() ?? [],
-              ));
+          : () {
+              // The badge and cart update now; the add waits its turn in the
+              // cart queue and rolls back with the server's message if refused.
+              CartStore.instance.addVariant(
+                context,
+                ProvisionalLine(
+                  variantId: selectedVariantId!,
+                  quantity: selectedQuantity,
+                  productId: product?.id,
+                  productTitle: product?.title,
+                  variantTitle: selectedVariant?.title,
+                  thumbnail: product?.thumbnail,
+                  unitPrice: selectedVariant?.calculatedPrice?.calculatedAmount,
+                ),
+              );
               Navigator.pop(context);
             },
       style: ElevatedButton.styleFrom(

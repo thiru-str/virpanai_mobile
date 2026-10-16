@@ -200,9 +200,9 @@ class _ComboTile extends StatelessWidget {
                 child: AddStepper(
                   count: cartQtyOf(data),
                   onInc: () =>
-                      onCartQtyChanged?.call(cartQtyOf(data) + 1, variantId),
+                      onCartQtyChanged?.call(1, variantId),
                   onDec: () =>
-                      onCartQtyChanged?.call(cartQtyOf(data) - 1, variantId),
+                      onCartQtyChanged?.call(-1, variantId),
                   accent: accent,
                 ),
               ),

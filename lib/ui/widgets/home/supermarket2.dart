@@ -3,6 +3,7 @@ import 'package:waioz/model/home_page_response.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
+import '../../../utility/cart_store.dart';
 import '../../../utility/currency_util.dart';
 import '../../../utility/font_utils.dart';
 import 'homepage_merch_shared.dart';
@@ -170,7 +171,11 @@ class _StepperCard extends StatelessWidget {
 // A product's variant id (for the cart) and its current cart quantity.
 String _variantOf(LayoutDatum d) =>
     d.variantDetails?.variantId ?? d.cartDetails?.variantId ?? '';
-int _cartQtyOf(LayoutDatum d) => d.cartDetails?.quantity ?? 0;
+// The live cart wins over the quantity the home payload was rendered with.
+int _cartQtyOf(LayoutDatum d) =>
+    CartStore.instance.quantityForVariant(_variantOf(d)) ??
+    d.cartDetails?.quantity ??
+    0;
 
 // ProductStepper1 — dense grid of small product cards with ADD→stepper wired to
 // the real cart. `onCartQtyChanged(delta, variantId)` runs the add/update.
@@ -183,18 +188,8 @@ class ProductStepper1 extends StatefulWidget {
 }
 
 class _ProductStepper1State extends State<ProductStepper1> {
-  final Map<String, int> _qty = {};
-
-  @override
-  void initState() {
-    super.initState();
-    for (final d in widget.content.layoutData ?? []) {
-      _qty[d.id ?? ''] = _cartQtyOf(d);
-    }
-  }
-
+  // The cart store updates the stepper on tap and rolls it back on refusal.
   void _bump(String id, String variantId, int d) {
-    setState(() => _qty[id] = ((_qty[id] ?? 0) + d).clamp(0, 99));
     if (variantId.isNotEmpty) widget.onCartQtyChanged?.call(d, variantId);
   }
 
@@ -227,7 +222,7 @@ class _ProductStepper1State extends State<ProductStepper1> {
             final vid = _variantOf(items[i]);
             return _StepperCard(
                 data: items[i],
-                count: _qty[id] ?? 0,
+                count: _cartQtyOf(items[i]),
                 onInc: () => _bump(id, vid, 1),
                 onDec: () => _bump(id, vid, -1));
           },
@@ -247,18 +242,8 @@ class ReorderRail1 extends StatefulWidget {
 }
 
 class _ReorderRail1State extends State<ReorderRail1> {
-  final Map<String, int> _qty = {};
-
-  @override
-  void initState() {
-    super.initState();
-    for (final d in widget.content.layoutData ?? []) {
-      _qty[d.id ?? ''] = _cartQtyOf(d);
-    }
-  }
-
+  // The cart store updates the stepper on tap and rolls it back on refusal.
   void _bump(String id, String variantId, int d) {
-    setState(() => _qty[id] = ((_qty[id] ?? 0) + d).clamp(0, 99));
     if (variantId.isNotEmpty) widget.onCartQtyChanged?.call(d, variantId);
   }
 
@@ -298,7 +283,7 @@ class _ReorderRail1State extends State<ReorderRail1> {
                 width: 140,
                 child: _StepperCard(
                     data: items[i],
-                    count: _qty[id] ?? 0,
+                    count: _cartQtyOf(items[i]),
                     onInc: () => _bump(id, vid, 1),
                     onDec: () => _bump(id, vid, -1)),
               );

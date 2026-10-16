@@ -66,7 +66,7 @@ class _ProductFbtBundle1State extends State<ProductFbtBundle1> {
       if (!_checked[i]) continue;
       final id = variantIdOf(_rows[i]);
       if (id.isEmpty) continue;
-      widget.onCartQtyChanged?.call(cartQtyOf(_rows[i]) + 1, id);
+      widget.onCartQtyChanged?.call(1, id);
     }
   }
 

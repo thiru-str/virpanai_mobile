@@ -80,6 +80,7 @@ import 'package:waioz/ui/widgets/home/collection11.dart';
 import 'package:waioz/ui/widgets/home/collection12.dart';
 import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/cart_store.dart';
 
 import '../../api/api_service.dart';
 import '../model/custom_page_response.dart';
@@ -801,52 +802,16 @@ class _CustomPageState extends State<CustomPage> {
     }
   }
 
+  // The cart store publishes the badge, images and stepper quantities through
+  // ViewCartModel, which the page's subscription applies.
   void getCartApi() async {
-    try {
-      if (!isLoggedIn) {
-        return;
-      }
-      final ApiService apiService = ApiService();
-      cartResponse = await apiService.getCart(context);
-      setState(() {
-        cartItems = cartResponse?.cart?.items
-            ?.where((item) => !item.isPlatformFee)
-            .length;
-        cartItemImages = cartResponse?.cart?.items
-            ?.where((item) => !item.isPlatformFee)
-            .map((item) => item.thumbnail ?? "")
-            .toList();
-      });
-      if ((cartResponse?.cart?.items
-                  ?.where((item) => !item.isPlatformFee)
-                  .length ??
-              0) >
-          0) {
-        final qtyMap = <String, int>{};
-        for (var item in cartResponse?.cart?.items ?? []) {
-          qtyMap[item.variantId] = item.quantity;
-        }
-
-        eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
-        //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
-      }
-    } catch (e) {
-      print(e);
-    }
+    if (!isLoggedIn) return;
+    cartResponse = await CartStore.instance.refresh(context);
   }
 
+  // Steppers send +1/-1; the card and badge change on tap and the request
+  // waits its turn in the cart queue.
   Future<void> addCart(int qty, String variantId) async {
-    try {
-      final apiService = ApiService();
-      await apiService.addCart(context, qty, variantId);
-    } catch (e) {
-      print(e);
-    } finally {
-      // Always refresh the cart badge/nav after an add attempt. The item is on
-      // the backend even if the add response parsing hiccups, so re-fetching
-      // keeps the top-right count and bottom-nav in sync instantly (previously
-      // a thrown response skipped getCartApi, so it only updated on refresh).
-      getCartApi();
-    }
+    await CartStore.instance.changeVariantQuantity(context, variantId, qty);
   }
 }

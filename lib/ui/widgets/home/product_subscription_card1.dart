@@ -200,10 +200,10 @@ class _ProductSubscriptionCard1State extends State<ProductSubscriptionCard1> {
                               count: cartQtyOf(data),
                               onInc: () =>
                                   widget.onCartQtyChanged?.call(
-                                      cartQtyOf(data) + 1, variantId),
+                                      1, variantId),
                               onDec: () =>
                                   widget.onCartQtyChanged?.call(
-                                      cartQtyOf(data) - 1, variantId),
+                                      -1, variantId),
                               accent: accent,
                             ),
                           ],

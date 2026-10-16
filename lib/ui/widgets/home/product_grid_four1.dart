@@ -119,7 +119,7 @@ class _GridFourTile extends StatelessWidget {
                   bottom: 4,
                   child: GestureDetector(
                     onTap: () => onCartQtyChanged?.call(
-                        cartQtyOf(data) + 1, variantId),
+                        1, variantId),
                     child: Container(
                       height: 26,
                       width: 26,
