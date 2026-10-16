@@ -23,7 +23,10 @@ import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
 class BottomNavPage extends StatefulWidget {
-  const BottomNavPage({super.key});
+  /// The tab to open on, e.g. 2 (cart) after signing in from checkout.
+  final int initialIndex;
+
+  const BottomNavPage({super.key, this.initialIndex = 0});
 
   @override
   _BottomNavPageState createState() => _BottomNavPageState();
@@ -46,6 +49,7 @@ class _BottomNavPageState extends State<BottomNavPage>
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
 
     // Initialize animation for the bottom navigation bar
     _animationController = AnimationController(

@@ -602,7 +602,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (mounted) {
         if (widget.redirectPage != null) {
-          getHomePageApi();
+          // The new account's cart id must be stored before the page it
+          // returns to reads the cart.
+          await getHomePageApi();
+          if (!mounted) return;
           PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
         } else {
           PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
@@ -616,7 +619,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void getHomePageApi() async {
+  Future<void> getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.getHomePage(context);
