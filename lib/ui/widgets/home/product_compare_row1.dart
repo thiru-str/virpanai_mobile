@@ -143,9 +143,9 @@ class _CompareCard extends StatelessWidget {
               AddStepper(
                 count: cartQtyOf(top),
                 onInc: () =>
-                    onCartQtyChanged?.call(cartQtyOf(top) + 1, variantId),
+                    onCartQtyChanged?.call(1, variantId),
                 onDec: () =>
-                    onCartQtyChanged?.call(cartQtyOf(top) - 1, variantId),
+                    onCartQtyChanged?.call(-1, variantId),
                 accent: accent,
               ),
             ],

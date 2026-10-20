@@ -220,8 +220,8 @@ class _GiftCard extends StatelessWidget {
               child: Center(
                 child: AddStepper(
                   count: cartQtyOf(data),
-                  onInc: () => onCartQtyChanged?.call(cartQtyOf(data) + 1, variantId),
-                  onDec: () => onCartQtyChanged?.call(cartQtyOf(data) - 1, variantId),
+                  onInc: () => onCartQtyChanged?.call(1, variantId),
+                  onDec: () => onCartQtyChanged?.call(-1, variantId),
                   accent: accent,
                 ),
               ),

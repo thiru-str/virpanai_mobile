@@ -15,6 +15,7 @@ import 'package:waioz/utility/ui_typography.dart';
 import '../api/api_service.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
+import '../utility/app_utils.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String countryCode;
@@ -38,6 +39,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   final FocusNode _focusNode = FocusNode();
 
   bool apiCalling = true;
+
+  // A second verify of the same OTP is refused as "Invalid OTP", so only one
+  // request may be in flight.
+  bool _verifying = false;
   VerifyOtpResponse? verifyOtpResponse;
 
   int _remainingSeconds = 30;
@@ -58,7 +63,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_focusNode);
     });
-    if(widget.otp.isNotEmpty) {
+    if (widget.otp.isNotEmpty) {
       _otpController.text = widget.otp;
     }
 
@@ -87,7 +92,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   }
 
   void resendOtp() async {
-
     sendOtp();
 
     // Restart timer
@@ -97,14 +101,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
           backgroundColor: const Color(0xFFF9F9FB),
           elevation: 0,
           leading: IconButton(
-            icon: SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
+            icon:
+                SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -169,12 +174,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     selectedColor: AppColors.primary,
                   ),
                   enableActiveFill: true,
-                  onCompleted: (value) {
-                    print("OTP Entered: $value");
-                  },
-                  onChanged: (value) {
-                    print(value);
-                  },
+                  onChanged: (_) {},
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -190,7 +190,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       ),
                     if (_isResendVisible)
                       GestureDetector(
-                        onTap:resendOtp,
+                        onTap: resendOtp,
                         child: Text(
                           "Resend OTP",
                           style: FontUtils.primaryFontStyle(
@@ -216,27 +216,33 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: () {
-                      // Validate OTP and proceed
-                      print('Submitted OTP: ${_otpController.text}');
-                      verifyOtp();
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Verify",
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                    onPressed: _verifying ? null : verifyOtp,
+                    child: _verifying
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                              semanticsLabel: 'Verifying',
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Verify",
+                                style: FontUtils.primaryFontStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white, size: 20),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded,
-                            color: Colors.white, size: 20),
-                      ],
-                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -256,7 +262,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         apiCalling = true;
       });
       final ApiService apiService = ApiService();
-      final sendOtpResponse = await apiService.sendOtp(context, widget.countryCode, widget.phoneNo);
+      final sendOtpResponse =
+          await apiService.sendOtp(context, widget.countryCode, widget.phoneNo);
 
       if ((sendOtpResponse.otp ?? '').isNotEmpty) {
         setState(() {
@@ -267,9 +274,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       setState(() {
         apiCalling = false;
       });
-
-
-
     } catch (e) {
       setState(() {
         apiCalling = false;
@@ -278,55 +282,57 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     }
   }
 
-  void verifyOtp() async {
+  Future<void> verifyOtp() async {
+    if (_verifying) return;
+    if (_otpController.text.trim().length < 6) {
+      AppUtils.showToast('Please enter the 6-digit OTP');
+      return;
+    }
+    setState(() => _verifying = true);
     try {
-      final ApiService apiService = ApiService();
-      verifyOtpResponse = await apiService.verifyOtp(
+      final response = await ApiService().verifyOtp(
           context, widget.countryCode, widget.phoneNo, _otpController.text);
-      setState(() {
-        apiCalling = false;
-      });
+      verifyOtpResponse = response;
+      if (!mounted) return;
 
-      if (!verifyOtpResponse!.newUser!) {
-        SharedPreferencesUtil().saveString('token', verifyOtpResponse!.token!);
-      } else {
-        //redirect to create account page
-        if (mounted) {
-          PageRouteUtils.pushWithSlide(
-              context,
-              RegisterPage(
-                phoneNo: widget.phoneNo,
-                countryCode: widget.countryCode,
-                token: verifyOtpResponse!.token!,
-                redirectPage: widget.redirectPage,
-              ));
-        }
+      if (response.isRefused) {
+        AppUtils.showToast(
+            response.errorMessage ?? 'Unable to sign in. Please try again.');
         return;
       }
 
-      if (mounted) {
-        if (widget.redirectPage != null) {
-          setState(() {
-            apiCalling = true;
-          });
-          getHomePageApi();
-          setState(() {
-            apiCalling = false;
-          });
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
-        } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-        }
+      if (response.newUser == true) {
+        PageRouteUtils.pushWithSlide(
+            context,
+            RegisterPage(
+              phoneNo: widget.phoneNo,
+              countryCode: widget.countryCode,
+              token: response.token!,
+              redirectPage: widget.redirectPage,
+            ));
+        return;
+      }
+
+      await SharedPreferencesUtil().saveString('token', response.token!);
+      if (!mounted) return;
+      if (widget.redirectPage != null) {
+        // The signed-in cart id must be stored before the page it returns to
+        // reads the cart.
+        await getHomePageApi();
+        if (!mounted) return;
+        PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
+      } else {
+        PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
       }
     } catch (e) {
-      setState(() {
-        apiCalling = false;
-      });
-      print(e);
+      // The API layer already showed the backend's message (e.g. "Invalid OTP").
+      debugPrint('verify otp failed: $e');
+    } finally {
+      if (mounted) setState(() => _verifying = false);
     }
   }
 
-  void getHomePageApi() async {
+  Future<void> getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.getHomePage(context);

@@ -313,8 +313,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
 
   void sendOtp() async {
     try {
+      // Blocks a second tap from sending another OTP while this one is sent.
       setState(() {
-        apiCalling = false;
+        apiCalling = true;
       });
       final ApiService apiService = ApiService();
       sendOtpResponse =
@@ -323,6 +324,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         AppUtils.showToast(sendOtpResponse!.otp!);
       }*/
 
+      if (!mounted) return;
+      setState(() {
+        apiCalling = false;
+      });
       PageRouteUtils.pushWithSlide(
           context,
           OtpVerificationPage(
@@ -352,15 +357,26 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         passwordController.text,
       );
 
+      if (response.isRefused) {
+        AppUtils.showToast(
+            response.errorMessage ?? 'Unable to sign in. Please try again.');
+        setState(() {
+          apiCalling = false;
+        });
+        return;
+      }
       if (!response.newUser!) {
-        SharedPreferencesUtil().saveString('token', response.token!);
+        await SharedPreferencesUtil().saveString('token', response.token!);
       }
       // SharedPreferencesUtil()
       //     .saveMap('customer', response.customer!.toJson());
 
       if (mounted) {
         if (widget.redirectPage != null) {
-          getHomePageApi();
+          // The signed-in cart id must be stored before the page it returns
+          // to reads the cart.
+          await getHomePageApi();
+          if (!mounted) return;
           setState(() {
             apiCalling = false;
           });
@@ -377,7 +393,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     }
   }
 
-  void getHomePageApi() async {
+  Future<void> getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.getHomePage(context);

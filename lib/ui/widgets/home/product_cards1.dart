@@ -31,17 +31,8 @@ class ProductListRow1 extends StatefulWidget {
 }
 
 class _ProductListRow1State extends State<ProductListRow1> {
-  final Map<String, int> _qty = {};
-  @override
-  void initState() {
-    super.initState();
-    for (final d in widget.content.layoutData ?? []) {
-      _qty[d.id ?? ''] = cartQtyOf(d);
-    }
-  }
-
+  // The cart store updates the stepper on tap and rolls it back on refusal.
   void _bump(String id, String vid, int delta) {
-    setState(() => _qty[id] = ((_qty[id] ?? 0) + delta).clamp(0, 99));
     if (vid.isNotEmpty) widget.onCartQtyChanged?.call(delta, vid);
   }
 
@@ -145,7 +136,7 @@ class _ProductListRow1State extends State<ProductListRow1> {
         ),
         const SizedBox(width: 8),
         AddStepper(
-            count: _qty[id] ?? 0,
+            count: cartQtyOf(d),
             accent: accent,
             onInc: () => _bump(id, vid, 1),
             onDec: () => _bump(id, vid, -1)),
@@ -164,17 +155,8 @@ class ProductHeroGrid1 extends StatefulWidget {
 }
 
 class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
-  final Map<String, int> _qty = {};
-  @override
-  void initState() {
-    super.initState();
-    for (final d in widget.content.layoutData ?? []) {
-      _qty[d.id ?? ''] = cartQtyOf(d);
-    }
-  }
-
+  // The cart store updates the stepper on tap and rolls it back on refusal.
   void _bump(String id, String vid, int delta) {
-    setState(() => _qty[id] = ((_qty[id] ?? 0) + delta).clamp(0, 99));
     if (vid.isNotEmpty) widget.onCartQtyChanged?.call(delta, vid);
   }
 
@@ -246,7 +228,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
                   ]),
             ),
             AddStepper(
-                count: _qty[id] ?? 0,
+                count: cartQtyOf(d),
                 accent: accent,
                 onInc: () => _bump(id, vid, 1),
                 onDec: () => _bump(id, vid, -1)),
@@ -292,7 +274,7 @@ class _ProductHeroGrid1State extends State<ProductHeroGrid1> {
                                 fontWeight: FontWeight.w800,
                                 color: cmsCardText(context, AppColors.textColor))),
                         AddStepper(
-                            count: _qty[id] ?? 0,
+                            count: cartQtyOf(d),
                             accent: accent,
                             onInc: () => _bump(id, vid, 1),
                             onDec: () => _bump(id, vid, -1)),
@@ -315,17 +297,8 @@ class ProductCarouselXL1 extends StatefulWidget {
 }
 
 class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
-  final Map<String, int> _qty = {};
-  @override
-  void initState() {
-    super.initState();
-    for (final d in widget.content.layoutData ?? []) {
-      _qty[d.id ?? ''] = cartQtyOf(d);
-    }
-  }
-
+  // The cart store updates the stepper on tap and rolls it back on refusal.
   void _bump(String id, String vid, int delta) {
-    setState(() => _qty[id] = ((_qty[id] ?? 0) + delta).clamp(0, 99));
     if (vid.isNotEmpty) widget.onCartQtyChanged?.call(delta, vid);
   }
 
@@ -420,7 +393,7 @@ class _ProductCarouselXL1State extends State<ProductCarouselXL1> {
                                                                   .lineThrough)),
                                           ]),
                                       AddStepper(
-                                          count: _qty[id] ?? 0,
+                                          count: cartQtyOf(d),
                                           accent: accent,
                                           onInc: () => _bump(id, vid, 1),
                                           onDec: () => _bump(id, vid, -1)),
@@ -447,17 +420,8 @@ class ProductRatingGrid1 extends StatefulWidget {
 }
 
 class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
-  final Map<String, int> _qty = {};
-  @override
-  void initState() {
-    super.initState();
-    for (final d in widget.content.layoutData ?? []) {
-      _qty[d.id ?? ''] = cartQtyOf(d);
-    }
-  }
-
+  // The cart store updates the stepper on tap and rolls it back on refusal.
   void _bump(String id, String vid, int delta) {
-    setState(() => _qty[id] = ((_qty[id] ?? 0) + delta).clamp(0, 99));
     if (vid.isNotEmpty) widget.onCartQtyChanged?.call(delta, vid);
   }
 
@@ -570,7 +534,7 @@ class _ProductRatingGrid1State extends State<ProductRatingGrid1> {
                                                                 .lineThrough)),
                                         ]),
                                     AddStepper(
-                                        count: _qty[id] ?? 0,
+                                        count: cartQtyOf(d),
                                         accent: accent,
                                         onInc: () => _bump(id, vid, 1),
                                         onDec: () => _bump(id, vid, -1)),

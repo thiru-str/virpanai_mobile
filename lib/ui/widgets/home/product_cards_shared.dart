@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
+import '../../../utility/cart_store.dart';
 import '../../../utility/font_utils.dart';
 import 'cms_text_color.dart';
 
@@ -10,7 +11,12 @@ const Color kCardBorder = Color(0x14000000);
 
 String variantIdOf(LayoutDatum d) =>
     d.variantDetails?.variantId ?? d.cartDetails?.variantId ?? '';
-int cartQtyOf(LayoutDatum d) => d.cartDetails?.quantity ?? 0;
+// The live cart wins over the quantity the home payload was rendered with, so
+// steppers follow every add, change and rollback.
+int cartQtyOf(LayoutDatum d) =>
+    CartStore.instance.quantityForVariant(variantIdOf(d)) ??
+    d.cartDetails?.quantity ??
+    0;
 
 // pack size like "1 kg" contains letters; a bare price number does not.
 bool hasPackText(String? s) =>
