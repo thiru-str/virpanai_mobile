@@ -35,6 +35,8 @@ class LoyaltyAccountData {
   num? earnRatio;
   num? redeemRatio;
   num? minimumOrderValue;
+  num? minimumRedeemPoints;
+  num? minimumCartValueToRedeem;
   bool? earnEnabled;
   bool? redeemEnabled;
   bool? checkoutApplyEnabled;
@@ -49,6 +51,8 @@ class LoyaltyAccountData {
     this.earnRatio,
     this.redeemRatio,
     this.minimumOrderValue,
+    this.minimumRedeemPoints,
+    this.minimumCartValueToRedeem,
     this.earnEnabled,
     this.redeemEnabled,
     this.checkoutApplyEnabled,
@@ -65,6 +69,8 @@ class LoyaltyAccountData {
         earnRatio: _parseNum(json["earn_ratio"]),
         redeemRatio: _parseNum(json["redeem_ratio"]),
         minimumOrderValue: _parseNum(json["minimum_order_value"]),
+        minimumRedeemPoints: _parseNum(json["minimum_redeem_points"]),
+        minimumCartValueToRedeem: _parseNum(json["minimum_cart_value_to_redeem"]),
         earnEnabled: json["earn_enabled"],
         redeemEnabled: json["redeem_enabled"],
         checkoutApplyEnabled: json["checkout_apply_enabled"],

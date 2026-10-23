@@ -121,6 +121,16 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
   /// Returns a conflict message if the current state blocks applying points, null otherwise.
   String? _conflictMessage() {
     if (_applied) return null; // Already applied — allow removal regardless
+    final minPts = (_account?.minimumRedeemPoints ?? 0).toInt();
+    final balance = _account?.pointsBalance ?? 0;
+    if (minPts > 0 && balance < minPts) {
+      return 'Need $minPts points to redeem (you have $balance)';
+    }
+    final minCart = (_account?.minimumCartValueToRedeem ?? 0).toDouble();
+    final cartTotal = (widget.cartTotal ?? 0).toDouble();
+    if (minCart > 0 && cartTotal < minCart) {
+      return 'Add ₹${(minCart - cartTotal).toStringAsFixed(0)} more to use loyalty points';
+    }
     if (!(_account?.allowWalletWithPoints ?? true) && widget.walletApplied) {
       return 'Remove wallet to use loyalty points';
     }
