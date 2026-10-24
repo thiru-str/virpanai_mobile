@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../api/api_service.dart';
 import '../../model/loyalty_response.dart';
@@ -182,7 +183,14 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
         await Future.delayed(const Duration(milliseconds: 500));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Something went wrong');
+      String message = 'Something went wrong';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] is String) {
+          message = data['message'] as String;
+        }
+      }
+      if (mounted) setState(() => _error = message);
     }
 
     if (mounted) setState(() => _busy = false);
@@ -272,7 +280,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                       const SizedBox(height: 2),
                       Text(
                         isBlocked
-                            ? conflictMsg!
+                            ? conflictMsg
                             : 'Available: $balance points',
                         style: TextStyle(
                           fontSize: 12,

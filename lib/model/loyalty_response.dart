@@ -42,6 +42,8 @@ class LoyaltyAccountData {
   bool? checkoutApplyEnabled;
   bool? allowCouponWithPoints;
   bool? allowWalletWithPoints;
+  List<String>? redeemAllowedCategoryIds;
+  List<String>? redeemAllowedProductIds;
 
   LoyaltyAccountData({
     this.pointsBalance,
@@ -58,6 +60,8 @@ class LoyaltyAccountData {
     this.checkoutApplyEnabled,
     this.allowCouponWithPoints,
     this.allowWalletWithPoints,
+    this.redeemAllowedCategoryIds,
+    this.redeemAllowedProductIds,
   });
 
   factory LoyaltyAccountData.fromJson(Map<String, dynamic> json) =>
@@ -76,6 +80,12 @@ class LoyaltyAccountData {
         checkoutApplyEnabled: json["checkout_apply_enabled"],
         allowCouponWithPoints: json["allow_coupon_with_points"],
         allowWalletWithPoints: json["allow_wallet_with_points"],
+        redeemAllowedCategoryIds: json["redeem_allowed_category_ids"] == null
+            ? []
+            : List<String>.from(json["redeem_allowed_category_ids"]),
+        redeemAllowedProductIds: json["redeem_allowed_product_ids"] == null
+            ? []
+            : List<String>.from(json["redeem_allowed_product_ids"]),
       );
 }
 

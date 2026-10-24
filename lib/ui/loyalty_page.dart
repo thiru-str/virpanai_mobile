@@ -740,7 +740,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.green.shade600)),
-          if ((ptsPending as num) > 0 && (ptsEarned as num) == 0)
+          if ((ptsPending as num) > 0 && ptsEarned == 0)
             Text('Pending',
                 style: FontUtils.secondaryFontStyle(
                     fontSize: 11, color: Colors.orange.shade600)),
