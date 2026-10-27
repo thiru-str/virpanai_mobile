@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
 import '../../utility/app_assets.dart';
 import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/font_utils.dart';
-import '../../utility/page_route_utils.dart';
 import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   final String headerType;
   final VoidCallback? onCartClick;
+  final VoidCallback? onFavouriteClick;
   final Function(String)? onSearchTextChanged;
   final VoidCallback? onSearchClick;
   final VoidCallback? onBackTap;
@@ -28,6 +26,7 @@ class CombinedHeaderAppBar extends StatelessWidget
     Key? key,
     required this.headerType,
     this.onCartClick,
+    this.onFavouriteClick,
     this.onSearchTextChanged,
     this.onSearchClick,
     this.onBackTap,
@@ -94,10 +93,7 @@ class CombinedHeaderAppBar extends StatelessWidget
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
-          _buildIcon(Icons.shopping_cart,
-              color: AppColors.primary,
-              onPressed: onCartClick,
-              cartCount: cartCount),
+          _headerActions(AppColors.primary),
         ],
       ),
     );
@@ -139,10 +135,7 @@ class CombinedHeaderAppBar extends StatelessWidget
                   color: AppColors.textColor,
                 ),
               ),
-              _buildIcon(Icons.shopping_cart,
-                  color: AppColors.primary,
-                  onPressed: onCartClick,
-                  cartCount: cartCount),
+              _headerActions(AppColors.primary),
             ],
           ),
           const SizedBox(height: 8),
@@ -161,10 +154,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildIcon(null, assetPath: AppAssets.app_icon, size: 50),
-              _buildIcon(Icons.shopping_cart,
-                  color: AppColors.primary,
-                  onPressed: onCartClick,
-                  cartCount: cartCount),
+              _headerActions(AppColors.primary),
             ],
           ),
           const SizedBox(height: 8),
@@ -279,8 +269,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             children: [
               GestureDetector(
                 onTap: onProfileTap,
-                child: Icon(Icons.account_circle,
-                    color: Colors.grey, size: 36),
+                child: Icon(Icons.account_circle, color: Colors.grey, size: 36),
               ),
               const SizedBox(width: 8),
               Expanded(child: _locationRow(showLeadingIcon: false)),
@@ -305,10 +294,7 @@ class CombinedHeaderAppBar extends StatelessWidget
             children: [
               _buildIcon(null,
                   assetPath: AppAssets.app_icon, size: 50, color: Colors.white),
-              _buildIcon(Icons.shopping_cart,
-                  color: Colors.white,
-                  onPressed: onCartClick,
-                  cartCount: cartCount),
+              _headerActions(Colors.white),
             ],
           ),
           const SizedBox(height: 8),
@@ -359,7 +345,7 @@ class CombinedHeaderAppBar extends StatelessWidget
         decoration: BoxDecoration(
           color: AppColors.searchBarColor,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.black.withOpacity(0.04)),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
         ),
         child: Row(
           children: [
@@ -378,6 +364,16 @@ class CombinedHeaderAppBar extends StatelessWidget
   }
 
   /// --- Shared Icon with Cart Badge ---
+  Widget _headerActions(Color color) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildIcon(Icons.favorite_border,
+              color: color, onPressed: onFavouriteClick),
+          _buildIcon(Icons.shopping_cart,
+              color: color, onPressed: onCartClick, cartCount: cartCount),
+        ],
+      );
+
   Widget _buildIcon(
     IconData? icon, {
     String? assetPath,

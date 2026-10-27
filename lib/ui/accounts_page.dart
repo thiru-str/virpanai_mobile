@@ -9,15 +9,16 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
+import 'package:waioz/ui/minipos/minipos_products_page.dart';
+import 'package:waioz/ui/minipos/minipos_vendor_page.dart';
+import 'package:waioz/ui/minipos/minipos_orders_page.dart';
 import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
 import 'package:waioz/ui/widgets/profile_item_widget.dart';
-import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -243,6 +244,18 @@ class _SettingsPageState extends State<SettingsPage> {
                           _buildProfileItem(AppStrings.orders, () {
                             PageRouteUtils.pushWithSlide(
                                 context, OrdersHistoryPage());
+                          }),
+                          _buildProfileItem('MiniPOS Products', () {
+                            PageRouteUtils.pushWithSlide(
+                                context, const MiniPosProductsPage());
+                          }),
+                          _buildProfileItem('MiniPOS Bank & Vendor', () {
+                            PageRouteUtils.pushWithSlide(
+                                context, const MiniPosVendorPage());
+                          }),
+                          _buildProfileItem('MiniPOS Orders', () {
+                            PageRouteUtils.pushWithSlide(
+                                context, const MiniPosOrdersPage());
                           }),
                           if (enabledExtensions.contains('wallet'))
                             _buildProfileItem('My Wallet', () {

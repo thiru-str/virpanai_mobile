@@ -6,6 +6,7 @@ import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/product_page.dart';
+import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/widgets/combined_header_app_bar.dart';
 import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
@@ -188,6 +189,10 @@ class _HomePageState extends State<HomePage> {
         title: headerTitle,
         addressType: addressType,
         cartCount: cartItems ?? 0,
+        onFavouriteClick: () => PageRouteUtils.pushWithSlide(
+          context,
+          const MyFavoritesPage(),
+        ),
         onCartClick: () => eventBus.fire(TabSwitchEvent(2)),
         onSearchClick: () => PageRouteUtils.pushWithFade(
           context,
