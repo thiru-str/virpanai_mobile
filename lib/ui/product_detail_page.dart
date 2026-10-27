@@ -862,8 +862,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ? Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: GestureDetector(
-                  onTap: () {
-                    PageRouteUtils.pushWithSlide(context, const CartPage());
+                  onTap: () async {
+                    await PageRouteUtils.pushWithSlide(context, const CartPage());
+                    if (mounted) await getCartApi();
                   },
                   child: ViewCartWidget(
                       totalItems: cartItems ?? 0, itemImages: cartItemImages),

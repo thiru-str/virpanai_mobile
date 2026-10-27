@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../api/api_service.dart';
 import '../../model/loyalty_response.dart';
@@ -121,6 +122,16 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
   /// Returns a conflict message if the current state blocks applying points, null otherwise.
   String? _conflictMessage() {
     if (_applied) return null; // Already applied — allow removal regardless
+    final minPts = (_account?.minimumRedeemPoints ?? 0).toInt();
+    final balance = _account?.pointsBalance ?? 0;
+    if (minPts > 0 && balance < minPts) {
+      return 'Need $minPts points to redeem (you have $balance)';
+    }
+    final minCart = (_account?.minimumCartValueToRedeem ?? 0).toDouble();
+    final cartTotal = (widget.cartTotal ?? 0).toDouble();
+    if (minCart > 0 && cartTotal < minCart) {
+      return 'Add ₹${(minCart - cartTotal).toStringAsFixed(0)} more to use loyalty points';
+    }
     if (!(_account?.allowWalletWithPoints ?? true) && widget.walletApplied) {
       return 'Remove wallet to use loyalty points';
     }
@@ -172,7 +183,14 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
         await Future.delayed(const Duration(milliseconds: 500));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Something went wrong');
+      String message = 'Something went wrong';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] is String) {
+          message = data['message'] as String;
+        }
+      }
+      if (mounted) setState(() => _error = message);
     }
 
     if (mounted) setState(() => _busy = false);
@@ -262,7 +280,7 @@ class _LoyaltyCheckoutWidgetState extends State<LoyaltyCheckoutWidget> {
                       const SizedBox(height: 2),
                       Text(
                         isBlocked
-                            ? conflictMsg!
+                            ? conflictMsg
                             : 'Available: $balance points',
                         style: TextStyle(
                           fontSize: 12,

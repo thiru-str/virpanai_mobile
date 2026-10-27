@@ -35,11 +35,15 @@ class LoyaltyAccountData {
   num? earnRatio;
   num? redeemRatio;
   num? minimumOrderValue;
+  num? minimumRedeemPoints;
+  num? minimumCartValueToRedeem;
   bool? earnEnabled;
   bool? redeemEnabled;
   bool? checkoutApplyEnabled;
   bool? allowCouponWithPoints;
   bool? allowWalletWithPoints;
+  List<String>? redeemAllowedCategoryIds;
+  List<String>? redeemAllowedProductIds;
 
   LoyaltyAccountData({
     this.pointsBalance,
@@ -49,11 +53,15 @@ class LoyaltyAccountData {
     this.earnRatio,
     this.redeemRatio,
     this.minimumOrderValue,
+    this.minimumRedeemPoints,
+    this.minimumCartValueToRedeem,
     this.earnEnabled,
     this.redeemEnabled,
     this.checkoutApplyEnabled,
     this.allowCouponWithPoints,
     this.allowWalletWithPoints,
+    this.redeemAllowedCategoryIds,
+    this.redeemAllowedProductIds,
   });
 
   factory LoyaltyAccountData.fromJson(Map<String, dynamic> json) =>
@@ -65,11 +73,19 @@ class LoyaltyAccountData {
         earnRatio: _parseNum(json["earn_ratio"]),
         redeemRatio: _parseNum(json["redeem_ratio"]),
         minimumOrderValue: _parseNum(json["minimum_order_value"]),
+        minimumRedeemPoints: _parseNum(json["minimum_redeem_points"]),
+        minimumCartValueToRedeem: _parseNum(json["minimum_cart_value_to_redeem"]),
         earnEnabled: json["earn_enabled"],
         redeemEnabled: json["redeem_enabled"],
         checkoutApplyEnabled: json["checkout_apply_enabled"],
         allowCouponWithPoints: json["allow_coupon_with_points"],
         allowWalletWithPoints: json["allow_wallet_with_points"],
+        redeemAllowedCategoryIds: json["redeem_allowed_category_ids"] == null
+            ? []
+            : List<String>.from(json["redeem_allowed_category_ids"]),
+        redeemAllowedProductIds: json["redeem_allowed_product_ids"] == null
+            ? []
+            : List<String>.from(json["redeem_allowed_product_ids"]),
       );
 }
 
