@@ -14,6 +14,14 @@ class AppColors {
   // Function to update colors dynamically
   static void updateColors({Color? newPrimary, Color? newSecondary}) {
     primary = newPrimary ?? primary;
-    secondary = newSecondary ?? secondary;
+    secondary = _lightSurface(newSecondary ?? secondary);
   }
+
+  /// Every screen uses [secondary] as a pale surface (icon circles, image
+  /// placeholders, chips). A store may set it to its dark brand colour —
+  /// then icons drawn in the primary vanish on it — so a dark value is
+  /// replaced by a soft tint of the primary.
+  static Color _lightSurface(Color c) => c.computeLuminance() > 0.7
+      ? c
+      : Color.alphaBlend(primary.withValues(alpha: 0.10), Colors.white);
 }

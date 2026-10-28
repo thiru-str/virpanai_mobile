@@ -727,8 +727,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return sum;
     });
 
-    // if variant has inventory_quantity
-    if (variant.inventoryQuantity != null) {
+    // Stock only caps the quantity when it is tracked and cannot be
+    // backordered — the same rule isStockAvailable uses, so a sellable
+    // backorder variant (stock 0) is never refused as "max reached".
+    final stockCaps = variant.manageInventory == true && variant.allowBackorder != true;
+    if (stockCaps && variant.inventoryQuantity != null) {
       return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
     }
 
