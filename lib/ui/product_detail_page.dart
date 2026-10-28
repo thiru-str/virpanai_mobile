@@ -758,8 +758,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return sum;
     });
 
-    // if variant has inventory_quantity
-    if (variant.inventoryQuantity != null) {
+    // Stock only caps the quantity when it is tracked and cannot be
+    // backordered — the same rule isStockAvailable uses, so a sellable
+    // backorder variant (stock 0) is never refused as "max reached".
+    final stockCaps = variant.manageInventory == true && variant.allowBackorder != true;
+    if (stockCaps && variant.inventoryQuantity != null) {
       return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
     }
 
@@ -924,9 +927,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildQuantitySelector() {
+    final v = selectedVariant;
+    final bool stockCaps = v?.manageInventory == true && v?.allowBackorder != true;
     final int _stepperMax = (productPresentInCart == true)
-        ? (selectedVariant?.inventoryQuantity ?? 99)
-        : getMaxQuantity(selectedVariant, cartResponse?.cart?.items ?? []);
+        ? (stockCaps ? (v?.inventoryQuantity ?? 99) : 99)
+        : getMaxQuantity(v, cartResponse?.cart?.items ?? []);
 
     return Row(
       children: [
