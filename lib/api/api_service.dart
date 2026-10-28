@@ -26,6 +26,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
+import 'package:waioz/model/product_filter_facets_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
@@ -139,7 +140,16 @@ class ApiService {
         },
       ));
       if (response.statusCode == 200) {
-        AppLogger.logFullJson(response.data);
+        if (endpoint == 'store/get_home_page/v8') {
+          final payload = response.data as Map<String, dynamic>?;
+          final content = payload?['content'];
+          AppLogger.print(
+            'Home page response:',
+            'status=${payload?['status']}, components=${content is List ? content.length : 0}',
+          );
+        } else {
+          AppLogger.logFullJson(response.data);
+        }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
@@ -526,6 +536,82 @@ class ApiService {
     return response;
   }
 
+  Future<Map<String, dynamic>> registerHealthcareUser(
+    BuildContext context,
+    Map<String, dynamic> payload,
+  ) async {
+    return _makePostRequest<Map<String, dynamic>>(
+      "store/healthcare-user/register",
+      payload,
+      (data) => data,
+      context,
+    );
+  }
+
+  Future<Map<String, dynamic>> uploadHealthcareDocument(
+    BuildContext context,
+    File file,
+    String documentType,
+  ) async {
+    try {
+      await setPublishableKey();
+
+      final originalName = file.path.split(RegExp(r'[/\\]')).last;
+      final safeName = originalName.replaceAll(
+        RegExp(r'[^a-zA-Z0-9.\-_]'),
+        '_',
+      );
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          file.path,
+          filename: safeName,
+        ),
+        'originalFileName':
+            'healthcare-$documentType-${DateTime.now().microsecondsSinceEpoch}-$safeName',
+        'upload_context': 'healthcare',
+        'document_type': documentType,
+      });
+
+      AppLogger.print(
+        'API Request:',
+        '${_dio.options.baseUrl}public/uploads',
+      );
+      final response = await _dio.post(
+        'public/uploads',
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is Map) {
+        final payload = Map<String, dynamic>.from(response.data as Map);
+        final uploadedFile = payload['file'];
+        if (uploadedFile is Map && uploadedFile['id'] != null) {
+          return Map<String, dynamic>.from(uploadedFile);
+        }
+      }
+
+      final message = _extractErrorMessage(response.data);
+      AppUtils.showToast(message);
+      throw Exception(message);
+    } catch (error, stacktrace) {
+      AppLogger.print('Healthcare document upload failed:', '$error');
+      AppErrorReporter.instance.recordHandled(
+        error,
+        stacktrace,
+        reason: 'Healthcare document upload failed',
+        attributes: {
+          'endpoint': 'public/uploads',
+          'document_type': documentType,
+          'method': 'POST',
+        },
+      );
+      rethrow;
+    }
+  }
+
   Future<RefreshTokenResponse> refreshToken(
     BuildContext context,
     String token,
@@ -595,7 +681,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if (sortBy != null) {
+    if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -686,8 +772,8 @@ class ApiService {
       {
         'limit': limit,
         'offset': offset,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
         if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
       },
       (json) => HomePageResponse.fromJson(json),
@@ -767,6 +853,25 @@ class ApiService {
       productId,
       null,
       (json) => ReviewResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ReturnSuccessResponse> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => ReturnSuccessResponse.fromJson(json),
       context,
     );
   }
@@ -853,8 +958,8 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
+  Future<CartResponse> addPromoCode(BuildContext context, String promoCode,
+      {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final body = <String, dynamic>{
@@ -1059,6 +1164,28 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getCashfreeEmiOptions(num amount) async {
+    await addToken();
+    final response = await _dio
+        .get('store/cashfree/emi-options', queryParameters: {'amount': amount});
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeBnplConfig() async {
+    await addToken();
+    final response = await _dio.get('store/cashfree/bnpl-config');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeDisplayOptions(num amount) async {
+    await addToken();
+    final response = await _dio.get(
+      'store/cashfree/display-options',
+      queryParameters: {'amount': amount},
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   Future<PublicDetailsResponse> getPublicDetails() async {
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',
@@ -1162,12 +1289,44 @@ class ApiService {
     );
   }
 
-  Future<TagsResponse> listTags(BuildContext context) async {
+  Future<TagsResponse> listTags(BuildContext context,
+      {String? categoryIds}) async {
+    final queryParams = <String, dynamic>{"fields": "id,value"};
+    final categories = (categoryIds ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (categories.isNotEmpty) {
+      queryParams['category_id[]'] = categories;
+    }
+
     return _makeGetRequest<TagsResponse>(
-      'store/product-tags',
-      '?fields=id,value',
+      categories.isEmpty ? 'store/product-tags' : 'store/product-filter-tags',
       null,
+      queryParams,
       (json) => TagsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductFilterFacetsResponse> listProductFilterFacets(
+    BuildContext context, {
+    List<String> categoryIds = const [],
+    List<String> collectionIds = const [],
+    List<String> tagIds = const [],
+  }) async {
+    final queryParams = <String, dynamic>{
+      if (categoryIds.isNotEmpty) 'category_id[]': categoryIds,
+      if (collectionIds.isNotEmpty) 'collection_id[]': collectionIds,
+      if (tagIds.isNotEmpty) 'tag_id[]': tagIds,
+    };
+
+    return _makeGetRequest<ProductFilterFacetsResponse>(
+      'store/product-filter-facets',
+      null,
+      queryParams,
+      (json) => ProductFilterFacetsResponse.fromJson(json),
       context,
     );
   }
@@ -1401,7 +1560,8 @@ class ApiService {
     return _dio.get('/store/loyalty');
   }
 
-  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyTransactions(
+      {int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/transactions',
@@ -1423,7 +1583,8 @@ class ApiService {
     // PDP passes product_id so backend can short-circuit when the merchant
     // has restricted earning to specific products / categories — keeps the
     // "you'll earn …" strip honest with what the order subscriber will do.
-    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (productId != null && productId.isNotEmpty)
+      params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
@@ -1451,8 +1612,8 @@ class ApiService {
   Future<Response> removeLoyaltyCheckout(String cartId) async {
     await addToken();
     await setPublishableKey();
-    return _dio.delete('/store/loyalty/checkout-apply',
-        data: {'cart_id': cartId});
+    return _dio
+        .delete('/store/loyalty/checkout-apply', data: {'cart_id': cartId});
   }
 
   Future<Response> getLoyaltyReferral() async {
@@ -1461,7 +1622,8 @@ class ApiService {
     return _dio.get('/store/loyalty/referral');
   }
 
-  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyReferralHistory(
+      {int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/referral/history',

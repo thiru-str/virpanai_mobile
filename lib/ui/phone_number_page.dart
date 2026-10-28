@@ -357,17 +357,19 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         passwordController.text,
       );
 
-      if (response.isRefused) {
-        AppUtils.showToast(
-            response.errorMessage ?? 'Unable to sign in. Please try again.');
-        setState(() {
-          apiCalling = false;
-        });
+      if (!mounted) return;
+      if (response.hasFailure) {
+        setState(() => apiCalling = false);
+        AppUtils.showToast(response.failureMessage);
         return;
       }
-      if (!response.newUser!) {
-        await SharedPreferencesUtil().saveString('token', response.token!);
+      final token = response.token;
+      if (token == null || token.isEmpty) {
+        setState(() => apiCalling = false);
+        AppUtils.showToast(response.failureMessage);
+        return;
       }
+      await SharedPreferencesUtil().saveString('token', token);
       // SharedPreferencesUtil()
       //     .saveMap('customer', response.customer!.toJson());
 

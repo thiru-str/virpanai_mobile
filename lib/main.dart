@@ -52,6 +52,7 @@ Future<void> main() async {
     // Render immediately using cached config (if present), then refresh in background.
     final PublicDetailsResponse? cachedPublicDetails =
         await SharedPreferencesUtil().getPublicDetails();
+
     await ExtensionsUtil.refresh();
 
     // LOCAL-DEV FIX: refresh the publishable key from the *current* backend

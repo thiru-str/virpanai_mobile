@@ -44,6 +44,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   // request may be in flight.
   bool _verifying = false;
   VerifyOtpResponse? verifyOtpResponse;
+  String? _loginErrorMessage;
 
   int _remainingSeconds = 30;
   Timer? _timer;
@@ -174,8 +175,34 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     selectedColor: AppColors.primary,
                   ),
                   enableActiveFill: true,
-                  onChanged: (_) {},
+                  onChanged: (_) {
+                    if (_loginErrorMessage != null) {
+                      setState(() => _loginErrorMessage = null);
+                    }
+                  },
                 ),
+                if (_loginErrorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Text(
+                      _loginErrorMessage!,
+                      style: FontUtils.secondaryFontStyle(
+                        fontSize: 13,
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -288,16 +315,18 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       AppUtils.showToast('Please enter the 6-digit OTP');
       return;
     }
-    setState(() => _verifying = true);
+    setState(() {
+      _verifying = true;
+      _loginErrorMessage = null;
+    });
     try {
       final response = await ApiService().verifyOtp(
           context, widget.countryCode, widget.phoneNo, _otpController.text);
       verifyOtpResponse = response;
       if (!mounted) return;
 
-      if (response.isRefused) {
-        AppUtils.showToast(
-            response.errorMessage ?? 'Unable to sign in. Please try again.');
+      if (response.isRefused || response.hasFailure) {
+        _setLoginError(response.failureMessage);
         return;
       }
 
@@ -330,6 +359,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     } finally {
       if (mounted) setState(() => _verifying = false);
     }
+  }
+
+  // Shown under the OTP boxes, so "pending approval" / "account blocked"
+  // stays on screen instead of vanishing with a toast.
+  void _setLoginError(String message) {
+    if (!mounted) return;
+    setState(() => _loginErrorMessage = message);
   }
 
   Future<void> getHomePageApi() async {

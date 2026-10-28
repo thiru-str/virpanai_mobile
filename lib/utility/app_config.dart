@@ -1,14 +1,13 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
-  static const String appName = 'VirpanAi';
-  // LOCAL (marketplace-v1.6.0 review): pointing at the local backend on :9000.
+  static const String appName = 'Galaxy Healthcare';
+  // Galaxy Healthcare's own server. For local work point at :9000:
   // iOS Simulator: http://localhost:9000/
   // Android Emulator: http://10.0.2.2:9000/
   // Physical device (same WiFi): http://<your-Mac-LAN-ip>:9000/
-  static const String baseUrl = 'http://localhost:9000/';
-  // static const String baseUrl = 'https://virpanai.dev.api.waioz.com/';
-  // static const String baseUrl = 'https://virpanai.api.waioz.com/';
+  // static const String baseUrl = 'http://localhost:9000/';
+  static const String baseUrl = 'https://api.galaxyhealthcare.in/';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
       'pk_test_51QjKGFC5ZYai6Al85lKNzizk9i1E4ViPFg98dC4VECB9cEYPidOj6Pig2orwg1SKVGDndepP8McSJ4jPhnxhEIKj00aaPJefmb';
