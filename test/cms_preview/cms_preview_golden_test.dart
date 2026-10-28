@@ -65,6 +65,8 @@ import 'package:waioz/ui/widgets/home/premium/premium_home2.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content2.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_sections.dart';
 import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
+import 'package:waioz/ui/widgets/product_card_12.dart';
+import 'package:waioz/model/product_response.dart' as plp;
 import 'package:waioz/utility/app_colors.dart';
 
 Future<ByteData> _bytes(String path) async =>
@@ -642,5 +644,32 @@ void main() {
     AppColors.primary = const Color(0xFF4A4A4A);
     addTearDown(() => AppColors.primary = keep);
     await _shoot(t, 'AppHeaderBasket1', const SizedBox(height: AppHeaderBasket1.height, child: AppHeaderBasket1(cartCount: 2)));
+  });
+
+  // ---- Product list card productView12 (BASKET shelf card) ----
+  testWidgets('productView12', (t) async {
+    final keep = AppColors.primary;
+    AppColors.primary = const Color(0xFF4A4A4A);
+    addTearDown(() => AppColors.primary = keep);
+    plp.Product p(String title, num price, {int variants = 1}) => plp.Product(
+          id: title,
+          title: title,
+          thumbnail: '',
+          variants: [
+            for (var i = 0; i < variants; i++)
+              plp.Variant(id: '$title-$i', calculatedPrice: plp.CalculatedPrice(calculatedAmount: price, originalAmount: price)),
+          ],
+        );
+    await _shoot(
+        t,
+        'productView12',
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: ProductCard12(product: p('Digital BP Monitor', 880), onTapCard: () {})),
+            const SizedBox(width: 16),
+            Expanded(child: ProductCard12(product: p('Knee Support Cap', 190, variants: 3), onTapCard: () {})),
+          ]),
+        ));
   });
 }
