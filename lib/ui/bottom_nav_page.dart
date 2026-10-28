@@ -88,11 +88,14 @@ class _BottomNavPageState extends State<BottomNavPage>
       }
     });
     _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
-      if (mounted) {
-        setState(() {
-          _currentIndex = event.tabIndex;
-        });
-      }
+      if (!mounted) return;
+      // Guests have 3 tabs, signed-in shoppers 5: a tab that is not in the bar
+      // would fail BottomNavigationBar's index assertion (red screen).
+      final tabs = isLoggedIn ? 5 : 3;
+      if (event.tabIndex < 0 || event.tabIndex >= tabs) return;
+      setState(() {
+        _currentIndex = event.tabIndex;
+      });
     });
   }
 
