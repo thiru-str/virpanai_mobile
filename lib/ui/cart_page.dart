@@ -1950,9 +1950,6 @@ class _CartPageState extends State<CartPage>
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded,
-                                  color: Colors.white, size: 18),
                             ],
                           ),
                           Text(
