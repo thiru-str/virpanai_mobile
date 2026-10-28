@@ -93,6 +93,7 @@ import 'package:waioz/utility/cart_store.dart';
 import '../../api/api_service.dart';
 import '../utility/app_utils.dart';
 import 'bottom_nav_page.dart';
+import 'phone_number_page.dart';
 import 'widgets/login_prompt.dart';
 
 class HomePage extends StatefulWidget {
@@ -242,7 +243,14 @@ class _HomePageState extends State<HomePage> {
               context, const SearchAddressPage());
           initializePages();
         },
-        onProfileTap: () => eventBus.fire(TabSwitchEvent(4)),
+        // A guest has no Account tab (the bar shows 3 tabs); sign them in.
+        onProfileTap: () async {
+          if (await AppUtils.isLoggedIn()) {
+            eventBus.fire(TabSwitchEvent(4));
+          } else if (context.mounted) {
+            PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
+          }
+        },
       );
     }
 
