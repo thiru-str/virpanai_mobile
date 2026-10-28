@@ -92,6 +92,8 @@ import 'package:waioz/utility/cart_store.dart';
 
 import '../../api/api_service.dart';
 import '../utility/app_utils.dart';
+import 'bottom_nav_page.dart';
+import 'widgets/login_prompt.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -895,6 +897,12 @@ class _HomePageState extends State<HomePage> {
   // Steppers send +1/-1; the card and badge change on tap and the request
   // waits its turn in the cart queue.
   Future<void> addCart(int qty, String variantId) async {
+    // A guest has no cart on the server; the app signs them in first, as the
+    // product page does.
+    if (!await AppUtils.isLoggedIn()) {
+      if (mounted) await showLoginPromptDialog(context, redirectPage: const BottomNavPage());
+      return;
+    }
     await CartStore.instance.changeVariantQuantity(context, variantId, qty);
   }
 }
