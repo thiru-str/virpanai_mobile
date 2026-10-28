@@ -79,10 +79,12 @@ class _ProductPageState extends State<ProductPage> {
     if (widget.initialQuery.trim().isNotEmpty) {
       searchController.text = widget.initialQuery.trim();
     }
+    _previousSearchText = searchController.text.trim();
     getProductsApi(
         categoryIds: selectedCategoriesList.join(','),
         collectionIds: selectedCollectionsList.join(','),
-        tagIds: selectedTagsList.join(','));
+        tagIds: selectedTagsList.join(','),
+        searchString: searchController.text.trim());
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
 
