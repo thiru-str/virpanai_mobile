@@ -950,7 +950,17 @@ class _RegisterPageState extends State<RegisterPage> {
           await ApiService().registerHealthcareUser(context, payload);
       if (!mounted) return;
       if (response['success'] == true) {
-        setState(() => _healthcareSubmitted = true);
+        // Only a doctor waits for an administrator; a general user is signed
+        // in and goes to the shop. (An older backend sends no flag — the
+        // user type decides.)
+        final needsApproval = response['approval_required'] is bool
+            ? response['approval_required'] as bool
+            : _userType == 'doctor';
+        if (needsApproval) {
+          setState(() => _healthcareSubmitted = true);
+        } else {
+          await _signInAfterHealthcareRegistration();
+        }
       } else {
         throw Exception(response['message'] ?? 'Registration failed');
       }
@@ -965,6 +975,20 @@ class _RegisterPageState extends State<RegisterPage> {
     } finally {
       if (mounted) setState(() => apiCalling = false);
     }
+  }
+
+  /// The registration linked this phone's auth identity to the new customer,
+  /// so the registration token refreshes into a customer token — the same
+  /// step the standard sign-up takes.
+  Future<void> _signInAfterHealthcareRegistration() async {
+    final apiService = ApiService();
+    final refreshed = await apiService.refreshToken(context, widget.token);
+    final token = refreshed.token ?? '';
+    if (token.isEmpty) throw Exception('Registered. Please log in to continue.');
+    await SharedPreferencesUtil().saveString('token', token);
+    await getHomePageApi();
+    if (!mounted) return;
+    PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage ?? const BottomNavPage());
   }
 
   List<String> _documentIds(String field) => (_healthcareDocuments[field] ?? [])
