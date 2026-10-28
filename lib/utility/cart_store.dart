@@ -83,6 +83,15 @@ class CartStore {
     BuildContext? context,
     ProvisionalLine line,
   ) async {
+    // No cart id yet (a guest, or the home payload not read): a request would
+    // go to custom-carts//line-items and come back as an HTML error page.
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    if (cartId == null || cartId.isEmpty) {
+      AppUtils.showToast(await AppUtils.isLoggedIn()
+          ? 'Your cart is still loading. Please try again.'
+          : 'Please log in to add items to your cart.');
+      return null;
+    }
     await _prepare(context);
     return _queue.enqueue(
       (_) => _send(() => ApiService().addCartLine(_liveContext, line.variantId, line.quantity)),

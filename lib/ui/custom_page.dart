@@ -87,6 +87,7 @@ import '../model/custom_page_response.dart';
 import '../utility/app_assets.dart';
 import '../utility/app_strings.dart';
 import '../utility/app_utils.dart';
+import 'widgets/login_prompt.dart';
 import '../utility/page_route_utils.dart';
 import 'bottom_nav_page.dart';
 
@@ -812,6 +813,12 @@ class _CustomPageState extends State<CustomPage> {
   // Steppers send +1/-1; the card and badge change on tap and the request
   // waits its turn in the cart queue.
   Future<void> addCart(int qty, String variantId) async {
+    // A guest has no cart on the server; the app signs them in first, as the
+    // product page does.
+    if (!await AppUtils.isLoggedIn()) {
+      if (mounted) await showLoginPromptDialog(context, redirectPage: const BottomNavPage());
+      return;
+    }
     await CartStore.instance.changeVariantQuantity(context, variantId, qty);
   }
 }

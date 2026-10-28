@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/ui/phone_number_page.dart';
+import 'package:waioz/utility/page_route_utils.dart';
 
 import '../../utility/app_colors.dart';
 import '../../utility/font_utils.dart';
@@ -81,4 +83,25 @@ class LoginPrompt extends StatelessWidget {
     required this.onButtonPressed,
     this.onClosePressed,
   }) : super(key: key);
+}
+
+/// Asks a guest to sign in before something that needs a cart (add to cart
+/// from a home or custom page). Signing in returns to [redirectPage].
+Future<void> showLoginPromptDialog(BuildContext context, {required Widget redirectPage}) {
+  return showDialog(
+    context: context,
+    builder: (dialogContext) => Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: LoginPrompt(
+        showClose: true,
+        description: 'Please log in to add items to your cart.',
+        onClosePressed: () => Navigator.pop(dialogContext),
+        onButtonPressed: () {
+          Navigator.pop(dialogContext);
+          PageRouteUtils.push(context, PhoneNumberPage(redirectPage: redirectPage));
+        },
+      ),
+    ),
+  );
 }
