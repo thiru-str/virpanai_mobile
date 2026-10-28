@@ -12,6 +12,7 @@ import 'package:waioz/ui/widgets/product_card_8.dart';
 import 'package:waioz/ui/widgets/product_card_9.dart';
 import 'package:waioz/ui/widgets/product_card_10.dart';
 import 'package:waioz/ui/widgets/product_card_11.dart';
+import 'package:waioz/ui/widgets/product_card_12.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../model/product_response.dart';
@@ -183,6 +184,12 @@ class _ProductViewState extends State<ProductView> {
           onTapFavorite: widget.onTapFavorite,
           isFavorite: widget.isFavorite,
         );
+
+      case ProductCardType.productView12:
+        return ProductCard12(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+        );
     }
   }
 }
@@ -199,4 +206,5 @@ enum ProductCardType {
   productView9,
   productView10,
   productView11,
+  productView12, // BASKET shelf card (same tile as the home shelves)
 }
