@@ -61,13 +61,90 @@ class AnnouncementBar1 extends StatelessWidget {
   final Content content;
   const AnnouncementBar1({super.key, required this.content});
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: AppUtils.buildLayoutBackground(content),
-    child: Container(width: double.infinity, color: cmsPanel(context, kInk),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Text(content.layoutTitle ?? 'Free shipping on orders over Rs 499  •  Shop now',
-        textAlign: TextAlign.center, style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cmsText(context, Colors.white)))),
-  );
+  Widget build(BuildContext context) {
+    final text = content.layoutTitle ?? 'Free shipping on orders over Rs 499  •  Shop now';
+    final style = FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cmsText(context, Colors.white));
+    // layout_marque is the builder's "scrolling" toggle (same key the web reads).
+    final scrolls = content.raw['layout_marque'] == true || content.raw['is_marquee'] == true;
+    return Container(
+      decoration: AppUtils.buildLayoutBackground(content),
+      child: Container(width: double.infinity, color: cmsPanel(context, kInk),
+        padding: EdgeInsets.symmetric(horizontal: scrolls ? 0 : 16, vertical: 10),
+        child: scrolls
+            ? _MarqueeText(text: text, style: style)
+            : Text(text, textAlign: TextAlign.center, style: style)),
+    );
+  }
+}
+
+/// One line that loops right-to-left: identical copies on a track shifted by
+/// exactly one copy, so the seam lands on a matching frame. Holds still when
+/// the OS asks for reduced motion.
+class _MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+  const _MarqueeText({required this.text, required this.style});
+  @override
+  State<_MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<_MarqueeText> with SingleTickerProviderStateMixin {
+  static const double _gap = 48;
+  static const double _speed = 38; // logical px per second
+  // Created on the first start only: with reduced motion it never exists.
+  AnimationController? _c;
+  double _copy = 0;
+
+  void _start(double copyWidth) {
+    if (copyWidth == _copy) return;
+    _copy = copyWidth;
+    final c = _c ??= AnimationController(vsync: this);
+    c.duration = Duration(milliseconds: (copyWidth / _speed * 1000).round());
+    c.repeat();
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _c?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final painter = TextPainter(
+      text: TextSpan(text: widget.text, style: widget.style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final copy = painter.width + _gap;
+    final still = MediaQuery.of(context).disableAnimations;
+    return LayoutBuilder(builder: (context, box) {
+      final copies = (box.maxWidth / copy).ceil() + 1;
+      if (!still) WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _start(copy) : null);
+      final row = Row(mainAxisSize: MainAxisSize.min, children: [
+        for (var i = 0; i < copies; i++)
+          SizedBox(width: copy, child: Text(widget.text, maxLines: 1, softWrap: false, overflow: TextOverflow.visible, style: widget.style)),
+      ]);
+      return ClipRect(
+        child: SizedBox(
+          height: painter.height,
+          child: OverflowBox(
+            alignment: Alignment.centerLeft,
+            maxWidth: double.infinity,
+            child: still || _c == null
+                ? Padding(padding: const EdgeInsets.only(left: 16), child: row)
+                : AnimatedBuilder(
+                    animation: _c!,
+                    builder: (_, child) => Transform.translate(offset: Offset(-_c!.value * copy, 0), child: child),
+                    child: row,
+                  ),
+          ),
+        ),
+      );
+    });
+  }
 }
 
 class StickyOffer1 extends StatelessWidget {

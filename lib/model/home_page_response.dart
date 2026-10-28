@@ -74,6 +74,12 @@ class Content {
   List<LayoutDatum>? layoutData;
   RedirectData? redirectData;
 
+  /// The section exactly as the API sent it, for fields this model does not
+  /// type (layout_marque, layout_description, …). Read via [rawString].
+  Map<String, dynamic> raw = const {};
+
+  String rawString(String key) => (raw[key] ?? '').toString();
+
   Content({
     this.layoutName,
     this.layoutTitle,
@@ -123,7 +129,7 @@ class Content {
             ? null
             : RedirectData.fromJson(json["redirect_data"]),
         //layoutHeight: json["layout_height"],
-      );
+      )..raw = json;
 
   Map<String, dynamic> toJson() => {
         "layout_name": layoutName,
@@ -163,6 +169,13 @@ class LayoutDatum {
   String? secondaryMedia;
   VariantDetails? variantDetails;
   CartDetails? cartDetails;
+
+  /// The item exactly as the API sent it — custom-item extras the builder
+  /// passes through (background_color, button_text, primary_image,
+  /// multi_product_data, no_of_variants, …). Read via [rawString].
+  Map<String, dynamic> raw = const {};
+
+  String rawString(String key) => (raw[key] ?? '').toString();
 
   LayoutDatum({
     this.id,
@@ -208,7 +221,7 @@ class LayoutDatum {
         cartDetails: json["cart_details"] == null
             ? null
             : CartDetails.fromJson(json["cart_details"]),
-      );
+      )..raw = json;
 
   Map<String, dynamic> toJson() => {
         "id": id,
