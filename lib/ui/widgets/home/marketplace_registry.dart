@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
+import 'basket/basket_sections.dart';
 import 'grocery_grid1.dart';
 import 'product_grid_two1.dart';
 import 'product_rail_compact1.dart';
@@ -223,6 +224,9 @@ const List<String> kMarketplaceLayouts = [
   'PremiumProductRail1', 'PremiumProductGrid1', 'PremiumBundle1', 'PremiumSpotlight1',
   'PremiumHero1', 'PremiumCategoryGrid1', 'PremiumOfferDuo1',
   'PremiumReviews1', 'PremiumTrust1', 'PremiumFaq1', 'PremiumAppDownload1',
+  // BASKET quick-commerce family (2026-10) — app side of the web basket-*.tsx
+  'BasketOfferCarousel1', 'BasketCategoryGrid1', 'ProductBasketRail1',
+  'ProductBasketGrid1', 'BasketAisleTabs1', 'BasketBrandRail1', 'BasketPromiseStrip1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -300,6 +304,20 @@ Widget clampCmsTextScale(BuildContext context, Widget child) {
 Widget? marketplaceHomeWidget(Content content,
     {void Function(int delta, String variantId)? onCartQtyChanged}) {
   switch (content.layoutName) {
+    case 'BasketOfferCarousel1':
+      return BasketOfferCarousel1(content: content);
+    case 'BasketCategoryGrid1':
+      return BasketCategoryGrid1(content: content);
+    case 'ProductBasketRail1':
+      return ProductBasketRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductBasketGrid1':
+      return ProductBasketGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'BasketAisleTabs1':
+      return BasketAisleTabs1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'BasketBrandRail1':
+      return BasketBrandRail1(content: content);
+    case 'BasketPromiseStrip1':
+      return BasketPromiseStrip1(content: content);
     case 'CategoryChips1':
       return CategoryChips1(content: content);
     case 'GroceryGrid1':

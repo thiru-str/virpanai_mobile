@@ -175,7 +175,10 @@ class AppUtils {
           return BoxDecoration(gradient: gradient);
         }
       } else {
-        return BoxDecoration(color: AppUtils.rgbStringToColor(color));
+        // Builder colours are rgb(...); seeded/central ones are often #hex,
+        // which rgbStringToColor would turn black.
+        final hex = color.trim().startsWith('#') ? parseHexColor(color.trim()) : null;
+        return BoxDecoration(color: hex ?? AppUtils.rgbStringToColor(color));
       }
     }
 
