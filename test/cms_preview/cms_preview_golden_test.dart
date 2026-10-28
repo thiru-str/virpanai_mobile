@@ -63,6 +63,9 @@ import 'package:waioz/ui/widgets/home/premium/premium_home1.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content1.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_home2.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content2.dart';
+import 'package:waioz/ui/widgets/home/basket/basket_sections.dart';
+import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
+import 'package:waioz/utility/app_colors.dart';
 
 Future<ByteData> _bytes(String path) async =>
     ByteData.view((await File(path).readAsBytes()).buffer);
@@ -304,6 +307,34 @@ Future<void> _shoot(WidgetTester tester, String name, Widget child) async {
     matchesGoldenFile('goldens/$name.png'),
   );
 }
+
+
+// ---- BASKET mock data: neutral greys only (previews must read restylable) ----
+const _bkInk = '#3d3d3d';
+LayoutDatum _bk(Map<String, dynamic> m) => LayoutDatum.fromJson({'image': '', ...m});
+List<LayoutDatum> _bkProducts(List<String> names) => [
+      for (var i = 0; i < names.length; i++)
+        _bk({
+          'id': 'p$i',
+          'title': names[i],
+          'prices': {'selling_price': '${[180, 1000, 783, 260, 1337, 190][i % 6]}'},
+          'variant_details': {'variant_id': 'v$i'},
+          'no_of_variants': 1,
+        }),
+    ];
+Content _bkContent(String layout, String title, String kicker, List<LayoutDatum> items,
+        {String option = 'Product', String bg = '#ffffff', String cta = ''}) =>
+    Content.fromJson({
+      'layout_name': layout,
+      'layout_title': title,
+      'layout_sub_title': kicker,
+      'layout_redirect_title': cta,
+      'layout_option': option,
+      'layout_bg_color': bg,
+      'layout_primary_color': _bkInk,
+      'redirect_data': {'redirect_type': cta.isEmpty ? '' : 'search'},
+    })..layoutData = items;
+const _bkNames = ['Knee Support Cap', 'Digital BP Monitor', 'Pulse Oximeter', 'Heel Cushion Pair', 'Back Brace Classic', 'Wrist Splint'];
 
 void main() {
   setUpAll(() async {
@@ -575,4 +606,41 @@ void main() {
   testWidgets('AppHeaderGradient1', (t) async => _shoot(t, 'AppHeaderGradient1', const AppHeaderGradient1()));
   testWidgets('AppHeaderCategoryTabs1', (t) async => _shoot(t, 'AppHeaderCategoryTabs1', const AppHeaderCategoryTabs1()));
   testWidgets('AppHeaderLuxe1', (t) async => _shoot(t, 'AppHeaderLuxe1', const AppHeaderLuxe1()));
+
+  // ---- BASKET quick-commerce family (app side of web basket-*.tsx) ----
+  testWidgets('BasketOfferCarousel1', (t) async => _shoot(t, 'BasketOfferCarousel1',
+      BasketOfferCarousel1(content: _bkContent('BasketOfferCarousel1', '', '', [
+        for (final o in [['UP TO 30% OFF', 'Supports & braces', 'Knee, back and wrist — sized to fit.', 'Shop now'], ['NEW IN', 'Check at home', 'Monitors and test kits', 'Explore']])
+          _bk({'feature_text': o[0], 'title': o[1], 'sub_title': o[2], 'button_text': o[3], 'background_color': '#ececec', 'primary_image': '', 'secondary_media': ''}),
+      ], option: 'Custom'))));
+  testWidgets('BasketCategoryGrid1', (t) async => _shoot(t, 'BasketCategoryGrid1',
+      BasketCategoryGrid1(content: _bkContent('BasketCategoryGrid1', 'Shop by department', '', [
+        for (final n in ['Supports', 'Medicines', 'Skin Care', 'Mobility', 'Monitoring', 'Adult Care', 'Surgical', 'Mother & Baby'])
+          _bk({'title': n, 'background_color': '#eeeeee'}),
+      ], option: 'Custom'))));
+  testWidgets('ProductBasketRail1', (t) async => _shoot(t, 'ProductBasketRail1',
+      ProductBasketRail1(content: _bkContent('ProductBasketRail1', 'Most-needed supports', 'Bestsellers', _bkProducts(_bkNames), bg: '#f5f5f5', cta: 'See all'), onCartQtyChanged: (_, __) {})));
+  testWidgets('ProductBasketGrid1', (t) async => _shoot(t, 'ProductBasketGrid1',
+      ProductBasketGrid1(content: _bkContent('ProductBasketGrid1', 'Monitor it at home', 'Diagnostics', _bkProducts(_bkNames.take(4).toList()), bg: '#f5f5f5', cta: 'See all'), onCartQtyChanged: (_, __) {})));
+  testWidgets('BasketAisleTabs1', (t) async => _shoot(t, 'BasketAisleTabs1',
+      BasketAisleTabs1(content: _bkContent('BasketAisleTabs1', 'Shop by need', 'Find the right one', [
+        for (final n in ['Knee', 'Back & spine', 'Neck', 'Wrist & hand'])
+          _bk({'title': n, 'multi_product_data': [for (final p in _bkProducts(_bkNames)) p.raw]}),
+      ], option: 'Custom'), onCartQtyChanged: (_, __) {})));
+  testWidgets('BasketBrandRail1', (t) async => _shoot(t, 'BasketBrandRail1',
+      BasketBrandRail1(content: _bkContent('BasketBrandRail1', 'Top brands', '', [
+        for (final b in [['Brand One', '93 products'], ['Brand Two', '59 products'], ['Brand Three', '29 products'], ['Brand Four', '19 products'], ['Brand Five', '12 products']])
+          _bk({'title': b[0], 'sub_title': b[1]}),
+      ], option: 'Custom'))));
+  testWidgets('BasketPromiseStrip1', (t) async => _shoot(t, 'BasketPromiseStrip1',
+      BasketPromiseStrip1(content: _bkContent('BasketPromiseStrip1', '', '', [
+        for (final p in [['Fast delivery', 'Across the city in a day'], ['Genuine brands', 'Sourced from the makers'], ['Help choosing', 'Call us before you buy'], ['Fair prices', 'On every product we stock']])
+          _bk({'title': p[0], 'sub_title': p[1]}),
+      ], option: 'Custom', bg: '#f5f5f5'))));
+  testWidgets('AppHeaderBasket1', (t) async {
+    final keep = AppColors.primary;
+    AppColors.primary = const Color(0xFF4A4A4A);
+    addTearDown(() => AppColors.primary = keep);
+    await _shoot(t, 'AppHeaderBasket1', const SizedBox(height: AppHeaderBasket1.height, child: AppHeaderBasket1(cartCount: 2)));
+  });
 }

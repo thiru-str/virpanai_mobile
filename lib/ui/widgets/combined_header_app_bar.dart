@@ -41,10 +41,28 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.showBack = false,
   }) : super(key: key);
 
+  // The admin stores the central slug of the chosen header; older settings
+  // store the header-N key. Both name the same header.
+  static const Map<String, String> _slugToKey = {
+    'AppHeaderSplit1': 'header-9',
+    'AppHeaderCentered1': 'header-10',
+    'AppHeaderMinimal1': 'header-11',
+    'AppHeaderSearch1': 'header-12',
+    'AppHeaderTwoRow1': 'header-13',
+    'AppHeaderLocation1': 'header-14',
+    'AppHeaderPill1': 'header-15',
+    'AppHeaderGradient1': 'header-16',
+    'AppHeaderCategoryTabs1': 'header-17',
+    'AppHeaderLuxe1': 'header-18',
+    'AppHeaderBasket1': 'header-19',
+  };
+
+  static String normalizeHeaderType(String type) => _slugToKey[type] ?? type;
+
   @override
   Widget build(BuildContext context) {
     debugPrint('App bar $headerType');
-    switch (headerType) {
+    switch (normalizeHeaderType(headerType)) {
       case "header-1":
         return _buildHeader1();
       case "header-2":
@@ -95,7 +113,7 @@ class CombinedHeaderAppBar extends StatelessWidget
   }
 
   static double resolveHeaderHeight(String headerType) {
-    switch (headerType) {
+    switch (normalizeHeaderType(headerType)) {
       case "header-1":
         return 70;
       case "header-2":

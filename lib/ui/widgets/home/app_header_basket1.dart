@@ -51,13 +51,22 @@ class AppHeaderBasket1 extends StatelessWidget implements PreferredSizeWidget {
                   height: 40,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  // A fixed box so the bar never jumps while the logo decodes.
                   child: Image.asset(
                     AppAssets.app_logo_wide,
+                    width: 112,
+                    height: 32,
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Center(
-                      child: Text(AppConfig.appName,
+                    errorBuilder: (_, __, ___) => SizedBox(
+                      width: 112,
+                      height: 32,
+                      child: Center(
+                        child: Text(AppConfig.appName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: FontUtils.primaryFontStyle(
                               fontSize: 15, fontWeight: FontWeight.w800, color: bar)),
+                      ),
                     ),
                   ),
                 ),
