@@ -65,6 +65,7 @@ import 'package:waioz/ui/widgets/home/premium/premium_content1.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_home2.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content2.dart';
 import 'package:waioz/ui/widgets/home/atelier/atelier_sections.dart';
+import 'package:waioz/ui/widgets/home/maison/maison_sections.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_sections.dart';
 import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
 import 'package:waioz/ui/widgets/product_card_12.dart';
@@ -369,6 +370,26 @@ List<LayoutDatum> _atProducts(int n) => [
         }),
     ];
 
+// ---- MAISON mock data: neutral greys (deep = card, metal = primary) ----
+Content _maContent(String layout, String title, String kicker, List<LayoutDatum> items,
+        {String option = 'Custom', String bg = '#f5f5f5', String cta = '', Map<String, dynamic> extra = const {}}) =>
+    _atContent(layout, title, kicker, items, option: option, bg: bg, cta: cta, extra: {'layout_primary_color': '#9a9a9a', ...extra});
+List<LayoutDatum> _maProducts(int n) => [
+      for (var i = 0; i < n; i++)
+        _bk({
+          'id': 'm$i',
+          'title': ['Handwoven Silk Saree', 'Tussar Saree with Border', 'Organza Saree', 'Tissue Saree with Zari'][i % 4],
+          'prices': {'selling_price': '${[12950, 9450, 13450, 17950][i % 4]}'},
+          'variant_details': {'variant_id': 'v$i'},
+          if (i % 2 == 1)
+            'product_variants': [
+              {'variant_id': 'a$i', 'variant_options': [{'option_value': 'Grey', 'hex_color_value': '#9a9a9a'}]},
+              {'variant_id': 'b$i', 'variant_options': [{'option_value': 'Charcoal', 'hex_color_value': '#555555'}]},
+            ],
+          if (i % 2 == 1) 'product_options': [{'title': 'Color', 'hex_values': ['#9a9a9a', '#555555']}],
+        }),
+    ];
+
 void main() {
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
@@ -380,6 +401,10 @@ void main() {
     await CurrencyUtil.initializeCurrencySymbol('Rs ');
     await _loadFont('CircularStd', 'fonts/circular_std_book_regular.ttf');
     await _loadFont('Gabarito', 'fonts/gabarito_regular.ttf');
+    final serif = FontLoader('CormorantGaramond')
+      ..addFont(_bytes('fonts/CormorantGaramond-Medium.ttf'))
+      ..addFont(_bytes('fonts/CormorantGaramond-MediumItalic.ttf'));
+    await serif.load();
     await _loadMaterialIcons();
   });
 
@@ -745,4 +770,33 @@ void main() {
         for (final q in ['Does it come with a blouse piece?', 'Are these handloom weaves?', 'Do you deliver across India?'])
           _bk({'id': q, 'title': q, 'feature_text': 'A short, clear answer the shopper can act on.'}),
       ]))));
+
+  // ── MAISON (premium app-native) family ──
+  testWidgets('MaisonHero1', (t) async => _shoot(t, 'MaisonHero1',
+      MaisonHero1(content: _maContent('MaisonHero1', '', '', [
+        for (var i = 0; i < 1; i++)
+          _bk({'id': 'h$i', 'sales_text': 'Handpicked', 'title': 'Grace in', 'feature_text': 'every drape.', 'sub_title': 'One line on the collection.', 'button_text': 'Shop now'}),
+      ], bg: '#5a5a5a', extra: {'layout_primary_color': '#d0d0d0'}))));
+  testWidgets('MaisonStories1', (t) async => _shoot(t, 'MaisonStories1',
+      MaisonStories1(content: _maContent('MaisonStories1', '', '',
+          [for (final n in ['Tussar', 'Silk', 'Organza', 'Crape', 'Tissue']) _bk({'id': n, 'title': n})]))));
+  testWidgets('ProductMaisonCarousel1', (t) async => _shoot(t, 'ProductMaisonCarousel1',
+      ProductMaisonCarousel1(content: _maContent('ProductMaisonCarousel1', 'The Silk Edit', 'Festive-ready weaves', _maProducts(4), option: 'Product', cta: 'View all'), onCartQtyChanged: (_, __) {})));
+  testWidgets('ProductMaisonGrid1', (t) async => _shoot(t, 'ProductMaisonGrid1',
+      ProductMaisonGrid1(content: _maContent('ProductMaisonGrid1', 'Tussar Sarees', 'Handwoven, everyday grace', _maProducts(4), option: 'Product', cta: 'View all'), onCartQtyChanged: (_, __) {})));
+  testWidgets('MaisonReels1', (t) async => _shoot(t, 'MaisonReels1',
+      MaisonReels1(content: _maContent('MaisonReels1', 'Watch & Shop', 'In motion',
+          [for (final n in ['Salwar', 'Festive', 'Silk']) _bk({'id': n, 'title': n, 'video': 'https://example.com/$n.mp4'})]))));
+  testWidgets('MaisonChapter1', (t) async => _shoot(t, 'MaisonChapter1',
+      MaisonChapter1(content: _maContent('MaisonChapter1', 'The Saree Room', 'Handpicked weaves', [
+        _bk({'id': 'c0', 'button_text': 'Shop the room', 'redirect_data': {'redirect_type': 'search'}}),
+        _bk({'id': 'c1', 'title': 'The pallu'}),
+        _bk({'id': 'c2', 'title': 'The border'}),
+        for (final n in ['Handpicked weaves', 'Blouse piece included']) _bk({'id': n, 'title': n, 'feature_text': 'One line on what this means.'}),
+      ], extra: {'layout_description': 'Chosen one at a time — the weight of the silk, the fall of the pallu.'}))));
+  testWidgets('MaisonVoices1', (t) async => _shoot(t, 'MaisonVoices1',
+      MaisonVoices1(content: _maContent('MaisonVoices1', 'Loved across India', 'In their words', [
+        for (final n in ['Lakshmi · Chennai', 'Meena · Coimbatore', 'Divya · Bangalore'])
+          _bk({'id': n, 'title': n, 'rating': 5, 'feature_text': 'Even more beautiful in person — the border is stunning.'}),
+      ], extra: {'layout_card_color': '#4a4a4a', 'layout_primary_color': '#c8c8c8'}))));
 }
