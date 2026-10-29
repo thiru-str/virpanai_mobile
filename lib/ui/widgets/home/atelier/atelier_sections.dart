@@ -54,9 +54,8 @@ class _PosterBanner1State extends State<PosterBanner1> {
   Timer? _timer;
   int _active = 0;
 
-  List<LayoutDatum> get _slides => _items(widget.content)
-      .where((s) => _itemField(s, ['mobileImage', 'mobileMedia']).isNotEmpty || (s.image ?? '').trim().isNotEmpty)
-      .toList();
+  // A slide without art yet (a fresh builder slide) keeps its frame, like the web.
+  List<LayoutDatum> get _slides => _items(widget.content);
 
   @override
   void initState() {
@@ -659,7 +658,7 @@ class _AtelierVideoTileState extends State<AtelierVideoTile> {
           child: AspectRatio(
             aspectRatio: 9 / 16,
             child: Stack(fit: StackFit.expand, children: [
-              const ColoredBox(color: Color(0xFFEDE6DC)),
+              const ColoredBox(color: Color(0xFFE4E4E4)),
               if ((widget.item.image ?? '').trim().isNotEmpty) BasketImage(url: widget.item.image, fit: BoxFit.cover),
               if (ready)
                 FittedBox(
