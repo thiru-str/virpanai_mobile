@@ -19,6 +19,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_shared.dart';
@@ -65,7 +66,11 @@ void main() {
     await _loadFont('Gabarito', 'fonts/gabarito_regular.ttf');
     await _loadMaterialIcons();
     await CurrencyUtil.initializeCurrencySymbol('₹');
-    AppColors.primary = const Color(0xFF0A6E93);
+    // PREVIEW_PRIMARY=#rrggbb sets the store's theme colour (default: Galaxy's).
+    final primary = (env['PREVIEW_PRIMARY'] ?? '').replaceAll('#', '');
+    AppColors.primary = primary.length == 6 ? Color(int.parse('FF$primary', radix: 16)) : const Color(0xFF0A6E93);
+    // Report visibility at once — film tiles start loading when they are seen.
+    VisibilityDetectorController.instance.updateInterval = Duration.zero;
     final map = Map<String, dynamic>.from(jsonDecode(File('$imageDir/map.json').readAsStringSync()));
     BasketImage.debugProvider = (url) {
       final f = map[url];
@@ -99,7 +104,9 @@ void main() {
             child: RepaintBoundary(
               key: page,
               child: Column(children: [
-                const SizedBox(height: AppHeaderBasket1.height, child: AppHeaderBasket1(cartCount: 2)),
+                // PREVIEW_HEADER=none leaves the BASKET header off (another family's store).
+                if (env['PREVIEW_HEADER'] != 'none')
+                  const SizedBox(height: AppHeaderBasket1.height, child: AppHeaderBasket1(cartCount: 2)),
                 for (var i = 0; i < sections.length; i++)
                   RepaintBoundary(
                     key: keys[i],
