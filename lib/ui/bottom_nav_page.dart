@@ -1,19 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/model/customer_response.dart';
-import 'package:waioz/model/return_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
-import 'package:waioz/ui/widgets/address_card.dart';
+import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
-import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -26,13 +23,17 @@ import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
 class BottomNavPage extends StatefulWidget {
-  const BottomNavPage({super.key});
+  /// The tab to open on, e.g. 2 (cart) after signing in from checkout.
+  final int initialIndex;
+
+  const BottomNavPage({super.key, this.initialIndex = 0});
 
   @override
   _BottomNavPageState createState() => _BottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProviderStateMixin {
+class _BottomNavPageState extends State<BottomNavPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
   bool _isLoading = true;
@@ -48,6 +49,7 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
 
     // Initialize animation for the bottom navigation bar
     _animationController = AnimationController(
@@ -86,11 +88,14 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       }
     });
     _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
-      if (mounted) {
-        setState(() {
-          _currentIndex = event.tabIndex;
-        });
-      }
+      if (!mounted) return;
+      // Guests have 3 tabs, signed-in shoppers 5: a tab that is not in the bar
+      // would fail BottomNavigationBar's index assertion (red screen).
+      final tabs = isLoggedIn ? 5 : 3;
+      if (event.tabIndex < 0 || event.tabIndex >= tabs) return;
+      setState(() {
+        _currentIndex = event.tabIndex;
+      });
     });
   }
 
@@ -131,7 +136,8 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
   @override
   void dispose() {
     _animationController.dispose();
-    _eventSubscription.cancel(); // Cancel the subscription to prevent memory leaks
+    _eventSubscription
+        .cancel(); // Cancel the subscription to prevent memory leaks
     _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
@@ -166,91 +172,129 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
             }
           }
         },
-        child:  Scaffold(
-          backgroundColor: Colors.white,
-          body: _isLoading
-              ?  Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          )
-              : _getPage(), // Dynamically build the current page
-          bottomNavigationBar: SlideTransition(
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF9F9FB),
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: _isLoading
+                ? const ShellSkeleton()
+                : KeyedSubtree(
+                    key: ValueKey(_currentIndex),
+                    child: _getPage(),
+                  ),
+          ),
+          bottomNavigationBar: ColoredBox(
+            color: Colors.white,
+            child: SafeArea(
+            top: false,
+            child: SlideTransition(
             position: _slideAnimation,
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index; // Update selected tab
-                });
-              },
-              items: [
-                const BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
-                  label: AppStrings.shop,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.black.withOpacity(0.06)),
                 ),
-                const BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
-                  label: AppStrings.categories,
-                ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    children: [
-                      const ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
-                      if ((cartItems?? 0) > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              cartItems!.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 18,
+                    offset: const Offset(0, -6),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index; // Update selected tab
+                  });
+                },
+                items: [
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                    label: AppStrings.shop,
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_categories)),
+                    label: AppStrings.categories,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(top: 3, right: 4),
+                          child: ImageIcon(AssetImage(AppAssets.ic_menu_cart)),
+                        ),
+                        if ((cartItems ?? 0) > 0)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5484D),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.white, width: 1.5),
                               ),
-                              textAlign: TextAlign.center,
+                              constraints: const BoxConstraints(
+                                minWidth: 18,
+                                minHeight: 18,
+                              ),
+                              child: Text(
+                                cartItems! > 99 ? '99+' : cartItems!.toString(),
+                                style: FontUtils.primaryFontStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
+                    label: AppStrings.cart,
                   ),
-                  label: AppStrings.cart,
+                  if (isLoggedIn)
+                    const BottomNavigationBarItem(
+                      icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
+                      label: AppStrings.favourite,
+                    ),
+                  if (isLoggedIn)
+                    const BottomNavigationBarItem(
+                      icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
+                      label: AppStrings.account,
+                    ),
+                ],
+                selectedItemColor: AppColors.primary,
+                unselectedItemColor: AppColors.tabInActivecolor,
+                showUnselectedLabels: true,
+                backgroundColor: Colors.white,
+                type: BottomNavigationBarType.fixed,
+                elevation: 0,
+                selectedFontSize: 12,
+                unselectedFontSize: 12,
+                selectedLabelStyle: FontUtils.primaryFontStyle(
+                  fontWeight: FontWeight.w600,
                 ),
-                if(isLoggedIn)
-                  const BottomNavigationBarItem(
-                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_favourite)),
-                    label: AppStrings.favourite,
-                  ),
-                if(isLoggedIn)
-                  const BottomNavigationBarItem(
-                    icon: ImageIcon(AssetImage(AppAssets.ic_menu_account)),
-                    label: AppStrings.account,
-                  ),
-              ],
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: AppColors.tabInActivecolor,
-              showUnselectedLabels: true,
-              backgroundColor: Colors.white,
-              type: BottomNavigationBarType.fixed,
-              selectedLabelStyle: FontUtils.primaryFontStyle(),
-              unselectedLabelStyle: FontUtils.primaryFontStyle(),
+                unselectedLabelStyle: FontUtils.primaryFontStyle(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ),)
-    );
+          ))),
+        ));
   }
-
 
   Future<void> getCustomerApi() async {
     try {
-
-      if(!isLoggedIn) {
+      if (!isLoggedIn) {
         debugPrint('calling here');
         return;
       }
@@ -258,8 +302,10 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
       Customer? customer = await getCustomerResponse();
       if (customer == null) {
         final ApiService apiService = ApiService();
-        CustomerResponse customerResponse = await apiService.getCustomer(context);
-        await SharedPreferencesUtil().saveMap('customer', customerResponse.customer!.toJson());
+        CustomerResponse customerResponse =
+            await apiService.getCustomer(context);
+        await SharedPreferencesUtil()
+            .saveMap('customer', customerResponse.customer!.toJson());
       }
     } catch (e) {
       print("Error fetching customer: $e");
@@ -278,10 +324,14 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       final ApiService apiService = ApiService();
       homePageResponse = await apiService.getHomePage(context);
-      await SharedPreferencesUtil().saveString('region_id', homePageResponse!.global!.regionId!);
-      await SharedPreferencesUtil().saveString('cart_id', homePageResponse!.global!.cartId!);
-      await SharedPreferencesUtil().saveString('currency_symbol', homePageResponse!.global!.currencySymbol!);
-      await SharedPreferencesUtil().saveMap('global', homePageResponse!.global!.toJson());
+      await SharedPreferencesUtil()
+          .saveString('region_id', homePageResponse!.global!.regionId!);
+      await SharedPreferencesUtil()
+          .saveString('cart_id', homePageResponse!.global!.cartId!);
+      await SharedPreferencesUtil().saveString(
+          'currency_symbol', homePageResponse!.global!.currencySymbol!);
+      await SharedPreferencesUtil()
+          .saveMap('global', homePageResponse!.global!.toJson());
     } catch (e) {
       print("Error fetching home page: $e");
     }
@@ -291,15 +341,10 @@ class _BottomNavPageState extends State<BottomNavPage> with SingleTickerProvider
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.getReturnReasons(context);
-      if(response!=null)
-        {
-          await SharedPreferencesUtil().saveJson('return_reasons', response.returnReasons ?? []);
-        }
+      await SharedPreferencesUtil()
+          .saveJson('return_reasons', response.returnReasons ?? []);
     } catch (e) {
       print("Error fetching home page: $e");
     }
   }
 }
-
-
-

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'cms_text_color.dart';
+import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +79,7 @@ class _Item9State extends State<Item9> {
                     style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
@@ -101,7 +103,7 @@ class _Item9State extends State<Item9> {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                         const Icon(Icons.chevron_right, size: 18),
@@ -129,6 +131,15 @@ class _Item9State extends State<Item9> {
                           content.layoutData![i].cartDetails?.quantity ??
                           0,
                       onCartQtyChanged: widget.onCartQtyChanged,
+                      onTap: () {
+                        // Navigate to product detail when the card body is
+                        // tapped — matches the pattern used by Item11/Item12.
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: content.layoutOption ?? '',
+                          layoutData: content.layoutData![i],
+                        );
+                      },
                     ),
                     if (i != content.layoutData!.length - 1)
                       const SizedBox(width: 16),
@@ -147,12 +158,14 @@ class _Item9Card extends StatelessWidget {
   final dynamic layoutData;
   final int cartQty;
   final void Function(int delta, String variantId)? onCartQtyChanged;
+  final VoidCallback? onTap;
 
   const _Item9Card({
     Key? key,
     required this.layoutData,
     required this.cartQty,
     required this.onCartQtyChanged,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -160,10 +173,13 @@ class _Item9Card extends StatelessWidget {
     final prices = layoutData.prices ?? {};
     final variantId = layoutData.variantDetails?.variantId ?? '';
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       width: 180,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cmsCard(context, Colors.white),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade300),
       ),
@@ -193,21 +209,8 @@ class _Item9Card extends StatelessWidget {
                 Positioned(
                   top: 6,
                   left: 6,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueGrey.shade800,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${prices.discountPercentage} OFF',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  child: _DiscountBurstBadge(
+                    discountText: prices.discountPercentage!,
                   ),
                 ),
               Positioned(
@@ -229,7 +232,7 @@ class _Item9Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -244,7 +247,7 @@ class _Item9Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),
@@ -270,7 +273,7 @@ class _Item9Card extends StatelessWidget {
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _qtyButton(Icons.remove, () {
+                      _qtyButton(context, Icons.remove, () {
                         if (cartQty > 0) {
                           onCartQtyChanged?.call(-1, variantId);
                         }
@@ -282,7 +285,7 @@ class _Item9Card extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      _qtyButton(Icons.add, () {
+                      _qtyButton(context, Icons.add, () {
                         onCartQtyChanged?.call(1, variantId);
                       }),
                     ],
@@ -299,23 +302,24 @@ class _Item9Card extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text("Add To Cart"),
+                      child: const Text(AppStrings.add_to_cart),
                     ),
                   ),
           ),
         ],
       ),
+      ),
     );
   }
 
-  Widget _qtyButton(IconData icon, VoidCallback onPressed) {
+  Widget _qtyButton(BuildContext context, IconData icon, VoidCallback onPressed) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: cmsAccent(context, AppColors.primary),
         borderRadius: BorderRadius.circular(6),
       ),
       child: IconButton(
-        color: Colors.white,
+        color: cmsOn(cmsAccent(context, AppColors.primary)),
         icon: Icon(icon, size: 16),
         onPressed: onPressed,
         padding: const EdgeInsets.all(4),
@@ -323,4 +327,69 @@ class _Item9Card extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DiscountBurstBadge extends StatelessWidget {
+  final String discountText;
+
+  const _DiscountBurstBadge({
+    required this.discountText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = discountText.contains('%')
+        ? discountText.trim()
+        : '${discountText.trim()}%';
+
+    return ClipPath(
+      clipper: _BurstClipper(),
+      child: Container(
+        width: 34,
+        height: 34,
+        color: Colors.blueGrey.shade800,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(2),
+        child: Text(
+          '$normalized',
+          textAlign: TextAlign.center,
+          style: FontUtils.primaryFontStyle(
+            color: Colors.white,
+            fontSize: 8,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BurstClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final outerRadius = math.min(size.width, size.height) / 2;
+    final innerRadius = outerRadius * 0.88;
+    const points = 18;
+
+    final path = Path();
+    for (int i = 0; i < points * 2; i++) {
+      final isOuter = i.isEven;
+      final radius = isOuter ? outerRadius : innerRadius;
+      final angle = (math.pi / points) * i - (math.pi / 2);
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

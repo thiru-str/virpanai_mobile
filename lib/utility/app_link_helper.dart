@@ -2,7 +2,9 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:waioz/ui/product_detail_page.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../main.dart';
@@ -59,10 +61,10 @@ class AppLinkHelper {
       ) async {
     try {
 
-      final Uri link = Uri.parse('https://virpanai.waioz.com/details?id=${productId}');
+      final Uri link = Uri.parse('${AppConfig.baseUrl}details?id=${productId}');
 
       final String message = '''
-Check out this product on VirpanAI! 🛍️
+Check out this product on ${AppConfig.appName}! 🛍️
 
 I think you'll love this. Here's the link: $link
 ''';

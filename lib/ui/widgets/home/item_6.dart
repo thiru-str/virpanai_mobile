@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -45,7 +46,7 @@ class Item6 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -71,7 +72,7 @@ class Item6 extends StatelessWidget {
                             content?.layoutRedirectTitle ?? '',
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -136,7 +137,7 @@ class _Item6Card extends StatelessWidget {
         width: 220, // similar to item5 width
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.secondary.withOpacity(0.15),
+          color: cmsCard(context, AppColors.secondary),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -175,25 +176,12 @@ class _Item6Card extends StatelessWidget {
                     layoutData.title ?? '',
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if ((layoutData.subTitle ?? '').isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        layoutData.subTitle!,
-                        style: FontUtils.primaryFontStyle(
-                          fontSize: 12,
-                          color: AppColors.textColor.withOpacity(0.7),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
                 ],
               ),
             ),

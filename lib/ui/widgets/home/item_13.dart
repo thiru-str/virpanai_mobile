@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -43,7 +45,7 @@ class Item13 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -66,7 +68,7 @@ class Item13 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -137,7 +139,7 @@ class _Item13Card extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300),
         ),
@@ -175,12 +177,13 @@ class _Item13Card extends StatelessWidget {
                       height: 24,
                       color: Colors.green,
                       alignment: Alignment.center,
-                      child: const Text(
-                        "NEW",
-                        style: TextStyle(
+                      child: Text(
+                        AppStrings.new_tag,
+                        style: FontUtils.primaryFontStyle(
                           color: Colors.white,
                           fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
@@ -202,12 +205,12 @@ class _Item13Card extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.star, size: 14, color: Colors.brown),
-                    SizedBox(width: 4),
+                  children: [
+                    const Icon(Icons.star, size: 14, color: Colors.brown),
+                    const SizedBox(width: 4),
                     Text(
                       "5 (2)",
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
@@ -225,10 +228,11 @@ class _Item13Card extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 layoutData.title ?? '',
-                style: const TextStyle(
+                style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
+                  letterSpacing: 0.1,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -244,17 +248,17 @@ class _Item13Card extends StatelessWidget {
                 children: [
                   Text(
                     CurrencyUtil.appendCurrency(selling.toStringAsFixed(0)),
-                    style: const TextStyle(
+                    style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),
                   if (hasDiscount)
                     Text(
                       CurrencyUtil.appendCurrency(original.toStringAsFixed(0)),
-                      style: const TextStyle(
+                      style: FontUtils.secondaryFontStyle(
                         fontSize: 12,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
@@ -270,10 +274,11 @@ class _Item13Card extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
                   "$percentOff% OFF",
-                  style: const TextStyle(
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.green,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
@@ -285,12 +290,13 @@ class _Item13Card extends StatelessWidget {
                 onPressed: onTap,
                 icon: const Icon(Icons.shopping_cart_outlined,
                     size: 16, color: Colors.brown),
-                label: const Text(
-                  "ADD TO CART",
-                  style: TextStyle(
+                label: Text(
+                  AppStrings.add_to_cart,
+                  style: FontUtils.primaryFontStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: Colors.brown,
+                    letterSpacing: 0.2,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(

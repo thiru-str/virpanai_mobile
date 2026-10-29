@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/add_on_products_response.dart';
 import 'package:waioz/model/address_list_response.dart';
 import 'package:waioz/model/collection_response.dart';
+import 'package:waioz/model/cross_sell_products_response.dart';
 import 'package:waioz/model/filter_category_response.dart';
 import 'package:waioz/model/order_detail_response.dart';
 import 'package:waioz/model/payment_method_response.dart';
@@ -15,9 +16,10 @@ import 'package:waioz/model/return_response.dart';
 import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
-import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
+import 'package:waioz/model/wallet_response.dart';
+import 'package:waioz/model/promotion_list_model.dart';
 import 'package:waioz/model/order_history_reponse.dart';
 import 'package:waioz/model/place_order_response.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -36,7 +38,9 @@ import 'package:waioz/model/wishlist_reponse.dart';
 import 'package:waioz/ui/cart_response.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
+import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/checkout_completion.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
@@ -50,17 +54,68 @@ import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
-class ApiService {
-  final Dio _dio = Dio();
+/// A non-200 answer, carrying the backend's own message for the shopper.
+class ApiException implements Exception {
+  final int? statusCode;
+  final String? code;
+  final String message;
+  final dynamic body;
 
-  ApiService() {
+  const ApiException({
+    required this.message,
+    this.statusCode,
+    this.code,
+    this.body,
+  });
+
+  @override
+  String toString() => message;
+}
+
+class ApiService {
+  // A `+`-prefixed field keeps the store-cart defaults, so cart mutations
+  // answer with the same cart a GET returns (address, payment sessions,
+  // stock flags) instead of the compact shape non-web clients get otherwise.
+  static const Map<String, dynamic> _fullCartQuery = {'fields': '+metadata'};
+  static const String _connectionErrorMessage =
+      'Could not reach the store. Please check your connection and try again.';
+
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
+  late final Dio _dio;
+
+  ApiService._internal() {
     // Configure Dio
-    _dio.options.baseUrl = AppConfig.baseUrl;
-    _dio.options.headers = {
-      "Content-Type": "application/json",
-    };
-    _dio.options.connectTimeout = const Duration(seconds: 30); // 5 seconds
-    _dio.options.receiveTimeout = const Duration(seconds: 30); // 3 seconds
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppConfig.baseUrl,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+  }
+
+  // Pull a human-readable error message from response.data without assuming
+  // it's a Map. Some upstreams return plain text or HTML, in which case
+  // response.data['message'] threw "type 'String' is not a subtype of type
+  // 'int' of 'index'" and masked the real failure.
+  String _extractErrorMessage(dynamic data) {
+    if (data is Map) {
+      final m = data['message'];
+      if (m is String && m.isNotEmpty) return m;
+      final err = data['error'];
+      if (err is Map) {
+        final em = err['message'];
+        if (em is String && em.isNotEmpty) return em;
+      }
+      if (err is String && err.isNotEmpty) return err;
+    } else if (data is String && data.isNotEmpty) {
+      return data;
+    }
+    return 'An error occurred';
   }
 
   Future<T> _makePostRequest<T>(
@@ -72,29 +127,40 @@ class ApiService {
     try {
       await setPublishableKey();
 
-      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$endpoint');
-      AppLogger.print('API Params:', '${data ?? {}}');
+      AppLogger.logFullJson(data ?? {});
 
-      final response = await _dio.post(endpoint, data: data ?? {},options: Options(
+      final response =
+          await _dio.post(endpoint, data: data ?? {}, options: Options(
         validateStatus: (status) {
           // Accept status codes 400-499 as valid responses for handling errors manually
           return status != null && status < 500;
         },
       ));
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
-        await _handleLogout(context, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'POST request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -112,9 +178,9 @@ class ApiService {
           ? '$endpoint/$dynamicPath'
           : endpoint;
 
-      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
-      AppLogger.print('API Params:', '${queryParams ?? {}}');
+      AppLogger.logFullJson(queryParams ?? {});
 
       // Include query parameters in the GET request
       final response = await _dio
@@ -127,20 +193,31 @@ class ApiService {
 
       AppLogger.print('response  statuscode:', '${response.statusCode}');
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else if (response.statusCode == 401) {
-        await _handleLogout(context!, response.data['error']);
-        throw Exception('Unauthorized: ${response.data['error']}');
-      }  else {
+        final errorMsg = _extractErrorMessage(response.data);
+        await _handleLogout(context!, errorMsg);
+        throw Exception('Unauthorized: $errorMsg');
+      } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'GET request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'GET',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -158,24 +235,24 @@ class ApiService {
       final fullEndpoint = dynamicPath != null && dynamicPath.isNotEmpty
           ? '$endpoint/$dynamicPath' // Append dynamic path if provided
           : endpoint;
-      AppLogger.print('API headers:', '${_dio.options.headers}');
+      AppLogger.logFullJson(_dio.options.headers);
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$fullEndpoint');
-      AppLogger.print('API Params:', '${queryParams ?? {}}');
+      AppLogger.logFullJson(queryParams ?? {});
 
       // Make the DELETE request
       final response =
-          await _dio.delete(fullEndpoint, data: queryParams,options: Options(
-            validateStatus: (status) {
-              // Accept status codes 400-499 as valid responses for handling errors manually
-              return status != null && status < 500;
-            },
-          ));
+          await _dio.delete(fullEndpoint, data: queryParams, options: Options(
+        validateStatus: (status) {
+          // Accept status codes 400-499 as valid responses for handling errors manually
+          return status != null && status < 500;
+        },
+      ));
 
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data); // Parse the response data
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -183,6 +260,16 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'DELETE request failed',
+        attributes: {
+          'endpoint': endpoint,
+          'dynamic_path': dynamicPath ?? '',
+          'method': 'DELETE',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
   }
@@ -196,7 +283,8 @@ class ApiService {
     try {
       // Prepare FormData with the image file
       final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(file.path, filename: file.path.split('/').last),
+        'image': await MultipartFile.fromFile(file.path,
+            filename: file.path.split('/').last),
       });
 
       AppLogger.print('API Request:', '${_dio.options.baseUrl}$apiUrl');
@@ -214,10 +302,10 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        AppLogger.print('API Response:', '${response.data}');
+        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
-        AppUtils.showToast(response.data['message'] ?? response.data['error']?['message'] ?? 'An error occurred');
+        AppUtils.showToast(_extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       } else {
         throw Exception('Unexpected status code: ${response.statusCode}');
@@ -225,8 +313,66 @@ class ApiService {
     } catch (e, stacktrace) {
       AppLogger.print('API Exception:', '$e');
       AppLogger.print('Stacktrace:', '$stacktrace');
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: 'File upload failed',
+        attributes: {
+          'endpoint': apiUrl,
+          'file_path': file.path,
+          'method': 'POST',
+        },
+      );
       throw Exception('An error occurred: $e');
     }
+  }
+
+  /// Sends a JSON request and returns the 200 body. Any other answer throws an
+  /// [ApiException] with the backend's message; showing it is up to the caller.
+  Future<Map<String, dynamic>> _sendJson(
+    String method,
+    String endpoint, {
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
+    BuildContext? context,
+  }) async {
+    await setPublishableKey();
+    await addToken();
+    AppLogger.print('API Request:', '$method ${_dio.options.baseUrl}$endpoint');
+
+    final Response<dynamic> response;
+    try {
+      response = await _dio.request(
+        endpoint,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(method: method, validateStatus: (_) => true),
+      );
+    } catch (e, stacktrace) {
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: '$method request failed',
+        attributes: {'endpoint': endpoint, 'method': method},
+      );
+      throw const ApiException(message: _connectionErrorMessage);
+    }
+
+    final status = response.statusCode;
+    final body = response.data;
+    if (status == 200 && body is Map) return Map<String, dynamic>.from(body);
+
+    final message = _extractErrorMessage(body);
+    AppLogger.print('API Error:', '$method $endpoint status=$status');
+    if (status == 401 && context != null && context.mounted) {
+      await _handleLogout(context, message);
+    }
+    throw ApiException(
+      statusCode: status,
+      code: body is Map ? body['code']?.toString() : null,
+      message: message,
+      body: body,
+    );
   }
 
   Future<void> _handleLogout(BuildContext context, String? message) async {
@@ -237,31 +383,40 @@ class ApiService {
 
     // Clear user-specific data
     await SharedPreferencesUtil().clear();
+    await AppErrorReporter.instance.clearUser();
 
     bool skipLogin =
         await SharedPreferencesUtil().getBool('skip_login') ?? false;
 
-      PageRouteUtils.pushAndRemoveUntil(
-          context, skipLogin ? const BottomNavPage() : WelcomePage());
+    PageRouteUtils.pushAndRemoveUntil(
+        context, skipLogin ? const BottomNavPage() : WelcomePage());
   }
 
-  Future<SendOtpResponse> sendOtp(BuildContext context, String countryCode,String phone) async {
-    return _makePostRequest("store/customers/send-otp", {"country_code":countryCode,"phone": phone},
-        (data) => SendOtpResponse.fromJson(data), context);
+  Future<SendOtpResponse> sendOtp(
+      BuildContext context, String countryCode, String phone) async {
+    return _makePostRequest(
+        "store/customers/send-otp",
+        {"country_code": countryCode, "phone": phone},
+        (data) => SendOtpResponse.fromJson(data),
+        context);
   }
 
-  Future<VerifyOtpResponse> verifyOtp(
-      BuildContext context,String countryCode,String phone, String otp) async {
+  Future<VerifyOtpResponse> verifyOtp(BuildContext context, String countryCode,
+      String phone, String otp) async {
     String? deviceId = await _updateToken();
     return _makePostRequest(
         "store/customers/verify-otp",
-        {"device_id": deviceId,"country_code":countryCode,"phone": phone, "otp": otp},
+        {
+          "device_id": deviceId,
+          "country_code": countryCode,
+          "phone": phone,
+          "otp": otp
+        },
         (data) => VerifyOtpResponse.fromJson(data),
         context);
   }
 
   Future<String?> _updateToken() async {
-
     String? fcmToken = await SharedPreferencesUtil().getString('fcm_token');
 
     if (fcmToken == null || fcmToken.isEmpty) {
@@ -281,7 +436,8 @@ class ApiService {
     }
 
     // 3. Check if the token we have has been uploaded
-    String uploadedToken = await SharedPreferencesUtil().getString('fcm_token_uploaded') ?? '';
+    String uploadedToken =
+        await SharedPreferencesUtil().getString('fcm_token_uploaded') ?? '';
 
     // 4. If it's a new token, upload it to the server
     if (fcmToken != uploadedToken) {
@@ -308,7 +464,7 @@ class ApiService {
       String token) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers",
         {
           "email": email,
@@ -316,13 +472,18 @@ class ApiService {
           "first_name": firstName,
           "last_name": lastName,
           "phone": phone,
-          "metadata": {
-            "country_code":countryCode,
-            "device_id":deviceId
-          }
+          "metadata": {"country_code": countryCode, "device_id": deviceId}
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'otp',
+      },
+    );
+    return response;
   }
 
   Future<EmailRegisterResponse> registerEmail(
@@ -335,7 +496,7 @@ class ApiService {
       String phone,
       String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-register",
         {
           "email": email,
@@ -344,39 +505,48 @@ class ApiService {
           "last_name": lastName,
           "phone": phone,
           "password": password,
-          "metadata": {
-            "country_code":countryCode,
-            "device_id":deviceId
-          }
+          "metadata": {"country_code": countryCode, "device_id": deviceId}
         },
         (data) => EmailRegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.setUser(
+      id: response.customer?.id,
+      email: response.customer?.email,
+      phone: response.customer?.phone,
+      firstName: response.customer?.firstName,
+      lastName: response.customer?.lastName,
+      companyName: response.customer?.companyName,
+    );
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_registered',
+      attributes: {
+        'auth_type': 'email',
+      },
+    );
+    return response;
   }
 
   Future<RefreshTokenResponse> refreshToken(
-      BuildContext context,
-      String token,
-      ) async {
+    BuildContext context,
+    String token,
+  ) async {
     _dio.options.headers['Authorization'] = 'Bearer $token';
-    return _makePostRequest(
-        "auth/token/refresh",
-        null,
-        (data) => RefreshTokenResponse.fromJson(data),
-        context);
+    return _makePostRequest("auth/token/refresh", null,
+        (data) => RefreshTokenResponse.fromJson(data), context);
   }
 
   Future<ProductsResponse> listProducts(
-      BuildContext context,
-      String categoryId,
-      String collectionId,
-      String tagId,
-      double? minPrice,
-      double? maxPrice,
-      String? sortBy,
-      String searchString, {
-        int offset = 0,
-        int limit = 10,
-      }) async {
+    BuildContext context,
+    String categoryId,
+    String collectionId,
+    String tagId,
+    double? minPrice,
+    double? maxPrice,
+    String? sortBy,
+    String searchString, {
+    int offset = 0,
+    int limit = 10,
+  }) async {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     final queryParams = <String, dynamic>{};
@@ -425,7 +595,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if(sortBy!=null) {
+    if (sortBy != null) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -440,11 +610,10 @@ class ApiService {
       'store/list-products',
       null,
       queryParams,
-          (json) => ProductsResponse.fromJson(json),
+      (json) => ProductsResponse.fromJson(json),
       context,
     );
   }
-
 
   Future<ProductsResponse> listBrands(
       BuildContext context, String tagId) async {
@@ -494,31 +663,45 @@ class ApiService {
 
   Future<CustomerResponse> getCustomer(BuildContext context) async {
     await addToken();
-    return _makeGetRequest<CustomerResponse>(
+    final response = await _makeGetRequest<CustomerResponse>(
       'store/customers/me',
       null,
       null,
       (json) => CustomerResponse.fromJson(json),
       context,
     );
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    return response;
   }
 
-  Future<HomePageResponse> getHomePage(BuildContext context,{int offset = 0, int limit = 0}) async {
+  Future<HomePageResponse> getHomePage(BuildContext context,
+      {int offset = 0,
+      int limit = 0,
+      double? latitude,
+      double? longitude,
+      String? pincode}) async {
     await addToken();
     return _makePostRequest<HomePageResponse>(
       'store/get_home_page/v8',
-      {'limit':limit,'offset':offset},
+      {
+        'limit': limit,
+        'offset': offset,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
       (json) => HomePageResponse.fromJson(json),
       context,
     );
   }
 
-  Future<CustomPageResponse> getCustomPage(BuildContext context,String slug) async {
+  Future<CustomPageResponse> getCustomPage(
+      BuildContext context, String slug) async {
     await addToken();
     return _makePostRequest<CustomPageResponse>(
       'store/get_custom_page/v2/$slug',
       null,
-          (json) => CustomPageResponse.fromJson(json),
+      (json) => CustomPageResponse.fromJson(json),
       context,
     );
   }
@@ -535,23 +718,24 @@ class ApiService {
       String country,
       String zipCode,
       String addressName,
-      String latitude,String longitude) async {
+      String latitude,
+      String longitude) async {
     await addToken();
     return _makePostRequest(
         addressID != null
             ? "store/customers/me/addresses/$addressID"
             : "store/customers/me/addresses",
         {
-          "first_name" : firstName,
-          "last_name" : lastName,
+          "first_name": firstName,
+          "last_name": lastName,
           "address_1": address_1,
           "phone": phone,
           "city": city,
           "province": state,
           "postal_code": zipCode,
           "address_name": addressName,
-          "country_code" : "in",
-          "metadata":{"latitude":latitude,"longitude":longitude}
+          "country_code": "in",
+          "metadata": {"latitude": latitude, "longitude": longitude}
         },
         (data) => RegisterResponse.fromJson(data),
         context);
@@ -571,8 +755,8 @@ class ApiService {
   Future<RegisterResponse> deleteAddress(
       BuildContext context, String? addressID) async {
     await addToken();
-    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null, null,
-        (data) => RegisterResponse.fromJson(data), context);
+    return _makeDeleteRequest("store/customers/me/addresses/$addressID", null,
+        null, (data) => RegisterResponse.fromJson(data), context);
   }
 
   Future<ReviewResponse> getProductReviews(
@@ -600,16 +784,49 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addCart(
-      BuildContext context, int qty, String variantId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+  /// Adds [quantity] of a variant (the backend raises an existing line) and
+  /// returns the settled cart body `{ cart }`.
+  Future<Map<String, dynamic>> addCartLine(
+      BuildContext? context, String variantId, int quantity) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'POST',
       'store/custom-carts/$cartId/line-items',
-      {"variant_id": variantId, "quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
+      data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
+      queryParameters: _fullCartQuery,
+      context: context,
     );
+  }
+
+  /// Sets a line's quantity; the body may carry a `notice` when the backend
+  /// lowered it to the stock that is left.
+  Future<Map<String, dynamic>> updateCartLine(
+      BuildContext? context, String lineId, int quantity) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'POST',
+      'store/custom-carts/$cartId/line-items/$lineId',
+      data: {"quantity": quantity, "metadata": {}},
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  Future<Map<String, dynamic>> deleteCartLine(
+      BuildContext? context, String lineId) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'DELETE',
+      'store/custom-carts/$cartId/line-items/$lineId',
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  /// The settled cart body `{ cart }`, unparsed, for the cart store.
+  Future<Map<String, dynamic>> getCartJson(BuildContext? context) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson('GET', 'store/custom-carts/$cartId', context: context);
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
@@ -624,25 +841,45 @@ class ApiService {
     );
   }
 
+  Future<PromotionListResponse> getAvailablePromotions(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makeGetRequest(
+      'store/promotions',
+      null,
+      {'cart_id': cartId},
+      (json) => PromotionListResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<CartResponse> addPromoCode(
-      BuildContext context,String promoCode) async {
+      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = <String, dynamic>{
+      "promo_codes": [promoCode],
+    };
+    if (removeCodes != null && removeCodes.isNotEmpty) {
+      body["remove_codes"] = removeCodes;
+    }
     return _makePostRequest(
       'store/custom-carts/$cartId/promotions',
-      {"promo_codes": [promoCode]},
-          (json) => CartResponse.fromJson(json),
+      body,
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
 
   Future<CartResponse> removePromoCode(
-      BuildContext context,List<String> promoCodes) async {
+      BuildContext context, List<String> promoCodes) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeDeleteRequest(
-      'store/custom-carts/$cartId/promotions', null,{"promo_codes": promoCodes},
-          (json) => CartResponse.fromJson(json),
+      'store/custom-carts/$cartId/promotions',
+      null,
+      {"promo_codes": promoCodes},
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
@@ -661,9 +898,12 @@ class ApiService {
   Future<WishlistResponse> deleteFavourite(
       BuildContext context, String? productId, String? wishlistId) async {
     await addToken();
-    return _makeDeleteRequest('store/product-wishlist', wishlistId, {"product_id": productId},
-            (data) => WishlistResponse.fromJson(data), context);
-
+    return _makeDeleteRequest(
+        'store/product-wishlist',
+        wishlistId,
+        {"product_id": productId},
+        (data) => WishlistResponse.fromJson(data),
+        context);
   }
 
   Future<CartResponse> updateAddress(
@@ -672,33 +912,8 @@ class ApiService {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest(
       'store/carts/$cartId',
-      {"shipping_address": address,"billing_address": address},
+      {"shipping_address": address, "billing_address": address},
       (json) => CartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<CartResponse> updateCart(
-      BuildContext context, int qty, String cartItemId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
-      {"quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<DeleteResponse> removeCart(
-      BuildContext context, String cartItemId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makeDeleteRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
-      null,
-      null,
-          (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
@@ -715,6 +930,20 @@ class ApiService {
     );
   }
 
+  Future<String?> initiateIciciPayment(BuildContext context) async {
+    await setPublishableKey();
+    await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+    final response = await _dio.post(
+      'store/place-order/$cartId',
+      data: {"payment_provider_id": "pp_icici_icici"},
+    );
+    if (response.statusCode == 200) {
+      return response.data?['icici_redirect_url'] as String?;
+    }
+    throw Exception('Failed to initiate ICICI payment');
+  }
+
   // Future<CartResponse> getOrderHistory(BuildContext context) async {
   //   await addToken();
   //   return _makeGetRequest<WishlistResponse>(
@@ -725,12 +954,13 @@ class ApiService {
   //     context,
   //   );
   // }
-  Future<OrderHistoryResponse> getOrderHistory(BuildContext context,int limit,int offset) async {
+  Future<OrderHistoryResponse> getOrderHistory(
+      BuildContext context, int limit, int offset) async {
     await addToken();
     return _makeGetRequest<OrderHistoryResponse>(
       'store/orders?order=-created_at&fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,',
       null,
-      {'limit':limit,'offset':offset},
+      {'limit': limit, 'offset': offset},
       (json) => OrderHistoryResponse.fromJson(json),
       context,
     );
@@ -755,7 +985,7 @@ class ApiService {
     String lastName,
   ) async {
     await addToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/me",
         {
           "phone": phone,
@@ -766,16 +996,18 @@ class ApiService {
         },
         (data) => RegisterResponse.fromJson(data),
         context);
+    await AppErrorReporter.instance.syncCustomer(response.customer);
+    await AppErrorReporter.instance.addBreadcrumb('customer_profile_updated');
+    return response;
   }
 
-  Future<ShippingResponse> getShippingInfo(
-      BuildContext context) async {
+  Future<ShippingResponse> getShippingInfo(BuildContext context) async {
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest<ShippingResponse>(
       'store/shipping-options',
       null,
       {"cart_id": cartId},
-          (json) => ShippingResponse.fromJson(json),
+      (json) => ShippingResponse.fromJson(json),
       context,
     );
   }
@@ -787,33 +1019,44 @@ class ApiService {
     return _makePostRequest(
       'store/carts/$cartId/shipping-methods',
       {"option_id": optionId},
-          (json) => CartResponse.fromJson(json),
+      (json) => CartResponse.fromJson(json),
       context,
     );
   }
 
+  /// Creates the session for the chosen provider and stores the choice on the
+  /// cart. When the open Razorpay order is reused the body carries
+  /// `payment_session` instead of `payment_collection`, so callers read the
+  /// session from the cart afterwards. Throws [ApiException] with the
+  /// backend's message.
   Future<PaymentMethodResponse> updatePaymentMethod(
-      BuildContext context, String paymentProviderId,CartResponse cartResponse) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+      BuildContext context, String paymentProviderId) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = await _sendJson(
+      'POST',
       'store/update-payment-method/$cartId',
-      paymentProviderId == 'pp_razorpay_razorpay'?{"payment_provider_id": paymentProviderId,"context":{"extra":cartResponse.cart}}:{"payment_provider_id": paymentProviderId},
-          (json) => PaymentMethodResponse.fromJson(json),
-      context,
+      data: {"payment_provider_id": paymentProviderId},
+      context: context,
     );
+    return PaymentMethodResponse.fromJson(body);
   }
 
-  Future<PlaceOrderResponse> completeCart(
-      BuildContext context) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/complete',
-      null,
-          (json) => PlaceOrderResponse.fromJson(json),
-      context,
-    );
+  /// Completes the cart. A failed completion creates no order: the backend
+  /// answers 409 with why, and refunds an online payment itself.
+  Future<CartCompletionResult> completeCart(BuildContext context) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    try {
+      final body = await _sendJson(
+        'POST',
+        'store/custom-carts/$cartId/complete',
+        data: const {},
+        context: context,
+      );
+      return CartCompletionResult.fromSuccessBody(body);
+    } on ApiException catch (error) {
+      final body = error.body is Map ? error.body : {'message': error.message};
+      return CartCompletionResult.failed(CompletionFailure.fromBody(body));
+    }
   }
 
   Future<PublicDetailsResponse> getPublicDetails() async {
@@ -821,7 +1064,35 @@ class ApiService {
       'public/details',
       null,
       null,
-          (json) => PublicDetailsResponse.fromJson(json),
+      (json) => PublicDetailsResponse.fromJson(json),
+      null,
+    );
+  }
+
+  Future<bool> getCouponListVisibility() async {
+    return _makeGetRequest<bool>(
+      'store/web/global_settings',
+      null,
+      null,
+      (json) {
+        final value = json['globalSettings']?['coupon_list_enabled'];
+
+        if (value is bool) {
+          return value;
+        }
+
+        if (value is String) {
+          final normalized = value.trim().toLowerCase();
+          if (['false', '0', 'off', 'no'].contains(normalized)) {
+            return false;
+          }
+          if (['true', '1', 'on', 'yes'].contains(normalized)) {
+            return true;
+          }
+        }
+
+        return true;
+      },
       null,
     );
   }
@@ -836,13 +1107,14 @@ class ApiService {
     );
   }
 
-  Future<NeftTransactionResponse> getNEFTTransaction(BuildContext context, String? orderID) async {
+  Future<NeftTransactionResponse> getNEFTTransaction(
+      BuildContext context, String? orderID) async {
     await addToken();
     return _makeGetRequest<NeftTransactionResponse>(
       'store/neft-payment-images',
       orderID,
       null,
-          (json) => NeftTransactionResponse.fromJson(json),
+      (json) => NeftTransactionResponse.fromJson(json),
       null,
     );
   }
@@ -853,7 +1125,7 @@ class ApiService {
     return _makePostRequest(
       '/store/neft-payment-images',
       payload,
-          (json) => ProductInfoResponse.fromJson(json),
+      (json) => ProductInfoResponse.fromJson(json),
       context,
     );
   }
@@ -863,7 +1135,7 @@ class ApiService {
       '/store/content',
       null,
       null,
-          (json) => StoreContentResponse.fromJson(json),
+      (json) => StoreContentResponse.fromJson(json),
       null,
     );
   }
@@ -875,7 +1147,7 @@ class ApiService {
       'store/collections',
       null,
       null,
-          (json) => CollectionsResponse.fromJson(json),
+      (json) => CollectionsResponse.fromJson(json),
       context,
     );
   }
@@ -885,7 +1157,7 @@ class ApiService {
       'store/product-custom-categories',
       null,
       null,
-          (json) => FilterCategoryResponse.fromJson(json),
+      (json) => FilterCategoryResponse.fromJson(json),
       context,
     );
   }
@@ -895,7 +1167,7 @@ class ApiService {
       'store/product-tags',
       '?fields=id,value',
       null,
-          (json) => TagsResponse.fromJson(json),
+      (json) => TagsResponse.fromJson(json),
       context,
     );
   }
@@ -906,41 +1178,52 @@ class ApiService {
     return _makePostRequest<RelatedProductsResponse>(
       'store/related-product/$productId',
       {"region_id": regionId},
-          (json) => RelatedProductsResponse.fromJson(json),
+      (json) => RelatedProductsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<CrossSellProductsResponse> crossSellingProducts(
+      BuildContext context, String cartId) async {
+    String? regionId = await SharedPreferencesUtil().getString('region_id');
+    return _makePostRequest<CrossSellProductsResponse>(
+      'store/cross-selling-product/$cartId',
+      {"region_id": regionId},
+      (json) => CrossSellProductsResponse.fromJson(json),
       context,
     );
   }
 
   Future<UpSellProductsResponse> upSellingProducts(
-      BuildContext context) async {
+      BuildContext context, String id) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makePostRequest<UpSellProductsResponse>(
-      'store/up-selling-product/$cartId',
+      'store/up-selling-product/$id',
       {"region_id": regionId},
-          (json) => UpSellProductsResponse.fromJson(json),
+      (json) => UpSellProductsResponse.fromJson(json),
       context,
     );
   }
 
   Future<AddOnProductsResponse> addOnProducts(
-      BuildContext context,String productId) async {
+      BuildContext context, String productId) async {
     String? regionId = await SharedPreferencesUtil().getString('region_id');
     return _makePostRequest<AddOnProductsResponse>(
       'store/addon-product/$productId',
       {"region_id": regionId},
-          (json) => AddOnProductsResponse.fromJson(json),
+      (json) => AddOnProductsResponse.fromJson(json),
       context,
     );
   }
 
-  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(BuildContext context,String orderId) async {
+  Future<OrderHistoryIndividualReponse> getIndividualOrderHistory(
+      BuildContext context, String orderId) async {
     await addToken();
     return _makeGetRequest<OrderHistoryIndividualReponse>(
       'store/orders/$orderId?fields=+subtotal,+tax_total,+total,+payment_collections.payments.*,+cart.shipping_address.*,+metadata',
       null,
       null,
-          (json) => OrderHistoryIndividualReponse.fromJson(json),
+      (json) => OrderHistoryIndividualReponse.fromJson(json),
       context,
     );
   }
@@ -948,22 +1231,24 @@ class ApiService {
   Future<RegisterResponse> deleteAccount(BuildContext context) async {
     await addToken();
     return _makeDeleteRequest("store/customers/delete", null, null,
-            (data) => RegisterResponse.fromJson(data), context);
+        (data) => RegisterResponse.fromJson(data), context);
   }
 
-  Future<CancelOrderResponse> cancelOrder(BuildContext context, String orderId) async {
+  Future<CancelOrderResponse> cancelOrder(
+      BuildContext context, String orderId) async {
     await addToken();
     return _makePostRequest('store/cancel-order/$orderId', null,
-            (data) => CancelOrderResponse.fromJson(data),context);
+        (data) => CancelOrderResponse.fromJson(data), context);
   }
 
-  Future<OrderDetailResponse> getOrderDetails(BuildContext context,String orderId) async {
+  Future<OrderDetailResponse> getOrderDetails(
+      BuildContext context, String orderId) async {
     await addToken();
     return _makeGetRequest<OrderDetailResponse>(
       'store/order/details/$orderId',
       null,
       null,
-          (json) => OrderDetailResponse.fromJson(json),
+      (json) => OrderDetailResponse.fromJson(json),
       context,
     );
   }
@@ -973,14 +1258,34 @@ class ApiService {
       'store/return-reasons',
       null,
       null,
-          (json) => ReturnResponse.fromJson(json),
+      (json) => ReturnResponse.fromJson(json),
       context,
     );
   }
 
-  Future<ReturnSuccessResponse> processReturn(BuildContext context, String orderId,String cartId,String id,int quantity,String reasonId,String note,String fullFillId) async {
-    return _makePostRequest("store/order/return/$orderId", {"return_item": {"id":id,"quantity":quantity,"reason_id":reasonId,"note":note},"fulfillment_id": fullFillId,"cart_id":cartId},
-            (data) => ReturnSuccessResponse.fromJson(data), context);
+  Future<ReturnSuccessResponse> processReturn(
+      BuildContext context,
+      String orderId,
+      String cartId,
+      String id,
+      int quantity,
+      String reasonId,
+      String note,
+      String fullFillId) async {
+    return _makePostRequest(
+        "store/order/return/$orderId",
+        {
+          "return_item": {
+            "id": id,
+            "quantity": quantity,
+            "reason_id": reasonId,
+            "note": note
+          },
+          "fulfillment_id": fullFillId,
+          "cart_id": cartId
+        },
+        (data) => ReturnSuccessResponse.fromJson(data),
+        context);
   }
 
   Future<void> addToken() async {
@@ -989,19 +1294,217 @@ class ApiService {
   }
 
   Future<void> setPublishableKey() async {
-    String? publishableKey = await SharedPreferencesUtil().getString('publishable_key');
+    String? publishableKey =
+        await SharedPreferencesUtil().getString('publishable_key');
     _dio.options.headers["x-publishable-api-key"] = publishableKey ?? "";
   }
 
   Future<VerifyOtpResponse> loginWithEmail(
-      BuildContext context,String email,String password) async {
+      BuildContext context, String email, String password) async {
     String? deviceId = await _updateToken();
-    return _makePostRequest(
+    final response = await _makePostRequest(
         "store/customers/email-login",
-        {"device_id": deviceId,"email":email,"password": password},
-            (data) => VerifyOtpResponse.fromJson(data),
+        {"device_id": deviceId, "email": email, "password": password},
+        (data) => VerifyOtpResponse.fromJson(data),
+        context);
+    await AppErrorReporter.instance.addBreadcrumb(
+      'customer_login',
+      attributes: {
+        'auth_type': 'email',
+        'new_user': response.newUser ?? false,
+      },
+    );
+    return response;
+  }
+
+  // ==================== WALLET ====================
+
+  Future<WalletResponse> getWalletBalance(BuildContext context) async {
+    await addToken();
+    return _makeGetRequest("store/wallet", null, null,
+        (data) => WalletResponse.fromJson(data), context);
+  }
+
+  Future<WalletTransactionsResponse> getWalletTransactions(BuildContext context,
+      {int limit = 20, int offset = 0, String? type, String? direction}) async {
+    await addToken();
+    final params = <String, dynamic>{
+      'limit': limit,
+      'offset': offset,
+    };
+    if (type != null) params['type'] = type;
+    if (direction != null) params['direction'] = direction;
+
+    return _makeGetRequest("store/wallet/transactions", null, params,
+        (data) => WalletTransactionsResponse.fromJson(data), context);
+  }
+
+  Future<WalletTopUpResponse> initiateWalletTopUp(
+      BuildContext context, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up",
+        {
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletTopUpResponse.fromJson(data),
         context);
   }
 
+  Future<WalletConfirmResponse> confirmWalletTopUp(
+      BuildContext context, String razorpayPaymentId, double amount,
+      {String currencyCode = 'inr'}) async {
+    await addToken();
+    return _makePostRequest(
+        "store/wallet/top-up/confirm",
+        {
+          "razorpay_payment_id": razorpayPaymentId,
+          "amount": amount,
+          "currency_code": currencyCode,
+        },
+        (data) => WalletConfirmResponse.fromJson(data),
+        context);
+  }
 
+  Future<WalletSplitResponse> applyWalletSplit(
+      BuildContext context, String cartId) async {
+    await addToken();
+    return _makePostRequest("store/wallet/apply-split", {"cart_id": cartId},
+        (data) => WalletSplitResponse.fromJson(data), context);
+  }
+
+  Future<dynamic> removeWalletSplit(BuildContext context, String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    try {
+      final response = await _dio.delete(
+        "store/wallet/apply-split",
+        queryParameters: {"cart_id": cartId},
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+      return response.data ?? {};
+    } catch (e) {
+      debugPrint('removeWalletSplit error: $e');
+      rethrow;
+    }
+  }
+
+  // ─── Loyalty ──────────────────────────────────────────────
+
+  Future<Response> getLoyaltyAccount() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty');
+  }
+
+  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/transactions',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> getLoyaltyPreview(
+    num orderTotal, {
+    String? orderId,
+    String? cartId,
+    String? productId,
+  }) async {
+    await setPublishableKey();
+    final params = <String, dynamic>{};
+    if (orderId != null && orderId.isNotEmpty) params['order_id'] = orderId;
+    // Prefer cart_id when available — backend computes earnable amount server-side
+    // (excludes platform_fee + applies earn restriction).
+    if (cartId != null && cartId.isNotEmpty) params['cart_id'] = cartId;
+    // PDP passes product_id so backend can short-circuit when the merchant
+    // has restricted earning to specific products / categories — keeps the
+    // "you'll earn …" strip honest with what the order subscriber will do.
+    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (orderTotal > 0) params['order_total'] = orderTotal;
+    return _dio.get('/store/loyalty/preview', queryParameters: params);
+  }
+
+  Future<Response> redeemLoyaltyPoints(int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/redeem', data: {'points': points});
+  }
+
+  Future<Response> applyLoyaltyCheckout(String cartId, int points) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.post('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId, 'points': points});
+  }
+
+  Future<Response> getLoyaltyCheckoutStatus(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/checkout-apply',
+        queryParameters: {'cart_id': cartId});
+  }
+
+  Future<Response> removeLoyaltyCheckout(String cartId) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.delete('/store/loyalty/checkout-apply',
+        data: {'cart_id': cartId});
+  }
+
+  Future<Response> getLoyaltyReferral() async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral');
+  }
+
+  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+    await addToken();
+    await setPublishableKey();
+    return _dio.get('/store/loyalty/referral/history',
+        queryParameters: {'limit': limit, 'offset': offset});
+  }
+
+  Future<Response> applyReferralCode(String identifier) async {
+    await addToken();
+    await setPublishableKey();
+    // Send via `referral_identifier` (new) — backend accepts unique code OR phone.
+    return _dio.post('/store/loyalty/referral/apply',
+        data: {'referral_identifier': identifier.trim()});
+  }
+
+  /// Public endpoint — no auth required. Accepts EITHER a unique code OR a
+  /// phone number (when admin has enabled phone-as-referral mode).
+  Future<Response> validateReferralCode(String identifier) async {
+    await setPublishableKey();
+    final raw = identifier.trim();
+    // Pass via the new `identifier` param. Backend uppercases code lookups
+    // internally and tries phone matching when the input has enough digits.
+    return _dio.get('/store/loyalty/referral/validate',
+        queryParameters: {'identifier': raw});
+  }
+
+  // GET /store/delivery/free-delivery-info — cart-scoped progress banner data.
+  // Returns null on any failure so the widget hides silently rather than
+  // breaking the cart UI.
+  Future<Map<String, dynamic>?> getFreeDeliveryInfo(
+    BuildContext context,
+    String cartId,
+  ) async {
+    try {
+      await addToken();
+      return _makeGetRequest<Map<String, dynamic>>(
+        'store/delivery/free-delivery-info',
+        null,
+        {'cart_id': cartId},
+        (json) => Map<String, dynamic>.from(json as Map),
+        context,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 }

@@ -23,18 +23,25 @@ class ViewCartWidget extends StatelessWidget {
     final int extraItemsCount = (itemImages?.length ?? 0) - 2;
 
     return Container(
-      height: 70,
+      height: 74,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.28),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min, // Adjust width to content
         children: [
           // Images Row with Overlapping Effect
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 4.0),
             child: SizedBox(
               width: hasExtraItems
                   ? 100
@@ -87,30 +94,37 @@ class ViewCartWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10), // Space between images and text
-          // View cart text
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppStrings.view_cart,
-                style: FontUtils.primaryFontStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          // View cart text — Flexible + ellipsis so a long/localized label
+          // can't overflow the pill on a narrow device.
+          Flexible(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.view_cart,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FontUtils.primaryFontStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                '$totalItems ${totalItems == 1 ? "Item" : "Items"}',
-                style: FontUtils.primaryFontStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14,
+                Text(
+                  '$totalItems ${totalItems == 1 ? "Item" : "Items"}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: FontUtils.primaryFontStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(width: 10), // Space between text and button
+          const SizedBox(width: 14),
           // Action button
           Container(
             height: 40,
@@ -122,7 +136,7 @@ class ViewCartWidget extends StatelessWidget {
             child: Icon(
               Icons.arrow_forward_ios,
               color: AppColors.primary,
-              size: 20,
+              size: 18,
             ),
           ),
         ],

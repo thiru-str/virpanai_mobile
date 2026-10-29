@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -47,7 +48,7 @@ class Item7 extends StatelessWidget {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -69,7 +70,7 @@ class Item7 extends StatelessWidget {
                               content.layoutRedirectTitle ?? "",
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
-                                color: AppColors.textColor,
+                                color: cmsCardText(context, AppColors.textColor),
                               ),
                             ),
                             const Icon(Icons.chevron_right, size: 18),
@@ -132,7 +133,7 @@ class _Item7Card extends StatelessWidget {
     return Container(
       width: 150, // You can also make this dynamic if needed
       decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.15),
+        color: cmsCard(context, AppColors.secondary),
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(12),
@@ -165,7 +166,7 @@ class _Item7Card extends StatelessWidget {
             style: FontUtils.primaryFontStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textColor,
+              color: cmsCardText(context, AppColors.textColor),
             ),
           ),
           const SizedBox(height: 6),
@@ -175,7 +176,7 @@ class _Item7Card extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: FontUtils.primaryFontStyle(
               fontSize: 13,
-              color: AppColors.textColor.withOpacity(0.8),
+              color: cmsCardText(context, AppColors.textColor).withOpacity(0.8),
             ),
           ),
         ],

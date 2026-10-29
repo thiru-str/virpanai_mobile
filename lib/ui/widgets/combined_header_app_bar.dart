@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
+import 'package:waioz/ui/widgets/home/premium_app_headers.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
@@ -8,6 +10,7 @@ import '../../utility/app_colors.dart';
 import '../../utility/app_strings.dart';
 import '../../utility/font_utils.dart';
 import '../../utility/page_route_utils.dart';
+import '../../utility/ui_typography.dart';
 
 class CombinedHeaderAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -16,6 +19,8 @@ class CombinedHeaderAppBar extends StatelessWidget
   final Function(String)? onSearchTextChanged;
   final VoidCallback? onSearchClick;
   final VoidCallback? onBackTap;
+  final VoidCallback? onLocationTap;
+  final VoidCallback? onProfileTap;
   final String title;
   final String addressType;
   final int cartCount;
@@ -28,16 +33,36 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.onSearchTextChanged,
     this.onSearchClick,
     this.onBackTap,
+    this.onLocationTap,
+    this.onProfileTap,
     this.title = "",
     this.addressType = "",
     this.cartCount = 0,
     this.showBack = false,
   }) : super(key: key);
 
+  // The admin stores the central slug of the chosen header; older settings
+  // store the header-N key. Both name the same header.
+  static const Map<String, String> _slugToKey = {
+    'AppHeaderSplit1': 'header-9',
+    'AppHeaderCentered1': 'header-10',
+    'AppHeaderMinimal1': 'header-11',
+    'AppHeaderSearch1': 'header-12',
+    'AppHeaderTwoRow1': 'header-13',
+    'AppHeaderLocation1': 'header-14',
+    'AppHeaderPill1': 'header-15',
+    'AppHeaderGradient1': 'header-16',
+    'AppHeaderCategoryTabs1': 'header-17',
+    'AppHeaderLuxe1': 'header-18',
+    'AppHeaderBasket1': 'header-19',
+  };
+
+  static String normalizeHeaderType(String type) => _slugToKey[type] ?? type;
+
   @override
   Widget build(BuildContext context) {
     debugPrint('App bar $headerType');
-    switch (headerType) {
+    switch (normalizeHeaderType(headerType)) {
       case "header-1":
         return _buildHeader1();
       case "header-2":
@@ -54,8 +79,81 @@ class CombinedHeaderAppBar extends StatelessWidget
         return _buildHeader7(context);
       case "header-8":
         return _buildCustomSearchHeader(context);
+      // Premium header family (header-9 .. header-18)
+      case "header-9":
+        return AppHeaderSplit1(cartCount: cartCount);
+      case "header-10":
+        return AppHeaderCentered1(cartCount: cartCount);
+      case "header-11":
+        return AppHeaderMinimal1(cartCount: cartCount);
+      case "header-12":
+        return AppHeaderSearch1(cartCount: cartCount);
+      case "header-13":
+        return AppHeaderTwoRow1(cartCount: cartCount);
+      case "header-14":
+        return AppHeaderLocation1(cartCount: cartCount);
+      case "header-15":
+        return AppHeaderPill1(cartCount: cartCount);
+      case "header-16":
+        return AppHeaderGradient1(cartCount: cartCount);
+      case "header-17":
+        return AppHeaderCategoryTabs1(cartCount: cartCount);
+      case "header-18":
+        return AppHeaderLuxe1(cartCount: cartCount);
+      case "header-19":
+        return AppHeaderBasket1(
+          cartCount: cartCount,
+          onCartClick: onCartClick,
+          onSearchClick: onSearchClick,
+          onProfileTap: onProfileTap,
+        );
       default:
         return _buildHeader1();
+    }
+  }
+
+  static double resolveHeaderHeight(String headerType) {
+    switch (normalizeHeaderType(headerType)) {
+      case "header-1":
+        return 70;
+      case "header-2":
+        return 80;
+      case "header-3":
+        return 120;
+      case "header-4":
+        return 120;
+      case "header-5":
+        return 120;
+      case "header-6":
+        return 140;
+      case "header-7":
+        return 140;
+      case "header-8":
+        return 130;
+      case "header-9":
+        return 64;
+      case "header-10":
+        return 64;
+      case "header-11":
+        return 60;
+      case "header-12":
+        return 68;
+      case "header-13":
+        return 116;
+      case "header-14":
+        return 116;
+      case "header-15":
+        return 68;
+      case "header-16":
+        return 112;
+      case "header-17":
+        return 104;
+      case "header-18":
+        return 60;
+      case "header-19":
+        return AppHeaderBasket1.height;
+      default:
+        return 120;
     }
   }
 
@@ -153,53 +251,90 @@ class CombinedHeaderAppBar extends StatelessWidget
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Icon(Icons.location_pin, color: Colors.grey, size: 36),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                addressType,
-                                style: FontUtils.secondaryFontStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: AppColors.textColor,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down,
-                                  color: AppColors.textColor, size: 20),
-                            ],
-                          ),
-                          Text(
-                            title,
-                            style: FontUtils.secondaryFontStyle(
-                              fontSize: 14,
-                              color: AppColors.textColor,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildIcon(Icons.account_circle, color: Colors.grey, size: 40),
+              Expanded(child: _locationRow()),
+              _buildIcon(Icons.account_circle,
+                  color: Colors.grey, size: 32, onPressed: onProfileTap),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           _buildSearchBar(),
         ],
+      ),
+    );
+  }
+
+  /// Reusable location row — tappable, ellipsised, empty state.
+  /// [showLeadingIcon] paints the brand-tinted pin on the left; header-7 sets
+  /// it to false because it already has a profile icon there.
+  Widget _locationRow({bool showLeadingIcon = true}) {
+    final bool hasAddress = title.trim().isNotEmpty;
+    final String label =
+        addressType.trim().isNotEmpty ? addressType : AppStrings.fast_delivery;
+
+    return InkWell(
+      onTap: onLocationTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (showLeadingIcon) ...[
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.location_on_rounded,
+                    color: AppColors.primary, size: 18),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: FontUtils.secondaryFontStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.keyboard_arrow_down,
+                          color: AppColors.textColor, size: 18),
+                    ],
+                  ),
+                  Text(
+                    hasAddress ? title : AppStrings.set_delivery_address,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FontUtils.secondaryFontStyle(
+                      fontSize: 13,
+                      color: hasAddress
+                          ? AppColors.textColor.withValues(alpha: 0.7)
+                          : AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -207,47 +342,23 @@ class CombinedHeaderAppBar extends StatelessWidget
   /// --- Header 7: Profile + Address + Search ---
   AppBar _buildHeader7(BuildContext context) {
     return _baseAppBar(
-      child: GestureDetector(
-        onTap: () {
-          PageRouteUtils.pushWithSlide(context, SearchAddressPage());
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _buildIcon(Icons.account_circle,
-                    color: Colors.grey, size: 40),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(AppStrings.fast_delivery,
-                        style: FontUtils.secondaryFontStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor)),
-                    Row(
-                      children: [
-                        Text(
-                          title.isEmpty
-                              ? "14/1, 3rd Cross Street, P And..."
-                              : title,
-                          style: FontUtils.secondaryFontStyle(
-                              color: AppColors.textColor),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.keyboard_arrow_down,
-                            color: AppColors.textColor, size: 20),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            _buildSearchBar(),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: onProfileTap,
+                child: Icon(Icons.account_circle,
+                    color: Colors.grey, size: 36),
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: _locationRow(showLeadingIcon: false)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildSearchBar(),
+        ],
       ),
     );
   }
@@ -297,36 +408,16 @@ class CombinedHeaderAppBar extends StatelessWidget
       ),
       leading: showBack
           ? IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        onPressed: onBackTap,
-      )
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+              onPressed: onBackTap,
+            )
           : null,
     );
   }
 
   double _getHeaderHeight() {
-    switch (headerType) {
-      case "header-1":
-        return 70;
-      case "header-2":
-        return 80;
-      case "header-3":
-        return 120;
-      case "header-4":
-        return 120;
-      case "header-5":
-        return 120;
-      case "header-6":
-        return 140;
-      case "header-7":
-        return 140;
-      case "header-8":
-        return 130;
-      default:
-        return 100;
-    }
+    return resolveHeaderHeight(headerType);
   }
-
 
   /// --- Shared Search Bar Widget ---
   Widget _buildSearchBar() {
@@ -337,18 +428,17 @@ class CombinedHeaderAppBar extends StatelessWidget
         height: 44,
         decoration: BoxDecoration(
           color: AppColors.searchBarColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.textColor),
+            Icon(Icons.search, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 AppStrings.search,
-                style: FontUtils.secondaryFontStyle(
-                  color: AppColors.textColor.withOpacity(0.7),
-                ),
+                style: UiTypography.searchHint(),
               ),
             ),
           ],
@@ -359,23 +449,23 @@ class CombinedHeaderAppBar extends StatelessWidget
 
   /// --- Shared Icon with Cart Badge ---
   Widget _buildIcon(
-      IconData? icon, {
-        String? assetPath,
-        VoidCallback? onPressed,
-        double? size,
-        double? width,
-        double? height,
-        Color? color,
-        int cartCount = 0,
-      }) {
+    IconData? icon, {
+    String? assetPath,
+    VoidCallback? onPressed,
+    double? size,
+    double? width,
+    double? height,
+    Color? color,
+    int cartCount = 0,
+  }) {
     Widget iconWidget = assetPath != null
         ? Image.asset(
-      assetPath,
-      width: size ?? 24,
-      height: size ?? 24,
-      color: color,
-      fit: BoxFit.contain,
-    )
+            assetPath,
+            width: size ?? 24,
+            height: size ?? 24,
+            color: color,
+            fit: BoxFit.contain,
+          )
         : Icon(icon, color: color ?? Colors.black, size: size);
 
     if (icon == Icons.shopping_cart && cartCount > 0) {
@@ -387,14 +477,12 @@ class CombinedHeaderAppBar extends StatelessWidget
             right: -2,
             top: -2,
             child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(10),
               ),
-              constraints:
-              const BoxConstraints(minWidth: 16, minHeight: 16),
+              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
               child: Text(
                 cartCount > 99 ? '99+' : '$cartCount',
                 style: const TextStyle(
@@ -421,6 +509,4 @@ class CombinedHeaderAppBar extends StatelessWidget
 
   @override
   Size get preferredSize => Size.fromHeight(_getHeaderHeight());
-
 }
-

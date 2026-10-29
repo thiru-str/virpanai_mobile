@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_strings.dart';
 
 class OrderTabSwitcher extends StatefulWidget {
   final int initialIndex;
@@ -35,8 +36,9 @@ class _OrderTabSwitcherState extends State<OrderTabSwitcher> {
   }
 
   void _updateIndicator() {
-    final RenderBox? box =
-    _tabKeys[_selectedIndex].currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? box = _tabKeys[_selectedIndex]
+        .currentContext
+        ?.findRenderObject() as RenderBox?;
     if (box != null) {
       final offset = box.localToGlobal(Offset.zero);
       setState(() {
@@ -48,7 +50,7 @@ class _OrderTabSwitcherState extends State<OrderTabSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = ["Current Orders", "Return Orders"];
+    final tabs = [AppStrings.current_orders, AppStrings.return_orders];
 
     return Stack(
       children: [
@@ -75,8 +77,7 @@ class _OrderTabSwitcherState extends State<OrderTabSwitcher> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color:
-                    isSelected ? AppColors.primary : Colors.grey[600],
+                    color: isSelected ? AppColors.primary : Colors.grey[600],
                   ),
                 ),
               );

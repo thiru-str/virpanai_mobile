@@ -20,6 +20,7 @@ class PublicDetailsResponse {
   BankDetails? bankDetails;
   UpiDetails? upiDetails;
   StoreDetails? storeDetails;
+  List<String> enabledExtensions;
 
   PublicDetailsResponse({
     this.maintainance,
@@ -33,6 +34,7 @@ class PublicDetailsResponse {
     this.bankDetails,
     this.upiDetails,
     this.storeDetails,
+    this.enabledExtensions = const [],
   });
 
   factory PublicDetailsResponse.fromJson(Map<String, dynamic> json) => PublicDetailsResponse(
@@ -46,7 +48,10 @@ class PublicDetailsResponse {
       restrictLocationBy: json["restrictLocationBy"],
       bankDetails: json["bankDetails"] == null ? null : BankDetails.fromJson(json["bankDetails"]),
       upiDetails: json["upiDetails"] == null ? null : UpiDetails.fromJson(json["upiDetails"]),
-      storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"])
+      storeDetails: json["storeDetails"] == null ? null : StoreDetails.fromJson(json["storeDetails"]),
+      enabledExtensions: json["enabled_extensions"] != null
+          ? List<String>.from(json["enabled_extensions"])
+          : [],
   );
 
   Map<String, dynamic> toJson() => {
@@ -61,7 +66,10 @@ class PublicDetailsResponse {
     "bankDetails": bankDetails?.toJson(),
     "upiDetails": upiDetails?.toJson(),
     "storeDetails": storeDetails?.toJson(),
+    "enabled_extensions": enabledExtensions,
   };
+
+  bool hasExtension(String slug) => enabledExtensions.contains(slug);
 }
 
 class StoreDetails {

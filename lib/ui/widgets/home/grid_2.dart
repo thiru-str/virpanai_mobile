@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../model/home_page_response.dart';
@@ -43,7 +43,7 @@ class Grid2 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -65,7 +65,7 @@ class Grid2 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -77,7 +77,7 @@ class Grid2 extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 🔹 Responsive Masonry Grid
+            // 🔹 Responsive Grid (keeps strict left-to-right list order)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: LayoutBuilder(
@@ -88,28 +88,30 @@ class Grid2 extends StatelessWidget {
                   // Dynamically adjust grid spacing & columns
                   final crossAxisCount = isSmallScreen ? 4 : 5;
                   final crossAxisSpacing = isSmallScreen ? 8.0 : 12.0;
+                  final itemWidth = (screenWidth -
+                          (crossAxisSpacing * (crossAxisCount - 1))) /
+                      crossAxisCount;
 
-                  return MasonryGridView.count(
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: crossAxisSpacing,
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
+                  return Wrap(
+                    spacing: crossAxisSpacing,
+                    runSpacing: 10,
+                    children: List.generate(items.length, (index) {
                       final layoutData = items[index];
-                      return _Grid2Card(
-                        layoutData: layoutData,
-                        isSmallScreen: isSmallScreen,
-                        onTap: () {
-                          RedirectUtils.handleContentRedirect(
-                            context: context,
-                            layoutOption: content.layoutOption!,
-                            layoutData: layoutData,
-                          );
-                        },
+                      return SizedBox(
+                        width: itemWidth,
+                        child: _Grid2Card(
+                          layoutData: layoutData,
+                          isSmallScreen: isSmallScreen,
+                          onTap: () {
+                            RedirectUtils.handleContentRedirect(
+                              context: context,
+                              layoutOption: content.layoutOption!,
+                              layoutData: layoutData,
+                            );
+                          },
+                        ),
                       );
-                    },
+                    }),
                   );
                 },
               ),

@@ -1,11 +1,12 @@
-
 import 'dart:convert';
 
 import 'package:waioz/ui/cart_response.dart';
 
-ProductInfoResponse productInfoResponseFromJson(String str) => ProductInfoResponse.fromJson(json.decode(str));
+ProductInfoResponse productInfoResponseFromJson(String str) =>
+    ProductInfoResponse.fromJson(json.decode(str));
 
-String productInfoResponseToJson(ProductInfoResponse data) => json.encode(data.toJson());
+String productInfoResponseToJson(ProductInfoResponse data) =>
+    json.encode(data.toJson());
 
 class ProductInfoResponse {
   Cart? cart;
@@ -14,6 +15,7 @@ class ProductInfoResponse {
   int? addOnProductCount;
   int? relatedProductCount;
   int? crossSellingProductCount;
+  int? upSellingProductCount;
   List<ProductVideo>? productVideo;
 
   ProductInfoResponse({
@@ -23,29 +25,37 @@ class ProductInfoResponse {
     this.addOnProductCount,
     this.relatedProductCount,
     this.crossSellingProductCount,
+    this.upSellingProductCount,
     this.productVideo,
   });
 
-  factory ProductInfoResponse.fromJson(Map<String, dynamic> json) => ProductInfoResponse(
-    cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
-    productOnWishlist: json["product_on_wishlist"],
-    productWishlistId: json["product_wishlist_id"],
-    addOnProductCount: json["addon_product_count"],
-    relatedProductCount: json["related_product_count"],
-    crossSellingProductCount: json["cross_selling_product_count"],
-    productVideo: json["product_video"] == null ? [] : List<ProductVideo>.from(json["product_video"]!.map((x) => ProductVideo.fromJson(x))),
-
-  );
+  factory ProductInfoResponse.fromJson(Map<String, dynamic> json) =>
+      ProductInfoResponse(
+        cart: json["cart"] == null ? null : Cart.fromJson(json["cart"]),
+        productOnWishlist: json["product_on_wishlist"],
+        productWishlistId: json["product_wishlist_id"],
+        addOnProductCount: json["addon_product_count"],
+        relatedProductCount: json["related_product_count"],
+        crossSellingProductCount: json["cross_selling_product_count"],
+        upSellingProductCount: json["up_selling_product_count"],
+        productVideo: json["product_video"] == null
+            ? []
+            : List<ProductVideo>.from(
+                json["product_video"]!.map((x) => ProductVideo.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "cart": cart?.toJson(),
-    "product_on_wishlist": productOnWishlist,
-    "product_wishlist_id": productWishlistId,
-    "addon_product_count": addOnProductCount,
-    "related_product_count": relatedProductCount,
-    "cross_selling_product_count": crossSellingProductCount,
-    "product_video": productVideo == null ? [] : List<dynamic>.from(productVideo!.map((x) => x.toJson())),
-  };
+        "cart": cart?.toJson(),
+        "product_on_wishlist": productOnWishlist,
+        "product_wishlist_id": productWishlistId,
+        "addon_product_count": addOnProductCount,
+        "related_product_count": relatedProductCount,
+        "cross_selling_product_count": crossSellingProductCount,
+        "up_selling_product_count": upSellingProductCount,
+        "product_video": productVideo == null
+            ? []
+            : List<dynamic>.from(productVideo!.map((x) => x.toJson())),
+      };
 }
 
 class ProductVideo {
@@ -64,18 +74,18 @@ class ProductVideo {
   });
 
   factory ProductVideo.fromJson(Map<String, dynamic> json) => ProductVideo(
-    id: json["id"],
-    productId: json["product_id"],
-    rank: json["rank"],
-    url: json["url"],
-    metadata: json["metadata"],
-  );
+        id: json["id"],
+        productId: json["product_id"],
+        rank: json["rank"],
+        url: json["url"],
+        metadata: json["metadata"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "product_id": productId,
-    "rank": rank,
-    "url": url,
-    "metadata": metadata,
-  };
+        "id": id,
+        "product_id": productId,
+        "rank": rank,
+        "url": url,
+        "metadata": metadata,
+      };
 }

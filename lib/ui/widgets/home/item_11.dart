@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
@@ -43,7 +44,7 @@ class Item11 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -66,7 +67,7 @@ class Item11 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -145,7 +146,7 @@ class _Item11CardState extends State<_Item11Card> {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
@@ -194,9 +195,9 @@ class _Item11CardState extends State<_Item11Card> {
                       child: Text(
                         "$percentOff%\nOFF",
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: FontUtils.primaryFontStyle(
                           fontSize: 8,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
@@ -211,8 +212,8 @@ class _Item11CardState extends State<_Item11Card> {
                     onTap: () {}, // handle fav later
                     child: Container(
                       padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: cmsCard(context, Colors.white),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -240,7 +241,7 @@ class _Item11CardState extends State<_Item11Card> {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -254,7 +255,7 @@ class _Item11CardState extends State<_Item11Card> {
                 data.subTitle ?? '',
                 style: FontUtils.secondaryFontStyle(
                   fontSize: 11,
-                  color: Colors.black54,
+                  color: cmsCardText(context, Colors.black54),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -271,7 +272,7 @@ class _Item11CardState extends State<_Item11Card> {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   if (hasDiscount)
@@ -302,14 +303,14 @@ class _Item11CardState extends State<_Item11Card> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    side: BorderSide(color: AppColors.primary),
+                    side: BorderSide(color: cmsAccent(context, AppColors.primary)),
                   ),
                   child: Text(
                     "Add To Cart",
                     style: FontUtils.primaryFontStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: cmsAccent(context, AppColors.primary),
                     ),
                   ),
                 ),

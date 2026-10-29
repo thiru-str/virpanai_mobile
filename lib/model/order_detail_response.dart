@@ -47,6 +47,8 @@ class Data {
   List<Item>? items;
   IngAddress? shippingAddress;
   IngAddress? billingAddress;
+  dynamic metadata;
+  String? couponCode;
 
   Data({
     this.id,
@@ -63,6 +65,8 @@ class Data {
     this.items,
     this.shippingAddress,
     this.billingAddress,
+    this.metadata,
+    this.couponCode,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -80,6 +84,8 @@ class Data {
     items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
     shippingAddress: json["shipping_address"] == null ? null : IngAddress.fromJson(json["shipping_address"]),
     billingAddress: json["billing_address"] == null ? null : IngAddress.fromJson(json["billing_address"]),
+    metadata: json["metadata"],
+    couponCode: json["coupon_code"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -191,6 +197,7 @@ class Item {
   Detail? detail;
   bool? isReturnable;
   int? returnableQuantity;
+  ItemMetadata? metadata;
 
   Item({
     this.id,
@@ -207,6 +214,7 @@ class Item {
     this.detail,
     this.isReturnable,
     this.returnableQuantity,
+    this.metadata,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
@@ -224,6 +232,7 @@ class Item {
     detail: json["detail"] == null ? null : Detail.fromJson(json["detail"]),
     isReturnable: json["is_returnable"],
     returnableQuantity: json["returnable_quantity"],
+    metadata: json["metadata"] == null ? null : ItemMetadata.fromJson(json["metadata"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -241,6 +250,26 @@ class Item {
     "detail": detail?.toJson(),
     "is_returnable": isReturnable,
     "returnable_quantity": returnableQuantity,
+    "metadata": metadata?.toJson(),
+  };
+
+  bool get isPlatformFee => metadata?.type == 'platform_fee';
+}
+
+class ItemMetadata {
+  String? type;
+  num? percentage;
+
+  ItemMetadata({this.type, this.percentage});
+
+  factory ItemMetadata.fromJson(Map<String, dynamic> json) => ItemMetadata(
+    type: json["type"],
+    percentage: json["percentage"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "type": type,
+    "percentage": percentage,
   };
 }
 

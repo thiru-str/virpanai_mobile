@@ -23,74 +23,94 @@ class Item2 extends StatefulWidget {
 
 class _Item2State extends State<Item2> {
   int _currentIndex = 0;
+  static const double _bannerAspectRatio = 16 / 9;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: SizedBox(
-        height: widget.height,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            PageView.builder(
-              itemCount: widget.content?.layoutData?.length ?? 0,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                LayoutDatum? layoutData = widget.content?.layoutData?[index];
-                return GestureDetector(
-                  onTap: () {
-                    RedirectUtils.handleContentRedirect(
-                      context: context,
-                      layoutOption: widget.content?.layoutOption ?? "",
-                      layoutData: layoutData!,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bannerWidth = constraints.maxWidth.isFinite
+              ? constraints.maxWidth
+              : MediaQuery.of(context).size.width;
+          final calculatedHeight = bannerWidth / _bannerAspectRatio;
+          final bannerHeight = calculatedHeight < widget.height
+              ? widget.height
+              : calculatedHeight;
+
+          return SizedBox(
+            height: bannerHeight,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                PageView.builder(
+                  itemCount: widget.content?.layoutData?.length ?? 0,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    LayoutDatum? layoutData = widget.content?.layoutData?[index];
+                    return GestureDetector(
+                      onTap: () {
+                        RedirectUtils.handleContentRedirect(
+                          context: context,
+                          layoutOption: widget.content?.layoutOption ?? "",
+                          layoutData: layoutData!,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: bannerHeight,
+                          child: (layoutData?.image == null ||
+                                  (layoutData?.image?.isEmpty ?? false))
+                              ? ImageFallbackWidget(h: bannerHeight, w: double.infinity)
+                              : CachedNetworkImage(
+                                  fit: BoxFit.cover,
+                                  imageUrl: layoutData!.image!,
+                                  width: double.infinity,
+                                  height: bannerHeight,
+                                  errorWidget: (context, url, error) =>
+                                      ImageFallbackWidget(
+                                    h: bannerHeight,
+                                    w: double.infinity,
+                                  ),
+                                ),
+                        ),
+                      ),
                     );
                   },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: (layoutData?.image == null ||
-                            (layoutData?.image?.isEmpty ?? false))
-                        ? const ImageFallbackWidget(h: 120, w: 120)
-                        : CachedNetworkImage(
-                            fit: BoxFit.cover,
-                            imageUrl: layoutData!.image!,
-                            width: double.infinity,
-                            errorWidget: (context, url, error) =>
-                              const  ImageFallbackWidget(
-                              h: 120,
-                              w: 120,
-                            ),
+                ),
+                if ((widget.content?.layoutData?.length ?? 0) > 1) ...[
+                  Positioned(
+                    bottom: 16.0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(widget.content?.layoutData?.length ?? 0,
+                          (index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                          width: widget.indicatorSize,
+                          height: widget.indicatorSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentIndex == index
+                                ? Colors.black
+                                : Colors.black.withOpacity(0.3),
                           ),
-                  ),
-                );
-              },
-            ),
-            Positioned(
-              bottom: 16.0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(widget.content?.layoutData?.length ?? 0,
-                    (index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    width: widget.indicatorSize,
-                    height: widget.indicatorSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentIndex == index
-                          ? Colors.black
-                          : Colors.black.withOpacity(0.3),
+                        );
+                      }),
                     ),
-                  );
-                }),
-              ),
+                  ),
+                ],
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

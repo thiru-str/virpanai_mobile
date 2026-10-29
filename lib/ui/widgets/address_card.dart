@@ -28,9 +28,16 @@ class AddressCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
       padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4.0),
       decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: AppColors.primary)
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFFE5E7EC)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,10 +45,17 @@ class AddressCard extends StatelessWidget {
           const SizedBox(height: 10,),
           Row(
             children: [
-              Icon(
-                icon,
-                color: AppColors.primary,
-                size: 24,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -56,7 +70,7 @@ class AddressCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            margin: const EdgeInsets.only(left: 36.0),
+            margin: const EdgeInsets.only(left: 48.0),
             child: Text(
               address,
               style:  FontUtils.primaryFontStyle(
@@ -69,7 +83,7 @@ class AddressCard extends StatelessWidget {
           Visibility(
             visible: isFromEdit,
             child: Container(
-              margin: const EdgeInsets.only(left: 36.0),
+              margin: const EdgeInsets.only(left: 48.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

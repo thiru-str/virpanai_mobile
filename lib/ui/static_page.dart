@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
-import 'package:waioz/utility/font_utils.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../utility/common_html.dart';
 

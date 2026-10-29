@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'cms_text_color.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,7 @@ class Grid1 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -79,7 +80,7 @@ class Grid1 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -167,7 +168,7 @@ class _Grid1Card extends StatelessWidget {
       child: Container(
         width: 150,
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA),
+          color: cmsCard(context, const Color(0xFFFAFAFA)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -205,9 +206,10 @@ class _Grid1Card extends StatelessWidget {
                       ),
                       child: Text(
                         layoutData.salesText ?? '',
-                        style: const TextStyle(
+                        style: FontUtils.secondaryFontStyle(
                           fontSize: 10,
                           color: Colors.white,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -236,7 +238,7 @@ class _Grid1Card extends StatelessWidget {
                               layoutData.featureText ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: FontUtils.secondaryFontStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -250,7 +252,7 @@ class _Grid1Card extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: cmsCard(context, Colors.white),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
@@ -260,7 +262,8 @@ class _Grid1Card extends StatelessWidget {
                                   const SizedBox(width: 2),
                                   Text(
                                     _generateRandomRating(),
-                                    style: const TextStyle(fontSize: 10),
+                                    style: FontUtils.secondaryFontStyle(
+                                        fontSize: 10),
                                   ),
                                 ],
                               ),
@@ -283,7 +286,7 @@ class _Grid1Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -342,8 +345,9 @@ class _Grid1Card extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       layoutData.prices?.discountPercentage ?? '',
-                      style: TextStyle(
+                      style: FontUtils.primaryFontStyle(
                         fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         color: Colors.green.shade700,
                       ),
                     ),

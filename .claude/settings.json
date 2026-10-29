@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(dart\\)$\")",
+      "Bash(flutter devices:*)",
+      "Bash(adb -s RZCW91LLN3T shell pm list packages)",
+      "Bash(adb -s RZCW91LLN3T logcat --clear)",
+      "Bash(adb -s RZCW91LLN3T shell am force-stop com.rodeodigital.wellmartmas)",
+      "Bash(adb -s RZCW91LLN3T shell monkey -p com.rodeodigital.wellmartmas -c android.intent.category.LAUNCHER 1)",
+      "Bash(adb -s RZCW91LLN3T logcat -d -t 200)",
+      "Bash(adb -s RZCW91LLN3T logcat -d -t 500)",
+      "Bash(adb -s RZCW91LLN3T logcat -d -t 300)",
+      "Bash(adb -s RZCW91LLN3T logcat -d -t 1000)",
+      "Bash(adb -s RZCW91LLN3T shell am start -n com.rodeodigital.wellmartmas/.MainActivity)",
+      "Bash(adb -s RZCW91LLN3T logcat -d)",
+      "Bash(curl -s -w \"\\\\nHTTP Status: %{http_code}\\\\nTime: %{time_total}s\\\\n\" --connect-timeout 10 \"https://api.ecommerce.gowelmart.com/public/details\" -H \"Content-Type: application/json\")",
+      "Bash(adb -s RZCW91LLN3T shell nslookup api.ecommerce.gowelmart.com)",
+      "Bash(adb -s RZCW91LLN3T shell ping -c 2 -W 3 api.ecommerce.gowelmart.com)",
+      "Bash(adb -s RZCW91LLN3T shell ping -c 2 -W 5 api.ecommerce.gowelmart.com)",
+      "Bash(adb -s RZCW91LLN3T shell ping -c 2 -W 5 google.com)",
+      "Bash(adb -s RZCW91LLN3T shell settings put global private_dns_mode hostname)",
+      "Bash(adb -s RZCW91LLN3T shell settings put global private_dns_specifier dns.google)",
+      "Bash(adb -s RZCW91LLN3T shell cmd connectivity airplane-mode enable)",
+      "Bash(adb -s RZCW91LLN3T shell cmd connectivity airplane-mode disable)",
+      "Bash(dig api.ecommerce.gowelmart.com A +trace +all)",
+      "Bash(dig api.ecommerce.gowelmart.com A +noall +answer +ttlid)",
+      "Bash(dig @8.8.8.8 api.ecommerce.gowelmart.com A +noall +answer)",
+      "Bash(dig @1.1.1.1 api.ecommerce.gowelmart.com A +noall +answer)",
+      "Bash(dig api.ecommerce.gowelmart.com SOA +noall +answer)",
+      "Bash(dig api.ecommerce.gowelmart.com +noall +answer)",
+      "Bash(openssl s_client -connect api.ecommerce.gowelmart.com:443 -servername api.ecommerce.gowelmart.com)",
+      "Bash(curl -sI --connect-timeout 5 http://api.ecommerce.gowelmart.com/public/details)",
+      "Bash(curl -s --connect-timeout 5 http://api.ecommerce.gowelmart.com/public/details)",
+      "Bash(curl -s --connect-timeout 5 https://api.ecommerce.gowelmart.com/public/details)"
+    ]
+  }
+}

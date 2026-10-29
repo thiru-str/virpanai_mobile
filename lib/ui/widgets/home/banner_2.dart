@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'cms_text_color.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -113,7 +114,7 @@ class _Banner2State extends State<Banner2> {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                       ),
                       Visibility(
@@ -131,7 +132,7 @@ class _Banner2State extends State<Banner2> {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                         ),

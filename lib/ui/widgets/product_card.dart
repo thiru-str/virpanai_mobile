@@ -1,8 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/ui_typography.dart';
+import 'package:waioz/ui/widgets/app_shimmer.dart';
 
 import '../../model/product_response.dart';
 import '../../utility/currency_util.dart';
@@ -14,12 +15,12 @@ class ProductCard extends StatelessWidget {
   final bool isFavorite;
 
   const ProductCard({
-    Key? key,
+    super.key,
     required this.product,
     required this.onTapCard,
     this.onTapFavorite,
     this.isFavorite = false,
-  }) : super(key: key);
+  });
 
   // ---- Helpers -------------------------------------------------------------
 
@@ -67,7 +68,7 @@ class ProductCard extends StatelessWidget {
     final orig = _highestOriginal(product);
     final hasDiscount = _hasDiscount(orig, calc);
     final percentOff = (hasDiscount && orig != null && calc != null)
-        ? _discountPercent(orig!, calc!)
+        ? _discountPercent(orig, calc)
         : null;
 
     return GestureDetector(
@@ -75,8 +76,16 @@ class ProductCard extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EC)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,15 +95,27 @@ class ProductCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
+                    top: Radius.circular(16),
                   ),
-                  child: CachedNetworkImage(
-                    imageUrl: product.thumbnail ?? '',
-                    height: 225,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) =>
-                        const ImageFallbackWidget(w: 60, h: 60),
+                  child: Container(
+                    color: AppColors.secondary,
+                    child: CachedNetworkImage(
+                      imageUrl: product.thumbnail ?? '',
+                      height: 225,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      fadeInDuration: const Duration(milliseconds: 350),
+                      placeholderFadeInDuration:
+                          const Duration(milliseconds: 150),
+                      placeholder: (context, url) => const AppShimmer(
+                        child: ShimmerBox(
+                          height: 225,
+                          borderRadius: BorderRadius.zero,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const ImageFallbackWidget(w: 60, h: 60),
+                    ),
                   ),
                 ),
 
@@ -105,37 +126,45 @@ class ProductCard extends StatelessWidget {
                     right: 8,
                     child: GestureDetector(
                       onTap: onTapFavorite,
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.grey[600],
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          size: 18,
+                          color: isFavorite ? Colors.red : Colors.grey[600],
+                        ),
                       ),
                     ),
                   ),
 
-                // (Optional) % OFF ribbon – keep/remove as you prefer
+                // Discount badge
                 if (hasDiscount && percentOff != null)
                   Positioned(
-                    top: 0,
-                    left: 0,
+                    top: 8,
+                    left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 6),
-                      decoration: const BoxDecoration(
-                        color: Colors.pink,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                        ),
+                          vertical: 4, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7F7F0),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: RotatedBox(
-                        quarterTurns: -1,
-                        child: Text(
-                          '$percentOff% OFF',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
+                      child: Text(
+                        '$percentOff% OFF',
+                        style: UiTypography.cardMeta(
+                          color: const Color(0xFF1FA971),
+                        ).copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -146,41 +175,39 @@ class ProductCard extends StatelessWidget {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Text(
-                product.title??'',
-                style: FontUtils.primaryFontStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textColor,
-                ),
-                maxLines: 1,
+                product.title ?? '',
+                style: UiTypography.cardTitle(color: AppColors.textColor)
+                    .copyWith(fontSize: 15, height: 1.2),
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
 
             // Price row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Row(
                 children: [
-                  Text(
-                    _fmt(calc ?? orig ?? 0), // show calc, else original
-                    style: FontUtils.primaryFontStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                  Flexible(
+                    child: Text(
+                      _fmt(calc ?? orig ?? 0), // show calc, else original
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: UiTypography.cardPrice(color: AppColors.primary),
                     ),
                   ),
                   const SizedBox(width: 8),
                   if (hasDiscount && orig != null)
-                    Text(
-                      _fmt(orig),
-                      style: FontUtils.secondaryFontStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Text(
+                        _fmt(orig),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: UiTypography.cardMeta().copyWith(
+                          decoration: TextDecoration.lineThrough,
+                        ),
                       ),
                     ),
                 ],

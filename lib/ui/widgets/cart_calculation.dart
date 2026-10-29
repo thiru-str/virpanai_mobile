@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/font_utils.dart';
+import 'package:waioz/utility/ui_typography.dart';
 
 class CartCalculation extends StatelessWidget {
   final String keyText;
@@ -20,17 +20,33 @@ class CartCalculation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            keyText,
-            style: keyStyle ?? FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor50),
+          // Flex both sides + ellipsis so a long label ("Loyalty Points (…)")
+          // and a long amount can't overflow the summary row on small screens.
+          Expanded(
+            child: Text(
+              keyText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: keyStyle ??
+                  UiTypography.cardMeta(color: AppColors.textColor50)
+                      .copyWith(fontSize: 15),
+            ),
           ),
-          Text(
-            valueText,
-            style: valueStyle ??  FontUtils.primaryFontStyle(fontSize: 16,color: AppColors.textColor),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              valueText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: valueStyle ??
+                  UiTypography.cardAction(color: AppColors.textColor)
+                      .copyWith(fontSize: 15),
+            ),
           ),
         ],
       ),
@@ -59,23 +75,32 @@ class CartPaymentMethodWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-         AppStrings.payemnt_method,
-          style: FontUtils.primaryFontStyle(
-              fontSize: 16, color: AppColors.textColor50),
+          AppStrings.payemnt_method,
+          style: UiTypography.cardMeta(color: AppColors.textColor50)
+              .copyWith(fontSize: 15),
         ),
-        GestureDetector(
-          onTap: isActionable ? onTap : null, // Actionable if NEFT
-          child: Container(
-            padding: isActionable ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6) : null,
-            decoration: BoxDecoration(
-              color: isActionable ? backgroundColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              paymentMethod,
-              style: FontUtils.primaryFontStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
+        const SizedBox(width: 8),
+        // Flex the method chip + ellipsis so long provider names
+        // ("Credit / Debit Card") don't overflow the row.
+        Flexible(
+          child: GestureDetector(
+            onTap: isActionable ? onTap : null, // Actionable if NEFT
+            child: Container(
+              padding: isActionable
+                  ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
+                  : null,
+              decoration: BoxDecoration(
+                color: isActionable ? backgroundColor : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                paymentMethod,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: UiTypography.cardAction(
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ),

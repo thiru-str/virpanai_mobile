@@ -128,20 +128,53 @@ class Order {
 class Metadata {
   String? fulfillmentStatus;
   String? invoice;
+  String? type;
+  num? percentage;
+  Map<String, dynamic>? walletSplit;
+  // Deferred-debit intent for loyalty checkout-apply. Set on the order at
+  // checkout time and consulted by the list/detail UIs to compute the
+  // actually-paid amount (order.total minus wallet minus loyalty discount).
+  // See [[feedback-loyalty-deferred-debit]] in memory.
+  Map<String, dynamic>? loyaltyCheckoutApply;
 
   Metadata({
     this.fulfillmentStatus,
     this.invoice,
+    this.type,
+    this.percentage,
+    this.walletSplit,
+    this.loyaltyCheckoutApply,
   });
+
+  double get walletAmount =>
+      double.tryParse(walletSplit?['wallet_amount']?.toString() ?? '0') ?? 0;
+
+  double get loyaltyDiscountAmount =>
+      double.tryParse(
+        loyaltyCheckoutApply?['discount_amount']?.toString() ?? '0',
+      ) ??
+      0;
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
     fulfillmentStatus: json["fulfillment_status"],
     invoice: json["invoice"],
+    type: json["type"],
+    percentage: json["percentage"],
+    walletSplit: json["wallet_split"] is Map<String, dynamic>
+        ? json["wallet_split"]
+        : null,
+    loyaltyCheckoutApply: json["loyalty_checkout_apply"] is Map<String, dynamic>
+        ? json["loyalty_checkout_apply"]
+        : null,
   );
 
   Map<String, dynamic> toJson() => {
     "fulfillment_status": fulfillmentStatus,
     "invoice": invoice,
+    "type": type,
+    "percentage": percentage,
+    if (walletSplit != null) "wallet_split": walletSplit,
+    if (loyaltyCheckoutApply != null) "loyalty_checkout_apply": loyaltyCheckoutApply,
   };
 }
 
@@ -515,6 +548,8 @@ class Item {
     "raw_return_dismissed_total": rawReturnDismissedTotal?.toJson(),
     "raw_write_off_total": rawWriteOffTotal?.toJson(),
   };
+
+  bool get isPlatformFee => metadata?.type == 'platform_fee';
 }
 
 class Adjustment {

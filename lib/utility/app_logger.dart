@@ -1,45 +1,78 @@
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
+import 'dart:convert';
 
 class AppLogger {
-  static const bool _isDebugMode = kDebugMode; // Enables logging only in debug mode
+  static final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      errorMethodCount: 5,
+      lineLength: 200,
+      colors: true,
+      printEmojis: false,
+      printTime: false,
+    ),
+  );
 
-  /// Logs a debug message
-  static void print(String title,String message) {
-    if (_isDebugMode) {
-      debugPrint('$title: $message');
-    }
+  static const bool _isDebugMode = kDebugMode;
+
+  static void print(String title, dynamic message) {
+    if (!_isDebugMode) return;
+    _logger.d("$title: $message");
   }
 
-  static void printInt(String title,int message) {
-    if (_isDebugMode) {
-      debugPrint('$title: $message');
-    }
+  static void printInt(String title, int message) {
+    if (_isDebugMode) _logger.d("$title: $message");
   }
 
-  /// Logs an info message
-  static void info(String title,String message) {
-    if (_isDebugMode) {
-      debugPrint('$title: $message');
-    }
+  static void printBool(String title, bool message) {
+    if (_isDebugMode) _logger.d("$title: $message");
   }
 
-  /// Logs a warning message
+  static void info(String title, String message) {
+    if (_isDebugMode) _logger.i("$title: $message");
+  }
+
   static void warning(String message) {
-    if (_isDebugMode) {
-      debugPrint('WARNING: $message');
-    }
+    if (_isDebugMode) _logger.w(message);
   }
 
-  /// Logs an error message
   static void error(String message, [Object? error, StackTrace? stackTrace]) {
     if (_isDebugMode) {
-      debugPrint('ERROR: $message');
-      if (error != null) {
-        debugPrint('Error Details: $error');
+      _logger.e(message, error: error, stackTrace: stackTrace);
+    }
+  }
+
+  static void logFullJson(dynamic data) {
+    if (!_isDebugMode) return;
+
+    try {
+      if (data is Map || data is List) {
+        final pretty = JsonEncoder.withIndent('  ').convert(data);
+        _logger.i(pretty);
+        return;
       }
-      if (stackTrace != null) {
-        debugPrint('StackTrace: $stackTrace');
+
+      if (data is String) {
+        final parsed = _tryParseJson(data);
+        if (parsed != null) {
+          final pretty = JsonEncoder.withIndent('  ').convert(parsed);
+          _logger.i(pretty);
+          return;
+        }
       }
+
+      _logger.i(data.toString());
+    } catch (_) {
+      _logger.i(data.toString());
+    }
+  }
+
+  static dynamic _tryParseJson(String input) {
+    try {
+      return jsonDecode(input);
+    } catch (_) {
+      return null;
     }
   }
 }
