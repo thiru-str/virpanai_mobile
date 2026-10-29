@@ -723,7 +723,8 @@ class ReviewGallery1 extends StatelessWidget {
 
     Widget card(LayoutDatum it) {
       final rating = ((it.rating ?? 5).round()).clamp(0, 5);
-      final quote = (it.featureText ?? '').isNotEmpty ? it.featureText! : (it.subTitle ?? '');
+      // the builder edits subTitle (as the web's ReviewGallery1 reads it first)
+      final quote = (it.subTitle ?? '').isNotEmpty ? it.subTitle! : (it.featureText ?? '');
       return Container(
         decoration: BoxDecoration(
           color: Colors.white,
