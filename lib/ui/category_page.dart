@@ -82,7 +82,7 @@ class _CategoryPageState extends State<CategoryPage> {
                               final productCategory = _categories[index];
 
                               return CategoryCard(
-                                imagePath: productCategory.image ?? '',
+                                imagePath: categoryCoverImage(productCategory),
                                 title: productCategory.name!,
                                 onTap: () {
                                   if (productCategory
@@ -130,4 +130,17 @@ class _CategoryPageState extends State<CategoryPage> {
       print(e);
     }
   }
+}
+
+/// The picture for a category tile: its own image, else the first image found
+/// among its sub-categories (depth-first). Grouping categories (SAREES › Silk,
+/// Tussar…) usually have no photo of their own, while their children do.
+String categoryCoverImage(ProductCategory category) {
+  final own = (category.image ?? '').trim();
+  if (own.isNotEmpty) return own;
+  for (final child in category.categoryChildren ?? const <ProductCategory>[]) {
+    final found = categoryCoverImage(child);
+    if (found.isNotEmpty) return found;
+  }
+  return '';
 }

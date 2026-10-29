@@ -604,9 +604,23 @@ class AtelierVideoTile extends StatefulWidget {
   State<AtelierVideoTile> createState() => _AtelierVideoTileState();
 }
 
-class _AtelierVideoTileState extends State<AtelierVideoTile> {
+class _AtelierVideoTileState extends State<AtelierVideoTile> with WidgetsBindingObserver {
   VideoPlayerController? _controller;
   bool _visible = false;
+  bool _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  // A film never keeps playing (or decoding) behind another app.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    _sync();
+  }
 
   String get _url => (widget.item.video ?? '').trim();
 
@@ -626,7 +640,7 @@ class _AtelierVideoTileState extends State<AtelierVideoTile> {
   void _sync() {
     final c = _controller;
     if (c == null || !c.value.isInitialized) return;
-    if (widget.autoplay && _visible) {
+    if (widget.autoplay && _visible && _foreground) {
       c.play();
     } else {
       c.pause();
@@ -635,6 +649,7 @@ class _AtelierVideoTileState extends State<AtelierVideoTile> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller?.dispose();
     super.dispose();
   }
