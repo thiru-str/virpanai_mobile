@@ -807,7 +807,8 @@ class _MaisonVoices1State extends State<MaisonVoices1> {
             itemBuilder: (_, i) {
               final it = items[i];
               final rating = ((it.rating ?? 5).round()).clamp(0, 5);
-              final quote = (it.featureText ?? '').isNotEmpty ? it.featureText! : (it.subTitle ?? '');
+              // the builder edits subTitle (as the web's ReviewGallery1 reads it first)
+      final quote = (it.subTitle ?? '').isNotEmpty ? it.subTitle! : (it.featureText ?? '');
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 7),
                 child: Container(
