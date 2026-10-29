@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
+import 'atelier/atelier_sections.dart';
 import 'basket/basket_sections.dart';
 import 'grocery_grid1.dart';
 import 'product_grid_two1.dart';
@@ -227,6 +228,10 @@ const List<String> kMarketplaceLayouts = [
   // BASKET quick-commerce family (2026-10) — app side of the web basket-*.tsx
   'BasketOfferCarousel1', 'BasketCategoryGrid1', 'ProductBasketRail1',
   'ProductBasketGrid1', 'BasketAisleTabs1', 'BasketBrandRail1', 'BasketPromiseStrip1',
+  // ATELIER boutique family (2026-10) — app side of the web atelier-*.tsx,
+  // with the general sections a boutique home uses (poster art, films, reviews, FAQ)
+  'PosterBanner1', 'AtelierCategoryArches1', 'ProductAtelierGrid1', 'AtelierDrapeStory1',
+  'AtelierLookRail1', 'AtelierPromiseBand1', 'VideoShowcase1', 'ReviewGallery1', 'Faq2',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -318,6 +323,24 @@ Widget? marketplaceHomeWidget(Content content,
       return BasketBrandRail1(content: content);
     case 'BasketPromiseStrip1':
       return BasketPromiseStrip1(content: content);
+    case 'PosterBanner1':
+      return PosterBanner1(content: content);
+    case 'AtelierCategoryArches1':
+      return AtelierCategoryArches1(content: content);
+    case 'ProductAtelierGrid1':
+      return ProductAtelierGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'AtelierDrapeStory1':
+      return AtelierDrapeStory1(content: content);
+    case 'AtelierLookRail1':
+      return AtelierLookRail1(content: content);
+    case 'AtelierPromiseBand1':
+      return AtelierPromiseBand1(content: content);
+    case 'VideoShowcase1':
+      return VideoShowcase1(content: content);
+    case 'ReviewGallery1':
+      return ReviewGallery1(content: content);
+    case 'Faq2':
+      return Faq2(content: content);
     case 'CategoryChips1':
       return CategoryChips1(content: content);
     case 'GroceryGrid1':
