@@ -64,6 +64,11 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
     await _loadFont('CircularStd', 'fonts/circular_std_book_regular.ttf');
     await _loadFont('Gabarito', 'fonts/gabarito_regular.ttf');
+    final serif = FontLoader('CormorantGaramond')
+      ..addFont(_bytes('fonts/CormorantGaramond-Medium.ttf'))
+      ..addFont(_bytes('fonts/CormorantGaramond-SemiBold.ttf'))
+      ..addFont(_bytes('fonts/CormorantGaramond-MediumItalic.ttf'));
+    await serif.load();
     await _loadMaterialIcons();
     await CurrencyUtil.initializeCurrencySymbol('₹');
     // PREVIEW_PRIMARY=#rrggbb sets the store's theme colour (default: Galaxy's).

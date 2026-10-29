@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
 import 'atelier/atelier_sections.dart';
+import 'maison/maison_sections.dart';
 import 'basket/basket_sections.dart';
 import 'grocery_grid1.dart';
 import 'product_grid_two1.dart';
@@ -232,6 +233,10 @@ const List<String> kMarketplaceLayouts = [
   // with the general sections a boutique home uses (poster art, films, reviews, FAQ)
   'PosterBanner1', 'AtelierCategoryArches1', 'ProductAtelierGrid1', 'AtelierDrapeStory1',
   'AtelierLookRail1', 'AtelierPromiseBand1', 'VideoShowcase1', 'ReviewGallery1', 'Faq2',
+  // MAISON premium app-native family (2026-10) — same catalogue data, app-only
+  // patterns: story rings + viewer, 3D carousel, staggered grid, full-screen reels
+  'MaisonHero1', 'MaisonStories1', 'ProductMaisonCarousel1', 'ProductMaisonGrid1',
+  'MaisonReels1', 'MaisonChapter1', 'MaisonVoices1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -341,6 +346,20 @@ Widget? marketplaceHomeWidget(Content content,
       return ReviewGallery1(content: content);
     case 'Faq2':
       return Faq2(content: content);
+    case 'MaisonHero1':
+      return MaisonHero1(content: content);
+    case 'MaisonStories1':
+      return MaisonStories1(content: content);
+    case 'ProductMaisonCarousel1':
+      return ProductMaisonCarousel1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductMaisonGrid1':
+      return ProductMaisonGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'MaisonReels1':
+      return MaisonReels1(content: content);
+    case 'MaisonChapter1':
+      return MaisonChapter1(content: content);
+    case 'MaisonVoices1':
+      return MaisonVoices1(content: content);
     case 'CategoryChips1':
       return CategoryChips1(content: content);
     case 'GroceryGrid1':
