@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/ui/widgets/home/banner_5.dart';
@@ -63,6 +64,7 @@ import 'package:waioz/ui/widgets/home/premium/premium_home1.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content1.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_home2.dart';
 import 'package:waioz/ui/widgets/home/premium/premium_content2.dart';
+import 'package:waioz/ui/widgets/home/atelier/atelier_sections.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_sections.dart';
 import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
 import 'package:waioz/ui/widgets/product_card_12.dart';
@@ -338,9 +340,40 @@ Content _bkContent(String layout, String title, String kicker, List<LayoutDatum>
     })..layoutData = items;
 const _bkNames = ['Knee Support Cap', 'Digital BP Monitor', 'Pulse Oximeter', 'Heel Cushion Pair', 'Back Brace Classic', 'Wrist Splint'];
 
+
+// ---- ATELIER mock data: neutral greys only (deep = card, metal = primary) ----
+Content _atContent(String layout, String title, String kicker, List<LayoutDatum> items,
+        {String option = 'Custom', String bg = '#f5f5f5', String cta = '', Map<String, dynamic> extra = const {}}) {
+  final json = <String, dynamic>{
+    'layout_name': layout,
+    'layout_title': title,
+    'layout_sub_title': kicker,
+    'layout_redirect_title': cta,
+    'layout_option': option,
+    'layout_bg_color': bg,
+    'layout_primary_color': '#8a8a8a',
+    'layout_card_color': '#3d3d3d',
+    'redirect_data': {'redirect_type': cta.isEmpty ? '' : 'search'},
+    ...extra,
+  };
+  return Content.fromJson(json)..layoutData = items;
+}
+List<LayoutDatum> _atProducts(int n) => [
+      for (var i = 0; i < n; i++)
+        _bk({
+          'id': 'p$i',
+          'title': ['Handwoven Silk Saree', 'Tussar Saree with Border', 'Chanderi Suit Set', 'Tissue Saree with Zari'][i % 4],
+          'prices': {'selling_price': '${[12950, 9450, 5995, 17950][i % 4]}'},
+          'variant_details': {'variant_id': 'v$i'},
+          'no_of_variants': i == 1 ? 3 : 1,
+        }),
+    ];
+
 void main() {
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
+    // Film tiles watch their visibility; report at once so no timer outlives a test.
+    VisibilityDetectorController.instance.updateInterval = Duration.zero;
     // Render the rupee as "Rs " in previews: the bundled app fonts lack the
     // ₹ (U+20B9) glyph, so in a golden (no OS font fallback) it would tofu.
     // On-device the OS supplies ₹; here we keep prices legible for the catalog.
@@ -672,4 +705,44 @@ void main() {
           ]),
         ));
   });
+
+  // ── ATELIER (boutique) family ──
+  testWidgets('PosterBanner1', (t) async => _shoot(t, 'PosterBanner1',
+      PosterBanner1(content: _atContent('PosterBanner1', '', '', [_bk({'id': 'b0', 'image': ''}), _bk({'id': 'b1', 'image': ''})]))));
+  testWidgets('AtelierCategoryArches1', (t) async => _shoot(t, 'AtelierCategoryArches1',
+      AtelierCategoryArches1(content: _atContent('AtelierCategoryArches1', 'Shop by Weave', 'Silk, tussar & more',
+          [for (final n in ['Silk', 'Tussar', 'Organza', 'Crape', 'Tissue', 'Chanderi']) _bk({'id': n, 'title': n})],
+          option: 'Category', cta: 'All collections'))));
+  testWidgets('ProductAtelierGrid1', (t) async => _shoot(t, 'ProductAtelierGrid1',
+      ProductAtelierGrid1(content: _atContent('ProductAtelierGrid1', 'Silk Sarees', 'Festive-ready weaves', _atProducts(4),
+          option: 'Product', cta: 'All silk sarees', extra: {'layout_variant_label': 'colour'}), onCartQtyChanged: (_, __) {})));
+  testWidgets('AtelierDrapeStory1', (t) async => _shoot(t, 'AtelierDrapeStory1',
+      AtelierDrapeStory1(content: _atContent('AtelierDrapeStory1', 'The Saree Room', 'Handpicked weaves', [
+        _bk({'id': 'c0', 'button_text': 'Shop the saree room', 'redirect_data': {'redirect_type': 'search'}}),
+        _bk({'id': 'c1', 'title': 'The pallu'}),
+        _bk({'id': 'c2', 'title': 'The zari border'}),
+        for (final n in ['Handpicked weaves', 'Blouse piece included', 'Finished to drape'])
+          _bk({'id': n, 'title': n, 'feature_text': 'One line on what this means for the shopper.'}),
+      ], extra: {'layout_description': 'Chosen one at a time — the weight of the silk, the fall of the pallu, the way the zari catches the light.'}))));
+  testWidgets('AtelierLookRail1', (t) async => _shoot(t, 'AtelierLookRail1',
+      AtelierLookRail1(content: _atContent('AtelierLookRail1', 'Organza & Crape', 'Sheer, light, luminous', _atProducts(3),
+          option: 'Product', cta: 'Shop the edit', extra: {'layout_variant_label': 'colour'}))));
+  testWidgets('AtelierPromiseBand1', (t) async => _shoot(t, 'AtelierPromiseBand1',
+      AtelierPromiseBand1(content: _atContent('AtelierPromiseBand1', 'The Promise', 'With every drape', [
+        for (final p in [['Handpicked', 'Chosen by hand'], ['Blouse', 'Piece included'], ['Free', 'Shipping'], ['India', 'Pan-India delivery']])
+          _bk({'id': p[0], 'sales_text': p[0], 'title': p[1], 'feature_text': 'One line on the promise.'}),
+      ]))));
+  testWidgets('VideoShowcase1', (t) async => _shoot(t, 'VideoShowcase1',
+      VideoShowcase1(content: _atContent('VideoShowcase1', 'Discover Your Style', 'Elegance in every thread',
+          [for (final n in ['Salwar', 'Festive', 'Silk', 'Saree']) _bk({'id': n, 'title': n})]))));
+  testWidgets('ReviewGallery1', (t) async => _shoot(t, 'ReviewGallery1',
+      ReviewGallery1(content: _atContent('ReviewGallery1', 'Loved Across India', 'What our customers say', [
+        for (final n in ['Lakshmi · Chennai', 'Meena · Coimbatore', 'Divya · Bangalore', 'Anitha · Madurai'])
+          _bk({'id': n, 'title': n, 'rating': 5, 'feature_text': 'Even more beautiful in person — the border is stunning.'}),
+      ]))));
+  testWidgets('Faq2', (t) async => _shoot(t, 'Faq2',
+      Faq2(content: _atContent('Faq2', 'Before You Ask', 'Care & delivery', [
+        for (final q in ['Does it come with a blouse piece?', 'Are these handloom weaves?', 'Do you deliver across India?'])
+          _bk({'id': q, 'title': q, 'feature_text': 'A short, clear answer the shopper can act on.'}),
+      ]))));
 }
