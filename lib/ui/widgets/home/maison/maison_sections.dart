@@ -96,6 +96,10 @@ class _MaisonHero1State extends State<MaisonHero1> with SingleTickerProviderStat
             itemBuilder: (_, i) {
               final s = slides[i];
               final cta = maisonField(s, ['button_text', 'btnText']);
+              // Finished artwork (logo, headline and button drawn into the picture,
+              // like the home banners): shown as it is, with no zoom or scrim over
+              // its words and no second headline on top.
+              final art = cta.isEmpty && [s.salesText, s.title, s.featureText, s.subTitle].every((t) => (t ?? '').trim().isEmpty);
               return GestureDetector(
                 onTap: () => maisonOpenItem(context, widget.content, s),
                 child: Stack(fit: StackFit.expand, children: [
@@ -103,22 +107,31 @@ class _MaisonHero1State extends State<MaisonHero1> with SingleTickerProviderStat
                   // slow push-in on the active slide
                   TweenAnimationBuilder<double>(
                     key: ValueKey('hero-$i-${i == _active}'),
-                    tween: Tween(begin: 1.0, end: i == _active && !_still ? 1.08 : 1.0),
+                    tween: Tween(begin: 1.0, end: i == _active && !_still && !art ? 1.08 : 1.0),
                     duration: const Duration(seconds: 7),
                     curve: Curves.easeOut,
                     builder: (_, scale, child) => Transform.scale(scale: scale, child: child),
                     child: BasketImage(url: s.image, fit: BoxFit.cover),
                   ),
-                  const DecoratedBox(
+                  DecoratedBox(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [Color(0xE0120A0C), Color(0x66120A0C), Color(0x00120A0C), Color(0x33120A0C)],
-                        stops: [0, 0.38, 0.62, 1],
-                      ),
+                      gradient: art
+                          // just enough for the progress bars to read on pale artwork
+                          ? const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0x59120A0C), Color(0x00120A0C)],
+                              stops: [0, 0.12],
+                            )
+                          : const LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [Color(0xE0120A0C), Color(0x66120A0C), Color(0x00120A0C), Color(0x33120A0C)],
+                              stops: [0, 0.38, 0.62, 1],
+                            ),
                     ),
                   ),
+                  if (!art)
                   Positioned(
                     left: 22,
                     right: 22,
