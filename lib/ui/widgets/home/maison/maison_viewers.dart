@@ -228,6 +228,8 @@ class _MaisonReelViewerState extends State<MaisonReelViewer> {
   late int _i = widget.start;
   bool _sound = true;
 
+  void _step(int dir) => _page.animateToPage(_i + dir, duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+
   @override
   void dispose() {
     _page.dispose();
@@ -270,7 +272,93 @@ class _MaisonReelViewerState extends State<MaisonReelViewer> {
             ),
           ]),
         ),
+        if (widget.items.length > 1)
+          Positioned(
+            right: 10,
+            top: 0,
+            bottom: 0,
+            child: Center(child: _ReelNav(index: _i, count: widget.items.length, onStep: _step)),
+          ),
       ]),
+    );
+  }
+}
+
+/// Says there is more to watch: the swipe alone left a reel looking like the only
+/// one. Up / down arrows with the position between them; the next arrow nudges a
+/// few times on open and stops as soon as the viewer moves.
+class _ReelNav extends StatefulWidget {
+  final int index;
+  final int count;
+  final ValueChanged<int> onStep;
+  const _ReelNav({required this.index, required this.count, required this.onStep});
+
+  @override
+  State<_ReelNav> createState() => _ReelNavState();
+}
+
+class _ReelNavState extends State<_ReelNav> with SingleTickerProviderStateMixin {
+  static const _size = 44.0;
+  late final AnimationController _nudge = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
+  bool _nudged = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_nudged || MediaQuery.of(context).disableAnimations) return;
+    _nudged = true;
+    _nudge.repeat(reverse: true, count: 6).whenCompleteOrCancel(() {
+      if (mounted) _nudge.value = 0;
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _ReelNav old) {
+    super.didUpdateWidget(old);
+    if (old.index != widget.index) _nudge.stop();
+  }
+
+  @override
+  void dispose() {
+    _nudge.dispose();
+    super.dispose();
+  }
+
+  Widget _arrow(IconData icon, String label, int dir) => IconButton(
+        tooltip: label,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: _size, height: _size),
+        onPressed: () => widget.onStep(dir),
+        icon: Icon(icon, color: Colors.white, size: 26),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPrev = widget.index > 0;
+    final hasNext = widget.index < widget.count - 1;
+    return DecoratedBox(
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.38), borderRadius: BorderRadius.circular(_size / 2)),
+      child: SizedBox(
+        width: _size,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          // an empty slot, not nothing: the rail stays put at either end
+          hasPrev ? _arrow(Icons.keyboard_arrow_up_rounded, 'Previous film', -1) : const SizedBox(height: _size),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text('${widget.index + 1} / ${widget.count}', maxLines: 1, softWrap: false, style: maisonCaps(Colors.white, size: 10.5)),
+            ),
+          ),
+          hasNext
+              ? AnimatedBuilder(
+                  animation: _nudge,
+                  builder: (_, child) => Transform.translate(offset: Offset(0, 5 * Curves.easeInOut.transform(_nudge.value)), child: child),
+                  child: _arrow(Icons.keyboard_arrow_down_rounded, 'Next film', 1),
+                )
+              : const SizedBox(height: _size),
+        ]),
+      ),
     );
   }
 }
@@ -340,7 +428,7 @@ class _ReelState extends State<_Reel> {
       child: Stack(fit: StackFit.expand, children: [
         if ((it.image ?? '').trim().isNotEmpty) BasketImage(url: it.image, fit: BoxFit.cover),
         if (ready) FittedBox(fit: BoxFit.cover, child: SizedBox(width: c.value.size.width, height: c.value.size.height, child: VideoPlayer(c))),
-        if (!ready) const Center(child: SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))),
+        if (c != null && !ready) const Center(child: SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))),
         if (_paused) const Center(child: Icon(Icons.play_arrow_rounded, size: 72, color: Colors.white70)),
         const DecoratedBox(
           decoration: BoxDecoration(
