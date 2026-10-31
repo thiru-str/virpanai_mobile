@@ -13,6 +13,8 @@ Map<String, dynamic> buildHealthcareRegistrationPayload({
   String panNumber = '',
   String gstNumber = '',
   Map<String, List<String>> documentIds = const {},
+  String password = '',
+  String deviceId = '',
 }) {
   final payload = <String, dynamic>{
     'phone': phone,
@@ -20,6 +22,8 @@ Map<String, dynamic> buildHealthcareRegistrationPayload({
     'full_name': fullName.trim(),
     'email': email.trim(),
     'user_type': userType,
+    if (password.isNotEmpty) 'password': password,
+    if (deviceId.isNotEmpty) 'device_id': deviceId,
   };
 
   if (userType != 'doctor') return payload;
