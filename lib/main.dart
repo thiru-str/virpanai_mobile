@@ -101,7 +101,10 @@ Future<void> _runAppWithOptionalNewRelic(HomeScreen homeScreen) async {
     httpResponseBodyCaptureEnabled: true,
     loggingEnabled: kDebugMode,
     webViewInstrumentation: true,
-    printStatementAsEventsEnabled: kDebugMode,
+    // Off in every mode: AppLogger prints API responses line by line, and each
+    // forwarded print is a platform call on the main thread (thousands per
+    // response), which freezes debug builds on a phone.
+    printStatementAsEventsEnabled: false,
     httpInstrumentationEnabled: true,
     offlineStorageEnabled: true,
     backgroundReportingEnabled: false,
