@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 
 import 'package:waioz/model/return_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -97,7 +97,7 @@ class _ReturnOrderBottomSheetState extends State<ReturnOrderBottomSheet> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
+                      child: StoreImage(
                         imageUrl: order.thumbnail ?? '',
                         width: 50,
                         height: 50,

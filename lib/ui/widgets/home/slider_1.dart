@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -148,7 +148,7 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                           height: bannerHeight,
                           child: Stack(
                             children: [
-                              CachedNetworkImage(
+                              StoreImage(
                                 imageUrl: currentData.image ?? '',
                                 width: double.infinity,
                                 height: bannerHeight,

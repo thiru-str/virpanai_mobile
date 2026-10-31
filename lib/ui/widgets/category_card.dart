@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -47,7 +47,7 @@ class CategoryCard extends StatelessWidget {
                   topRight: Radius.circular(16.0),
                 ),
                 child: imagePath.isNotEmpty
-                    ? CachedNetworkImage(
+                    ? StoreImage(
                         imageUrl: imagePath,
                         height: 140, // Adjusted image height
                         width: double.infinity, // Take full width

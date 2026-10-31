@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -171,7 +171,7 @@ class BasketImage extends StatelessWidget {
     if (u.isEmpty) return const ColoredBox(color: Color(0xFFF1F3EF));
     final override = debugProvider;
     if (override != null) return Image(image: override(u), fit: fit);
-    return CachedNetworkImage(
+    return StoreImage(
       imageUrl: u,
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 180),

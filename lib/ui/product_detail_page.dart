@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -340,7 +340,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   ),
                                 ],
                               )
-                            : CachedNetworkImage(
+                            : StoreImage(
                                 imageUrl: url,
                                 width: double.infinity,
                                 height: 400,

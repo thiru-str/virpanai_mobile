@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'cms_text_color.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -197,7 +197,7 @@ class _Banner2State extends State<Banner2> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: CachedNetworkImage(
+          child: StoreImage(
             imageUrl: url,
             width: 160,
             height: 150,

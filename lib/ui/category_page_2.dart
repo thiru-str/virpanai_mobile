@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
@@ -133,7 +133,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
                                       clipBehavior: Clip.antiAlias,
                                       child: parent.image != null &&
                                               parent.image!.isNotEmpty
-                                          ? CachedNetworkImage(
+                                          ? StoreImage(
                                               imageUrl: parent.image!,
                                               fit: BoxFit.cover)
                                           : Icon(Icons.image_not_supported,
@@ -260,7 +260,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
                                                 Expanded(
                                                   child: sub.image != null &&
                                                           sub.image!.isNotEmpty
-                                                      ? CachedNetworkImage(
+                                                      ? StoreImage(
                                                           imageUrl: sub.image!,
                                                           fit: BoxFit.contain)
                                                       : Icon(

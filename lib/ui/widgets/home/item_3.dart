@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -140,7 +140,7 @@ class _AlignedItemCard extends StatelessWidget {
               child: Container(
                 color: AppColors.secondary.withOpacity(0.15),
                 child: (imageUrl.isNotEmpty)
-                    ? CachedNetworkImage(
+                    ? StoreImage(
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) =>

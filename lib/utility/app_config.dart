@@ -4,6 +4,10 @@ class AppConfig {
   static const String appName = 'Meha Boutique';
   static const String baseUrl = 'https://api.mehaboutique.com/';
   // static const String baseUrl = 'https://virpanai.api.waioz.com/';
+  // The store's website serves resized WebP at /_next/image for files on its
+  // CDN. Empty = this build loads originals (still decoded at display size).
+  static const String imageOptimiserBase = '';
+  static const String imageCdnHost = '';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
       'pk_test_51QjKGFC5ZYai6Al85lKNzizk9i1E4ViPFg98dC4VECB9cEYPidOj6Pig2orwg1SKVGDndepP8McSJ4jPhnxhEIKj00aaPJefmb';

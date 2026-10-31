@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -67,7 +67,7 @@ class OrderDetailItemCard extends StatelessWidget {
                       width: 70,
                       height: 70,
                       color: AppColors.secondary,
-                      child: CachedNetworkImage(
+                      child: StoreImage(
                         imageUrl: imageUrl,
                         width: 70,
                         height: 70,

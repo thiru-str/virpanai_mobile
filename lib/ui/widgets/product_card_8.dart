@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -97,7 +97,7 @@ class ProductCard8 extends StatelessWidget {
                             child: ImageFallbackWidget(
                                 w: 40, h: 40, fit: BoxFit.contain),
                           )
-                        : CachedNetworkImage(
+                        : StoreImage(
                             imageUrl: images.first.url ?? '',
                             fit: BoxFit.contain,
                             width: double.infinity,

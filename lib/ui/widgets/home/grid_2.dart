@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -152,7 +152,7 @@ class _Grid2Card extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: (imageUrl.isNotEmpty)
-                  ? CachedNetworkImage(
+                  ? StoreImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) => _fallbackWidget(),

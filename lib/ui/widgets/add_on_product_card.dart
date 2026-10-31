@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -32,7 +32,7 @@ class AddOnProductCard extends StatelessWidget {
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: CachedNetworkImage(
+          child: StoreImage(
             imageUrl: product?.images?.firstOrNull?.url ?? '',
             width: 50,
             height: 50,
