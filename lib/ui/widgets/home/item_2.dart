@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -69,7 +69,7 @@ class _Item2State extends State<Item2> {
                           child: (layoutData?.image == null ||
                                   (layoutData?.image?.isEmpty ?? false))
                               ? ImageFallbackWidget(h: bannerHeight, w: double.infinity)
-                              : CachedNetworkImage(
+                              : StoreImage(
                                   fit: BoxFit.cover,
                                   imageUrl: layoutData!.image!,
                                   width: double.infinity,

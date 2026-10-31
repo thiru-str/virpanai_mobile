@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -56,7 +56,7 @@ class ViewCartWidget extends StatelessWidget {
                       left: i * 30.0, // Position the images with spacing
 
                       child: ClipOval(
-                        child: CachedNetworkImage(
+                        child: StoreImage(
                           imageUrl: itemImages![i],
                           width: 36, // 2 * radius of inner CircleAvatar
                           height: 36,

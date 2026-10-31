@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -98,7 +98,7 @@ class _ProductCard6State extends State<ProductCard6> {
                 color: AppColors.secondary,
                 child: imageUrl.isEmpty
                     ? const ImageFallbackWidget(h: 104, w: 104, fit: BoxFit.contain)
-                    : CachedNetworkImage(
+                    : StoreImage(
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) =>

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -150,7 +150,7 @@ class _BannerItem extends StatelessWidget {
         width: size,
         height: size,
         child: imageUrl.isNotEmpty
-            ? CachedNetworkImage(
+            ? StoreImage(
                 imageUrl: imageUrl,
                 fit: BoxFit.contain,
                 errorWidget: (_, __, ___) =>

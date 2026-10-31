@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -50,7 +50,7 @@ class _Item8State extends State<Item8> {
                   layoutData: layoutdata,
                 );
               },
-              child: CachedNetworkImage(
+              child: StoreImage(
                 imageUrl: layoutdata?.image ?? '',
                 fit: BoxFit.cover,
                 width: double.infinity,

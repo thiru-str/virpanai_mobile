@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'cms_text_color.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -98,7 +98,7 @@ class Grid1 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-                child: CachedNetworkImage(
+                child: StoreImage(
                   imageUrl: content.layoutBannerImage ?? '',
                   height: 150,
                   width: double.infinity,
@@ -179,7 +179,7 @@ class _Grid1Card extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
-                  child: CachedNetworkImage(
+                  child: StoreImage(
                     imageUrl: layoutData.image ?? '',
                     height: 180,
                     width: double.infinity,

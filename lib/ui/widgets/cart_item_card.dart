@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -74,7 +74,7 @@ class CartItemCard extends StatelessWidget {
                         height: 80,
                         color: AppColors.secondary,
                         child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
+                            ? StoreImage(
                                 imageUrl: imageUrl,
                                 width: 60,
                                 height: 80,

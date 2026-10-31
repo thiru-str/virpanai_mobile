@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -99,7 +99,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   child: Container(
                     color: AppColors.secondary,
-                    child: CachedNetworkImage(
+                    child: StoreImage(
                       imageUrl: product.thumbnail ?? '',
                       height: 225,
                       width: double.infinity,

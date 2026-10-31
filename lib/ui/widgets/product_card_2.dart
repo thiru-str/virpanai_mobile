@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -106,7 +106,7 @@ class _ProductCard2State extends State<ProductCard2> {
                         });
                       },
                       itemBuilder: (context, index) {
-                        return CachedNetworkImage(
+                        return StoreImage(
                           imageUrl: images[index].url ?? '',
                           fit: BoxFit.cover,
                           width: double.infinity,

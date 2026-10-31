@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -158,7 +158,7 @@ class _Item14Card extends StatelessWidget {
                         w: double.infinity,
                         fit: BoxFit.contain,
                       )
-                    : CachedNetworkImage(
+                    : StoreImage(
                         imageUrl: layoutData.image!,
                         fit: BoxFit.contain,
                         width: double.infinity,
