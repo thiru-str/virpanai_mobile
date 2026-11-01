@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 
 import 'package:confetti/confetti.dart';
@@ -316,7 +317,7 @@ class _CartPageState extends State<CartPage>
       body: Stack(
         children: [
           apiLoading
-              ? const CartPageSkeleton()
+              ? const AppLoader()
               : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
                       backgroundColor: const Color(0xFFF9F9FB),

@@ -9,6 +9,18 @@ class SharedPreferencesUtil {
   SharedPreferencesUtil._internal();
 
   // Save data to SharedPreferences
+  Future<void> savePublicDetails(PublicDetailsResponse details) async {
+    await saveMap('public_details', details.toJson());
+    await saveString('publishable_key', details.token ?? '');
+    await saveBool('google_map_usage', details.googleMapUsage ?? false);
+    await saveString('app_header', details.theme?.header ?? '');
+    await saveString('product_view', details.theme?.productView ?? '');
+    await saveString(
+        'invoice_url', details.storeDetails?.storeMetadata?.invoiceUrl ?? '');
+    await saveBool(
+        'skip_login', details.storeDetails?.storeMetadata?.skipLogin ?? false);
+  }
+
   Future<void> saveString(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(key, value);

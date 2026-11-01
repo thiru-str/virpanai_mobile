@@ -5,6 +5,27 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/utility/app_strings.dart';
 
 class VersionUtils {
+  static Future<bool> launchStore(String? configuredUrl) async {
+    final value = configuredUrl?.trim() ?? '';
+    final url = Uri.tryParse(value);
+    const allowedSchemes = {'https', 'http', 'market', 'itms-apps'};
+
+    if (url == null ||
+        value.isEmpty ||
+        !url.hasScheme ||
+        !allowedSchemes.contains(url.scheme.toLowerCase())) {
+      debugPrint('Store URL is missing or invalid: $value');
+      return false;
+    }
+
+    try {
+      return await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Could not open store: $e');
+      return false;
+    }
+  }
+
   static Future<Map<String, dynamic>> parseVersionConfig(String versionCheckJson) async {
     try {
       // remove any trailing commas before }

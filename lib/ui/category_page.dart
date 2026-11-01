@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -56,7 +57,7 @@ class _CategoryPageState extends State<CategoryPage> {
         ),
         backgroundColor: const Color(0xFFF9F9FB),
         body: apiLoading
-            ? const CategoryPageSkeleton()
+            ? const AppLoader()
             : _categories.isEmpty
                 ? NoOrdersWidget(
                     message: AppStrings.no_categories_found,

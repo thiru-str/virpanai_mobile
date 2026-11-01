@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:waioz/api/api_service.dart';
@@ -227,9 +228,7 @@ class _WalletPageState extends State<WalletPage> {
             if (loading)
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                child: const AppLoader(),
               )
             else if (transactions.isEmpty)
               SliverFillRemaining(

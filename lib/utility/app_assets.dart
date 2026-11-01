@@ -2,6 +2,9 @@
 
 class AppAssets {
   static const String app_logo = 'images/app_logo.svg';
+  static const String ic_logo_text = 'images/ic_logo_text.png';
+  static const String app_loader = 'images/app_loader.gif';
+  static const String annachi_logo = 'images/annachi_logo.webp';
   static const String ic_google = 'images/ic_google.png';
   static const String ic_menu_account = 'images/ic_menu_account.png';
   static const String ic_menu_cart = 'images/ic_menu_cart.png';

@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -259,7 +260,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: const Color(0xFFF9F9FB),
         body: SafeArea(
           child: apiLoading
-              ? const HomePageSkeleton()
+              ? const AppLoader()
               : RefreshIndicator(
                   color: AppColors.primary,
                   backgroundColor: Colors.white,

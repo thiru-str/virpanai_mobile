@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -237,7 +238,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
                 .copyWith(fontSize: 20, height: 1.25, letterSpacing: -0.2)),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const AppLoader()
           : _account == null
               ? const Center(child: Text('Unable to load loyalty data'))
               : RefreshIndicator(

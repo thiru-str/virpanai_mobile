@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/order_history_reponse.dart';
@@ -76,11 +77,7 @@ class _OrdersHistoryPageState extends State<OrdersHistoryPage>
         },
       ),
       body:  apiLoading
-          ?  Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-        ),
-      ) : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
+          ? const AppLoader() : orderHistoryResponse?.orders?.isNotEmpty ?? false ?
       Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
           children: [

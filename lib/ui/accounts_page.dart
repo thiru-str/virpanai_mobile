@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'dart:async';
 
@@ -98,10 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: const Color(0xFFF9F9FB),
       body: SafeArea(
         child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ))
+            ? const AppLoader()
             : Column(
                 children: [
                   Expanded(

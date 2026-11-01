@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -184,7 +185,7 @@ class _BottomNavPageState extends State<BottomNavPage>
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
             child: _isLoading
-                ? const ShellSkeleton()
+                ? const AppLoader()
                 : KeyedSubtree(
                     key: ValueKey(_currentIndex),
                     child: _getPage(),

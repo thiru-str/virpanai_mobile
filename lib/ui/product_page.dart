@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'dart:async';
 
@@ -395,7 +396,7 @@ class _ProductPageState extends State<ProductPage> {
                       Positioned.fill(
                         child: Container(
                           color: const Color(0xFFF9F9FB),
-                          child: const ProductGridSkeleton(),
+                          child: const AppLoader(),
                         ),
                       ),
                     // Empty-state overlay (only after load completes)

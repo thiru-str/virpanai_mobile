@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -48,9 +49,7 @@ class _CategoryPage1State extends State<CategoryPage1> {
       ),
       backgroundColor: const Color(0xFFF9F9FB),
       body: apiLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? const AppLoader()
           : _categories.isEmpty
               ? NoOrdersWidget(
                   message: AppStrings.no_categories_found,

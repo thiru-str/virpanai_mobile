@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -188,7 +189,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
           backgroundColor: const Color(0xFFF9F9FB),
           body: apiLoading
-              ? const ProductDetailSkeleton()
+              ? const AppLoader()
               : SafeArea(
                   child: Stack(children: [
                     Column(
