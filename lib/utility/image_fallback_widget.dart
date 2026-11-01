@@ -12,6 +12,10 @@ class NoImageMark extends StatelessWidget {
   static bool debugGeneric = false;
   static bool get branded => AppConfig.placeholderLogo.isNotEmpty && !debugGeneric;
 
+  /// The surface behind a missing picture: a light one, so a logo reads as a
+  /// deliberate tile rather than a grey hole.
+  static Color get surface => branded ? const Color(0xFFF8F5F0) : AppColors.secondary;
+
   final double? width;
   final double? height;
   const NoImageMark({super.key, this.width, this.height});
@@ -38,7 +42,7 @@ class ImageFallbackWidget extends StatelessWidget {
     return Container(
       width: w,
       height: h,
-      color: AppColors.secondary,
+      color: NoImageMark.surface,
       alignment: Alignment.center,
       child: NoImageMark.branded
           ? NoImageMark(width: _part(w), height: _part(h))

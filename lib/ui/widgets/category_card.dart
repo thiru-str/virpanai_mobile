@@ -55,7 +55,7 @@ class CategoryCard extends StatelessWidget {
                         // a soft tile, not a blank card, while the picture loads
                         placeholder: (context, url) => Container(
                           height: 140,
-                          color: AppColors.secondary,
+                          color: NoImageMark.surface,
                         ),
                         errorWidget: (context, url, error) =>
                             const ImageFallbackWidget(
@@ -66,7 +66,7 @@ class CategoryCard extends StatelessWidget {
                     : Container(
                         height: 140,
                         width: double.infinity,
-                        color: AppColors.secondary,
+                        color: NoImageMark.surface,
                         child: const ImageFallbackWidget(
                           w: 140,
                           h: 140,
