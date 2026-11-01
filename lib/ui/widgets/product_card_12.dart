@@ -65,7 +65,9 @@ class ProductCard12 extends StatelessWidget {
       final w = box.maxWidth.isFinite ? box.maxWidth : 170.0;
       return GestureDetector(
         onTap: onTapCard,
+        // The width too: a sideways rail gives the card none of its own.
         child: SizedBox(
+          width: w,
           height: BasketTile.heightFor(w),
           child: BasketTile(
             item: _asItem(),
