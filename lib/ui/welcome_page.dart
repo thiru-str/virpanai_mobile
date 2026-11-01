@@ -50,7 +50,6 @@ class _WelcomePageState extends State<WelcomePage>
   late final Animation<double> _contentFade;
   late final Animation<Offset> _contentSlide;
   // Arrow nudges right then returns; rests for ~44% of cycle
-  late final Animation<double> _arrowNudge;
   // Green glow synced with the nudge
   late final Animation<double> _btnGlow;
 
@@ -93,22 +92,6 @@ class _WelcomePageState extends State<WelcomePage>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat();
-
-    // 28% nudge out → 28% return → 44% rest
-    final _nudgeSeq = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 6.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
-        weight: 28,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 6.0, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeIn)),
-        weight: 28,
-      ),
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 44),
-    ]);
-    _arrowNudge = _nudgeSeq.animate(_btnCtrl);
 
     _btnGlow = TweenSequence<double>([
       TweenSequenceItem(
@@ -359,27 +342,13 @@ class _WelcomePageState extends State<WelcomePage>
                                       ),
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        AppStrings.get_started,
-                                        style: FontUtils.primaryFontStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Transform.translate(
-                                        offset:
-                                            Offset(_arrowNudge.value, 0),
-                                        child: const Icon(
-                                            Icons.arrow_forward_rounded,
-                                            color: Colors.white,
-                                            size: 20),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    AppStrings.get_started,
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),

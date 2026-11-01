@@ -20,7 +20,7 @@ class AppConfig {
 
   // AppHeaderBasket1 sets the wide logo on a white plate, so any logo reads on
   // any brand colour. Turn off for a logo drawn to sit on the bar.
-  static const bool headerLogoOnPlate = true;
+  static const bool headerLogoOnPlate = false;
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
       'pk_test_51QjKGFC5ZYai6Al85lKNzizk9i1E4ViPFg98dC4VECB9cEYPidOj6Pig2orwg1SKVGDndepP8McSJ4jPhnxhEIKj00aaPJefmb';
