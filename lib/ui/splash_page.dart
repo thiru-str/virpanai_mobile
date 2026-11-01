@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
@@ -86,7 +87,9 @@ class _SplashPageState extends State<SplashPage> {
 
     debugPrint('min build calling ${versionCheckJson}');
 
-    if (versionCheckJson != null && versionCheckJson.isNotEmpty) {
+    // Debug builds carry whatever version the checkout last built with, so only
+    // a release build is held to the store's minimum version.
+    if (!kDebugMode && versionCheckJson != null && versionCheckJson.isNotEmpty) {
       final versionConfig =
           await VersionUtils.parseVersionConfig(versionCheckJson);
 
