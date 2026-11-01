@@ -1,3 +1,4 @@
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'dart:async';
 
 import 'package:waioz/utility/store_image.dart';
@@ -168,7 +169,9 @@ class BasketImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final u = (url ?? '').trim();
-    if (u.isEmpty) return const ColoredBox(color: Color(0xFFF1F3EF));
+    if (u.isEmpty) {
+      return NoImageMark.branded ? const ImageFallbackWidget() : const ColoredBox(color: Color(0xFFF1F3EF));
+    }
     final override = debugProvider;
     if (override != null) return Image(image: override(u), fit: fit);
     return StoreImage(
@@ -176,7 +179,7 @@ class BasketImage extends StatelessWidget {
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 180),
       placeholder: (_, __) => const ColoredBox(color: Color(0xFFF4F5F2)),
-      errorWidget: (_, __, ___) => const Center(
+      errorWidget: (_, __, ___) => NoImageMark.branded ? const ImageFallbackWidget() : const Center(
         child: Icon(Icons.image_outlined, size: 20, color: Color(0x401B1F1D)),
       ),
     );

@@ -1,9 +1,8 @@
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
-import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_strings.dart';
 
 import '../../../utility/app_colors.dart';
@@ -279,12 +278,7 @@ class _Item5Card extends StatelessWidget {
       width: double.infinity,
       color: AppColors.secondary, // light grey background
       alignment: Alignment.center,
-      child: SvgPicture.asset(
-        AppAssets.ic_no_image, // <- your SVG path
-        width: 56,
-        height: 56,
-        // optional tint to match your UI
-      ),
+      child: const NoImageMark(width: 56, height: 56),
     );
   }
 }

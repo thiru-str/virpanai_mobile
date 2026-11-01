@@ -65,7 +65,7 @@ class StoreImage extends StatelessWidget {
     this.width,
     this.height,
     this.alignment = Alignment.center,
-    this.fadeInDuration = const Duration(milliseconds: 500),
+    this.fadeInDuration = const Duration(milliseconds: 200),
     this.placeholderFadeInDuration,
     this.placeholder,
     this.errorWidget,

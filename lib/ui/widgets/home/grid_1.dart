@@ -1,9 +1,9 @@
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'dart:math';
 import 'cms_text_color.dart';
 
 import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_utils.dart';
@@ -19,7 +19,6 @@ import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/redirect_utils.dart';
 
-import '../../../utility/app_assets.dart';
 
 class Grid1 extends StatelessWidget {
   final Content content;
@@ -147,11 +146,7 @@ Widget _fallbackWidget() {
     height: 150,
     color: AppColors.secondary,
     alignment: Alignment.center,
-    child: SvgPicture.asset(
-      AppAssets.ic_no_image,
-      width: 48,
-      height: 48,
-    ),
+    child: const NoImageMark(width: 48, height: 48),
   );
 }
 

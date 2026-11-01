@@ -1,3 +1,5 @@
+import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/ui/cart_page.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -337,7 +339,7 @@ class _CustomPageState extends State<CustomPage> {
                                 padding: const EdgeInsets.only(bottom: 20.0),
                                 child: GestureDetector(
                                   onTap: () {
-                                    eventBus.fire(TabSwitchEvent(2));
+                                    PageRouteUtils.pushWithSlide(context, const CartPage());
                                   },
                                   child: ViewCartWidget(
                                       totalItems: cartItems!,
