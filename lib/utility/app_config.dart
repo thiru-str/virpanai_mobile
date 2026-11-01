@@ -11,7 +11,7 @@ class AppConfig {
 
   // Stands in for a missing product or category picture. A merchant branch sets
   // its logo here (bundled in images/). Empty = the generic no-image mark.
-  static const String placeholderLogo = '';
+  static const String placeholderLogo = 'images/meha_logo.webp';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
       'pk_test_51QjKGFC5ZYai6Al85lKNzizk9i1E4ViPFg98dC4VECB9cEYPidOj6Pig2orwg1SKVGDndepP8McSJ4jPhnxhEIKj00aaPJefmb';
