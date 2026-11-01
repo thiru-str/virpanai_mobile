@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -106,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, FloatingCart.clearance),
                       children: [
                         // Profile header card
                         _buildHeaderCard(fullName),

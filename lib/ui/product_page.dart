@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -185,6 +186,8 @@ class _ProductPageState extends State<ProductPage> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF9F9FB),
+        floatingActionButton: const FloatingCart(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: CommonHeaderAppBar(
           title: AppStrings.product,
           onBackTap: () {
@@ -361,7 +364,7 @@ class _ProductPageState extends State<ProductPage> {
                   children: [
                     MasonryGridView.count(
                       controller: scrollController,
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(bottom: FloatingCart.clearance),
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,

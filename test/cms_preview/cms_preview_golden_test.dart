@@ -10,6 +10,7 @@
 // from the shipped code. Images are intentionally empty so each widget shows
 // its own neutral placeholder.
 
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -392,6 +393,7 @@ List<LayoutDatum> _maProducts(int n) => [
 
 void main() {
   setUpAll(() async {
+    NoImageMark.debugGeneric = true;
     GoogleFonts.config.allowRuntimeFetching = false;
     // Film tiles watch their visibility; report at once so no timer outlives a test.
     VisibilityDetectorController.instance.updateInterval = Duration.zero;

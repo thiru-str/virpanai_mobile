@@ -9,6 +9,7 @@
 //
 // Skips itself when the env vars are not set.
 
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -60,6 +61,7 @@ void main() {
   final ready = jsonPath != null && imageDir != null && outDir != null;
 
   setUpAll(() async {
+    NoImageMark.debugGeneric = true;
     if (!ready) return;
     GoogleFonts.config.allowRuntimeFetching = false;
     await _loadFont('CircularStd', 'fonts/circular_std_book_regular.ttf');

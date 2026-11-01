@@ -1,10 +1,9 @@
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 import '../../../model/home_page_response.dart';
-import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
@@ -191,11 +190,7 @@ class _Grid2Card extends StatelessWidget {
     return Container(
       color: AppColors.secondary,
       alignment: Alignment.center,
-      child: SvgPicture.asset(
-        AppAssets.ic_no_image,
-        width: 32,
-        height: 32,
-      ),
+      child: const NoImageMark(width: 32, height: 32),
     );
   }
 }

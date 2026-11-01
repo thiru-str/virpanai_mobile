@@ -45,12 +45,16 @@ class CartStore {
   bool _syncing = false;
   bool _hasPublished = false;
   Set<String> _pendingLineIds = const {};
+  ViewCartModel? _badge;
   // Variants shown in the cart at some point; a variant that left the cart is
   // published with quantity 0 so steppers do not fall back to stale values.
   final Set<String> _knownVariantIds = {};
   BuildContext? _context;
 
   CartResponse get cart => _cart;
+
+  /// The last count and thumbnails published, for a page that opens after them.
+  ViewCartModel? get badge => _badge;
   bool get isSyncing => _syncing;
   Set<String> get pendingLineIds => _pendingLineIds;
 
@@ -195,7 +199,8 @@ class CartStore {
     _pendingLineIds = syncing ? unconfirmedLineIds(serverCart, view) : const {};
 
     eventBus.fire(CartStateEvent(parsed, syncing, _pendingLineIds));
-    eventBus.fire(_badgeEvent(view));
+    final badge = _badge = _badgeEvent(view);
+    eventBus.fire(badge);
   }
 
   ViewCartModel _badgeEvent(CartJson view) {
