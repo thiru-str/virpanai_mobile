@@ -39,7 +39,7 @@ class ProductCard12 extends StatelessWidget {
     return LayoutDatum.fromJson({
       'id': product.id,
       'title': product.title,
-      'image': product.thumbnail ?? '',
+      'image': product.cardThumbnail,
       'prices': {
         'selling_price': v?.calculatedPrice?.calculatedAmount?.toString() ?? '',
         'original_price': v?.calculatedPrice?.originalAmount?.toString() ?? '',

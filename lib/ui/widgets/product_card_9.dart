@@ -51,7 +51,7 @@ class ProductCard9 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final cheapest = _cheapestVariant(product);
     final rating = double.tryParse(
       product.metadata?.reviewSummary?.averageRating?.toString() ?? '',

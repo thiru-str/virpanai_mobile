@@ -45,7 +45,7 @@ class ProductCard7 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null

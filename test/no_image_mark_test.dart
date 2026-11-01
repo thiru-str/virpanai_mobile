@@ -32,6 +32,18 @@ void main() {
     expect(t.takeException(), isNull);
   });
 
+  testWidgets('fill covers the slot with a logo, and keeps the small generic mark', (t) async {
+    await t.pumpWidget(const MaterialApp(
+      home: Center(
+        child: SizedBox(width: 200, height: 225, child: ImageFallbackWidget(w: 60, h: 60, fill: true)),
+      ),
+    ));
+    final box = t.getSize(find.byType(ImageFallbackWidget));
+    expect(box, NoImageMark.branded ? const Size(200, 225) : const Size(200, 225));
+    final inner = t.widget<Container>(find.descendant(of: find.byType(ImageFallbackWidget), matching: find.byType(Container)).first);
+    expect(inner.constraints?.maxWidth, NoImageMark.branded ? isNull : 60);
+  });
+
   testWidgets('previews stay neutral', (t) async {
     NoImageMark.debugGeneric = true;
     await t.pumpWidget(const MaterialApp(home: SizedBox(width: 90, height: 90, child: BasketImage(url: ''))));

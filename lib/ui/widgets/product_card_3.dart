@@ -93,11 +93,11 @@ class ProductCard3 extends StatelessWidget {
                     height: 140,
                     color: AppColors.secondary,
                     child: StoreImage(
-                      imageUrl: product.thumbnail ?? '',
+                      imageUrl: product.cardThumbnail,
                       fit: BoxFit.contain,
                       width: double.infinity,
                       errorWidget: (c, u, e) =>
-                          const ImageFallbackWidget(w: 80, h: 80),
+                          const ImageFallbackWidget(w: 80, h: 80, fill: true),
                     ),
                   ),
                 ),

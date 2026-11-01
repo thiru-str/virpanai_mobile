@@ -55,7 +55,7 @@ class _ProductCard4State extends State<ProductCard4> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null

@@ -34,18 +34,23 @@ class ImageFallbackWidget extends StatelessWidget {
   final double? h;
   final double? w;
   final BoxFit fit;
+
+  /// With a store logo, cover the slot it sits in rather than a small box in
+  /// the middle of it. [w] and [h] still size the generic mark.
+  final bool fill;
   const ImageFallbackWidget(
-      {super.key, this.h, this.w, this.fit = BoxFit.cover});
+      {super.key, this.h, this.w, this.fit = BoxFit.cover, this.fill = false});
 
   @override
   Widget build(BuildContext context) {
+    final cover = fill && NoImageMark.branded;
     return Container(
-      width: w,
-      height: h,
+      width: cover ? null : w,
+      height: cover ? null : h,
       color: NoImageMark.surface,
       alignment: Alignment.center,
       child: NoImageMark.branded
-          ? NoImageMark(width: _part(w), height: _part(h))
+          ? NoImageMark(width: cover ? null : _part(w), height: cover ? null : _part(h))
           : SvgPicture.asset(
               AppAssets.ic_no_image,
               width: (w ??0)* 0.5,

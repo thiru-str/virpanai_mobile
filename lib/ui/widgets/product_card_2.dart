@@ -55,7 +55,7 @@ class _ProductCard2State extends State<ProductCard2> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null
@@ -98,7 +98,9 @@ class _ProductCard2State extends State<ProductCard2> {
                   child: Container(
                     height: 160,
                     color: AppColors.secondary,
-                    child: PageView.builder(
+                    child: images.isEmpty
+                        ? const ImageFallbackWidget(fill: true)
+                        : PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
                         setState(() {
@@ -111,7 +113,7 @@ class _ProductCard2State extends State<ProductCard2> {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           errorWidget: (context, url, error) =>
-                          const ImageFallbackWidget(w: 60, h: 60),
+                          const ImageFallbackWidget(w: 60, h: 60, fill: true),
                         );
                       },
                     ),
