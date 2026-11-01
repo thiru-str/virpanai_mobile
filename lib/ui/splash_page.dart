@@ -2,21 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
-import 'package:waioz/utility/app_assets.dart';
-import 'package:waioz/utility/app_colors.dart';
-import 'package:waioz/utility/page_route_utils.dart';
-
 import '../api/push_notification_service.dart';
 import '../model/public_detail_model.dart';
 import '../utility/shared_preferences_util.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utility/version_utils.dart';
 import 'force_update_page.dart';
@@ -31,10 +23,8 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _SplashPageState extends State<SplashPage> {
+  bool _resolvedSkipLogin = false;
 
   @override
   void initState() {
@@ -44,38 +34,21 @@ class _SplashPageState extends State<SplashPage>
       await PushNotificationService().initialize(context);
     });
 
-    // Initialize animation controller
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    // Define animation (zoom in)
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-
-    // Start the animation
-    _controller.forward();
-
-    // Navigate to next page after animation
     navToNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: const Color(0xFF3EAA3C),
       body: Stack(
         children: [
           Center(
-            child: ScaleTransition(
-              scale: _animation,
-              child: SvgPicture.asset(
-                AppAssets.app_logo,
-                height: 120,
-                width: 158,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Image.asset(
+                'images/annachi_logo.png',
+                fit: BoxFit.contain,
               ),
             ),
           ),
@@ -99,8 +72,14 @@ class _SplashPageState extends State<SplashPage>
   }
 
   void navToNextPage() async {
-    final publicDetails = widget.publicDetailsResponse ??
-        await SharedPreferencesUtil().getPublicDetails();
+    final results = await Future.wait([
+      _resolvePublicDetails(),
+      Future.delayed(const Duration(seconds: 1)),
+    ]);
+    final publicDetails = results[0] as PublicDetailsResponse?;
+    _resolvedSkipLogin =
+        publicDetails?.storeDetails?.storeMetadata?.skipLogin ??
+            widget.skipLogin;
 
     final versionCheckJson =
         publicDetails?.storeDetails?.storeMetadata?.versionCheck;
@@ -114,6 +93,9 @@ class _SplashPageState extends State<SplashPage>
       final bool forceUpdate = versionConfig['force_update'] ?? false;
       final androidConfig = versionConfig['android'];
       final iosConfig = versionConfig['ios'];
+      final storeUrl = Platform.isAndroid
+          ? versionConfig['play_store_url']?.toString()
+          : versionConfig['app_store_url']?.toString();
 
       if (Platform.isAndroid) {
         final currentBuild = await VersionUtils.getCurrentBuildNumber();
@@ -121,10 +103,14 @@ class _SplashPageState extends State<SplashPage>
         final latestBuild = androidConfig['current_version_code'];
 
         if (currentBuild < minBuild) {
-          _showForceUpdate();
+          _showForceUpdate(storeUrl);
           return;
-        } else if (currentBuild < latestBuild && !forceUpdate) {
-          _showSoftUpdate();
+        } else if (currentBuild < latestBuild) {
+          if (forceUpdate) {
+            _showForceUpdate(storeUrl);
+          } else {
+            _showSoftUpdate(storeUrl);
+          }
           return;
         }
       } else if (Platform.isIOS) {
@@ -133,11 +119,14 @@ class _SplashPageState extends State<SplashPage>
         final latestVersion = iosConfig['current_version'];
 
         if (_isVersionLower(currentVersion, minVersion)) {
-          _showForceUpdate();
+          _showForceUpdate(storeUrl);
           return;
-        } else if (_isVersionLower(currentVersion, latestVersion) &&
-            !forceUpdate) {
-          _showSoftUpdate();
+        } else if (_isVersionLower(currentVersion, latestVersion)) {
+          if (forceUpdate) {
+            _showForceUpdate(storeUrl);
+          } else {
+            _showSoftUpdate(storeUrl);
+          }
           return;
         }
       }
@@ -145,42 +134,64 @@ class _SplashPageState extends State<SplashPage>
       debugPrint('min build calling');
     }
 
-    _navigateToHome();
+    _navigateToHome(skipLogin: _resolvedSkipLogin);
   }
 
-  void _openStore() {
-    if (Platform.isAndroid) {
-      VersionUtils.launchPlayStore();
-    } else if (Platform.isIOS) {
-      VersionUtils.launchAppStore();
+  Future<PublicDetailsResponse?> _resolvePublicDetails() async {
+    final prefs = SharedPreferencesUtil();
+    final cachedPublicDetails =
+        widget.publicDetailsResponse ?? await prefs.getPublicDetails();
+
+    final hasSkipLogin = await prefs.containsKey('skip_login');
+    if (cachedPublicDetails != null && hasSkipLogin) {
+      return cachedPublicDetails;
+    }
+
+    try {
+      final freshPublicDetails = await ApiService().getPublicDetails();
+      await prefs.savePublicDetails(freshPublicDetails);
+      return freshPublicDetails;
+    } catch (_) {
+      return cachedPublicDetails;
     }
   }
 
-  void _showForceUpdate() {
+  Future<void> _openStore(BuildContext updateContext, String? storeUrl) async {
+    final launched = await VersionUtils.launchStore(storeUrl);
+    if (!launched && updateContext.mounted) {
+      ScaffoldMessenger.of(updateContext).showSnackBar(
+        const SnackBar(
+          content: Text('The app store link is not configured correctly.'),
+        ),
+      );
+    }
+  }
+
+  void _showForceUpdate(String? storeUrl) {
     if (mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => ForceUpdateScreen(
-            onUpdateNow: _openStore,
+          builder: (updateContext) => ForceUpdateScreen(
+            onUpdateNow: () => _openStore(updateContext, storeUrl),
           ),
         ),
       );
     }
   }
 
-  void _showSoftUpdate() {
+  void _showSoftUpdate(String? storeUrl) {
     if (mounted) {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         isDismissible: false,
         enableDrag: false,
-        builder: (_) => SoftUpdateBottomSheet(
-          onUpdateNow: _openStore,
+        builder: (updateContext) => SoftUpdateBottomSheet(
+          onUpdateNow: () => _openStore(updateContext, storeUrl),
           onContinue: () {
             Navigator.pop(context);
-            _navigateToHome();
+            _navigateToHome(skipLogin: _resolvedSkipLogin);
           },
         ),
       );
@@ -200,10 +211,8 @@ class _SplashPageState extends State<SplashPage>
     return false;
   }
 
-  void _navigateToHome() async {
+  void _navigateToHome({required bool skipLogin}) async {
     String? token = await SharedPreferencesUtil().getString('token');
-    bool skipLogin =
-        await SharedPreferencesUtil().getBool('skip_login') ?? widget.skipLogin;
     Widget nextPage = token == null
         ? skipLogin
             ? const BottomNavPage()
@@ -211,13 +220,15 @@ class _SplashPageState extends State<SplashPage>
         : const BottomNavPage();
 
     if (mounted) {
-      PageRouteUtils.pushWithZoom(context, nextPage);
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => nextPage,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 }
