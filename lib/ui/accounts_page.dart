@@ -6,17 +6,16 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/register_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/ui/address_list_page.dart';
+import 'package:waioz/ui/account_settings_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
 import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
-import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/static_page.dart';
 import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
-import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -159,6 +158,17 @@ class _SettingsPageState extends State<SettingsPage> {
                                       context, const LoyaltyPage());
                                 },
                               ),
+                            _buildProfileItem(
+                              icon: Icons.settings_outlined,
+                              title: AppStrings.accountSettings,
+                              onTap: () async {
+                                final updated = await PageRouteUtils.pushWithSlide(
+                                    context, const AccountSettingsPage());
+                                if (updated == true && mounted) {
+                                  getCustomerInfo();
+                                }
+                              },
+                            ),
                           ],
                         ),
                         if (storeContentList.isNotEmpty) ...[
@@ -185,9 +195,6 @@ class _SettingsPageState extends State<SettingsPage> {
                                 .toList(),
                           ),
                         ],
-                        const SizedBox(height: 28),
-                        // Danger zone
-                        _buildDangerZone(context),
                       ],
                     ),
                   ),
@@ -391,68 +398,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildDangerZone(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text(
-            'Danger Zone',
-            style: UiTypography.cardMeta(color: _danger).copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _danger.withOpacity(0.25), width: 1),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _showDeleteAccount(context),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: _danger.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.delete_outline,
-                          size: 20, color: _danger),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        AppStrings.deleteAccount,
-                        style: UiTypography.cardTitle(color: _danger).copyWith(
-                          fontSize: 15,
-                          height: 1.25,
-                        ),
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios,
-                        size: 15, color: _danger),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Future<void> getCustomerInfo() async {
     customer = await getCustomerResponse();
     if (customer != null) {
@@ -515,30 +460,4 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showDeleteAccount(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CommonAlertDialog(
-          title: AppStrings.deleteAccount,
-          content: AppStrings.delete_account_confirmation,
-          contentOk: AppStrings.yes,
-          contentCancel: AppStrings.no,
-          onTapOk: () async {
-            await ApiService().deleteAccount(context);
-
-            bool skipLogin =
-                await SharedPreferencesUtil().getBool('skip_login') ?? false;
-            // Handle sign out action
-            await SharedPreferencesUtil().clear();
-            await AppErrorReporter.instance.clearUser();
-            if (mounted) {
-              PageRouteUtils.pushAndRemoveUntil(
-                  context, skipLogin ? const BottomNavPage() : WelcomePage());
-            }
-          },
-        );
-      },
-    );
-  }
 }

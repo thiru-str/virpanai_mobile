@@ -195,6 +195,15 @@ class AppStrings {
   static const String reDirectLink = 'Link';
 
   static const String deleteAccount = 'Delete Account';
+  static const String accountSettings = 'Account settings';
+  static const String accountManagement = 'Account management';
+  static const String profileSection = 'Profile';
+  static const String editProfileDescription =
+      'Update your personal details';
+  static const String deleteAccountDescription =
+      'Permanently delete your account and data';
+  static const String deleteAccountFailed =
+      'We couldn\'t delete your account. Please try again.';
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
 
@@ -258,7 +267,7 @@ class AppStrings {
   static const String ready_for_dispatch = 'Ready For Dispatch';
   static const String app_version = 'App Version';
   static const String delete_account_confirmation =
-      'Are you sure you want to permanently delete your account?';
+      'Delete your account and sign out? This action cannot be undone.';
   static const String new_tag = 'NEW';
   static const String from = 'From';
   static const String high_low = 'Highest - Lowest Price';
