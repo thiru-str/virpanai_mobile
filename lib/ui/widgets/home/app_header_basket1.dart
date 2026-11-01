@@ -6,7 +6,8 @@ import 'package:waioz/utility/font_utils.dart';
 
 /// AppHeaderBasket1 (theme header "header-19") — the app side of the web's
 /// HeaderBasket1: a bar in the store's primary colour with the wide logo on a
-/// white plate (so any logo reads on any brand colour), account + cart on the
+/// white plate (so any logo reads on any brand colour; a logo made for the bar
+/// turns it off with [AppConfig.headerLogoOnPlate]), account + cart on the
 /// right, and a full-width white search pill underneath. No location picker.
 ///
 /// The wide logo is the bundled `images/app_logo_wide.png`; a branch without
@@ -33,6 +34,7 @@ class AppHeaderBasket1 extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final bar = AppColors.primary;
     final on = bar.computeLuminance() > 0.5 ? const Color(0xFF1B1F1D) : Colors.white;
+    const plate = AppConfig.headerLogoOnPlate;
     return AppBar(
       scrolledUnderElevation: 0,
       elevation: 0,
@@ -49,23 +51,24 @@ class AppHeaderBasket1 extends StatelessWidget implements PreferredSizeWidget {
               child: Row(children: [
                 Container(
                   height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  padding: plate ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4) : EdgeInsets.zero,
+                  decoration: plate ? BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)) : null,
                   // A fixed box so the bar never jumps while the logo decodes.
                   child: Image.asset(
                     AppAssets.app_logo_wide,
-                    width: 112,
-                    height: 32,
+                    width: plate ? 112 : 176,
+                    height: plate ? 32 : 40,
                     fit: BoxFit.contain,
+                    alignment: plate ? Alignment.center : Alignment.centerLeft,
                     errorBuilder: (_, __, ___) => SizedBox(
-                      width: 112,
+                      width: plate ? 112 : 176,
                       height: 32,
                       child: Center(
                         child: Text(AppConfig.appName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: FontUtils.primaryFontStyle(
-                              fontSize: 15, fontWeight: FontWeight.w800, color: bar)),
+                              fontSize: 15, fontWeight: FontWeight.w800, color: plate ? bar : on)),
                       ),
                     ),
                   ),
