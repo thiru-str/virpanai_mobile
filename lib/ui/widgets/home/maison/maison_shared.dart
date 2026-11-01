@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_shared.dart';
@@ -109,6 +110,21 @@ List<MaisonVariant> maisonVariants(LayoutDatum d) {
     }
   }
   return out;
+}
+
+/// Each colour's own photo, by variant id. The home payload only carries a
+/// colour's name and hex, so these come from the product itself.
+Future<Map<String, String>> maisonVariantPhotos(BuildContext context, LayoutDatum item) async {
+  final id = item.id ?? '';
+  if (id.isEmpty) return const {};
+  final response = await ApiService().productDetail(context, id);
+  final photos = <String, String>{};
+  for (final variant in response.product?.variants ?? const []) {
+    final images = variant.metadata?.images ?? const [];
+    final url = images.isNotEmpty ? images.first.url ?? '' : variant.metadata?.thumbnail ?? '';
+    if (url.isNotEmpty && variant.id != null) photos[variant.id!] = url;
+  }
+  return photos;
 }
 
 /// The colour dots a card shows (from product_options' hex values).
@@ -283,7 +299,10 @@ class MaisonColourSheet extends StatefulWidget {
   final List<MaisonVariant> variants;
   final MaisonColors colors;
   final void Function(String variantId) onAdd;
-  const MaisonColourSheet({super.key, required this.item, required this.variants, required this.colors, required this.onAdd});
+
+  /// Where the colours' photos come from; a test passes its own.
+  final Future<Map<String, String>> Function(BuildContext context, LayoutDatum item) loadPhotos;
+  const MaisonColourSheet({super.key, required this.item, required this.variants, required this.colors, required this.onAdd, this.loadPhotos = maisonVariantPhotos});
 
   @override
   State<MaisonColourSheet> createState() => _MaisonColourSheetState();
@@ -291,6 +310,26 @@ class MaisonColourSheet extends StatefulWidget {
 
 class _MaisonColourSheetState extends State<MaisonColourSheet> {
   int _picked = 0;
+  Map<String, String> _photos = const {};
+  bool _photosLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadPhotos());
+  }
+
+  Future<void> _loadPhotos() async {
+    try {
+      final photos = await widget.loadPhotos(context, widget.item);
+      if (mounted) setState(() => _photos = photos);
+    } catch (_) {
+      // the sheet still sells the colour from its name and swatch
+    }
+    if (mounted) setState(() => _photosLoaded = true);
+  }
+
+  String _photoOf(MaisonVariant variant) => variant.image.isNotEmpty ? variant.image : _photos[variant.id] ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -298,7 +337,8 @@ class _MaisonColourSheetState extends State<MaisonColourSheet> {
     final picked = v[_picked];
     final deep = widget.colors.deep;
     final price = basketAmount(picked.price.isNotEmpty ? picked.price : widget.item.prices?.sellingPrice);
-    final image = picked.image.isNotEmpty ? picked.image : widget.item.image;
+    final ownPhoto = _photoOf(picked);
+    final image = ownPhoto.isNotEmpty ? ownPhoto : widget.item.image;
     return Container(
       decoration: const BoxDecoration(color: kMaisonIvory, borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       padding: EdgeInsets.fromLTRB(20, 10, 20, 20 + MediaQuery.of(context).padding.bottom),
@@ -321,6 +361,9 @@ class _MaisonColourSheetState extends State<MaisonColourSheet> {
                 Text(price, style: FontUtils.primaryFontStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kMaisonInk)),
               const SizedBox(height: 4),
               Text('Colour · ${picked.name}', style: maisonBody(kMaisonInk.withValues(alpha: 0.65), size: 12.5)),
+              // never let a customer take the photo for the colour they chose
+              if (_photosLoaded && ownPhoto.isEmpty)
+                Text('Photo shows another colour', style: maisonBody(kMaisonInk.withValues(alpha: 0.5), size: 11.5)),
             ]),
           ),
         ]),
@@ -354,7 +397,7 @@ class _MaisonColourSheetState extends State<MaisonColourSheet> {
                         borderRadius: BorderRadius.circular(10),
                         child: Stack(fit: StackFit.expand, children: [
                           ColoredBox(color: v[i].swatch ?? const Color(0xFFE9E1D6)),
-                          if (v[i].image.isNotEmpty) BasketImage(url: v[i].image, fit: BoxFit.cover),
+                          if (_photoOf(v[i]).isNotEmpty) BasketImage(url: _photoOf(v[i]), fit: BoxFit.cover),
                         ]),
                       ),
                     ),
