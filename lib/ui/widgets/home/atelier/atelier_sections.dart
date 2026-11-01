@@ -81,11 +81,13 @@ class _PosterBanner1State extends State<PosterBanner1> {
     final accent = basketParseColor(widget.content.layoutPrimaryColor) ?? AppColors.primary;
     final bg = basketParseColor(widget.content.layoutBgColor) ?? Colors.white;
     // The phone art is designed 4:5 (1080×1350); desktop-only art is shown
-    // in the same frame, cover-cropped.
+    // in the same frame, cover-cropped. Style tab → "Show Full Art" is for wide
+    // finished creatives, which that crop would cut through: same as the web.
+    final fullArt = widget.content.raw['layout_show_full_art'] == true;
     return Container(
       color: bg,
       child: AspectRatio(
-        aspectRatio: 4 / 5,
+        aspectRatio: fullArt ? 8 / 3 : 4 / 5,
         child: Stack(children: [
           PageView.builder(
             controller: _page,
