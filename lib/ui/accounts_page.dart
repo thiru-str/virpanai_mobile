@@ -195,44 +195,45 @@ class _SettingsPageState extends State<SettingsPage> {
                                 .toList(),
                           ),
                         ],
-                      ],
-                    ),
-                  ),
-                  // Sign Out button + version
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              _showLogout(this.context);
-                            },
-                            icon: const Icon(Icons.logout, color: _danger),
-                            label: Text(
-                              AppStrings.signout,
-                              style: FontUtils.primaryFontStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _danger,
+                        // Sign Out + version scroll with the list, whose bottom
+                        // padding keeps them clear of the floating cart.
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    _showLogout(this.context);
+                                  },
+                                  icon: const Icon(Icons.logout, color: _danger),
+                                  label: Text(
+                                    AppStrings.signout,
+                                    style: FontUtils.primaryFontStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: _danger,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size(double.infinity, 54),
+                                    backgroundColor: Colors.white,
+                                    side: const BorderSide(color: _danger, width: 1.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 54),
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: _danger, width: 1.5),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                              const SizedBox(height: 12),
+                              Text(
+                                '${AppStrings.app_version}: $_appVersion',
+                                style: FontUtils.secondaryFontStyle(
+                                    color: Colors.grey, fontSize: 12),
                               ),
-                            ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '${AppStrings.app_version}: $_appVersion',
-                          style: FontUtils.secondaryFontStyle(
-                              color: Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
