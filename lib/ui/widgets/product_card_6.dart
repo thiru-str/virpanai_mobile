@@ -53,7 +53,7 @@ class _ProductCard6State extends State<ProductCard6> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final imageUrl = images.isNotEmpty ? (images.first.url ?? '') : '';
     final description = (product.description ?? '').trim();
     final cheapest = _cheapestVariant(product);
@@ -102,7 +102,7 @@ class _ProductCard6State extends State<ProductCard6> {
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) =>
-                            const ImageFallbackWidget(w: 40, h: 40),
+                            const ImageFallbackWidget(w: 40, h: 40, fill: true),
                       ),
               ),
             ),
