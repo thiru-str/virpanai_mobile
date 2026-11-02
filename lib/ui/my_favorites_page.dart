@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/api/api_service.dart';
@@ -73,7 +74,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
               ? SafeArea(
                   child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, FloatingCart.clearance),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

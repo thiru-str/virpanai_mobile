@@ -59,3 +59,6 @@ macos/Flutter/Flutter-Debug.xcconfig
 macos/Flutter/Flutter-Release.xcconfig
 macos/Podfile
 /android/app/.cxx/
+
+# flutter test writes golden-mismatch images here
+test/cms_preview/failures/

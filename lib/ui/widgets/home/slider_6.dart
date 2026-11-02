@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -43,7 +44,7 @@ class Slider6 extends StatelessWidget {
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textColor,
+                    color: cmsCardText(context, AppColors.textColor),
                   ),
                 ),
               ),
@@ -107,7 +108,7 @@ class _Slider6Card extends StatelessWidget {
       child: Container(
         width: 220,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -146,7 +147,7 @@ class _Slider6Card extends StatelessWidget {
                     ),
                     child: ClipOval(
                       child: productImage.isNotEmpty
-                          ? CachedNetworkImage(
+                          ? StoreImage(
                               imageUrl: Uri.encodeFull(productImage),
                               fit: BoxFit.cover,
                               errorWidget: (_, __, ___) =>
@@ -176,7 +177,7 @@ class _Slider6Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: cmsCardText(context, AppColors.textColor),
                 ),
               ),
             ),
@@ -189,7 +190,7 @@ class _Slider6Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                   ),
                   if (hasDiscount) ...[
@@ -201,7 +202,7 @@ class _Slider6Card extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: FontUtils.primaryFontStyle(
                           fontSize: 14,
-                          color: AppColors.textColor.withOpacity(0.35),
+                          color: cmsCardText(context, AppColors.textColor).withOpacity(0.35),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -316,7 +317,7 @@ class _Slider6MediaState extends State<_Slider6Media> {
     }
 
     if (widget.mediaUrl.isNotEmpty) {
-      return CachedNetworkImage(
+      return StoreImage(
         imageUrl: Uri.encodeFull(widget.mediaUrl),
         fit: BoxFit.cover,
         errorWidget: (_, __, ___) => const ImageFallbackWidget(

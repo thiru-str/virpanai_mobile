@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -26,12 +27,16 @@ class ProductPage extends StatefulWidget {
   final String tagId;
   final bool isFromBrand;
 
+  /// Opens the list already searched for this text (a "results/<text>" link).
+  final String initialQuery;
+
   const ProductPage(
       {super.key,
       this.categoryId = '',
       this.isFromBrand = false,
       this.collectionId = '',
-      this.tagId = ''});
+      this.tagId = '',
+      this.initialQuery = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -71,10 +76,16 @@ class _ProductPageState extends State<ProductPage> {
         selectedCollectionsList.isNotEmpty ||
         selectedTagsList.isNotEmpty;
     _loadProductViewType();
+    // Set before the listener is attached, so the first load already searches.
+    if (widget.initialQuery.trim().isNotEmpty) {
+      searchController.text = widget.initialQuery.trim();
+    }
+    _previousSearchText = searchController.text.trim();
     getProductsApi(
         categoryIds: selectedCategoriesList.join(','),
         collectionIds: selectedCollectionsList.join(','),
-        tagIds: selectedTagsList.join(','));
+        tagIds: selectedTagsList.join(','),
+        searchString: searchController.text.trim());
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
 
@@ -178,6 +189,8 @@ class _ProductPageState extends State<ProductPage> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF9F9FB),
+        floatingActionButton: const FloatingCart(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: CommonHeaderAppBar(
           title: AppStrings.product,
           onBackTap: () {
@@ -350,7 +363,7 @@ class _ProductPageState extends State<ProductPage> {
                   children: [
                     MasonryGridView.count(
                       controller: scrollController,
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(bottom: FloatingCart.clearance),
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,

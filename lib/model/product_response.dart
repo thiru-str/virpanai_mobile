@@ -109,6 +109,25 @@ class Product {
     this.isSelected = false,
   });
 
+  /// Photos for a list card: the product's own, else those of its first variant
+  /// that has any (some products only carry photos per colour). A list-only
+  /// choice: the product page keeps [images] apart from the selected variant's.
+  List<Image> get cardImages {
+    final own = images ?? const <Image>[];
+    if (own.isNotEmpty) return own;
+    for (final variant in variants ?? const <Variant>[]) {
+      final photos = variant.metadata?.images ?? const <Image>[];
+      if (photos.isNotEmpty) return photos;
+    }
+    return const [];
+  }
+
+  String get cardThumbnail {
+    if ((thumbnail ?? '').isNotEmpty) return thumbnail!;
+    final photos = cardImages;
+    return photos.isEmpty ? '' : photos.first.url ?? '';
+  }
+
   factory Product.fromJson(Map<String, dynamic> json) => Product(
         id: json["id"],
         title: json["title"],

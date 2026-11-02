@@ -1,9 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 import 'package:waioz/utility/redirect_utils.dart';
+import 'cms_text_color.dart';
 
 class Grid6 extends StatelessWidget {
   final Content content;
@@ -25,7 +26,7 @@ class Grid6 extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           decoration: BoxDecoration(
-            color: const Color(0xFFE1E4ED),
+            color: cmsCard(context, const Color(0xFFE1E4ED)),
             borderRadius: BorderRadius.circular(22),
           ),
           child: SingleChildScrollView(
@@ -75,7 +76,7 @@ class _Grid6Card extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: imageUrl.isNotEmpty
-              ? CachedNetworkImage(
+              ? StoreImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => const ImageFallbackWidget(

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
@@ -133,24 +133,29 @@ class _CategoryPage2State extends State<CategoryPage2> {
                                       clipBehavior: Clip.antiAlias,
                                       child: parent.image != null &&
                                               parent.image!.isNotEmpty
-                                          ? CachedNetworkImage(
+                                          ? StoreImage(
                                               imageUrl: parent.image!,
                                               fit: BoxFit.cover)
                                           : Icon(Icons.image_not_supported,
                                               color: Colors.grey.shade400),
                                     ),
                                     const SizedBox(height: 8),
-                                    SizedBox(
-                                      width: 76,
-                                      child: Text(
-                                        parent.name ?? '',
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: FontUtils.primaryFontStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textColor,
+                                    // Flexible so the 2-line name ellipsizes
+                                    // within the fixed 124px strip instead of
+                                    // overflowing vertically at large font scale.
+                                    Flexible(
+                                      child: SizedBox(
+                                        width: 76,
+                                        child: Text(
+                                          parent.name ?? '',
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: FontUtils.primaryFontStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textColor,
+                                          ),
                                         ),
                                       ),
                                     )
@@ -255,7 +260,7 @@ class _CategoryPage2State extends State<CategoryPage2> {
                                                 Expanded(
                                                   child: sub.image != null &&
                                                           sub.image!.isNotEmpty
-                                                      ? CachedNetworkImage(
+                                                      ? StoreImage(
                                                           imageUrl: sub.image!,
                                                           fit: BoxFit.contain)
                                                       : Icon(

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -50,7 +50,7 @@ class _Slider3State extends State<Slider3> {
                     layoutData: layoutData,
                   );
                 },
-                child: CachedNetworkImage(
+                child: StoreImage(
                   imageUrl: layoutData!.image!,
                   fit: BoxFit.cover,
                   width: double.infinity,

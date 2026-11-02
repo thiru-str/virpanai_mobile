@@ -5,6 +5,18 @@ class AppConfig {
   // static const String baseUrl = 'https://undeposed-tabatha-applaudably.ngrok-free.dev/';
   static const String baseUrl = 'https://api.hakadts.com/';
   // static const String baseUrl = 'http://192.168.0.19:9000/';
+  // The store's website serves resized WebP at /_next/image for files on its
+  // CDN. Empty = this build loads originals (still decoded at display size).
+  static const String imageOptimiserBase = '';
+  static const String imageCdnHost = '';
+
+  // Stands in for a missing product or category picture. A merchant branch sets
+  // its logo here (bundled in images/). Empty = the generic no-image mark.
+  static const String placeholderLogo = '';
+
+  // AppHeaderBasket1 sets the wide logo on a white plate, so any logo reads on
+  // any brand colour. Turn off for a logo drawn to sit on the bar.
+  static const bool headerLogoOnPlate = true;
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
       'pk_test_51QjKGFC5ZYai6Al85lKNzizk9i1E4ViPFg98dC4VECB9cEYPidOj6Pig2orwg1SKVGDndepP8McSJ4jPhnxhEIKj00aaPJefmb';

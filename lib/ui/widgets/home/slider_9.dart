@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -43,7 +44,7 @@ class Slider9 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                     ),
                   ),
@@ -63,7 +64,7 @@ class Slider9 extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                       ),
@@ -129,7 +130,7 @@ class _Slider9Card extends StatelessWidget {
         width: 176,
         height: 296,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(18),
           boxShadow: const [
             BoxShadow(
@@ -176,7 +177,7 @@ class _Slider9Card extends StatelessWidget {
                   style: FontUtils.primaryFontStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textColor,
+                    color: cmsCardText(context, AppColors.textColor),
                   ),
                 ),
               ),
@@ -189,7 +190,7 @@ class _Slider9Card extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: FontUtils.primaryFontStyle(
                     fontSize: 12,
-                    color: AppColors.textColor.withOpacity(0.55),
+                    color: cmsCardText(context, AppColors.textColor).withOpacity(0.55),
                   ),
                 ),
               ),
@@ -215,7 +216,7 @@ class _Slider9Card extends StatelessWidget {
                               style: FontUtils.primaryFontStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textColor,
+                                color: cmsCardText(context, AppColors.textColor),
                               ),
                             ),
                             if (_hasDiscount)
@@ -227,7 +228,7 @@ class _Slider9Card extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 12,
-                                  color: AppColors.textColor
+                                  color: cmsCardText(context, AppColors.textColor)
                                       .withOpacity(0.4),
                                   decoration: TextDecoration.lineThrough,
                                 ),
@@ -248,8 +249,8 @@ class _Slider9Card extends StatelessWidget {
                               },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
+                          backgroundColor: cmsAccent(context, Colors.black),
+                          foregroundColor: cmsOn(cmsAccent(context, Colors.black)),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           minimumSize: const Size(68, 38),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -262,7 +263,7 @@ class _Slider9Card extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: cmsOn(cmsAccent(context, Colors.black)),
                           ),
                         ),
                       ),

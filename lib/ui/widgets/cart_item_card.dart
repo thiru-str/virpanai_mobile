@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -15,6 +15,9 @@ class CartItemCard extends StatelessWidget {
   final String error;
   final int quantity;
   final bool isUpdating; // New field
+
+  /// The quantity changed on the device and the server has not priced it yet.
+  final bool priceUpdating;
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
   final VoidCallback onRemoveAll;
@@ -30,6 +33,7 @@ class CartItemCard extends StatelessWidget {
     this.error = '',
     required this.quantity,
     this.isUpdating = false,
+    this.priceUpdating = false,
     required this.onIncrease,
     required this.onDecrease,
     required this.onRemoveAll,
@@ -74,7 +78,7 @@ class CartItemCard extends StatelessWidget {
                         height: 80,
                         color: AppColors.secondary,
                         child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
+                            ? StoreImage(
                                 imageUrl: imageUrl,
                                 width: 60,
                                 height: 80,
@@ -129,14 +133,22 @@ class CartItemCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            price,
-                            maxLines: 2,
-                            textAlign: TextAlign.right,
-                            overflow: TextOverflow.ellipsis,
-                            style:
-                                UiTypography.cardPrice(color: AppColors.primary)
-                                    .copyWith(fontSize: 16),
+                          AnimatedOpacity(
+                            opacity: priceUpdating ? 0.45 : 1,
+                            duration: const Duration(milliseconds: 150),
+                            child: Text(
+                              priceUpdating && price.isEmpty
+                                  ? 'Updating…'
+                                  : price,
+                              maxLines: 2,
+                              textAlign: TextAlign.right,
+                              overflow: TextOverflow.ellipsis,
+                              semanticsLabel:
+                                  priceUpdating ? 'Price updating' : null,
+                              style: UiTypography.cardPrice(
+                                      color: AppColors.primary)
+                                  .copyWith(fontSize: 16),
+                            ),
                           ),
                           Column(
                             mainAxisSize: MainAxisSize.min,

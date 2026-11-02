@@ -16,7 +16,6 @@ import 'package:waioz/model/return_response.dart';
 import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
-import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/wallet_response.dart';
@@ -42,6 +41,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/checkout_completion.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
@@ -55,7 +55,32 @@ import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
+/// A non-200 answer, carrying the backend's own message for the shopper.
+class ApiException implements Exception {
+  final int? statusCode;
+  final String? code;
+  final String message;
+  final dynamic body;
+
+  const ApiException({
+    required this.message,
+    this.statusCode,
+    this.code,
+    this.body,
+  });
+
+  @override
+  String toString() => message;
+}
+
 class ApiService {
+  // A `+`-prefixed field keeps the store-cart defaults, so cart mutations
+  // answer with the same cart a GET returns (address, payment sessions,
+  // stock flags) instead of the compact shape non-web clients get otherwise.
+  static const Map<String, dynamic> _fullCartQuery = {'fields': '+metadata'};
+  static const String _connectionErrorMessage =
+      'Could not reach the store. Please check your connection and try again.';
+
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   late final Dio _dio;
@@ -310,6 +335,54 @@ class ApiService {
       );
       throw Exception('An error occurred: $e');
     }
+  }
+
+  /// Sends a JSON request and returns the 200 body. Any other answer throws an
+  /// [ApiException] with the backend's message; showing it is up to the caller.
+  Future<Map<String, dynamic>> _sendJson(
+    String method,
+    String endpoint, {
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
+    BuildContext? context,
+  }) async {
+    await setPublishableKey();
+    await addToken();
+    AppLogger.print('API Request:', '$method ${_dio.options.baseUrl}$endpoint');
+
+    final Response<dynamic> response;
+    try {
+      response = await _dio.request(
+        endpoint,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(method: method, validateStatus: (_) => true),
+      );
+    } catch (e, stacktrace) {
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: '$method request failed',
+        attributes: {'endpoint': endpoint, 'method': method},
+      );
+      throw const ApiException(message: _connectionErrorMessage);
+    }
+
+    final status = response.statusCode;
+    final body = response.data;
+    if (status == 200 && body is Map) return Map<String, dynamic>.from(body);
+
+    final message = _extractErrorMessage(body);
+    AppLogger.print('API Error:', '$method $endpoint status=$status');
+    if (status == 401 && context != null && context.mounted) {
+      await _handleLogout(context, message);
+    }
+    throw ApiException(
+      statusCode: status,
+      code: body is Map ? body['code']?.toString() : null,
+      message: message,
+      body: body,
+    );
   }
 
   Future<void> _handleLogout(BuildContext context, String? message) async {
@@ -733,39 +806,64 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addCart(
-      BuildContext context, int qty, String variantId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
+  /// Adds [quantity] of a variant (the backend raises an existing line) and
+  /// returns the settled cart body `{ cart }`. A cart completed by a previous
+  /// order answers 409: pick up the store's current cart once and retry.
+  Future<Map<String, dynamic>> addCartLine(
+      BuildContext? context, String variantId, int quantity) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    Future<Map<String, dynamic>> send(String? id) => _sendJson(
+          'POST',
+          'store/custom-carts/$id/line-items',
+          data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
+          queryParameters: _fullCartQuery,
+          context: context,
+        );
     try {
-      return await _makePostRequest(
-        'store/custom-carts/$cartId/line-items',
-        {"variant_id": variantId, "quantity": qty, "metadata": {}},
-        (json) => CartResponse.fromJson(json),
-        context,
-      );
-    } catch (e) {
-      // Cart is inactive (completed after a previous order) — auto-recover by
-      // fetching a fresh cart from the home page endpoint, then retry once.
-      if (e.toString().contains('status code: 409')) {
-        try {
-          final homeResponse = await getHomePage(context);
-          final newCartId = homeResponse.global?.cartId;
-          if (newCartId != null && newCartId.isNotEmpty && newCartId != cartId) {
-            await SharedPreferencesUtil().saveString('cart_id', newCartId);
-            return await _makePostRequest(
-              'store/custom-carts/$newCartId/line-items',
-              {"variant_id": variantId, "quantity": qty, "metadata": {}},
-              (json) => CartResponse.fromJson(json),
-              context,
-            );
-          }
-        } catch (_) {
-          // Refresh failed — fall through to rethrow original error
-        }
+      return await send(cartId);
+    } on ApiException catch (e) {
+      if (e.statusCode != 409 || context == null || !context.mounted) rethrow;
+      String? fresh;
+      try {
+        fresh = (await getHomePage(context)).global?.cartId;
+      } catch (_) {
+        // no fresh cart to move to: the 409 below stands
       }
-      rethrow;
+      if (fresh == null || fresh.isEmpty || fresh == cartId) rethrow;
+      await SharedPreferencesUtil().saveString('cart_id', fresh);
+      return send(fresh);
     }
+  }
+
+  /// Sets a line's quantity; the body may carry a `notice` when the backend
+  /// lowered it to the stock that is left.
+  Future<Map<String, dynamic>> updateCartLine(
+      BuildContext? context, String lineId, int quantity) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'POST',
+      'store/custom-carts/$cartId/line-items/$lineId',
+      data: {"quantity": quantity, "metadata": {}},
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  Future<Map<String, dynamic>> deleteCartLine(
+      BuildContext? context, String lineId) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'DELETE',
+      'store/custom-carts/$cartId/line-items/$lineId',
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  /// The settled cart body `{ cart }`, unparsed, for the cart store.
+  Future<Map<String, dynamic>> getCartJson(BuildContext? context) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson('GET', 'store/custom-carts/$cartId', context: context);
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
@@ -792,8 +890,8 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
+  Future<CartResponse> addPromoCode(BuildContext context, String promoCode,
+      {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final body = <String, dynamic>{
@@ -853,31 +951,6 @@ class ApiService {
       'store/carts/$cartId',
       {"shipping_address": address, "billing_address": address},
       (json) => CartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<CartResponse> updateCart(
-      BuildContext context, int qty, String cartItemId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
-      {"quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<DeleteResponse> removeCart(
-      BuildContext context, String cartItemId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makeDeleteRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
-      null,
-      null,
-      (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
@@ -988,27 +1061,61 @@ class ApiService {
     );
   }
 
-  Future<PaymentMethodResponse> updatePaymentMethod(BuildContext context,
-      String paymentProviderId, CartResponse cartResponse) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+  /// Creates the session for the chosen provider and stores the choice on the
+  /// cart. When the open Razorpay order is reused the body carries
+  /// `payment_session` instead of `payment_collection`, so callers read the
+  /// session from the cart afterwards. Throws [ApiException] with the
+  /// backend's message.
+  Future<PaymentMethodResponse> updatePaymentMethod(
+      BuildContext context, String paymentProviderId) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = await _sendJson(
+      'POST',
       'store/update-payment-method/$cartId',
-      {"payment_provider_id": paymentProviderId},
-      (json) => PaymentMethodResponse.fromJson(json),
-      context,
+      data: {"payment_provider_id": paymentProviderId},
+      context: context,
     );
+    return PaymentMethodResponse.fromJson(body);
   }
 
-  Future<PlaceOrderResponse> completeCart(BuildContext context) async {
+  /// Completes the cart. A failed completion creates no order: the backend
+  /// answers 409 with why, and refunds an online payment itself.
+  Future<CartCompletionResult> completeCart(BuildContext context) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    try {
+      final body = await _sendJson(
+        'POST',
+        'store/custom-carts/$cartId/complete',
+        data: const {},
+        context: context,
+      );
+      return CartCompletionResult.fromSuccessBody(body);
+    } on ApiException catch (error) {
+      final body = error.body is Map ? error.body : {'message': error.message};
+      return CartCompletionResult.failed(CompletionFailure.fromBody(body));
+    }
+  }
+
+  Future<Map<String, dynamic>> getCashfreeEmiOptions(num amount) async {
     await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/complete',
-      null,
-      (json) => PlaceOrderResponse.fromJson(json),
-      context,
+    final response = await _dio
+        .get('store/cashfree/emi-options', queryParameters: {'amount': amount});
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeBnplConfig() async {
+    await addToken();
+    final response = await _dio.get('store/cashfree/bnpl-config');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeDisplayOptions(num amount) async {
+    await addToken();
+    final response = await _dio.get(
+      'store/cashfree/display-options',
+      queryParameters: {'amount': amount},
     );
+    return Map<String, dynamic>.from(response.data as Map);
   }
 
   Future<PublicDetailsResponse> getPublicDetails() async {
@@ -1385,7 +1492,8 @@ class ApiService {
     return _dio.get('/store/loyalty');
   }
 
-  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyTransactions(
+      {int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/transactions',
@@ -1407,7 +1515,8 @@ class ApiService {
     // PDP passes product_id so backend can short-circuit when the merchant
     // has restricted earning to specific products / categories — keeps the
     // "you'll earn …" strip honest with what the order subscriber will do.
-    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (productId != null && productId.isNotEmpty)
+      params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
@@ -1435,8 +1544,8 @@ class ApiService {
   Future<Response> removeLoyaltyCheckout(String cartId) async {
     await addToken();
     await setPublishableKey();
-    return _dio.delete('/store/loyalty/checkout-apply',
-        data: {'cart_id': cartId});
+    return _dio
+        .delete('/store/loyalty/checkout-apply', data: {'cart_id': cartId});
   }
 
   Future<Response> getLoyaltyReferral() async {
@@ -1445,7 +1554,8 @@ class ApiService {
     return _dio.get('/store/loyalty/referral');
   }
 
-  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyReferralHistory(
+      {int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/referral/history',

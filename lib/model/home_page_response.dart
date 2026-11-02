@@ -63,6 +63,9 @@ class Content {
   String? layoutBgColor;
   String? layoutBgImage;
   String? layoutBgType;
+  String? layoutPrimaryColor;
+  String? layoutSecondaryColor;
+  String? layoutCardColor;
   String? layoutRedirectTitle;
   String? layoutRedirect;
   String? layoutOption;
@@ -70,6 +73,12 @@ class Content {
   //int? layoutHeight;
   List<LayoutDatum>? layoutData;
   RedirectData? redirectData;
+
+  /// The section exactly as the API sent it, for fields this model does not
+  /// type (layout_marque, layout_description, …). Read via [rawString].
+  Map<String, dynamic> raw = const {};
+
+  String rawString(String key) => (raw[key] ?? '').toString();
 
   Content({
     this.layoutName,
@@ -82,6 +91,9 @@ class Content {
     this.layoutBgColor,
     this.layoutBgImage,
     this.layoutBgType,
+    this.layoutPrimaryColor,
+    this.layoutSecondaryColor,
+    this.layoutCardColor,
     this.layoutRedirectTitle,
     this.layoutRedirect,
     this.layoutOption,
@@ -102,6 +114,9 @@ class Content {
         layoutBgColor: json["layout_bg_color"],
         layoutBgImage: json["layout_bg_image"],
         layoutBgType: json["layout_bg_type"],
+        layoutPrimaryColor: json["layout_primary_color"],
+        layoutSecondaryColor: json["layout_secondary_color"],
+        layoutCardColor: json["layout_card_color"],
         layoutRedirectTitle: json["layout_redirect_title"],
         layoutRedirect: json["layout_redirect"],
         layoutOption: json["layout_option"],
@@ -114,7 +129,7 @@ class Content {
             ? null
             : RedirectData.fromJson(json["redirect_data"]),
         //layoutHeight: json["layout_height"],
-      );
+      )..raw = json;
 
   Map<String, dynamic> toJson() => {
         "layout_name": layoutName,
@@ -150,8 +165,17 @@ class LayoutDatum {
   Prices? prices;
   RedirectData? redirectData;
   num? rating;
+  String? video;
+  String? secondaryMedia;
   VariantDetails? variantDetails;
   CartDetails? cartDetails;
+
+  /// The item exactly as the API sent it — custom-item extras the builder
+  /// passes through (background_color, button_text, primary_image,
+  /// multi_product_data, no_of_variants, …). Read via [rawString].
+  Map<String, dynamic> raw = const {};
+
+  String rawString(String key) => (raw[key] ?? '').toString();
 
   LayoutDatum({
     this.id,
@@ -164,6 +188,8 @@ class LayoutDatum {
     this.prices,
     this.redirectData,
     this.rating,
+    this.video,
+    this.secondaryMedia,
     this.variantDetails,
     this.cartDetails,
   });
@@ -186,14 +212,16 @@ class LayoutDatum {
             : RedirectData.fromJson(json["redirect_data"]),
         rating: json["rating"] is num
             ? json["rating"] as num
-            : num.tryParse(json["rating"]?.toString() ?? ''),
+            : num.tryParse((json["rating"] ?? "").toString()),
+        video: json["video"],
+        secondaryMedia: json["secondary_media"],
         variantDetails: json["variant_details"] == null
             ? null
             : VariantDetails.fromJson(json["variant_details"]),
         cartDetails: json["cart_details"] == null
             ? null
             : CartDetails.fromJson(json["cart_details"]),
-      );
+      )..raw = json;
 
   Map<String, dynamic> toJson() => {
         "id": id,
@@ -205,6 +233,8 @@ class LayoutDatum {
         "product_data": productData?.toJson(),
         "prices": prices?.toJson(), // <-- Serialize
         "rating": rating,
+        "video": video,
+        "secondary_media": secondaryMedia,
         "variant_details": variantDetails?.toJson(),
         "cart_details": cartDetails?.toJson(),
         "redirect_data": redirectData?.toJson(),

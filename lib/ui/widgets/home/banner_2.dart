@@ -1,6 +1,8 @@
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'dart:async';
+import 'cms_text_color.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -261,7 +263,7 @@ class _Banner2State extends State<Banner2> with WidgetsBindingObserver {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                       ),
                     ),
@@ -327,7 +329,7 @@ class _Banner2State extends State<Banner2> with WidgetsBindingObserver {
                           children: [
                             GestureDetector(
                               onTap: open,
-                              child: CachedNetworkImage(
+                              child: StoreImage(
                                 imageUrl: url,
                                 fit: BoxFit.contain,
                                 errorWidget: (_, __, ___) =>

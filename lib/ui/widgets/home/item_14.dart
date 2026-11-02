@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
@@ -43,7 +44,7 @@ class Item14 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -66,7 +67,7 @@ class Item14 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -140,7 +141,7 @@ class _Item14Card extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 180,
-        color: AppColors.secondary,
+        color: cmsCard(context, AppColors.secondary),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -157,7 +158,7 @@ class _Item14Card extends StatelessWidget {
                         w: double.infinity,
                         fit: BoxFit.contain,
                       )
-                    : CachedNetworkImage(
+                    : StoreImage(
                         imageUrl: layoutData.image!,
                         fit: BoxFit.contain,
                         width: double.infinity,
@@ -177,7 +178,7 @@ class _Item14Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -199,7 +200,7 @@ class _Item14Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -208,7 +209,7 @@ class _Item14Card extends StatelessWidget {
                       CurrencyUtil.appendCurrency(original.toStringAsFixed(0)),
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 12,
-                        color: Colors.grey,
+                        color: cmsCardText(context, Colors.grey),
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),

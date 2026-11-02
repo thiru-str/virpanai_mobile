@@ -3,6 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/register_response.dart' as RegisterResponse;
@@ -15,6 +21,7 @@ import 'package:waioz/ui/icici_payment_page.dart';
 import 'package:waioz/ui/widgets/cart_calculation.dart';
 import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/loyalty_earn_preview.dart';
+import 'package:waioz/ui/widgets/cashfree_emi_options.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -36,6 +43,8 @@ import 'package:lottie/lottie.dart';
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
+import '../utility/cart_store.dart';
+import 'order_failed_page.dart';
 import '../utility/currency_util.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -68,6 +77,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   ShippingOption? shippingOption;
 
   Razorpay razorpay = Razorpay();
+  final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
 
   // Split payment state
   bool splitActive = false;
@@ -85,6 +95,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   @override
   void initState() {
     super.initState();
+    _cashfree.setCallback(_verifyCashfreePayment, _cashfreeError);
     cartResponse = widget.cartResponse;
     getShippingInfo();
     _loadWalletBalance();
@@ -97,8 +108,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   @override
   Widget build(BuildContext context) {
     final num cartTotal = cartResponse?.cart?.total ?? 0;
-    final num payableAmount =
-        splitActive ? splitGatewayAmount : cartTotal;
+    final num payableAmount = splitActive ? splitGatewayAmount : cartTotal;
     return Scaffold(
         appBar: CommonHeaderAppBar(
           title: AppStrings.check_out,
@@ -130,6 +140,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                 const SizedBox(height: 10),
                                 _buildPaymentSelectorCard(),
                               ],
+                              CashfreeEmiOptions(
+                                amount: payableAmount,
+                                placement: 'checkout',
+                              ),
 
                               // Wallet Balance Info (shows when wallet is selected in full_payment mode)
                               if (pp_id == 'pp_wallet_wallet' && !splitActive)
@@ -161,11 +175,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
                               // Loyalty checkout apply widget
                               LoyaltyCheckoutWidget(
                                 cartId: cartResponse!.cart!.id!,
-                                loyaltyApply: cartResponse?.cart?.metadata?['loyalty_checkout_apply'] as Map<String, dynamic>?,
+                                loyaltyApply: cartResponse?.cart
+                                        ?.metadata?['loyalty_checkout_apply']
+                                    as Map<String, dynamic>?,
                                 cartTotal: cartResponse?.cart?.total,
-                                walletAmount: splitActive ? splitWalletAmount : 0,
-                                walletApplied: splitActive && splitWalletAmount > 0,
-                                hasActiveCoupon: (cartResponse?.cart?.promotions ?? []).isNotEmpty,
+                                walletAmount:
+                                    splitActive ? splitWalletAmount : 0,
+                                walletApplied:
+                                    splitActive && splitWalletAmount > 0,
+                                hasActiveCoupon:
+                                    (cartResponse?.cart?.promotions ?? [])
+                                        .isNotEmpty,
                                 onApplied: () {
                                   getCartApi();
                                 },
@@ -201,8 +221,10 @@ class _CheckOutPageState extends State<CheckOutPage> {
                           ? SizedBox(
                               height: 54,
                               child: Center(
-                                child: Lottie.asset(AppAssets.place_order_lottie,
-                                    height: 54, fit: BoxFit.contain),
+                                child: Lottie.asset(
+                                    AppAssets.place_order_lottie,
+                                    height: 54,
+                                    fit: BoxFit.contain),
                               ),
                             )
                           : Column(
@@ -217,12 +239,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       style: UiTypography.cardMeta(
                                           color: AppColors.textColor50),
                                     ),
-                                    Text(
-                                      CurrencyUtil.appendCurrency(
-                                          payableAmount.toStringAsFixed(2)),
-                                      style: UiTypography.cardPrice(
-                                              color: AppColors.primary)
-                                          .copyWith(fontSize: 20),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        CurrencyUtil.appendCurrency(
+                                            payableAmount.toStringAsFixed(2)),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                        style: UiTypography.cardPrice(
+                                                color: AppColors.primary)
+                                            .copyWith(fontSize: 20),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -259,10 +287,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       updatePaymentMethod(pp_id!);
                                     }
                                   },
-                                  icon: const Icon(
-                                      Icons.lock_outline_rounded,
-                                      color: Colors.white,
-                                      size: 20),
+                                  icon: const Icon(Icons.lock_outline_rounded,
+                                      color: Colors.white, size: 20),
                                   label: Text(
                                     splitActive && splitFullCoverage
                                         ? 'Pay from Wallet'
@@ -435,6 +461,27 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
 
+  void _openCashfree(
+      String orderId, String paymentSessionId, String? environment) {
+    try {
+      final session = CFSessionBuilder()
+          .setEnvironment(environment == 'production'
+              ? CFEnvironment.PRODUCTION
+              : CFEnvironment.SANDBOX)
+          .setOrderId(orderId)
+          .setPaymentSessionId(paymentSessionId)
+          .build();
+      _cashfree
+          .doPayment(CFWebCheckoutPaymentBuilder().setSession(session).build());
+    } on CFException catch (e) {
+      AppUtils.showToast(e.message);
+    }
+  }
+
+  void _verifyCashfreePayment(String _orderId) => completeCart();
+  void _cashfreeError(CFErrorResponse error, String _orderId) =>
+      AppUtils.showToast(error.getMessage() ?? 'Cashfree payment failed');
+
   void makeStripeCall(String clientSecret) async {
     try {
       // Initialize the payment sheet with client secret
@@ -555,36 +602,46 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Available Balance',
-                            style: UiTypography.cardMeta(
-                                color: AppColors.textColor50)),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyUtil.appendCurrency(
-                              walletBalance.toStringAsFixed(2)),
-                          style: UiTypography.cardPrice(
-                                  color: AppColors.textColor)
-                              .copyWith(fontSize: 18),
-                        ),
-                      ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Available Balance',
+                              style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50)),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyUtil.appendCurrency(
+                                walletBalance.toStringAsFixed(2)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: UiTypography.cardPrice(
+                                    color: AppColors.textColor)
+                                .copyWith(fontSize: 18),
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('Order Total',
-                            style: UiTypography.cardMeta(
-                                color: AppColors.textColor50)),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyUtil.appendCurrency(
-                              cartTotal.toStringAsFixed(2)),
-                          style: UiTypography.cardAction(
-                              color: AppColors.textColor),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Order Total',
+                              style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50)),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyUtil.appendCurrency(
+                                cartTotal.toStringAsFixed(2)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                            style: UiTypography.cardAction(
+                                color: AppColors.textColor),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -920,43 +977,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
-  void placeOrder() async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.placeOrder(context, pp_id!);
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: '',
-          ));
-    } catch (e) {
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      print(e);
-    }
-  }
-
+  // No order exists unless the backend says so; a failed completion is
+  // explained on the failure screen or as a message.
   void completeCart() async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.completeCart(context);
-      setState(() {
-        placeOrderApiLoading = false;
-      });
+    final result = await ApiService().completeCart(context);
+    if (!mounted) return;
+    setState(() => placeOrderApiLoading = false);
+    final orderId = result.orderId;
+    if (orderId != null) {
+      CartStore.instance.clear();
       PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: response.order?.id ?? '',
-          ));
-    } catch (e) {
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      print(e);
+          context, OrderPlacedPage(orderId: orderId));
+      return;
+    }
+    final failure = result.failure!;
+    getCartApi();
+    if (failure.showsFailureScreen) {
+      PageRouteUtils.push(context, OrderFailedPage(failure: failure));
+    } else {
+      AppUtils.showToast(failure.message);
     }
   }
 
@@ -1004,14 +1043,46 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
 
     final ApiService apiService = ApiService();
-    dynamic apiResponse = await apiService.updatePaymentMethod(
-        context, paymentProviderId, cartResponse!);
+
+    // Cashfree captures payment before Medusa completes the cart. Refresh and
+    // stop here when the server already knows an item is unavailable.
+    if (paymentProviderId == 'pp_cashfree_cashfree') {
+      try {
+        setState(() => placeOrderApiLoading = true);
+        cartResponse = await apiService.getCart(context);
+        if (cartResponse?.cart?.error == true) {
+          AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+          return;
+        }
+      } catch (e) {
+        debugPrint('Cashfree cart validation failed: $e');
+        return;
+      } finally {
+        if (mounted) setState(() => placeOrderApiLoading = false);
+      }
+    }
+
+    dynamic apiResponse =
+        await apiService.updatePaymentMethod(context, paymentProviderId);
 
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
         String? orderId = extractOrderId(apiResponse);
         if (orderId != null) {
           makeRazorPayCall(orderId);
+        }
+        break;
+      case 'pp_cashfree_cashfree':
+        final data = apiResponse.paymentCollection?.paymentSessions
+            ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
+            .firstOrNull
+            ?.data;
+        if (data?.orderId != null && data?.paymentSessionId != null) {
+          _openCashfree(
+              data!.orderId!, data.paymentSessionId!, data.environment);
+        } else {
+          AppUtils.showToast(
+              'Cashfree payment session is unavailable. Please try again.');
         }
         break;
       case 'pp_stripe_stripe':
@@ -1044,7 +1115,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
       setState(() => placeOrderApiLoading = false);
 
       if (redirectUrl == null || redirectUrl.isEmpty) {
-        AppUtils.showToast('Failed to initiate ICICI payment. Please try again.');
+        AppUtils.showToast(
+            'Failed to initiate ICICI payment. Please try again.');
         return;
       }
 
@@ -1055,12 +1127,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
             redirectUrl: redirectUrl,
             onSuccess: (orderId) {
               Navigator.pop(context);
+              CartStore.instance.clear();
               PageRouteUtils.pushAndRemoveUntil(
                 context,
                 OrderPlacedPage(orderId: orderId),
               );
             },
-            onFailure: () {
+            onFailure: (_) {
               Navigator.pop(context);
               AppUtils.showToast('ICICI payment failed or was cancelled.');
               getCartApi();

@@ -47,9 +47,9 @@
 	<true/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>tez</string>
-		<string>phonepe</string>
-		<string>paytmmp</string>
+		<string>amazonpay</string><string>upi</string><string>credpay</string><string>bhim</string>
+		<string>paytmmp</string><string>phonepe</string><string>tez</string><string>navipay</string>
+		<string>mobikwik</string><string>myairtel</string><string>whatsapp</string>
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
