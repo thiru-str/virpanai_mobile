@@ -123,8 +123,9 @@ class ApiService {
     String endpoint,
     Map<String, dynamic>? data,
     T Function(Map<String, dynamic>) fromJson,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    Set<int> bodyStatuses = const {},
+  }) async {
     try {
       await setPublishableKey();
 
@@ -136,7 +137,8 @@ class ApiService {
           await _dio.post(endpoint, data: data ?? {}, options: Options(
         validateStatus: (status) {
           // Accept status codes 400-499 as valid responses for handling errors manually
-          return status != null && status < 500;
+          return status != null &&
+              (status < 500 || bodyStatuses.contains(status));
         },
       ));
       if (response.statusCode == 200) {
@@ -151,12 +153,20 @@ class ApiService {
           AppLogger.logFullJson(response.data);
         }
         return fromJson(response.data);
+      } else if (bodyStatuses.contains(response.statusCode) &&
+          response.data is Map<String, dynamic>) {
+        // The caller shows this answer's message itself.
+        return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
         await _handleLogout(context, errorMsg);
         throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(_extractErrorMessage(response.data));
+        // A 5xx only gets here from bodyStatuses without a JSON body, e.g. a
+        // gateway's HTML page, which is not fit to show.
+        AppUtils.showToast(response.statusCode! >= 500
+            ? _connectionErrorMessage
+            : _extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -540,11 +550,19 @@ class ApiService {
     BuildContext context,
     Map<String, dynamic> payload,
   ) async {
+    // Only an email registration signs in here; the OTP payload goes as built.
+    final isEmailRegistration = payload.containsKey('password');
+    final deviceId = isEmailRegistration ? await _updateToken() : null;
     return _makePostRequest<Map<String, dynamic>>(
       "store/healthcare-user/register",
-      payload,
+      {
+        ...payload,
+        if (deviceId != null && deviceId.isNotEmpty) "device_id": deviceId,
+      },
       (data) => data,
       context,
+      // Validation failures: 400 {success: false, message, errors}.
+      bodyStatuses: isEmailRegistration ? const {400} : const {},
     );
   }
 
@@ -1465,7 +1483,10 @@ class ApiService {
         "store/customers/email-login",
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
-        context);
+        context,
+        // Refusals the page explains: blocked, awaiting approval, rejected,
+        // and an approval check that could not run.
+        bodyStatuses: const {403, 503});
     await AppErrorReporter.instance.addBreadcrumb(
       'customer_login',
       attributes: {

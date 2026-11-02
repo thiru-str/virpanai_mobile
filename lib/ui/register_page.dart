@@ -3,15 +3,13 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:waioz/model/email_register_response.dart';
 import 'package:waioz/model/healthcare_registration_payload.dart';
-import 'package:waioz/model/refresh_token_response.dart';
-import 'package:waioz/model/register_response.dart';
 import 'package:waioz/ui/widgets/custom_text_field.dart';
 import 'package:waioz/utility/app_strings.dart';
 
@@ -50,10 +48,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController companyController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
@@ -70,8 +65,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController gstNumberController = TextEditingController();
 
   bool apiCalling = false;
-  RegisterResponse? registerResponse;
-  EmailRegisterResponse? emailRegisterResponse;
   bool isEmailLogin = false;
   bool _loginTypeLoaded = false;
   bool _healthcareSubmitted = false;
@@ -81,6 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final Set<String> _healthcareDocumentErrors = {};
   String? _phoneNo;
   String? _countryCode;
+  bool _phoneMissing = false;
 
   @override
   void initState() {
@@ -112,280 +106,9 @@ class _RegisterPageState extends State<RegisterPage> {
       );
     }
 
-    if (!isEmailLogin) {
-      return _buildHealthcareRegistrationPage();
-    }
-
-    return _buildLegacyRegistrationPage();
+    return _buildHealthcareRegistrationPage();
   }
 
-  Widget _buildLegacyRegistrationPage() {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF9F9FB),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFF9F9FB),
-          elevation: 0,
-          leading: IconButton(
-            icon:
-                SvgPicture.asset(AppAssets.ic_arrow_svg, height: 16, width: 16),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.register_msg,
-                    style: UiTypography.cardTitle().copyWith(
-                      fontSize: 24,
-                      height: 1.2,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Create your account to start shopping',
-                    style: FontUtils.secondaryFontStyle(
-                      fontSize: 14,
-                      color: AppColors.textColor50,
-                    ).copyWith(height: 1.5),
-                  ),
-                  const SizedBox(height: 24),
-                  // Grouped fields card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                hintText: AppStrings.firstname,
-                                controller: firstNameController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return AppStrings.firstname_required;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: CustomTextField(
-                                hintText: AppStrings.lastname,
-                                controller: lastNameController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return AppStrings.lastname_required;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        CustomTextField(
-                          hintText: AppStrings.email,
-                          controller: emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textCapitalization: TextCapitalization.none,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppStrings.email_required;
-                            }
-                            if (!RegExp(
-                                    r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                .hasMatch(value)) {
-                              return AppStrings.enter_valid_email;
-                            }
-                            return null;
-                          },
-                        ),
-                        if (isEmailLogin) ...[
-                          const SizedBox(height: 16),
-                          IntlPhoneField(
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            dropdownTextStyle: FontUtils.primaryFontStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textColor,
-                            ),
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textColor,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: AppStrings.mobile_number,
-                              hintStyle: UiTypography.searchHint(),
-                              fillColor: Colors.white,
-                              filled: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 14),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide(
-                                    color: AppColors.primary, width: 1.5),
-                              ),
-                            ),
-                            initialCountryCode: AppStrings.country_code,
-                            onChanged: (phone) {
-                              _phoneNo = phone.number;
-                              _countryCode = phone.countryCode;
-                            },
-                            validator: (value) {
-                              if (value == null || value.number.isEmpty) {
-                                return AppStrings.enter_valid_mob_no;
-                              }
-                              if (value.number.length < 10 ||
-                                  value.number.length > 15) {
-                                return AppStrings.digit_range;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          CustomTextField(
-                            hintText: AppStrings.password,
-                            controller: passwordController,
-                            textCapitalization: TextCapitalization.none,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(
-                                    r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
-                              )
-                            ],
-                            isPassword: true,
-                            validator: (value) {
-                              if (!isEmailLogin) return null;
-
-                              if (value == null || value.isEmpty) {
-                                return AppStrings.password_required;
-                              }
-                              if (value.length < 5) {
-                                return AppStrings.password_min_length;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          CustomTextField(
-                            hintText: AppStrings.confirm_password,
-                            controller: confirmPasswordController,
-                            textCapitalization: TextCapitalization.none,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(
-                                    r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
-                              )
-                            ],
-                            isPassword: true,
-                            validator: (value) {
-                              if (!isEmailLogin) return null;
-
-                              if (value == null || value.isEmpty) {
-                                return AppStrings.confirm_password_required;
-                              }
-                              if (value != passwordController.text) {
-                                return AppStrings.password_mismatch;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          newToAppRegisterText(onRegisterTap: () {
-                            Navigator.pop(context);
-                          }),
-                        ],
-                        const SizedBox(height: 16),
-                        _buildReferralField(),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  apiCalling
-                      ? SizedBox(
-                          height: 54,
-                          child: Center(
-                            child: SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                color: AppColors.primary,
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          ),
-                        )
-                      : ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              register();
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary, // Button color
-                            elevation: 0,
-                            minimumSize: const Size(double.infinity, 54),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.register,
-                            style: FontUtils.primaryFontStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Item 7 — Referral input with inline QR scan + contact picker icons.
-  // Field accepts either a unique code or a phone number; backend resolves.
   Widget _buildHealthcareRegistrationPage() {
     if (_healthcareSubmitted) {
       return Scaffold(
@@ -433,8 +156,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context)
-                            .popUntil((route) => route.isFirst),
+                        // Email sign-up sits directly above the login page,
+                        // which is not the first route.
+                        onPressed: () => isEmailLogin
+                            ? Navigator.pop(context)
+                            : Navigator.of(context)
+                                .popUntil((route) => route.isFirst),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -567,6 +294,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           return null;
                         },
                       ),
+                      if (isEmailLogin) ..._buildEmailCredentialFields(),
                       if (isDoctor) ...[
                         const SizedBox(height: 16),
                         CustomTextField(
@@ -626,6 +354,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           label: 'GST Upload',
                         ),
                       ],
+                      if (isEmailLogin) ...[
+                        const SizedBox(height: 16),
+                        newToAppRegisterText(onRegisterTap: () {
+                          Navigator.pop(context);
+                        }),
+                        // A doctor is not signed in, so a referral cannot be
+                        // applied.
+                        if (!isDoctor) ...[
+                          const SizedBox(height: 16),
+                          _buildReferralField(),
+                        ],
+                      ],
                     ],
                   ),
                 ),
@@ -670,6 +410,109 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildEmailCredentialFields() {
+    return [
+      const SizedBox(height: 16),
+      IntlPhoneField(
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        dropdownTextStyle: FontUtils.primaryFontStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textColor,
+        ),
+        style: FontUtils.primaryFontStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textColor,
+        ),
+        decoration: InputDecoration(
+          hintText: AppStrings.mobile_number,
+          hintStyle: UiTypography.searchHint(),
+          fillColor: Colors.white,
+          filled: true,
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+          // IntlPhoneField reports no error for an untouched field, so the
+          // submit guard supplies it.
+          errorText: _phoneMissing ? AppStrings.enter_valid_mob_no : null,
+        ),
+        initialCountryCode: AppStrings.country_code,
+        onChanged: (phone) {
+          _phoneNo = phone.number;
+          _countryCode = phone.countryCode;
+          if (_phoneMissing) setState(() => _phoneMissing = false);
+        },
+        // Picking a country does not fire onChanged.
+        onCountryChanged: (country) {
+          _countryCode = '+${country.fullCountryCode}';
+        },
+        validator: (value) {
+          if (value == null || value.number.isEmpty) {
+            return AppStrings.enter_valid_mob_no;
+          }
+          if (value.number.length < 10 || value.number.length > 15) {
+            return AppStrings.digit_range;
+          }
+          return null;
+        },
+      ),
+      const SizedBox(height: 16),
+      CustomTextField(
+        hintText: AppStrings.password,
+        controller: passwordController,
+        textCapitalization: TextCapitalization.none,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(
+            RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
+          )
+        ],
+        isPassword: true,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return AppStrings.password_required;
+          }
+          if (value.length < 5) {
+            return AppStrings.password_min_length;
+          }
+          return null;
+        },
+      ),
+      const SizedBox(height: 16),
+      CustomTextField(
+        hintText: AppStrings.confirm_password,
+        controller: confirmPasswordController,
+        textCapitalization: TextCapitalization.none,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(
+            RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
+          )
+        ],
+        isPassword: true,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return AppStrings.confirm_password_required;
+          }
+          if (value != passwordController.text) {
+            return AppStrings.password_mismatch;
+          }
+          return null;
+        },
+      ),
+    ];
   }
 
   String? Function(String?) _requiredHealthcareField(String label) {
@@ -920,16 +763,22 @@ class _RegisterPageState extends State<RegisterPage> {
             .toSet()
         : <String>{};
 
+    final phoneMissing = isEmailLogin && (_phoneNo ?? '').isEmpty;
+
     setState(() {
+      _phoneMissing = phoneMissing;
       _healthcareDocumentErrors
         ..clear()
         ..addAll(missingDocuments);
     });
-    if (!formValid || missingDocuments.isNotEmpty) return;
+    if (!formValid || phoneMissing || missingDocuments.isNotEmpty) return;
 
+    final referralCode = isEmailLogin && _userType != 'doctor'
+        ? referralCodeController.text.trim()
+        : '';
     final payload = buildHealthcareRegistrationPayload(
-      phone: widget.phoneNo,
-      countryCode: widget.countryCode,
+      phone: isEmailLogin ? _phoneNo ?? '' : widget.phoneNo,
+      countryCode: isEmailLogin ? _countryCode ?? '' : widget.countryCode,
       fullName: fullNameController.text,
       email: emailController.text,
       userType: _userType,
@@ -942,10 +791,15 @@ class _RegisterPageState extends State<RegisterPage> {
       documentIds: {
         for (final field in requiredDocuments) field: _documentIds(field),
       },
+      password: isEmailLogin ? passwordController.text : '',
     );
 
     setState(() => apiCalling = true);
     try {
+      // Validate the referral BEFORE creating the account — block if invalid.
+      if (!await _isReferralCodeAccepted(referralCode)) return;
+      if (!mounted) return;
+
       final response =
           await ApiService().registerHealthcareUser(context, payload);
       if (!mounted) return;
@@ -958,6 +812,11 @@ class _RegisterPageState extends State<RegisterPage> {
             : _userType == 'doctor';
         if (needsApproval) {
           setState(() => _healthcareSubmitted = true);
+        } else if (isEmailLogin) {
+          await _finishEmailRegistration(
+            response['token']?.toString() ?? '',
+            referralCode,
+          );
         } else {
           await _signInAfterHealthcareRegistration();
         }
@@ -968,13 +827,110 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_cleanError(error)),
+          content: Text(_registrationError(error)),
           backgroundColor: Colors.red.shade700,
         ),
       );
     } finally {
       if (mounted) setState(() => apiCalling = false);
     }
+  }
+
+  /// The password registration signs a general user in itself; the token is
+  /// empty when the account was created but that sign-in failed.
+  Future<void> _finishEmailRegistration(
+    String token,
+    String referralCode,
+  ) async {
+    if (token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your account was created. Please log in to continue.'),
+        ),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    await SharedPreferencesUtil().saveString('token', token);
+    await _applyReferralCode(referralCode);
+    if (!mounted) return;
+    await _saveCustomer();
+    if (!mounted) return;
+    await getHomePageApi();
+    if (!mounted) return;
+    PageRouteUtils.pushAndRemoveUntil(
+        context, widget.redirectPage ?? const BottomNavPage());
+  }
+
+  /// The cart and favourites read the stored customer, and a redirect page
+  /// does not pass through BottomNavPage to fetch it. The shopper is already
+  /// signed in, so a failure here does not stop them.
+  Future<void> _saveCustomer() async {
+    try {
+      final response = await ApiService().getCustomer(context);
+      final customer = response.customer;
+      if (customer != null) {
+        await SharedPreferencesUtil().saveMap('customer', customer.toJson());
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  /// False when the code is invalid, and the shopper has been told why. A
+  /// validate endpoint that cannot answer (e.g. loyalty extension not
+  /// installed) does not stop the registration.
+  Future<bool> _isReferralCodeAccepted(String referralCode) async {
+    if (referralCode.isEmpty) return true;
+    const invalidMessage =
+        'Invalid referral code. Please check and try again.';
+    try {
+      final validateResp =
+          await ApiService().validateReferralCode(referralCode);
+      final validateData = validateResp.data as Map<String, dynamic>?;
+      if (validateData?['valid'] == true) return true;
+      _showReferralError(validateData?['message'] as String? ?? invalidMessage);
+      return false;
+    } on DioException catch (error) {
+      final status = error.response?.statusCode;
+      if (status == null || status == 404 || status >= 500) return true;
+      final data = error.response?.data;
+      final message = data is Map ? data['message'] : null;
+      _showReferralError(message is String ? message : invalidMessage);
+      return false;
+    } catch (_) {
+      _showReferralError(invalidMessage);
+      return false;
+    }
+  }
+
+  void _showReferralError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red.shade700,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    ));
+  }
+
+  // Already validated before the account was created, so this should succeed.
+  Future<void> _applyReferralCode(String referralCode) async {
+    if (referralCode.isEmpty) return;
+    try {
+      final refResp = await ApiService().applyReferralCode(referralCode);
+      final refData = refResp.data as Map<String, dynamic>?;
+      if (mounted && refData?['status'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              const Text('Referral code applied! Welcome bonus points added.'),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ));
+      }
+    } catch (_) {}
   }
 
   /// The registration linked this phone's auth identity to the new customer,
@@ -998,6 +954,17 @@ class _RegisterPageState extends State<RegisterPage> {
   String _cleanError(Object error) =>
       error.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
 
+  /// The request layer wraps transport failures in text not meant for the
+  /// shopper; it has already shown any message the backend sent.
+  String _registrationError(Object error) {
+    final message = _cleanError(error);
+    return isEmailLogin && message.startsWith('An error occurred:')
+        ? 'Unable to complete registration. Please try again.'
+        : message;
+  }
+
+  // Item 7 — Referral input with inline QR scan + contact picker icons.
+  // Field accepts either a unique code or a phone number; backend resolves.
   Widget _buildReferralField() {
     return TextField(
       controller: referralCodeController,
@@ -1209,133 +1176,6 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       }
     } catch (_) {}
-  }
-
-  void register() async {
-    try {
-      setState(() {
-        apiCalling = true;
-      });
-      final ApiService apiService = ApiService();
-
-      // Validate referral code BEFORE creating account — block if invalid
-      final referralCode = referralCodeController.text.trim();
-      if (referralCode.isNotEmpty) {
-        try {
-          final validateResp =
-              await apiService.validateReferralCode(referralCode);
-          final validateData = validateResp.data as Map<String, dynamic>?;
-          if (validateData?['valid'] != true) {
-            final msg = validateData?['message'] as String? ??
-                'Invalid referral code. Please check and try again.';
-            if (mounted) {
-              setState(() => apiCalling = false);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(msg),
-                backgroundColor: Colors.red.shade700,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ));
-            }
-            return;
-          }
-        } catch (e) {
-          // If validate endpoint fails (e.g. loyalty extension not installed), skip and proceed
-          final isNotFound = e.toString().contains('404') ||
-              e.toString().contains('DioExceptionType');
-          if (!isNotFound) {
-            // For 400 errors — code is invalid
-            String errMsg =
-                'Invalid referral code. Please check and try again.';
-            try {
-              final dioErr = e as dynamic;
-              final data = dioErr.response?.data as Map<String, dynamic>?;
-              if (data?['message'] != null) errMsg = data!['message'] as String;
-            } catch (_) {}
-            if (mounted) {
-              setState(() => apiCalling = false);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(errMsg),
-                backgroundColor: Colors.red.shade700,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ));
-            }
-            return;
-          }
-        }
-      }
-
-      if (!isEmailLogin) {
-        registerResponse = await apiService.register(
-            context,
-            emailController.text,
-            companyController.text,
-            firstNameController.text,
-            lastNameController.text,
-            _countryCode ?? '',
-            _phoneNo ?? '',
-            widget.token);
-
-        RefreshTokenResponse refreshTokenResponse =
-            await apiService.refreshToken(context, widget.token);
-        SharedPreferencesUtil()
-            .saveString('token', refreshTokenResponse.token!);
-        SharedPreferencesUtil()
-            .saveMap('customer', registerResponse?.customer?.toJson() ?? {});
-      } else {
-        emailRegisterResponse = await apiService.registerEmail(
-            context,
-            emailController.text,
-            companyController.text,
-            firstNameController.text,
-            lastNameController.text,
-            _countryCode ?? '',
-            _phoneNo ?? '',
-            passwordController.text);
-        SharedPreferencesUtil()
-            .saveString('token', emailRegisterResponse?.token ?? '');
-        SharedPreferencesUtil().saveMap(
-            'customer', emailRegisterResponse?.customer?.toJson() ?? {});
-      }
-
-      // Apply referral code — already validated above, should always succeed
-      if (referralCode.isNotEmpty) {
-        try {
-          final refResp = await apiService.applyReferralCode(referralCode);
-          final refData = refResp.data as Map<String, dynamic>?;
-          if (mounted && refData?['status'] == true) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text(
-                  'Referral code applied! Welcome bonus points added.'),
-              backgroundColor: Colors.green.shade700,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ));
-          }
-        } catch (_) {}
-      }
-
-      if (mounted) {
-        if (widget.redirectPage != null) {
-          // The new account's cart id must be stored before the page it
-          // returns to reads the cart.
-          await getHomePageApi();
-          if (!mounted) return;
-          PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage!);
-        } else {
-          PageRouteUtils.pushAndRemoveUntil(context, const BottomNavPage());
-        }
-      }
-    } catch (e) {
-      setState(() {
-        apiCalling = false;
-      });
-      print(e);
-    }
   }
 
   Future<void> getHomePageApi() async {
