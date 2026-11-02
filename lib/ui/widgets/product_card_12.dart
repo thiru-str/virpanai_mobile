@@ -12,7 +12,7 @@ import '../../model/product_response.dart';
 /// ProductCard12 ("productView12") — the BASKET shelf card on the product
 /// list: packshot shown whole on a white tile, two-line name, price + struck
 /// MRP with a "% OFF" corner, and ADD → stepper on the live cart (a product
-/// with several variants shows OPTIONS and opens its page instead). It is the
+/// with several variants shows OPTIONS and opens the options sheet). It is the
 /// same [BasketTile] the home shelves draw, so the list and the home match.
 class ProductCard12 extends StatelessWidget {
   final Product product;

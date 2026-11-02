@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/product_detail_page.dart';
+import 'package:waioz/ui/widgets/home/basket/basket_options_sheet.dart';
 import 'package:waioz/utility/cart_store.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -23,8 +24,8 @@ import 'package:waioz/utility/redirect_utils.dart';
 ///  - PRICE IS THE HEADLINE OF A TILE: selling price bold, MRP struck, saving
 ///    as a "% OFF" corner badge in its own colour.
 ///  - ADD IS ONE TAP AND BECOMES A STEPPER, through the one live cart
-///    (CartStore). A product with several variants opens its page instead of
-///    adding one blindly.
+///    (CartStore). A product with several variants opens the options sheet
+///    (basket_options_sheet.dart) instead of adding one blindly.
 ///  - THREE COLOURS WITH JOBS: Primary = act (ADD, links), sun = offers,
 ///    blue = savings. Grounds stay light so the packshots carry the colour.
 
@@ -401,7 +402,13 @@ class _BasketTileState extends State<BasketTile> {
           ),
           const SizedBox(width: 6),
           if (multi)
-            _BasketPill(label: 'OPTIONS', colors: c, onTap: _open)
+            _BasketPill(
+              label: 'OPTIONS',
+              colors: c,
+              onTap: widget.onCartQtyChanged == null
+                  ? _open
+                  : () => showBasketOptionsSheet(context, d, c, widget.onCartQtyChanged!),
+            )
           else if (variantId.isNotEmpty && widget.onCartQtyChanged != null)
             BasketStepper(
               count: count,
