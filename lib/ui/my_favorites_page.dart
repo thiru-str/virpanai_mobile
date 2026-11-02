@@ -11,6 +11,7 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
+import '../model/public_detail_model.dart';
 import '../model/view_cart_model.dart';
 import '../utility/app_colors.dart';
 import '../utility/app_strings.dart';
@@ -32,6 +33,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   WishlistResponse? wishListResponse;
   bool apiLoading = true;
   Customer? customer;
+  String _pageTitle = AppStrings.my_favorites;
 
   void initState() {
     super.initState();
@@ -39,9 +41,13 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
   }
 
   Future<void> _initializeData() async {
-    // Wait for the customer data to be fetched
     customer = await getCustomerResponse();
-
+    final prefs = SharedPreferencesUtil();
+    final details = await prefs.getPublicDetails();
+    final name = details?.storeDetails?.storeMetadata?.favouriteListName?.trim();
+    if (name != null && name.isNotEmpty) {
+      setState(() => _pageTitle = name);
+    }
     if (customer != null) {
       getWishListApi(customer?.id);
     }
@@ -52,7 +58,7 @@ class _MyFavoritesPageState extends State<MyFavoritesPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9FB),
       appBar:CommonHeaderAppBar(
-              title: AppStrings.my_favorites,
+              title: _pageTitle,
               leading: widget.isFromBottomNav ?? false ? false : true,
               onBackTap: () {
                 Navigator.of(context).pop();

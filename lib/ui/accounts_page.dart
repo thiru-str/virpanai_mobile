@@ -39,6 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool isLoading = false;
   String? _appVersion;
   List<String> enabledExtensions = [];
+  String _favoritesTitle = AppStrings.favourites;
 
   @override
   void initState() {
@@ -54,8 +55,12 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       final details = await ApiService().getPublicDetails();
       if (mounted) {
+        final customName = details.storeDetails?.storeMetadata?.favouriteListName?.trim();
         setState(() {
           enabledExtensions = details.enabledExtensions;
+          if (customName != null && customName.isNotEmpty) {
+            _favoritesTitle = customName;
+          }
         });
       }
     } catch (_) {}
@@ -124,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             _buildProfileItem(
                               icon: Icons.favorite_border,
-                              title: AppStrings.favourites,
+                              title: _favoritesTitle,
                               onTap: () {
                                 PageRouteUtils.pushWithSlide(
                                     context, MyFavoritesPage());

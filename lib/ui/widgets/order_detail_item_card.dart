@@ -15,7 +15,10 @@ class OrderDetailItemCard extends StatelessWidget {
   final double initialRating;
   final bool showReturnButton;
   final bool showRating;
+  final bool ratingReadOnly;
+  final String ratingLabel;
   final Function(double)? onRatingChanged;
+  final VoidCallback? onRatingTap;
   final VoidCallback? onReturnTap;
 
   const OrderDetailItemCard({
@@ -28,7 +31,10 @@ class OrderDetailItemCard extends StatelessWidget {
     this.initialRating = 0.0,
     this.showReturnButton = true,
     this.showRating = true,
+    this.ratingReadOnly = false,
+    this.ratingLabel = "Please rate the product",
     this.onRatingChanged,
+    this.onRatingTap,
     this.onReturnTap,
   }) : super(key: key);
 
@@ -92,7 +98,8 @@ class OrderDetailItemCard extends StatelessWidget {
                                 productName,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: UiTypography.cardTitle(color: Colors.black87)
+                                style: UiTypography.cardTitle(
+                                        color: Colors.black87)
                                     .copyWith(height: 1.2),
                               ),
                             ),
@@ -103,7 +110,8 @@ class OrderDetailItemCard extends StatelessWidget {
                                 maxLines: 2,
                                 textAlign: TextAlign.right,
                                 overflow: TextOverflow.ellipsis,
-                                style: UiTypography.cardPrice(color: AppColors.primary)
+                                style: UiTypography.cardPrice(
+                                        color: AppColors.primary)
                                     .copyWith(fontSize: 16),
                               ),
                             ),
@@ -112,7 +120,8 @@ class OrderDetailItemCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           variant,
-                          style: UiTypography.cardSubtitle(color: Colors.black54),
+                          style:
+                              UiTypography.cardSubtitle(color: Colors.black54),
                         ),
                       ],
                     ),
@@ -141,31 +150,44 @@ class OrderDetailItemCard extends StatelessWidget {
                         if (showRating)
                           Column(
                             children: [
-                              RatingBar.builder(
-                                initialRating: initialRating,
-                                minRating: 1,
-                                direction: Axis.horizontal,
-                                allowHalfRating: false,
-                                itemCount: 5,
-                                itemSize: 24,
-                                unratedColor: Colors.grey.shade300,
-                                itemPadding:
-                                    const EdgeInsets.symmetric(horizontal: 2.0),
-                                itemBuilder: (context, _) =>
-                                    Icon(Icons.star, color: AppColors.primary),
-                                onRatingUpdate: (rating) {
-                                  if (onRatingChanged != null) {
-                                    onRatingChanged!(rating);
-                                  }
-                                },
+                              IgnorePointer(
+                                ignoring: ratingReadOnly,
+                                child: RatingBar.builder(
+                                  initialRating: initialRating,
+                                  minRating: 1,
+                                  direction: Axis.horizontal,
+                                  allowHalfRating: false,
+                                  itemCount: 5,
+                                  itemSize: 24,
+                                  unratedColor: Colors.grey.shade300,
+                                  itemPadding: const EdgeInsets.symmetric(
+                                      horizontal: 2.0),
+                                  itemBuilder: (context, _) => Icon(Icons.star,
+                                      color: AppColors.primary),
+                                  onRatingUpdate: (rating) {
+                                    if (!ratingReadOnly &&
+                                        onRatingChanged != null) {
+                                      onRatingChanged!(rating);
+                                    }
+                                  },
+                                ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 4,
                               ),
-                              Text(
-                                "Please rate the product",
-                                style: UiTypography.cardMeta(color: Colors.black87)
-                                    .copyWith(fontSize: 12.5),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: ratingReadOnly ? null : onRatingTap,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(
+                                    ratingLabel,
+                                    style: UiTypography.cardMeta(
+                                            color: Colors.black87)
+                                        .copyWith(fontSize: 12.5),
+                                  ),
+                                ),
                               ),
                             ],
                           )
@@ -185,8 +207,9 @@ class OrderDetailItemCard extends StatelessWidget {
                             ),
                             child: Text(
                               AppStrings.return_order,
-                              style: UiTypography.cardAction(color: Colors.white)
-                                  .copyWith(fontWeight: FontWeight.w700),
+                              style:
+                                  UiTypography.cardAction(color: Colors.white)
+                                      .copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
                       ],

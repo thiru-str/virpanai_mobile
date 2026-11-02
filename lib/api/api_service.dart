@@ -26,6 +26,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/model/product_category_response.dart';
 import 'package:waioz/model/product_detail_response.dart';
 import 'package:waioz/model/product_info_response.dart';
+import 'package:waioz/model/product_filter_facets_response.dart';
 import 'package:waioz/model/product_response.dart';
 import 'package:waioz/model/public_detail_model.dart';
 import 'package:waioz/model/register_response.dart';
@@ -139,7 +140,16 @@ class ApiService {
         },
       ));
       if (response.statusCode == 200) {
-        AppLogger.logFullJson(response.data);
+        if (endpoint == 'store/get_home_page/v8') {
+          final payload = response.data as Map<String, dynamic>?;
+          final content = payload?['content'];
+          AppLogger.print(
+            'Home page response:',
+            'status=${payload?['status']}, components=${content is List ? content.length : 0}',
+          );
+        } else {
+          AppLogger.logFullJson(response.data);
+        }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
@@ -417,40 +427,20 @@ class ApiService {
   }
 
   Future<String?> _updateToken() async {
-    String? fcmToken = await SharedPreferencesUtil().getString('fcm_token');
-
-    if (fcmToken == null || fcmToken.isEmpty) {
-      try {
-        fcmToken = await FirebaseMessaging.instance.getToken();
-        if (fcmToken != null && fcmToken.isNotEmpty) {
-          AppLogger.print('FCM token: ', fcmToken);
-          await SharedPreferencesUtil().saveString('fcm_token', fcmToken);
-        } else {
-          AppLogger.print('Failed to generate a new FCM token', '');
-          return null;
-        }
-      } catch (e) {
-        AppLogger.print('Error getting FCM token: $e', '');
+    try {
+      // Always request the token for the active Firebase project. A cached
+      // token can belong to an older project after a configuration migration.
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null || fcmToken.isEmpty) {
+        AppLogger.print('Failed to generate a new FCM token', '');
         return null;
       }
+      await SharedPreferencesUtil().saveString('fcm_token', fcmToken);
+      return fcmToken;
+    } catch (e) {
+      AppLogger.print('Error getting FCM token: $e', '');
+      return null;
     }
-
-    // 3. Check if the token we have has been uploaded
-    String uploadedToken =
-        await SharedPreferencesUtil().getString('fcm_token_uploaded') ?? '';
-
-    // 4. If it's a new token, upload it to the server
-    if (fcmToken != uploadedToken) {
-      AppLogger.print('Uploading new FCM token', fcmToken);
-      // Note: It's generally advised to avoid passing 'context' to long-lived operations
-      // as it might be disposed. Consider providing a way to get a fresh context or use a global navigator key.
-      await SharedPreferencesUtil().saveString('fcm_token_uploaded', fcmToken);
-    } else {
-      AppLogger.print('FCM token already uploaded', '');
-    }
-
-    // 5. Return the token to the caller
-    return fcmToken;
   }
 
   Future<RegisterResponse> register(
@@ -595,7 +585,7 @@ class ApiService {
       queryParams['max_price'] = maxPrice;
     }
 
-    if (sortBy != null) {
+    if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
     }
 
@@ -674,6 +664,19 @@ class ApiService {
     return response;
   }
 
+  Future<void> syncDeviceToken(String deviceToken) async {
+    await addToken();
+    await setPublishableKey();
+    final response = await _dio.post(
+      'store/customers/device-token',
+      data: {'device_id': deviceToken},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+          'Device token sync failed with status ${response.statusCode}');
+    }
+  }
+
   Future<HomePageResponse> getHomePage(BuildContext context,
       {int offset = 0,
       int limit = 0,
@@ -686,8 +689,8 @@ class ApiService {
       {
         'limit': limit,
         'offset': offset,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
         if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
       },
       (json) => HomePageResponse.fromJson(json),
@@ -771,6 +774,25 @@ class ApiService {
     );
   }
 
+  Future<ReturnSuccessResponse> postProductReview(
+    BuildContext context,
+    String productId,
+    String rating,
+    String description,
+  ) async {
+    await addToken();
+    return _makePostRequest(
+      'store/product-reviews',
+      {
+        'product_id': productId,
+        'rating': rating,
+        'description': description,
+      },
+      (json) => ReturnSuccessResponse.fromJson(json),
+      context,
+    );
+  }
+
   Future<WishlistResponse> getWishList(
       BuildContext context, String? customerID) async {
     await addToken();
@@ -785,17 +807,32 @@ class ApiService {
   }
 
   /// Adds [quantity] of a variant (the backend raises an existing line) and
-  /// returns the settled cart body `{ cart }`.
+  /// returns the settled cart body `{ cart }`. A cart completed by a previous
+  /// order answers 409: pick up the store's current cart once and retry.
   Future<Map<String, dynamic>> addCartLine(
       BuildContext? context, String variantId, int quantity) async {
     final cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _sendJson(
-      'POST',
-      'store/custom-carts/$cartId/line-items',
-      data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
-      queryParameters: _fullCartQuery,
-      context: context,
-    );
+    Future<Map<String, dynamic>> send(String? id) => _sendJson(
+          'POST',
+          'store/custom-carts/$id/line-items',
+          data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
+          queryParameters: _fullCartQuery,
+          context: context,
+        );
+    try {
+      return await send(cartId);
+    } on ApiException catch (e) {
+      if (e.statusCode != 409 || context == null || !context.mounted) rethrow;
+      String? fresh;
+      try {
+        fresh = (await getHomePage(context)).global?.cartId;
+      } catch (_) {
+        // no fresh cart to move to: the 409 below stands
+      }
+      if (fresh == null || fresh.isEmpty || fresh == cartId) rethrow;
+      await SharedPreferencesUtil().saveString('cart_id', fresh);
+      return send(fresh);
+    }
   }
 
   /// Sets a line's quantity; the body may carry a `notice` when the backend
@@ -853,8 +890,8 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addPromoCode(
-      BuildContext context, String promoCode, {List<String>? removeCodes}) async {
+  Future<CartResponse> addPromoCode(BuildContext context, String promoCode,
+      {List<String>? removeCodes}) async {
     await addToken();
     String? cartId = await SharedPreferencesUtil().getString('cart_id');
     final body = <String, dynamic>{
@@ -1059,6 +1096,28 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getCashfreeEmiOptions(num amount) async {
+    await addToken();
+    final response = await _dio
+        .get('store/cashfree/emi-options', queryParameters: {'amount': amount});
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeBnplConfig() async {
+    await addToken();
+    final response = await _dio.get('store/cashfree/bnpl-config');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getCashfreeDisplayOptions(num amount) async {
+    await addToken();
+    final response = await _dio.get(
+      'store/cashfree/display-options',
+      queryParameters: {'amount': amount},
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   Future<PublicDetailsResponse> getPublicDetails() async {
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',
@@ -1162,12 +1221,44 @@ class ApiService {
     );
   }
 
-  Future<TagsResponse> listTags(BuildContext context) async {
+  Future<TagsResponse> listTags(BuildContext context,
+      {String? categoryIds}) async {
+    final queryParams = <String, dynamic>{"fields": "id,value"};
+    final categories = (categoryIds ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (categories.isNotEmpty) {
+      queryParams['category_id[]'] = categories;
+    }
+
     return _makeGetRequest<TagsResponse>(
-      'store/product-tags',
-      '?fields=id,value',
+      categories.isEmpty ? 'store/product-tags' : 'store/product-filter-tags',
       null,
+      queryParams,
       (json) => TagsResponse.fromJson(json),
+      context,
+    );
+  }
+
+  Future<ProductFilterFacetsResponse> listProductFilterFacets(
+    BuildContext context, {
+    List<String> categoryIds = const [],
+    List<String> collectionIds = const [],
+    List<String> tagIds = const [],
+  }) async {
+    final queryParams = <String, dynamic>{
+      if (categoryIds.isNotEmpty) 'category_id[]': categoryIds,
+      if (collectionIds.isNotEmpty) 'collection_id[]': collectionIds,
+      if (tagIds.isNotEmpty) 'tag_id[]': tagIds,
+    };
+
+    return _makeGetRequest<ProductFilterFacetsResponse>(
+      'store/product-filter-facets',
+      null,
+      queryParams,
+      (json) => ProductFilterFacetsResponse.fromJson(json),
       context,
     );
   }
@@ -1401,7 +1492,8 @@ class ApiService {
     return _dio.get('/store/loyalty');
   }
 
-  Future<Response> getLoyaltyTransactions({int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyTransactions(
+      {int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/transactions',
@@ -1423,7 +1515,8 @@ class ApiService {
     // PDP passes product_id so backend can short-circuit when the merchant
     // has restricted earning to specific products / categories — keeps the
     // "you'll earn …" strip honest with what the order subscriber will do.
-    if (productId != null && productId.isNotEmpty) params['product_id'] = productId;
+    if (productId != null && productId.isNotEmpty)
+      params['product_id'] = productId;
     if (orderTotal > 0) params['order_total'] = orderTotal;
     return _dio.get('/store/loyalty/preview', queryParameters: params);
   }
@@ -1451,8 +1544,8 @@ class ApiService {
   Future<Response> removeLoyaltyCheckout(String cartId) async {
     await addToken();
     await setPublishableKey();
-    return _dio.delete('/store/loyalty/checkout-apply',
-        data: {'cart_id': cartId});
+    return _dio
+        .delete('/store/loyalty/checkout-apply', data: {'cart_id': cartId});
   }
 
   Future<Response> getLoyaltyReferral() async {
@@ -1461,7 +1554,8 @@ class ApiService {
     return _dio.get('/store/loyalty/referral');
   }
 
-  Future<Response> getLoyaltyReferralHistory({int limit = 20, int offset = 0}) async {
+  Future<Response> getLoyaltyReferralHistory(
+      {int limit = 20, int offset = 0}) async {
     await addToken();
     await setPublishableKey();
     return _dio.get('/store/loyalty/referral/history',

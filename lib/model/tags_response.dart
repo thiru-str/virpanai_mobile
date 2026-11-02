@@ -39,19 +39,23 @@ class TagsResponse {
 class ProductTag {
   String? id;
   String? value;
+  int? count;
 
   ProductTag({
     this.id,
     this.value,
+    this.count,
   });
 
   factory ProductTag.fromJson(Map<String, dynamic> json) => ProductTag(
     id: json["id"],
     value: json["value"],
+    count: json["count"] is num ? (json["count"] as num).toInt() : null,
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "value": value,
+    "count": count,
   };
 }
