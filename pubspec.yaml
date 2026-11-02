@@ -158,6 +158,10 @@ flutter:
         - asset: fonts/CormorantGaramond-MediumItalic.ttf
           weight: 500
           style: italic
+    # THEATRE app family display face, variable wdth/wght (SIL OFL — fonts/OFL-Archivo.txt)
+    - family: Archivo
+      fonts:
+        - asset: fonts/Archivo-Variable.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
