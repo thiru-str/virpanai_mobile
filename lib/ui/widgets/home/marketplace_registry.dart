@@ -3,6 +3,7 @@ import 'package:waioz/model/home_page_response.dart';
 
 import 'atelier/atelier_sections.dart';
 import 'maison/maison_sections.dart';
+import 'theatre/theatre_sections.dart';
 import 'basket/basket_sections.dart';
 import 'grocery_grid1.dart';
 import 'product_grid_two1.dart';
@@ -237,6 +238,9 @@ const List<String> kMarketplaceLayouts = [
   // patterns: story rings + viewer, 3D carousel, staggered grid, full-screen reels
   'MaisonHero1', 'MaisonStories1', 'ProductMaisonCarousel1', 'ProductMaisonGrid1',
   'MaisonReels1', 'MaisonChapter1', 'MaisonVoices1',
+  // THEATRE home-cinema family (2026-11) — app side of the web theatre-*.tsx
+  'TheatreHero1', 'TheatreSpotlights1', 'ProductTheatreGrid1', 'TheatreLayouts1',
+  'TheatreReels1', 'TheatreBudget1', 'TheatreBrandWall1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -360,6 +364,20 @@ Widget? marketplaceHomeWidget(Content content,
       return MaisonChapter1(content: content);
     case 'MaisonVoices1':
       return MaisonVoices1(content: content);
+    case 'TheatreHero1':
+      return TheatreHero1(content: content);
+    case 'TheatreSpotlights1':
+      return TheatreSpotlights1(content: content);
+    case 'ProductTheatreGrid1':
+      return ProductTheatreGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'TheatreLayouts1':
+      return TheatreLayouts1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'TheatreReels1':
+      return TheatreReels1(content: content);
+    case 'TheatreBudget1':
+      return TheatreBudget1(content: content);
+    case 'TheatreBrandWall1':
+      return TheatreBrandWall1(content: content);
     case 'CategoryChips1':
       return CategoryChips1(content: content);
     case 'GroceryGrid1':

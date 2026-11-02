@@ -71,6 +71,7 @@ void main() {
       ..addFont(_bytes('fonts/CormorantGaramond-SemiBold.ttf'))
       ..addFont(_bytes('fonts/CormorantGaramond-MediumItalic.ttf'));
     await serif.load();
+    await _loadFont('Archivo', 'fonts/Archivo-Variable.ttf');
     await _loadMaterialIcons();
     await CurrencyUtil.initializeCurrencySymbol('₹');
     // PREVIEW_PRIMARY=#rrggbb sets the store's theme colour (default: Galaxy's).
