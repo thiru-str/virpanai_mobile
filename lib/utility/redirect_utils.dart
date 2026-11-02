@@ -6,7 +6,9 @@ import 'package:waioz/ui/custom_page.dart';
 import 'package:waioz/ui/order_detail_item_page.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 
+import '../api/api_service.dart';
 import '../model/home_page_response.dart';
+import '../model/product_categories_response.dart';
 import '../ui/product_detail_page.dart';
 import '../ui/product_page.dart';
 import 'app_strings.dart';
@@ -62,7 +64,7 @@ class RedirectUtils {
     AppStrings.reDirectProduct: (context, redirectData) => _handleProductRedirect(context, redirectData),
     AppStrings.reDirectOrder: (context, redirectData) => _handleProductOrder(context, redirectData),
     AppStrings.reDirectPage: (context, redirectData) => _handleRedirectPage(context, redirectData),
-    AppStrings.reDirectLink: (_, redirectData) => _launchExternalLink(redirectData),
+    AppStrings.reDirectLink: (context, redirectData) => _handleLink(context, redirectData),
   };
 
   static void _handleCustomRedirect(BuildContext context, LayoutDatum layoutData) {
@@ -149,6 +151,67 @@ class RedirectUtils {
       context,
       CustomPage(slug: slug),
     );
+  }
+
+  /// A "Link" redirect may be a full web address (opened outside the app) or
+  /// a storefront path the web builder wrote — categories/<handle>,
+  /// results/<text>, search?q=<text> — which the app opens natively, so a
+  /// section copied from the web home works the same in the app.
+  static Future<void> _handleLink(BuildContext context, RedirectData redirectData) async {
+    final raw = (redirectData.redirectUrlData?.url ?? '').trim();
+    if (raw.isEmpty) return;
+    final uri = Uri.tryParse(raw);
+    if (uri != null && uri.hasScheme) {
+      await _launchExternalLink(redirectData);
+      return;
+    }
+    var segments = (uri?.pathSegments ?? raw.split('/')).where((s) => s.isNotEmpty).toList();
+    // the web storefront may prefix a country code ("in/categories/…")
+    if (segments.length > 1 && segments.first.length == 2) segments = segments.sublist(1);
+    if (segments.isEmpty) return;
+    final head = segments.first.toLowerCase();
+    final rest = segments.skip(1).map(Uri.decodeComponent).join(' ').trim();
+
+    if ((head == 'categories' || head == 'category') && segments.length > 1) {
+      final id = await _categoryIdForHandle(context, segments.last);
+      if (!context.mounted) return;
+      PageRouteUtils.pushWithSlide(
+        context,
+        id != null ? ProductPage(categoryId: id) : ProductPage(initialQuery: rest.replaceAll('-', ' ')),
+      );
+      return;
+    }
+    if (head == 'results' || head == 'search') {
+      final query = rest.isNotEmpty ? rest : (uri?.queryParameters['q'] ?? '');
+      PageRouteUtils.pushWithSlide(context, ProductPage(initialQuery: query));
+      return;
+    }
+    debugPrint('Unhandled storefront link: $raw');
+  }
+
+  static Future<List<ProductCategory>>? _categories;
+
+  static Future<String?> _categoryIdForHandle(BuildContext context, String handle) async {
+    try {
+      _categories ??= ApiService()
+          .productCategories(context)
+          .then((r) => r.productCategories ?? <ProductCategory>[]);
+      final all = <ProductCategory>[];
+      void walk(List<ProductCategory> list) {
+        for (final c in list) {
+          all.add(c);
+          walk(c.categoryChildren ?? const []);
+        }
+      }
+      walk(await _categories!);
+      for (final c in all) {
+        if ((c.handle ?? '').toLowerCase() == handle.toLowerCase()) return c.id;
+      }
+    } catch (e) {
+      _categories = null;
+      debugPrint('Category lookup failed: $e');
+    }
+    return null;
   }
 
   static Future<void> _launchExternalLink(RedirectData redirectData) async {

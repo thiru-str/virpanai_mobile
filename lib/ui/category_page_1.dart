@@ -1,5 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/ui/product_page.dart';
@@ -111,7 +111,7 @@ class _CategoryPage1State extends State<CategoryPage1> {
                                             : const Color(0xFFF4F4F4),
                                         borderRadius: BorderRadius.circular(14),
                                       ),
-                                      child: CachedNetworkImage(
+                                      child: StoreImage(
                                           imageUrl: mainCategory.image!,
                                           fit: BoxFit.contain),
                                     ),
@@ -264,7 +264,7 @@ class SubCategoryTile extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 1,
               child: imagePath.isNotEmpty
-                  ? CachedNetworkImage(imageUrl: imagePath, fit: BoxFit.contain)
+                  ? StoreImage(imageUrl: imagePath, fit: BoxFit.contain)
                   : Icon(Icons.image_not_supported,
                       size: 40, color: Colors.grey.shade400),
             ),

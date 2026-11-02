@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -46,7 +46,7 @@ class ProductCard7 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null
@@ -92,7 +92,7 @@ class ProductCard7 extends StatelessWidget {
                         child: ImageFallbackWidget(
                             w: 60, h: 60, fit: BoxFit.contain),
                       )
-                    : CachedNetworkImage(
+                    : StoreImage(
                         imageUrl: images.first.url ?? '',
                         fit: BoxFit.cover,
                         width: double.infinity,

@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'cms_text_color.dart';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -78,7 +79,7 @@ class _Item9State extends State<Item9> {
                     style: FontUtils.secondaryFontStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
@@ -102,7 +103,7 @@ class _Item9State extends State<Item9> {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                         const Icon(Icons.chevron_right, size: 18),
@@ -178,7 +179,7 @@ class _Item9Card extends StatelessWidget {
       child: Container(
       width: 180,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cmsCard(context, Colors.white),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade300),
       ),
@@ -192,7 +193,7 @@ class _Item9Card extends StatelessWidget {
               ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
-                child: CachedNetworkImage(
+                child: StoreImage(
                   imageUrl: layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,
@@ -231,7 +232,7 @@ class _Item9Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -246,7 +247,7 @@ class _Item9Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),
@@ -272,7 +273,7 @@ class _Item9Card extends StatelessWidget {
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _qtyButton(Icons.remove, () {
+                      _qtyButton(context, Icons.remove, () {
                         if (cartQty > 0) {
                           onCartQtyChanged?.call(-1, variantId);
                         }
@@ -284,7 +285,7 @@ class _Item9Card extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      _qtyButton(Icons.add, () {
+                      _qtyButton(context, Icons.add, () {
                         onCartQtyChanged?.call(1, variantId);
                       }),
                     ],
@@ -311,14 +312,14 @@ class _Item9Card extends StatelessWidget {
     );
   }
 
-  Widget _qtyButton(IconData icon, VoidCallback onPressed) {
+  Widget _qtyButton(BuildContext context, IconData icon, VoidCallback onPressed) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: cmsAccent(context, AppColors.primary),
         borderRadius: BorderRadius.circular(6),
       ),
       child: IconButton(
-        color: Colors.white,
+        color: cmsOn(cmsAccent(context, AppColors.primary)),
         icon: Icon(icon, size: 16),
         onPressed: onPressed,
         padding: const EdgeInsets.all(4),

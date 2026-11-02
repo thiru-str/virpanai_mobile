@@ -2,6 +2,9 @@
 
 class AppAssets {
   static const String app_logo = 'images/app_logo.svg';
+  static const String ic_logo_text = 'images/ic_logo_text.png';
+  static const String app_loader = 'images/app_loader.gif';
+  static const String annachi_logo = 'images/annachi_logo.webp';
   static const String ic_google = 'images/ic_google.png';
   static const String ic_menu_account = 'images/ic_menu_account.png';
   static const String ic_menu_cart = 'images/ic_menu_cart.png';
@@ -19,6 +22,8 @@ class AppAssets {
   static const String ic_discount = 'images/ic_discount.png';
   static const String ic_no_transaction = 'images/ic_no_transaction.png';
   static const String app_icon = 'images/app_icon.png';
+  // Wide logo for headers that put it on a white plate (header-19).
+  static const String app_logo_wide = 'images/app_logo_wide.webp';
   static const String ic_no_image = 'images/ic_no_image.svg';
   static const String order_shipped = 'images/order_shipped.svg';
   static const String order_processing = 'images/order_processing.svg';
@@ -32,6 +37,4 @@ class AppAssets {
   static const String ic_payment_cash = 'images/ic_payment_cash.svg';
   static const String ic_bank_transfer = 'images/ic_bank_transfer.svg';
   static const String ic_online = 'images/ic_online.svg';
-  static const String ic_logo_text = 'images/ic_logo_text.png';
-  static const String app_loader = 'images/app_loader.gif';
 }

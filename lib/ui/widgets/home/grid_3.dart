@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -45,7 +46,7 @@ class Grid3 extends StatelessWidget {
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textColor,
+                    color: cmsCardText(context, AppColors.textColor),
                   ),
                 ),
               ),
@@ -67,7 +68,7 @@ class Grid3 extends StatelessWidget {
                         height: 220,
                         width: double.infinity,
                         child: heroImage.isNotEmpty
-                            ? CachedNetworkImage(
+                            ? StoreImage(
                                 imageUrl: heroImage,
                                 fit: BoxFit.cover,
                                 errorWidget: (_, __, ___) =>
@@ -147,7 +148,7 @@ class _Grid3Card extends StatelessWidget {
               alignment: Alignment.center,
               child: SizedBox(
                 child: imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
+                    ? StoreImage(
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => const ImageFallbackWidget(
@@ -166,7 +167,7 @@ class _Grid3Card extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ],

@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
@@ -24,7 +26,10 @@ import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 
 class BottomNavPage extends StatefulWidget {
-  const BottomNavPage({super.key});
+  /// The tab to open on, e.g. 2 (cart) after signing in from checkout.
+  final int initialIndex;
+
+  const BottomNavPage({super.key, this.initialIndex = 0});
 
   @override
   _BottomNavPageState createState() => _BottomNavPageState();
@@ -47,6 +52,7 @@ class _BottomNavPageState extends State<BottomNavPage>
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
 
     // Initialize animation for the bottom navigation bar
     _animationController = AnimationController(
@@ -85,11 +91,14 @@ class _BottomNavPageState extends State<BottomNavPage>
       }
     });
     _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
-      if (mounted) {
-        setState(() {
-          _currentIndex = event.tabIndex;
-        });
-      }
+      if (!mounted) return;
+      // Guests have 3 tabs, signed-in shoppers 5: a tab that is not in the bar
+      // would fail BottomNavigationBar's index assertion (red screen).
+      final tabs = isLoggedIn ? 5 : 3;
+      if (event.tabIndex < 0 || event.tabIndex >= tabs) return;
+      setState(() {
+        _currentIndex = event.tabIndex;
+      });
     });
   }
 
@@ -165,6 +174,10 @@ class _BottomNavPageState extends State<BottomNavPage>
         },
         child: Scaffold(
           backgroundColor: const Color(0xFFF9F9FB),
+          floatingActionButton: _isLoading || _currentIndex == 2
+              ? null
+              : FloatingCart(onTap: () => setState(() => _currentIndex = 2)),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 260),
             switchInCurve: Curves.easeOutCubic,

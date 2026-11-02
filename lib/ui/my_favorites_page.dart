@@ -1,3 +1,4 @@
+import 'package:waioz/utility/cart_store.dart';
 import 'package:flutter/material.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:waioz/api/api_service.dart';
@@ -141,11 +142,11 @@ class _MyFavoritesPageState extends State<MyFavoritesPage>
 
   Future<void> _clearAndGoHome() async {
     try {
-      final cartResp = await _api.getCart(context);
+      final cartResp = await CartStore.instance.refresh(context);
       final items = cartResp.cart?.items ?? [];
       for (final item in items) {
         if (item.id != null && mounted) {
-          await _api.removeCart(context, item.id!);
+          await CartStore.instance.removeLine(context, item.id!);
         }
       }
     } catch (_) {}

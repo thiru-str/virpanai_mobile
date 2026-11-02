@@ -4,8 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class VersionUtils {
-  static Future<Map<String, dynamic>> parseVersionConfig(
-      String versionCheckJson) async {
+  static Future<Map<String, dynamic>> parseVersionConfig(String versionCheckJson) async {
     try {
       // remove any trailing commas before }
       final fixedJson = versionCheckJson.replaceAll(RegExp(r',\s*}'), '}');

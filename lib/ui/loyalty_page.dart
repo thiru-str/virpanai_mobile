@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
@@ -126,6 +127,8 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   Future<void> _handleRedeem() async {
     final pts = int.tryParse(_redeemCtrl.text) ?? 0;
     if (pts <= 0) return;
+    final minPts = (_account?.minimumRedeemPoints ?? 0).toInt();
+    if (minPts > 0 && pts < minPts) return;
     setState(() => _isRedeeming = true);
     try {
       final resp = await _api.redeemLoyaltyPoints(pts);
@@ -296,11 +299,19 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${_account!.pointsBalance ?? 0}',
-                  style: FontUtils.primaryFontStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+              // Flexible + FittedBox so a very large points balance scales
+              // down instead of overflowing the hero card on narrow phones.
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('${_account!.pointsBalance ?? 0}',
+                      maxLines: 1,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 8, left: 4),
                 child: Text('pts',
@@ -367,6 +378,9 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
   }
 
   Widget _redeemSection() {
+    final _enteredPts = int.tryParse(_redeemCtrl.text) ?? 0;
+    final _minPts = (_account?.minimumRedeemPoints ?? 0).toInt();
+    final _belowMin = _minPts > 0 && _enteredPts > 0 && _enteredPts < _minPts;
     return _card(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
@@ -381,6 +395,17 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
       Text(
           '${_numFmt(_account!.redeemRatio)} points = ${CurrencyUtil.appendCurrency("1")}',
           style: UiTypography.cardMeta(color: Colors.grey.shade500)),
+      Builder(builder: (context) {
+        final minPts = (_account!.minimumRedeemPoints ?? 0).toInt();
+        if (minPts > 0) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text('Minimum $minPts points required to redeem',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          );
+        }
+        return const SizedBox.shrink();
+      }),
       const SizedBox(height: 14),
       Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Expanded(
@@ -430,7 +455,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
         SizedBox(
             height: 50,
             child: ElevatedButton(
-              onPressed: _isRedeeming ? null : _handleRedeem,
+              onPressed: (_isRedeeming || _belowMin) ? null : _handleRedeem,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -452,7 +477,12 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
                           color: Colors.white)),
             )),
       ]),
-      if (_redeemPreview != null)
+      if (_belowMin)
+        Padding(
+            padding: const EdgeInsets.only(top: 8, left: 2),
+            child: Text('Minimum $_minPts points required to redeem',
+                style: TextStyle(fontSize: 11, color: Colors.orange.shade700)))
+      else if (_redeemPreview != null)
         Padding(
             padding: const EdgeInsets.only(top: 8, left: 2),
             child: Row(children: [
@@ -720,7 +750,7 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.green.shade600)),
-          if ((ptsPending as num) > 0 && (ptsEarned as num) == 0)
+          if ((ptsPending as num) > 0 && ptsEarned == 0)
             Text('Pending',
                 style: FontUtils.secondaryFontStyle(
                     fontSize: 11, color: Colors.orange.shade600)),

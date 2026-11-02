@@ -1,3 +1,7 @@
+import 'package:waioz/utility/cart_optimistic.dart';
+import 'package:waioz/utility/cart_store.dart';
+import 'package:waioz/ui/widgets/app_loader.dart';
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -33,12 +37,16 @@ class ProductPage extends StatefulWidget {
   final String tagId;
   final bool isFromBrand;
 
+  /// Opens the list already searched for this text (a "results/<text>" link).
+  final String initialQuery;
+
   const ProductPage(
       {super.key,
       this.categoryId = '',
       this.isFromBrand = false,
       this.collectionId = '',
-      this.tagId = ''});
+      this.tagId = '',
+      this.initialQuery = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -94,10 +102,16 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
     _loadProductViewType();
     _loadFavouriteState();
     _loadCategories();
+    // Set before the listener is attached, so the first load already searches.
+    if (widget.initialQuery.trim().isNotEmpty) {
+      searchController.text = widget.initialQuery.trim();
+    }
+    _previousSearchText = searchController.text.trim();
     getProductsApi(
         categoryIds: selectedCategoriesList.join(','),
         collectionIds: selectedCollectionsList.join(','),
-        tagIds: selectedTagsList.join(','));
+        tagIds: selectedTagsList.join(','),
+        searchString: searchController.text.trim());
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
 
@@ -500,6 +514,8 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF9F9FB),
+        floatingActionButton: const FloatingCart(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: CommonHeaderAppBar(
           title: AppStrings.product,
           onBackTap: () {
@@ -681,7 +697,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                   children: [
                      MasonryGridView.count(
                       controller: scrollController,
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(bottom: FloatingCart.clearance),
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
@@ -718,7 +734,7 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                       Positioned.fill(
                         child: Container(
                           color: const Color(0xFFF9F9FB),
-                          child: const ProductGridSkeleton(),
+                          child: const AppLoader(),
                         ),
                       ),
                     // Empty-state overlay (only after load completes)
@@ -861,12 +877,19 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
 
   Future<void> _addProductAndGoToCart() async {
     try {
-      final cartResp = await ApiService().getCart(context);
+      final cartResp = await CartStore.instance.refresh(context);
       if (cartResp.cart?.items?.isNotEmpty != true) {
-        final variantId =
-            filteredProducts.firstOrNull?.variants?.firstOrNull?.id;
+        final product = filteredProducts.firstOrNull;
+        final variantId = product?.variants?.firstOrNull?.id;
         if (variantId != null && mounted) {
-          await ApiService().addCart(context, 1, variantId);
+          await CartStore.instance.addVariant(
+              context,
+              ProvisionalLine(
+                  variantId: variantId,
+                  quantity: 1,
+                  productId: product?.id,
+                  productTitle: product?.title,
+                  thumbnail: product?.thumbnail));
         }
       }
     } catch (_) {}

@@ -1,13 +1,13 @@
+import 'package:waioz/utility/image_fallback_widget.dart';
 import 'dart:async';
+import 'cms_text_color.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/widgets/item_video_tile.dart';
 
-import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
@@ -113,7 +113,7 @@ class _Banner2State extends State<Banner2> {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                       ),
                       Visibility(
@@ -131,7 +131,7 @@ class _Banner2State extends State<Banner2> {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                         ),
@@ -196,7 +196,7 @@ class _Banner2State extends State<Banner2> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: CachedNetworkImage(
+          child: StoreImage(
             imageUrl: url,
             width: 160,
             height: 150,
@@ -217,10 +217,6 @@ Widget _imageFallback(double w, double h) {
     height: h,
     color: AppColors.secondary,
     alignment: Alignment.center,
-    child: SvgPicture.asset(
-      AppAssets.ic_no_image,
-      width: w * 0.5,
-      height: h * 0.5,
-    ),
+    child: NoImageMark(width: w * 0.5, height: h * 0.5),
   );
 }

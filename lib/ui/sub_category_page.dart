@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
@@ -27,6 +28,8 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        floatingActionButton: const FloatingCart(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: CommonHeaderAppBar(
           title: AppStrings.categories,
           onBackTap: () {
@@ -66,6 +69,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
               ),
               Expanded(
                 child: MasonryGridView.count(
+                  padding: const EdgeInsets.only(bottom: FloatingCart.clearance),
                   crossAxisCount: 2,
                   scrollDirection: Axis.vertical,
                   itemCount: widget.productCategory.length,

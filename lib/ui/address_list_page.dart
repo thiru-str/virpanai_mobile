@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:waioz/api/api_service.dart';
@@ -199,6 +200,8 @@ class _AddressListPageState extends State<AddressListPage> {
                   Expanded(
                     child: Text(
                       address?.addressName ?? 'Others',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: UiTypography.cardTitle().copyWith(
                         fontSize: 16,
                         height: 1.25,

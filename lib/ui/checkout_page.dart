@@ -45,6 +45,8 @@ import 'package:lottie/lottie.dart';
 import '../api/api_service.dart';
 import '../model/home_page_response.dart';
 import '../utility/app_utils.dart';
+import '../utility/cart_store.dart';
+import 'order_failed_page.dart';
 import '../utility/currency_util.dart';
 import '../utility/page_route_utils.dart';
 import '../utility/shared_preferences_util.dart';
@@ -283,12 +285,18 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       style: UiTypography.cardMeta(
                                           color: AppColors.textColor50),
                                     ),
-                                    Text(
-                                      CurrencyUtil.appendCurrency(
-                                          payableAmount.toStringAsFixed(2)),
-                                      style: UiTypography.cardPrice(
-                                              color: AppColors.primary)
-                                          .copyWith(fontSize: 20),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        CurrencyUtil.appendCurrency(
+                                            payableAmount.toStringAsFixed(2)),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                        style: UiTypography.cardPrice(
+                                                color: AppColors.primary)
+                                            .copyWith(fontSize: 20),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -668,36 +676,46 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Available Balance',
-                            style: UiTypography.cardMeta(
-                                color: AppColors.textColor50)),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyUtil.appendCurrency(
-                              walletBalance.toStringAsFixed(2)),
-                          style:
-                              UiTypography.cardPrice(color: AppColors.textColor)
-                                  .copyWith(fontSize: 18),
-                        ),
-                      ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Available Balance',
+                              style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50)),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyUtil.appendCurrency(
+                                walletBalance.toStringAsFixed(2)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: UiTypography.cardPrice(
+                                    color: AppColors.textColor)
+                                .copyWith(fontSize: 18),
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('Order Total',
-                            style: UiTypography.cardMeta(
-                                color: AppColors.textColor50)),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyUtil.appendCurrency(
-                              cartTotal.toStringAsFixed(2)),
-                          style: UiTypography.cardAction(
-                              color: AppColors.textColor),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Order Total',
+                              style: UiTypography.cardMeta(
+                                  color: AppColors.textColor50)),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyUtil.appendCurrency(
+                                cartTotal.toStringAsFixed(2)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                            style: UiTypography.cardAction(
+                                color: AppColors.textColor),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1033,43 +1051,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
     }
   }
 
-  void placeOrder() async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.placeOrder(context, pp_id!);
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: '',
-          ));
-    } catch (e) {
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      print(e);
-    }
-  }
-
+  // No order exists unless the backend says so; a failed completion is
+  // explained on the failure screen or as a message.
   void completeCart() async {
-    try {
-      final ApiService apiService = ApiService();
-      final response = await apiService.completeCart(context);
-      setState(() {
-        placeOrderApiLoading = false;
-      });
+    final result = await ApiService().completeCart(context);
+    if (!mounted) return;
+    setState(() => placeOrderApiLoading = false);
+    final orderId = result.orderId;
+    if (orderId != null) {
+      CartStore.instance.clear();
       PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: response.order?.id ?? '',
-          ));
-    } catch (e) {
-      setState(() {
-        placeOrderApiLoading = false;
-      });
-      print(e);
+          context, OrderPlacedPage(orderId: orderId));
+      return;
+    }
+    final failure = result.failure!;
+    getCartApi();
+    if (failure.showsFailureScreen) {
+      PageRouteUtils.push(context, OrderFailedPage(failure: failure));
+    } else {
+      AppUtils.showToast(failure.message);
     }
   }
 
@@ -1136,8 +1136,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
       }
     }
 
-    dynamic apiResponse = await apiService.updatePaymentMethod(
-        context, paymentProviderId, cartResponse!);
+    dynamic apiResponse =
+        await apiService.updatePaymentMethod(context, paymentProviderId);
 
     switch (paymentProviderId) {
       case 'pp_razorpay_razorpay':
@@ -1201,12 +1201,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
             redirectUrl: redirectUrl,
             onSuccess: (orderId) {
               Navigator.pop(context);
+              CartStore.instance.clear();
               PageRouteUtils.pushAndRemoveUntil(
                 context,
                 OrderPlacedPage(orderId: orderId),
               );
             },
-            onFailure: () {
+            onFailure: (_) {
               Navigator.pop(context);
               AppUtils.showToast('ICICI payment failed or was cancelled.');
               getCartApi();

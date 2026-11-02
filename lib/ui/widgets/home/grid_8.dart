@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -46,7 +47,7 @@ class Grid8 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                     ),
                   ),
@@ -65,7 +66,7 @@ class Grid8 extends StatelessWidget {
                           style: FontUtils.primaryFontStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textColor,
+                            color: cmsCardText(context, AppColors.textColor),
                           ),
                         ),
                       ),
@@ -153,7 +154,7 @@ class _TopImageCard extends StatelessWidget {
         child: AspectRatio(
           aspectRatio: 1.42,
           child: safeUrl.isNotEmpty
-              ? CachedNetworkImage(
+              ? StoreImage(
                   imageUrl: safeUrl,
                   fit: BoxFit.contain,
                   errorWidget: (_, __, ___) => const ImageFallbackWidget(
@@ -196,7 +197,7 @@ class _Grid8Item extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 1,
               child: safeUrl.isNotEmpty
-                  ? CachedNetworkImage(
+                  ? StoreImage(
                       imageUrl: safeUrl,
                       fit: BoxFit.cover,
                       errorWidget: (_, __, ___) => const ImageFallbackWidget(
@@ -223,7 +224,7 @@ class _Grid8Item extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),

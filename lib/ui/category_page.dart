@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:waioz/ui/tutorial/tutorial_coordinator.dart';
@@ -7,6 +8,7 @@ import 'package:waioz/model/product_categories_response.dart';
 import 'package:waioz/ui/product_page.dart';
 import 'package:waioz/ui/sub_category_page.dart';
 import 'package:waioz/ui/widgets/category_card.dart';
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -27,8 +29,12 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
-  ProductCategoriesResponse? productCategoriesResponse;
-  bool apiLoading = true;
+  // The tab is rebuilt on every visit: the last list shows at once while a
+  // fresh one loads behind it, instead of a skeleton each time.
+  static ProductCategoriesResponse? _last;
+
+  ProductCategoriesResponse? productCategoriesResponse = _last;
+  bool apiLoading = _last == null;
   final GlobalKey _firstCategoryKey = GlobalKey();
 
   List<ProductCategory> get _categories =>
@@ -44,6 +50,9 @@ class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        // the bottom-nav shell floats its own
+        floatingActionButton: widget.isFromBottomNav ? null : const FloatingCart(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         appBar: CommonHeaderAppBar(
           title: AppStrings.categories,
           leading: widget.isFromBottomNav ? false : true,
@@ -53,7 +62,7 @@ class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
         ),
         backgroundColor: const Color(0xFFF9F9FB),
         body: apiLoading
-            ? const CategoryPageSkeleton()
+            ? const AppLoader()
             : _categories.isEmpty
                 ? NoOrdersWidget(
                     message: AppStrings.no_categories_found,
@@ -81,6 +90,7 @@ class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
                         ),
                         Expanded(
                           child: MasonryGridView.count(
+                            padding: const EdgeInsets.only(bottom: FloatingCart.clearance),
                             crossAxisCount: 2,
                             itemCount: _categories.length,
                             itemBuilder: (context, index) {
@@ -89,7 +99,7 @@ class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
                               return KeyedSubtree(
                                 key: index == 0 ? _firstCategoryKey : null,
                                 child: CategoryCard(
-                                  imagePath: productCategory.image ?? '',
+                                  imagePath: categoryCoverImage(productCategory),
                                   title: productCategory.name!,
                                   onTap: () {
                                     if (productCategory
@@ -124,6 +134,8 @@ class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
     try {
       final ApiService apiService = ApiService();
       productCategoriesResponse = await apiService.productCategories(context);
+      _last = productCategoriesResponse;
+      if (!mounted) return;
       setState(() {
         apiLoading = false;
         productCategoriesResponse;
@@ -199,4 +211,17 @@ class _CategoryPageState extends State<CategoryPage> with TutorialMixin {
       ProductPage(categoryId: categoryId),
     );
   }
+}
+
+/// The picture for a category tile: its own image, else the first image found
+/// among its sub-categories (depth-first). Grouping categories (SAREES › Silk,
+/// Tussar…) usually have no photo of their own, while their children do.
+String categoryCoverImage(ProductCategory category) {
+  final own = (category.image ?? '').trim();
+  if (own.isNotEmpty) return own;
+  for (final child in category.categoryChildren ?? const <ProductCategory>[]) {
+    final found = categoryCoverImage(child);
+    if (found.isNotEmpty) return found;
+  }
+  return '';
 }

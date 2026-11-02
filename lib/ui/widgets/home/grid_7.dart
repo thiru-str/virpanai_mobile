@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -28,7 +29,7 @@ class Grid7 extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F1F8),
+            color: cmsCard(context, const Color(0xFFF0F1F8)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
@@ -43,7 +44,7 @@ class Grid7 extends StatelessWidget {
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textColor,
+                    color: cmsCardText(context, AppColors.textColor),
                   ),
                 ),
               ),
@@ -116,7 +117,7 @@ class _Grid7Card extends StatelessWidget {
         child: Container(
           color: const Color(0xFFD9DBE6),
           child: imageUrl.isNotEmpty
-              ? CachedNetworkImage(
+              ? StoreImage(
                   imageUrl: imageUrl,
                   width: double.infinity,
                   height: double.infinity,

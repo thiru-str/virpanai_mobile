@@ -1,7 +1,8 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,8 @@ import 'package:waioz/ui/widgets/view_cart.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
+import 'package:waioz/utility/cart_optimistic.dart';
+import 'package:waioz/utility/cart_store.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -65,7 +68,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   CartResponse? cartResponse;
 
   bool apiLoading = true;
-  bool quantityLoading = false;
   bool hasVariants = false;
   bool? productPresentInCart; // Changed to nullable to handle loading state
   bool isFavorite = false;
@@ -92,6 +94,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int? cartItems;
   List<String>? cartItemImages;
   late StreamSubscription<ViewCartModel> _eventSubscription;
+  StreamSubscription<CartStateEvent>? _cartStateSubscription;
 
   bool isLoggedIn = false;
 
@@ -123,6 +126,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void listenToEvents() {
+    _cartStateSubscription =
+        eventBus.on<CartStateEvent>().listen((event) => _applyCart(event.cart));
     _eventSubscription = eventBus.on<ViewCartModel>().listen((event) {
       if (mounted) {
         setState(() {
@@ -143,6 +148,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   void dispose() {
     _eventSubscription.cancel();
     _quantityController.dispose();
+    _cartStateSubscription?.cancel();
     _galleryController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -337,7 +343,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                             ],
                           )
-                        : CachedNetworkImage(
+                        : StoreImage(
                             imageUrl: url,
                             width: double.infinity,
                             height: imageH,
@@ -530,7 +536,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             if (thumbnailUrl != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
+                child: StoreImage(
                   imageUrl: thumbnailUrl,
                   width: 44,
                   height: 44,
@@ -1187,8 +1193,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return sum;
     });
 
-    // if variant has inventory_quantity
-    if (variant.inventoryQuantity != null) {
+    // Stock only caps the quantity when it is tracked and cannot be
+    // backordered — the same rule isStockAvailable uses, so a sellable
+    // backorder variant (stock 0) is never refused as "max reached".
+    final stockCaps = variant.manageInventory == true && variant.allowBackorder != true;
+    if (stockCaps && variant.inventoryQuantity != null) {
       return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
     }
 
@@ -1498,26 +1507,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     }
                     if (productPresentInCart == true &&
                         _cartLineItemId != null) {
-                      // Update existing cart item to new total qty
-                      setState(() => quantityLoading = true);
-                      try {
-                        await ApiService().updateCart(
-                            context, selectedQuantity, _cartLineItemId!);
-                        await getCartApi();
-                        if (mounted) setState(() => quantityLoading = false);
-                        return;
-                      } catch (_) {
-                        // Line item was removed from cart (e.g. cleared on cart page)
-                        // — reset stale state and fall through to add as new item
-                        await getCartApi();
-                        if (mounted) {
-                          setState(() {
-                            _cartLineItemId = null;
-                            productPresentInCart = false;
-                            quantityLoading = false;
-                          });
-                        }
-                      }
+                      // Already in the cart: the button sets the line to the
+                      // chosen quantity (instant, like every other cart change).
+                      CartStore.instance.setLineQuantity(
+                          context, _cartLineItemId!, selectedQuantity);
+                      return;
                     }
                     if ((addOnProductsCount ?? 0) > 0) {
                       final selectedAddOns = await showAddOnBottomSheet(
@@ -1526,58 +1520,49 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
 
                       if (selectedAddOns != null) {
-                        await addProductWithAddOnsToCart(
+                        addProductWithAddOnsToCart(
                           mainQty: selectedQuantity,
                           mainVariantId: selectedVariantId!,
                           addOns: selectedAddOns,
                         );
                       }
                     } else {
-                      await addProductWithAddOnsToCart(
+                      addProductWithAddOnsToCart(
                         mainQty: selectedQuantity,
                         mainVariantId: selectedVariantId!,
                         addOns: [],
                       );
                     }
                   },
-            child: quantityLoading
-                ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (selectedVariantId != null && !stockNotAvailable) ...[
-                        const Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Flexible(
-                        child: Text(
-                          selectedVariantId == null
-                              ? AppStrings.select_variant
-                              : stockNotAvailable
-                                  ? AppStrings.out_of_stock
-                                  : (productPresentInCart == true
-                                      ? AppStrings.update_cart
-                                      : AppStrings.add_to_cart),
-                          style: FontUtils.primaryFontStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (selectedVariantId != null && !stockNotAvailable) ...[
+                  const Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 20,
+                    color: Colors.white,
                   ),
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: Text(
+                    selectedVariantId == null
+                        ? AppStrings.select_variant
+                        : stockNotAvailable
+                            ? AppStrings.out_of_stock
+                            : (productPresentInCart == true
+                                ? AppStrings.update_cart
+                                : AppStrings.add_to_cart),
+                    style: FontUtils.primaryFontStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -1809,48 +1794,43 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  Future<void> addCart(int qty, String variantId) async {
-    try {
-      final apiService = ApiService();
-      setState(() => quantityLoading = true);
-
-      await apiService.addCart(context, qty, variantId);
-      await getCartApi(); // Refresh cart
-
-      setState(() => quantityLoading = false);
-    } catch (e) {
-      setState(() => quantityLoading = false);
-      print(e);
-    }
-  }
-
-  Future<void> addProductWithAddOnsToCart({
+  // The badge and cart change on tap; each add waits its turn in the cart
+  // queue and rolls back with the server's message when it is refused.
+  void addProductWithAddOnsToCart({
     required int mainQty,
     required String mainVariantId,
     required List<ProductResponse.Product> addOns,
-  }) async {
-    try {
-      final apiService = ApiService();
-      setState(() => quantityLoading = true);
+  }) {
+    final store = CartStore.instance;
+    store.addVariant(
+      context,
+      ProvisionalLine(
+        variantId: mainVariantId,
+        quantity: mainQty,
+        productId: product?.id,
+        productTitle: product?.title,
+        variantTitle: selectedVariant?.title,
+        thumbnail: product?.thumbnail,
+        unitPrice: selectedVariant?.calculatedPrice?.calculatedAmount,
+      ),
+    );
 
-      // Add main product
-      await apiService.addCart(context, mainQty, mainVariantId);
-
-      // Add each add-on (with default quantity 1)
-      for (final product in addOns) {
-        if ((product.variants?.isNotEmpty ?? false)) {
-          final variantId = product.variants?.first.id ?? null;
-          if (variantId != null) {
-            await apiService.addCart(context, mainQty, variantId);
-          }
-        }
-      }
-
-      await getCartApi(); // Refresh cart
-    } catch (e) {
-      print(e);
-    } finally {
-      setState(() => quantityLoading = false);
+    for (final addOn in addOns) {
+      final variant = addOn.variants?.firstOrNull;
+      final variantId = variant?.id;
+      if (variantId == null) continue;
+      store.addVariant(
+        context,
+        ProvisionalLine(
+          variantId: variantId,
+          quantity: mainQty,
+          productId: addOn.id,
+          productTitle: addOn.title,
+          variantTitle: variant?.title,
+          thumbnail: addOn.thumbnail,
+          unitPrice: variant?.calculatedPrice?.calculatedAmount,
+        ),
+      );
     }
   }
 
@@ -2038,28 +2018,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> getCartApi() async {
-    try {
-      if (!isLoggedIn) {
-        return;
-      }
-      final apiService = ApiService();
-      final response = await apiService.getCart(context);
-      setState(() {
-        cartResponse = response;
-        _syncCartStateForVariant();
-        emitEvent(cartResponse!);
-      });
-    } catch (e) {
-      print(e);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        productPresentInCart = false;
-        _cartLineItemQty = 0;
-        _cartLineItemId = null;
-      });
-    }
+    if (!isLoggedIn) return;
+    _applyCart(await CartStore.instance.refresh(context));
+  }
+
+  void _applyCart(CartResponse cart) {
+    if (!mounted) return;
+    setState(() {
+      cartResponse = cart;
+      _syncCartStateForVariant();
+    });
   }
 
   Future<List<ProductResponse.Product>?> showAddOnBottomSheet(
@@ -2163,28 +2131,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         );
       },
     );
-  }
-
-  void emitEvent(CartResponse cartResponse) {
-    setState(() {
-      cartItems =
-          cartResponse.cart?.items?.where((item) => !item.isPlatformFee).length;
-      cartItemImages = cartResponse.cart?.items
-          ?.where((item) => !item.isPlatformFee)
-          .map((item) => item.thumbnail ?? "")
-          .toList();
-    });
-    if ((cartResponse.cart?.items
-                ?.where((item) => !item.isPlatformFee)
-                .length ??
-            0) >
-        0) {
-      final qtyMap = <String, int>{};
-      for (var item in cartResponse.cart?.items ?? []) {
-        qtyMap[item.variantId] = item.quantity;
-      }
-      eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
-    }
   }
 
   Future<Map<String, File?>> generateVideoThumbnails(

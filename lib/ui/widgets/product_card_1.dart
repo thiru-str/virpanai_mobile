@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/favourite_list_detail_page.dart';
@@ -191,7 +191,7 @@ class _ProductCard1State extends State<ProductCard1> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final description = (product.description ?? '').trim();
     final cheapest = _cheapestVariant(product);
     final rating = double.tryParse(
@@ -241,7 +241,9 @@ class _ProductCard1State extends State<ProductCard1> {
                   child: Container(
                     height: 225,
                     color: AppColors.secondary,
-                    child: PageView.builder(
+                    child: images.isEmpty
+                        ? const ImageFallbackWidget(fill: true)
+                        : PageView.builder(
                       itemCount: images.length,
                       onPageChanged: (index) {
                         setState(() {
@@ -249,12 +251,12 @@ class _ProductCard1State extends State<ProductCard1> {
                         });
                       },
                       itemBuilder: (context, index) {
-                        return CachedNetworkImage(
+                        return StoreImage(
                           imageUrl: images[index].url ?? '',
                           fit: BoxFit.cover,
                           width: double.infinity,
                           errorWidget: (context, url, error) =>
-                          const ImageFallbackWidget(w: 60, h: 60),
+                          const ImageFallbackWidget(w: 60, h: 60, fill: true),
                         );
                       },
                     ),

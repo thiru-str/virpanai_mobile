@@ -1,3 +1,4 @@
+import 'package:waioz/ui/widgets/app_loader.dart';
 import 'dart:async';
 
 import 'package:confetti/confetti.dart';
@@ -44,6 +45,10 @@ import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
+import 'package:waioz/utility/cart_store.dart';
+import 'package:waioz/utility/checkout_completion.dart';
+import 'package:waioz/utility/coupon_removed.dart';
+import 'package:waioz/utility/payment_provider_selection.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/ui_typography.dart';
@@ -57,6 +62,8 @@ import '../utility/app_config.dart';
 import '../utility/currency_util.dart';
 import '../utility/shared_preferences_util.dart';
 import 'address_list_page.dart';
+import 'bottom_nav_page.dart';
+import 'order_failed_page.dart';
 import 'order_placed_page.dart';
 
 class CartPage extends StatefulWidget {
@@ -89,11 +96,19 @@ class _CartPageState extends State<CartPage>
   final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
   String? cashfreePaymentSessionId;
   String? cashfreeEnvironment;
-  Future<bool>? _cartRefreshInFlight;
   bool showPriceBreakdown = false;
 
   // Fulfillment selection
   FulfillmentSelection _fulfillment = const FulfillmentSelection(type: 'standard');
+  // Optimistic cart: totals are stale and checkout waits while this is true.
+  bool cartSyncing = false;
+  Set<String> pendingLineIds = const {};
+  StreamSubscription<CartStateEvent>? _cartStateSubscription;
+  bool _completing = false;
+  // A choice the backend has not stored on the cart yet (ICICI's session is
+  // only created when the order is placed).
+  String? _selectedProviderId;
+  String? _dismissedCouponKey;
 
   // Wallet split state
   bool splitActive = false;
@@ -142,8 +157,22 @@ class _CartPageState extends State<CartPage>
       });
     });
 
+    _cartStateSubscription =
+        eventBus.on<CartStateEvent>().listen(_onCartState);
+    _loadDismissedCouponKey();
+    _showCachedCart();
     initGlobal();
     getCartApi();
+  }
+
+  // Paint the cart the store already holds while it is re-read, unless it
+  // belongs to another session's cart.
+  Future<void> _showCachedCart() async {
+    final store = CartStore.instance;
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    if (!mounted || cartId == null || store.cart.cart?.id != cartId) return;
+    _onCartState(
+        CartStateEvent(store.cart, store.isSyncing, store.pendingLineIds));
   }
 
   Future<void> initGlobal() async {
@@ -278,6 +307,8 @@ class _CartPageState extends State<CartPage>
 
   @override
   void dispose() {
+    _cartStateSubscription?.cancel();
+    razorpay.clear();
     _confettiController.dispose();
     _shakeController.dispose();
     super.dispose();
@@ -316,8 +347,9 @@ class _CartPageState extends State<CartPage>
       backgroundColor: const Color(0xFFF9F9FB),
       body: Stack(
         children: [
-          if (apiLoading) const AppLoader(),
-          if (!apiLoading) cartResponse?.cart?.items?.isNotEmpty ?? false
+          apiLoading
+              ? const AppLoader()
+              : cartResponse?.cart?.items?.isNotEmpty ?? false
                   ? Scaffold(
                       backgroundColor: const Color(0xFFF9F9FB),
                       body: SingleChildScrollView(
@@ -403,24 +435,27 @@ class _CartPageState extends State<CartPage>
                                           .where((item) => !item.isVirtualItem)
                                           .toList();
                                       final cartItem = productItems[index];
-                                      final originalIndex = cartResponse!
-                                          .cart!.items!
-                                          .indexOf(cartItem);
                                       return AppReveal(
                                         index: index,
                                         child: CartItemCard(
                                           imageUrl: cartItem.thumbnail ?? '',
-                                          productName: cartItem.productTitle!,
+                                          productName:
+                                              cartItem.productTitle ?? '',
                                           error: cartItem.error ?? '',
-                                          size: cartItem.variantTitle! ==
+                                          size: (cartItem.variantTitle ??
+                                                      "Default variant") ==
                                                   "Default variant"
                                               ? ""
                                               : cartItem.variantTitle!,
                                           color: 'color',
-                                          price: CurrencyUtil.appendCurrency(
-                                              (cartItem.unitPrice! *
-                                                      cartItem.quantity!)
-                                                  .toStringAsFixed(2)),
+                                          // A provisional line has no server
+                                          // price yet.
+                                          price: cartItem.unitPrice == null
+                                              ? ''
+                                              : CurrencyUtil.appendCurrency(
+                                                  (cartItem.unitPrice! *
+                                                          cartItem.quantity!)
+                                                      .toStringAsFixed(2)),
                                           quantity: cartItem.quantity!,
                                           isUpdating: cartItem.isUpdating!,
                                           onTap: cartItem.productId != null
@@ -434,206 +469,18 @@ class _CartPageState extends State<CartPage>
                                                   if (mounted) getCartApi();
                                                 }
                                               : null,
-                                          onRemoveAll: () {
-                                            setState(() {
-                                              cartResponse!
-                                                  .cart!
-                                                  .items![originalIndex]
-                                                  .isUpdating = true;
-                                            });
-                                            removeCart(
-                                                cartItem.id!, originalIndex);
-                                          },
-                                          onIncrease: () {
-                                            setState(() {
-                                              cartResponse!
-                                                  .cart!
-                                                  .items![originalIndex]
-                                                  .isUpdating = true;
-                                            });
-                                            updateCart(cartItem.quantity! + 1,
-                                                cartItem.id!, originalIndex);
-                                          },
-                                          onDecrease: () async {
-                                            final item = cartResponse!
-                                                .cart!.items![originalIndex];
-                                            final currentQty =
-                                                item.quantity ?? 0;
-                                            final stockQty =
-                                                item.inventoryQuantity ?? 0;
-
-                                            setState(
-                                                () => item.isUpdating = true);
-
-                                            if (currentQty <= 1) {
-                                              removeCart(
-                                                  item.id!, originalIndex);
-                                              return;
-                                            }
-
-                                            if (!(item.inStock ?? false)) {
-                                              if (stockQty == 0) {
-                                                removeCart(
-                                                    item.id!, originalIndex);
-                                                return;
-                                              }
-
-                                              if (currentQty > stockQty) {
-                                                final confirmed =
-                                                    await showDialog<bool>(
-                                                  context: context,
-                                                  builder: (_) => AlertDialog(
-                                                    title: Text(
-                                                      AppStrings.stock_update,
-                                                      style: FontUtils
-                                                          .primaryFontStyle(
-                                                              color: AppColors
-                                                                  .primary,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                    ),
-                                                    content: Text(
-                                                      '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
-                                                      '${AppStrings.stock_update_message_suffix} $stockQty?',
-                                                      style: FontUtils
-                                                          .secondaryFontStyle(),
-                                                    ),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                context, false),
-                                                        child: Text(
-                                                          AppStrings.cancel,
-                                                          style: FontUtils
-                                                              .primaryFontStyle(
-                                                                  color: AppColors
-                                                                      .primary,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        ),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                context, true),
-                                                        child: Text(
-                                                          AppStrings.yes_update,
-                                                          style: FontUtils
-                                                              .primaryFontStyle(
-                                                                  color: AppColors
-                                                                      .primary,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-
-                                                if (confirmed == true) {
-                                                  updateCart(stockQty, item.id!,
-                                                      originalIndex);
-                                                } else {
-                                                  setState(() =>
-                                                      item.isUpdating = false);
-                                                }
-                                                return;
-                                              }
-                                            }
-
-                                            updateCart(currentQty - 1, item.id!,
-                                                originalIndex);
-                                          },
-                                          onUpdateQuantity:
-                                              (newQty) async {
-                                            final item = cartResponse!
-                                                .cart!.items![originalIndex];
-                                            final stockQty =
-                                                item.inventoryQuantity ?? 0;
-
-                                            setState(
-                                                () => item.isUpdating = true);
-
-                                            if (newQty <= 0) {
-                                              removeCart(
-                                                  item.id!, originalIndex);
-                                              return;
-                                            }
-
-                                            if (stockQty > 0 &&
-                                                newQty > stockQty) {
-                                              final confirmed =
-                                                  await showDialog<bool>(
-                                                context: context,
-                                                builder: (_) => AlertDialog(
-                                                  title: Text(
-                                                    AppStrings.stock_update,
-                                                    style: FontUtils
-                                                        .primaryFontStyle(
-                                                            color: AppColors
-                                                                .primary,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                  ),
-                                                  content: Text(
-                                                    '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
-                                                    '${AppStrings.stock_update_message_suffix} $stockQty?',
-                                                    style: FontUtils
-                                                        .secondaryFontStyle(),
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context, false),
-                                                      child: Text(
-                                                        AppStrings.cancel,
-                                                        style: FontUtils
-                                                            .primaryFontStyle(
-                                                                color: AppColors
-                                                                    .primary,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                      ),
-                                                    ),
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context, true),
-                                                      child: Text(
-                                                        AppStrings.yes_update,
-                                                        style: FontUtils
-                                                            .primaryFontStyle(
-                                                                color: AppColors
-                                                                    .primary,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-
-                                              if (confirmed == true) {
-                                                updateCart(stockQty, item.id!,
-                                                    originalIndex);
-                                              } else {
-                                                setState(() =>
-                                                    item.isUpdating = false);
-                                              }
-                                              return;
-                                            }
-
-                                            updateCart(
-                                                newQty, item.id!, originalIndex);
-                                          },
+                                          priceUpdating: pendingLineIds
+                                              .contains(cartItem.id),
+                                          onRemoveAll: () =>
+                                              removeCart(cartItem.id!),
+                                          onIncrease: () => updateCart(
+                                              cartItem.quantity! + 1,
+                                              cartItem.id!),
+                                          onDecrease: () =>
+                                              _decreaseQuantity(cartItem),
+                                          onUpdateQuantity: (newQty) =>
+                                              _setTypedQuantity(
+                                                  cartItem, newQty),
                                         ),
                                       );
                                     },
@@ -684,6 +531,8 @@ class _CartPageState extends State<CartPage>
                                   },
                                 ),
                               ),
+
+                            _buildCouponRemovedNotice(),
 
                             // Coupon Card (Ajio style)
                             KeyedSubtree(key: _couponKey, child: _buildCouponCard()),
@@ -738,147 +587,162 @@ class _CartPageState extends State<CartPage>
                                     border: Border.all(
                                         color: const Color(0xFFE5E7EC)),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 12),
-                                        child: Text(
-                                          'Price Details',
-                                          style:
-                                              UiTypography.cardTitle().copyWith(
-                                            fontSize: 16,
-                                            height: 1.25,
-                                            letterSpacing: -0.2,
+                                  child: AnimatedOpacity(
+                                    // Totals are the last server values until
+                                    // queued cart changes are confirmed.
+                                    opacity: cartSyncing ? 0.6 : 1,
+                                    duration:
+                                        const Duration(milliseconds: 150),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 12),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Price Details',
+                                                style: UiTypography.cardTitle()
+                                                    .copyWith(
+                                                  fontSize: 16,
+                                                  height: 1.25,
+                                                  letterSpacing: -0.2,
+                                                ),
+                                              ),
+                                              if (cartSyncing) ...[
+                                                const SizedBox(width: 8),
+                                                _syncingIndicator(),
+                                              ],
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                      _priceRow(
-                                          AppStrings.subTotal,
-                                          CurrencyUtil.appendCurrency(
-                                              (_numOrZero(cartResponse?.cart
-                                                          ?.itemSubtotal) -
-                                                      _numOrZero(cartResponse
-                                                          ?.cart?.items
-                                                          ?.where((item) => item
-                                                              .isVirtualItem)
-                                                          .fold<num>(
-                                                              0,
-                                                              (sum, item) =>
-                                                                  sum +
-                                                                  (item.total ??
-                                                                      0))))
-                                                  .toStringAsFixed(2))),
-                                      _priceRow(
-                                          AppStrings.shipping,
-                                          _numOrZero(cartResponse?.cart
-                                                      ?.shippingSubtotal) >
-                                                  0
-                                              ? CurrencyUtil.appendCurrency(
-                                                  _numOrZero(cartResponse?.cart
-                                                          ?.shippingSubtotal)
-                                                      .toStringAsFixed(2))
-                                              : 'FREE'),
-                                      if ((cartResponse?.cart?.items?.any(
-                                                  (item) =>
-                                                      item.isPlatformFee) ??
-                                              false) &&
-                                          _platformFeeTotal() > 0)
                                         _priceRow(
-                                            AppStrings.platform_fee,
+                                            AppStrings.subTotal,
                                             CurrencyUtil.appendCurrency(
-                                                _platformFeeTotal()
+                                                (_numOrZero(cartResponse?.cart
+                                                            ?.itemSubtotal) -
+                                                        _numOrZero(cartResponse
+                                                            ?.cart?.items
+                                                            ?.where((item) => item
+                                                                .isVirtualItem)
+                                                            .fold<num>(
+                                                                0,
+                                                                (sum, item) =>
+                                                                    sum +
+                                                                    (item.total ??
+                                                                        0))))
                                                     .toStringAsFixed(2))),
-                                      if (_numOrZero(
-                                              cartResponse?.cart?.taxTotal) >
-                                          0)
                                         _priceRow(
-                                            AppStrings.tax,
-                                            CurrencyUtil.appendCurrency(
-                                                _numOrZero(cartResponse
-                                                        ?.cart?.taxTotal)
-                                                    .toStringAsFixed(2))),
-                                      if ((cartResponse?.cart?.promotions ?? [])
-                                              .isNotEmpty &&
-                                          _numOrZero(cartResponse
-                                                  ?.cart?.discountSubtotal) >
-                                              0)
-                                        _priceRow(
-                                          'Coupon Savings',
-                                          '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
-                                          valueColor: const Color(0xFF1FA971),
-                                        ),
-                                      // Loyalty points discount (negative line item added by API)
-                                      if ((cartResponse?.cart?.items?.any(
-                                              (item) =>
-                                                  item.isLoyaltyDiscount) ??
-                                          false))
-                                        Builder(builder: (_) {
-                                          final li = cartResponse!.cart!.items!
-                                              .firstWhere((item) =>
-                                                  item.isLoyaltyDiscount);
-                                          final amt = (li.total ?? 0).abs();
-                                          final pts =
-                                              li.metadata?.pointsApplied ?? 0;
-                                          return _priceRow(
-                                            'Loyalty Points ($pts pts)',
-                                            '- ${CurrencyUtil.appendCurrency(amt.toStringAsFixed(2))}',
-                                            valueColor: AppColors.primary,
-                                          );
-                                        }),
-                                      if (_loyaltyDiscount > 0)
-                                        _priceRow(
-                                          'Loyalty Points ($_loyaltyPointsApplied pts)',
-                                          '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
-                                          valueColor: AppColors.primary,
-                                        ),
-                                      if (splitActive && splitWalletAmount > 0)
-                                        _priceRow(
-                                          'Wallet',
-                                          '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
-                                          valueColor: AppColors.primary,
-                                        ),
-                                      const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 10),
-                                        child: Divider(
-                                            color: Color(0xFFE5E7EC),
-                                            height: 1),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Total Amount',
-                                            style: UiTypography.cardTitle()
-                                                .copyWith(
-                                              fontSize: 16,
-                                              letterSpacing: -0.2,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Flexible(
-                                            child: Text(
+                                            AppStrings.shipping,
+                                            _numOrZero(cartResponse?.cart
+                                                        ?.shippingSubtotal) >
+                                                    0
+                                                ? CurrencyUtil.appendCurrency(
+                                                    _numOrZero(cartResponse?.cart
+                                                            ?.shippingSubtotal)
+                                                        .toStringAsFixed(2))
+                                                : 'FREE'),
+                                        if ((cartResponse?.cart?.items?.any(
+                                                    (item) =>
+                                                        item.isPlatformFee) ??
+                                                false) &&
+                                            _platformFeeTotal() > 0)
+                                          _priceRow(
+                                              AppStrings.platform_fee,
                                               CurrencyUtil.appendCurrency(
-                                                  _displayTotalAmount()
-                                                      .toStringAsFixed(2)),
-                                              maxLines: 1,
-                                              textAlign: TextAlign.right,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: UiTypography.cardPrice(
-                                                      color: AppColors.primary)
-                                                  .copyWith(fontSize: 20),
-                                            ),
+                                                  _platformFeeTotal()
+                                                      .toStringAsFixed(2))),
+                                        if (_numOrZero(
+                                                cartResponse?.cart?.taxTotal) >
+                                            0)
+                                          _priceRow(
+                                              AppStrings.tax,
+                                              CurrencyUtil.appendCurrency(
+                                                  _numOrZero(cartResponse
+                                                          ?.cart?.taxTotal)
+                                                      .toStringAsFixed(2))),
+                                        if ((cartResponse?.cart?.promotions ?? [])
+                                                .isNotEmpty &&
+                                            _numOrZero(cartResponse
+                                                    ?.cart?.discountSubtotal) >
+                                                0)
+                                          _priceRow(
+                                            'Coupon Savings',
+                                            '- ${CurrencyUtil.appendCurrency(_numOrZero(cartResponse?.cart?.discountSubtotal).toStringAsFixed(2))}',
+                                            valueColor: const Color(0xFF1FA971),
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
+                                        // Loyalty points discount (negative line item added by API)
+                                        if ((cartResponse?.cart?.items?.any(
+                                                (item) =>
+                                                    item.isLoyaltyDiscount) ??
+                                            false))
+                                          Builder(builder: (_) {
+                                            final li = cartResponse!.cart!.items!
+                                                .firstWhere((item) =>
+                                                    item.isLoyaltyDiscount);
+                                            final amt = (li.total ?? 0).abs();
+                                            final pts =
+                                                li.metadata?.pointsApplied ?? 0;
+                                            return _priceRow(
+                                              'Loyalty Points ($pts pts)',
+                                              '- ${CurrencyUtil.appendCurrency(amt.toStringAsFixed(2))}',
+                                              valueColor: AppColors.primary,
+                                            );
+                                          }),
+                                        if (_loyaltyDiscount > 0)
+                                          _priceRow(
+                                            'Loyalty Points ($_loyaltyPointsApplied pts)',
+                                            '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                            valueColor: AppColors.primary,
+                                          ),
+                                        if (splitActive && splitWalletAmount > 0)
+                                          _priceRow(
+                                            'Wallet',
+                                            '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
+                                            valueColor: AppColors.primary,
+                                          ),
+                                        const Padding(
+                                          padding:
+                                              EdgeInsets.symmetric(vertical: 10),
+                                          child: Divider(
+                                              color: Color(0xFFE5E7EC),
+                                              height: 1),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Total Amount',
+                                              style: UiTypography.cardTitle()
+                                                  .copyWith(
+                                                fontSize: 16,
+                                                letterSpacing: -0.2,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Flexible(
+                                              child: Text(
+                                                CurrencyUtil.appendCurrency(
+                                                    _displayTotalAmount()
+                                                        .toStringAsFixed(2)),
+                                                maxLines: 1,
+                                                textAlign: TextAlign.right,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: UiTypography.cardPrice(
+                                                        color: AppColors.primary)
+                                                    .copyWith(fontSize: 20),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -926,8 +790,12 @@ class _CartPageState extends State<CartPage>
                               })
                           : LoginPrompt(
                               onButtonPressed: () {
+                                // Signing in from checkout returns to the cart tab.
                                 PageRouteUtils.push(
-                                    context, const PhoneNumberPage());
+                                    context,
+                                    const PhoneNumberPage(
+                                        redirectPage:
+                                            BottomNavPage(initialIndex: 2)));
                               },
                             )),
           // Confetti overlay — full width spread
@@ -1052,59 +920,55 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<bool> getCartApi() {
-    final activeRefresh = _cartRefreshInFlight;
-    if (activeRefresh != null) return activeRefresh;
-
-    final refresh = _fetchCartApi();
-    _cartRefreshInFlight = refresh;
-    refresh.whenComplete(() {
-      if (identical(_cartRefreshInFlight, refresh)) {
-        _cartRefreshInFlight = null;
-      }
-    });
-    return refresh;
+  /// True when the cart was read from the server just now.
+  Future<bool> getCartApi() async {
+    final previousCartId = cartResponse?.cart?.id;
+    await CartStore.instance.refresh(context);
+    final ok = CartStore.instance.lastReadOk;
+    if (!mounted) return ok;
+    setState(() => apiLoading = false);
+    final cartId = cartResponse?.cart?.id;
+    if (cartId != null && cartId.isNotEmpty) {
+      unawaited(getCrossSellingProductsApi(cartId));
+    } else if (previousCartId != null) {
+      crossSellProductsResponse = null;
+    }
+    // Load wallet info after cart is ready
+    await _loadWalletInfo();
+    if (ok) _maybeStartCartTutorial();
+    return ok;
   }
 
-  Future<bool> _fetchCartApi() async {
-    try {
-      final ApiService apiService = ApiService();
-      cartResponse = await apiService.getCart(context);
-      final cartId = cartResponse?.cart?.id;
-      if (cartResponse != null) emitEvent(cartResponse!);
-      if (cartId != null && cartId.isNotEmpty) {
-        unawaited(getCrossSellingProductsApi(cartId));
-      } else {
-        crossSellProductsResponse = null;
-      }
-      final cashfreeSession = cartResponse
-          ?.cart?.paymentCollection?.paymentSessions
-          ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
-          .firstOrNull;
-      setState(() {
-        pp_id = _providerIdFromCart();
-        orderId = cartResponse?.cart?.paymentCollection?.paymentSessions
-                ?.firstOrNull?.data?.id ??
-            '';
-        clientSecret = cartResponse?.cart?.paymentCollection?.paymentSessions
-                ?.firstOrNull?.data?.clientSecret ??
-            '';
-        cashfreePaymentSessionId = cashfreeSession?.data?.paymentSessionId;
-        cashfreeEnvironment = cashfreeSession?.data?.environment;
-        apiLoading = false;
-      });
-      _syncPricingStateFromCart();
-      // Load wallet info after cart is ready
-      await _loadWalletInfo();
-      _maybeStartCartTutorial();
-      return true;
-    } catch (e) {
-      setState(() {
-        apiLoading = false;
-      });
-      debugPrint(' error in cart $e');
-      return false;
-    }
+  /// Every cart change, optimistic or confirmed, from any screen.
+  void _onCartState(CartStateEvent event) {
+    if (!mounted) return;
+    setState(() {
+      cartResponse = event.cart;
+      cartSyncing = event.syncing;
+      pendingLineIds = event.pendingLineIds;
+      if (event.cart.cart?.id != null) apiLoading = false;
+      _applyPaymentState(event.cart.cart);
+    });
+    if (!event.syncing) _syncPricingStateFromCart();
+  }
+
+  List<String> get _availableProviderIds =>
+      paymentProviders.map((p) => p.id).whereType<String>().toList();
+
+  // The shopper's selection stored on the cart (or their last order's
+  // provider) wins over a session left from an earlier selection.
+  void _applyPaymentState(Cart? cart) {
+    if (cart == null) return;
+    pp_id = _selectedProviderId ??
+        preferredPaymentProviderId(cart,
+            availableProviderIds: _availableProviderIds);
+    final session = sessionForProvider(cart, pp_id);
+    orderId = session?.data?.id ?? '';
+    clientSecret = session?.data?.clientSecret ?? '';
+    paytmData = pp_id == 'pp_paytm_paytm' ? session?.data : null;
+    final cashfree = pp_id == 'pp_cashfree_cashfree' ? session?.data : null;
+    cashfreePaymentSessionId = cashfree?.paymentSessionId;
+    cashfreeEnvironment = cashfree?.environment;
   }
 
   void _maybeStartCartTutorial() => maybeStartTutorial(
@@ -1263,18 +1127,6 @@ class _CartPageState extends State<CartPage>
     ).show(context: context);
   }
 
-  String _providerIdFromCart() {
-    final metadata = cartResponse?.cart?.metadata;
-    final selectedProvider =
-        metadata is Map ? metadata['last_payment_provider_id'] : null;
-    if (selectedProvider is String && selectedProvider.isNotEmpty) {
-      return selectedProvider;
-    }
-    return cartResponse?.cart?.paymentCollection?.paymentSessions?.firstOrNull
-            ?.providerId ??
-        'pp_system_default';
-  }
-
   Future<void> getCrossSellingProductsApi(String cartId) async {
     try {
       final response = await ApiService().crossSellingProducts(context, cartId);
@@ -1285,18 +1137,6 @@ class _CartPageState extends State<CartPage>
     } catch (e) {
       debugPrint('cross selling error: $e');
     }
-  }
-
-  void emitEvent(CartResponse cartResponse) {
-    final productItems = (cartResponse.cart?.items ?? [])
-        .where((item) => !item.isVirtualItem)
-        .toList();
-    final totalQty = productItems
-        .map((item) => item.quantity ?? 0)
-        .fold<int>(0, (sum, qty) => sum + qty);
-    print('total qty ${totalQty}');
-    eventBus.fire(ViewCartModel(
-        totalQty, productItems.map((item) => item.thumbnail ?? '').toList()));
   }
 
   void addPromoCode(String promoCode, {List<String>? removeCodes}) async {
@@ -1352,40 +1192,103 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void updateCart(int qty, String cartItemId, int index) async {
-    try {
-      debugPrint('calling update');
-      final ApiService apiService = ApiService();
-      await apiService.updateCart(context, qty, cartItemId);
-      await getCartApi();
-      if (!mounted) return;
-      setState(() {
-        if (cartResponse?.cart?.items != null &&
-            index < cartResponse!.cart!.items!.length) {
-          cartResponse!.cart!.items![index].isUpdating = false;
-        }
-      });
-    } catch (e) {
-      setState(() {
-        cartResponse!.cart!.items![index].isUpdating = false;
-      });
-      print(e);
-    }
+  // The row, totals and badge repaint on tap; the request (coalesced per
+  // line) and any rollback with the server's message run in the background.
+  void updateCart(int qty, String cartItemId) {
+    CartStore.instance.setLineQuantity(context, cartItemId, qty);
   }
 
-  void removeCart(String cartItemId, int index) async {
-    try {
-      final ApiService apiService = ApiService();
-      await apiService.removeCart(context, cartItemId);
-      await getCartApi();
-    } catch (e) {
-      setState(() {
-        setState(() {
-          cartResponse!.cart!.items![index].isUpdating = false;
-        });
-      });
-      print(e);
+  void removeCart(String cartItemId) {
+    CartStore.instance.removeLine(context, cartItemId);
+  }
+
+  /// A quantity typed on the line: 0 removes it; more than the stock left
+  /// offers to set it to that stock instead.
+  Future<void> _setTypedQuantity(Item item, int newQty) async {
+    final lineId = item.id;
+    if (lineId == null) return;
+    if (newQty <= 0) {
+      removeCart(lineId);
+      return;
     }
+    final stockQty = item.inventoryQuantity ?? 0;
+    if (stockQty > 0 && newQty > stockQty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(AppStrings.stock_update,
+              style: FontUtils.primaryFontStyle(
+                  color: AppColors.primary, fontWeight: FontWeight.bold)),
+          content: Text(
+              '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
+              '${AppStrings.stock_update_message_suffix} $stockQty?',
+              style: FontUtils.secondaryFontStyle()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(AppStrings.cancel,
+                  style: FontUtils.primaryFontStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.bold)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(AppStrings.yes_update,
+                  style: FontUtils.primaryFontStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true) updateCart(stockQty, lineId);
+      return;
+    }
+    updateCart(newQty, lineId);
+  }
+
+  Future<void> _decreaseQuantity(Item item) async {
+    final currentQty = item.quantity ?? 0;
+    final stockQty = item.inventoryQuantity ?? 0;
+    final lineId = item.id;
+    if (lineId == null) return;
+
+    if (currentQty <= 1 || (!(item.inStock ?? false) && stockQty == 0)) {
+      removeCart(lineId);
+      return;
+    }
+
+    if (!(item.inStock ?? false) && currentQty > stockQty) {
+      final confirmed = await _confirmReduceToStock(stockQty);
+      if (confirmed == true) updateCart(stockQty, lineId);
+      return;
+    }
+
+    updateCart(currentQty - 1, lineId);
+  }
+
+  Future<bool?> _confirmReduceToStock(int stockQty) {
+    final actionStyle = FontUtils.primaryFontStyle(
+        color: AppColors.primary, fontWeight: FontWeight.bold);
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppStrings.stock_update, style: actionStyle),
+        content: Text(
+          '${AppStrings.stock_update_message_prefix} $stockQty in stock. '
+          '${AppStrings.stock_update_message_suffix} $stockQty?',
+          style: FontUtils.secondaryFontStyle(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(AppStrings.cancel, style: actionStyle),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(AppStrings.yes_update, style: actionStyle),
+          ),
+        ],
+      ),
+    );
   }
 
   void showPromoCodeBottomSheet(BuildContext context) {
@@ -1471,48 +1374,42 @@ class _CartPageState extends State<CartPage>
     );
   }
 
+  /// Switching back and forth works: the backend stores the choice on the
+  /// cart and replaces the previous provider's session, and the cart read
+  /// afterwards (success or failure) carries the session to pay with.
   Future<void> updatePaymentMethod(String paymentProviderId) async {
+    setState(() {
+      _selectedProviderId = paymentProviderId;
+      pp_id = paymentProviderId;
+    });
     // ICICI is redirect-based — session created at place-order time, not here.
-    if (paymentProviderId == 'pp_icici_icici') {
-      setState(() => pp_id = 'pp_icici_icici');
-      return;
-    }
-    final previousProviderId = pp_id;
+    if (paymentProviderId == 'pp_icici_icici') return;
+
+    setState(() => cartLoading = true);
     try {
-      setState(() {
-        cartLoading = true;
-        // The bottom sheet closes immediately. Reflect the customer's choice
-        // outside the sheet while the payment-session request is in flight.
-        pp_id = paymentProviderId;
-      });
-      final ApiService apiService = ApiService();
-      final response = await apiService.updatePaymentMethod(
-          context, paymentProviderId, cartResponse!);
-      final selectedSession = response.paymentCollection?.paymentSessions
+      final response =
+          await ApiService().updatePaymentMethod(context, paymentProviderId);
+      final session = response.paymentCollection?.paymentSessions
           ?.where((session) => session.providerId == paymentProviderId)
           .firstOrNull;
-      setState(() {
-        pp_id = paymentProviderId;
-        orderId = selectedSession?.data?.id;
-        clientSecret = selectedSession?.data?.clientSecret;
-        paytmData = paymentProviderId == 'pp_paytm_paytm'
-            ? selectedSession?.data
-            : null;
-        cashfreePaymentSessionId = paymentProviderId == 'pp_cashfree_cashfree'
-            ? selectedSession?.data?.paymentSessionId
-            : null;
-        cashfreeEnvironment = paymentProviderId == 'pp_cashfree_cashfree'
-            ? selectedSession?.data?.environment
-            : null;
-      });
-      await getCartApi();
+      paytmData =
+          paymentProviderId == 'pp_paytm_paytm' ? session?.data : null;
+    } on ApiException catch (error) {
+      AppUtils.showToast(error.message);
     } catch (e) {
-      if (mounted) setState(() => pp_id = previousProviderId);
-      print(e);
+      debugPrint('update payment method failed: $e');
     } finally {
-      setState(() {
-        cartLoading = false;
-      });
+      final keepPaytmData = paytmData;
+      await getCartApi();
+      if (mounted) {
+        setState(() {
+          _selectedProviderId =
+              paymentProviderId == 'pp_icici_icici' ? paymentProviderId : null;
+          _applyPaymentState(cartResponse?.cart);
+          paytmData = keepPaytmData ?? paytmData;
+          cartLoading = false;
+        });
+      }
     }
   }
 
@@ -1676,6 +1573,19 @@ class _CartPageState extends State<CartPage>
       setState(() => cartLoading = false);
     }
 
+    // A provider preselected from the cart (or the shopper's last order) may
+    // not have a session yet, or only a leftover from an earlier selection.
+    if (paymentProviderId != 'pp_icici_icici' &&
+        sessionForProvider(cartResponse?.cart, paymentProviderId) == null) {
+      await updatePaymentMethod(paymentProviderId);
+      if (!mounted) return;
+      if (sessionForProvider(cartResponse?.cart, paymentProviderId) == null) {
+        AppUtils.showToast(
+            'Could not start this payment method. Please try again or choose another.');
+        return;
+      }
+    }
+
     if (paymentProviderId == 'pp_icici_icici') {
       _makeIciciPayment();
       return;
@@ -1692,7 +1602,7 @@ class _CartPageState extends State<CartPage>
           // by an earlier cart fetch because pricing subscribers can replace
           // pending Medusa payment sessions.
           final response = await ApiService()
-              .updatePaymentMethod(context, paymentProviderId, cartResponse!);
+              .updatePaymentMethod(context, paymentProviderId);
           final cashfreeSession = response.paymentCollection?.paymentSessions
               ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
               .firstOrNull;
@@ -1742,8 +1652,8 @@ class _CartPageState extends State<CartPage>
       // Paytm transaction tokens are short-lived. Always create a fresh
       // session when checkout starts instead of reusing the one created when
       // Paytm was selected earlier.
-      final response = await ApiService().updatePaymentMethod(
-          context, 'pp_paytm_paytm', cartResponse!);
+      final response =
+          await ApiService().updatePaymentMethod(context, 'pp_paytm_paytm');
       final data = response.paymentCollection?.paymentSessions
           ?.where((session) => session.providerId == 'pp_paytm_paytm')
           .firstOrNull
@@ -1773,10 +1683,10 @@ class _CartPageState extends State<CartPage>
               Navigator.pop(context);
               completeCart();
             },
-            onFailure: (message) {
+            onFailure: (message, failure) {
               Navigator.pop(context);
-              AppUtils.showToast(message);
-              getCartApi();
+              _showCompletionFailure(
+                  failure ?? CompletionFailure.fromBody({'message': message}));
             },
           ),
         ),
@@ -1811,15 +1721,15 @@ class _CartPageState extends State<CartPage>
             redirectUrl: redirectUrl,
             onSuccess: (orderId) {
               Navigator.pop(context);
-              PageRouteUtils.pushAndRemoveUntil(
-                context,
-                OrderPlacedPage(orderId: orderId),
-              );
+              _showOrderPlaced(orderId);
             },
-            onFailure: () {
+            onFailure: (failure) {
               Navigator.pop(context);
-              AppUtils.showToast('ICICI payment failed or was cancelled.');
-              getCartApi();
+              _showCompletionFailure(failure ??
+                  const CompletionFailure(
+                    code: paymentFailedCode,
+                    message: 'ICICI payment failed or was cancelled.',
+                  ));
             },
           ),
         ),
@@ -1987,34 +1897,41 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  void completeCart() async {
+  /// Completes the cart once; a second tap or a duplicate gateway callback
+  /// while it runs is ignored. No order exists unless the backend says so.
+  Future<void> completeCart() async {
+    if (_completing) return;
+    _completing = true;
+    setState(() => cartLoading = true);
     try {
-      setState(() {
-        cartLoading = true;
-      });
-      final ApiService apiService = ApiService();
-      final response = await apiService.completeCart(context);
-      setState(() {
-        cartLoading = false;
-      });
-      if (response.order?.id?.isEmpty == true) {
-        getCartApi();
+      final result = await ApiService().completeCart(context);
+      if (!mounted) return;
+      final orderId = result.orderId;
+      if (orderId != null) {
+        _showOrderPlaced(orderId);
         return;
       }
-      // Clear the completed cart so the next add-to-cart uses a fresh one
-      await SharedPreferencesUtil().saveString('cart_id', '');
-      PageRouteUtils.pushAndRemoveUntil(
-          context,
-          OrderPlacedPage(
-            orderId: response.order?.id ?? '',
-          ));
-    } catch (e) {
-      getCartApi();
-      setState(() {
-        cartLoading = false;
-      });
-      print(e);
+      _showCompletionFailure(result.failure!);
+    } finally {
+      _completing = false;
+      if (mounted) setState(() => cartLoading = false);
     }
+  }
+
+  void _showOrderPlaced(String orderId) {
+    CartStore.instance.clear();
+    PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: orderId));
+  }
+
+  /// Stock that ran out, or a charged payment that was refunded, gets the
+  /// failure screen; anything else is a message on the cart.
+  void _showCompletionFailure(CompletionFailure failure) {
+    getCartApi();
+    if (failure.showsFailureScreen) {
+      PageRouteUtils.push(context, OrderFailedPage(failure: failure));
+      return;
+    }
+    AppUtils.showToast(failure.message);
   }
 
   void makeRazorPayCall(String orderId) {
@@ -2040,6 +1957,8 @@ class _CartPageState extends State<CartPage>
         'wallets': ['paytm']
       }
     };
+    // Re-opening checkout must not stack a second set of handlers.
+    razorpay.clear();
     razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
     razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
     razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
@@ -2047,6 +1966,10 @@ class _CartPageState extends State<CartPage>
   }
 
   void handlePaymentErrorResponse(PaymentFailureResponse response) {
+    final message = response.message;
+    AppUtils.showToast(message != null && message.isNotEmpty
+        ? message
+        : 'Payment was not completed. You have not been charged.');
     /*
     * PaymentFailureResponse contains three values:
     * 1. Error Code
@@ -2391,17 +2314,30 @@ class _CartPageState extends State<CartPage>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Total',
-                  style: UiTypography.cardMeta(),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      cartSyncing ? 'Updating total' : 'Total',
+                      style: UiTypography.cardMeta(),
+                    ),
+                    if (cartSyncing) ...[
+                      const SizedBox(width: 6),
+                      _syncingIndicator(),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 1),
-                Text(
-                  amount,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: UiTypography.cardPrice(color: AppColors.textColor)
-                      .copyWith(fontSize: 22, letterSpacing: -0.3),
+                AnimatedOpacity(
+                  opacity: cartSyncing ? 0.5 : 1,
+                  duration: const Duration(milliseconds: 150),
+                  child: Text(
+                    amount,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: UiTypography.cardPrice(color: AppColors.textColor)
+                        .copyWith(fontSize: 22, letterSpacing: -0.3),
+                  ),
                 ),
                 GestureDetector(
                   onTap: _scrollToPriceDetails,
@@ -2431,7 +2367,8 @@ class _CartPageState extends State<CartPage>
             flex: 3,
             child: ElevatedButton(
               key: _checkoutBtnKey,
-              onPressed: cartLoading
+              // Checkout waits until queued cart changes are confirmed.
+              onPressed: cartLoading || cartSyncing
                   ? null
                   : () {
                       if (cartResponse?.cart?.error == true) {
@@ -2490,9 +2427,6 @@ class _CartPageState extends State<CartPage>
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded,
-                                  color: Colors.white, size: 18),
                             ],
                           ),
                           Text(
@@ -2546,6 +2480,69 @@ class _CartPageState extends State<CartPage>
                   color: valueColor ?? AppColors.textColor,
                   fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
                 )),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _syncingIndicator() => SizedBox(
+        height: 12,
+        width: 12,
+        child: CircularProgressIndicator(
+          strokeWidth: 1.6,
+          color: AppColors.primary,
+          semanticsLabel: 'Updating totals',
+        ),
+      );
+
+  static const String _dismissedCouponPrefsKey = 'coupon_removed_dismissed';
+
+  Future<void> _loadDismissedCouponKey() async {
+    final key =
+        await SharedPreferencesUtil().getString(_dismissedCouponPrefsKey);
+    if (mounted) setState(() => _dismissedCouponKey = key);
+  }
+
+  void _dismissCouponRemoved(CouponRemoved notice) {
+    setState(() => _dismissedCouponKey = notice.key);
+    SharedPreferencesUtil().saveString(_dismissedCouponPrefsKey, notice.key);
+  }
+
+  // The backend removed a coupon that stopped qualifying; say why.
+  Widget _buildCouponRemovedNotice() {
+    final notice =
+        CouponRemoved.fromCartMetadata(cartResponse?.cart?.metadata);
+    if (notice == null || notice.key == _dismissedCouponKey) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      padding: const EdgeInsets.fromLTRB(14, 10, 4, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF5C451)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded,
+              color: Color(0xFF8A5A00), size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                notice.message,
+                style: UiTypography.cardMeta(color: const Color(0xFF8A5A00)),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => _dismissCouponRemoved(notice),
+            tooltip: 'Dismiss coupon removed message',
+            icon: const Icon(Icons.close_rounded,
+                color: Color(0xFF8A5A00), size: 18),
           ),
         ],
       ),

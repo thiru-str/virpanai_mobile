@@ -5,9 +5,14 @@ import 'package:waioz/ui/widgets/product_card_1.dart';
 import 'package:waioz/ui/widgets/product_card_2.dart';
 import 'package:waioz/ui/widgets/product_card_3.dart';
 import 'package:waioz/ui/widgets/product_card_4.dart';
+import 'package:waioz/ui/widgets/product_card_5.dart';
+import 'package:waioz/ui/widgets/product_card_6.dart';
 import 'package:waioz/ui/widgets/product_card_7.dart';
 import 'package:waioz/ui/widgets/product_card_8.dart';
 import 'package:waioz/ui/widgets/product_card_9.dart';
+import 'package:waioz/ui/widgets/product_card_10.dart';
+import 'package:waioz/ui/widgets/product_card_11.dart';
+import 'package:waioz/ui/widgets/product_card_12.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../model/product_response.dart';
@@ -138,6 +143,22 @@ class _ProductViewState extends State<ProductView> {
           favConfig: widget.favConfig,
         );
 
+      case ProductCardType.productView5:
+        return ProductCard5(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+          onTapFavorite: widget.onTapFavorite,
+          isFavorite: widget.isFavorite,
+        );
+
+      case ProductCardType.productView6:
+        return ProductCard6(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+          onTapFavorite: widget.onTapFavorite,
+          isFavorite: widget.isFavorite,
+        );
+
       case ProductCardType.productView7:
         return ProductCard7(
           product: widget.product,
@@ -158,6 +179,28 @@ class _ProductViewState extends State<ProductView> {
           onAddToCart: widget.onAddToCart,
           isFavorite: widget.isFavorite,
         );
+
+      case ProductCardType.productView10:
+        return ProductCard10(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+          onTapFavorite: widget.onTapFavorite,
+          isFavorite: widget.isFavorite,
+        );
+
+      case ProductCardType.productView11:
+        return ProductCard11(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+          onTapFavorite: widget.onTapFavorite,
+          isFavorite: widget.isFavorite,
+        );
+
+      case ProductCardType.productView12:
+        return ProductCard12(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+        );
     }
   }
 }
@@ -167,7 +210,12 @@ enum ProductCardType {
   productView2,
   productView3,
   productView4,
+  productView5,
+  productView6,
   productView7,
   productView8,
   productView9,
+  productView10,
+  productView11,
+  productView12, // BASKET shelf card (same tile as the home shelves)
 }

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/wishlist_reponse.dart' hide Variant;
 import 'package:waioz/ui/favourite_list_detail_page.dart';
@@ -64,7 +64,7 @@ class _ProductCard4State extends State<ProductCard4> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final images = product.images ?? [];
+    final images = product.cardImages;
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null
@@ -118,7 +118,7 @@ class _ProductCard4State extends State<ProductCard4> {
                         final url = images[index].url ?? '';
                         return url.isEmpty
                             ? const ImageFallbackWidget(h: 140, w: double.infinity, fit: BoxFit.contain)
-                            : CachedNetworkImage(
+                            : StoreImage(
                           imageUrl: url,
                           fit: BoxFit.contain,
                           alignment: Alignment.center,
@@ -207,16 +207,25 @@ class _ProductCard4State extends State<ProductCard4> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 children: [
-                  Text(
-                    _fmt(calc ?? orig ?? 0),
-                    style: UiTypography.cardPrice(color: AppColors.primary),
+                  Flexible(
+                    child: Text(
+                      _fmt(calc ?? orig ?? 0),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: UiTypography.cardPrice(color: AppColors.primary),
+                    ),
                   ),
                   const SizedBox(width: 6),
                   if (hasDiscount && orig != null)
-                    Text(
-                      _fmt(orig),
-                      style: UiTypography.cardMeta(color: Colors.grey).copyWith(
-                        decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Text(
+                        _fmt(orig),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            UiTypography.cardMeta(color: Colors.grey).copyWith(
+                          decoration: TextDecoration.lineThrough,
+                        ),
                       ),
                     ),
                 ],
