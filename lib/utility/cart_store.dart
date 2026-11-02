@@ -74,9 +74,15 @@ class CartStore {
     _context = context;
     if (_queue.isSyncing) return _cart;
     final fresh = await _readServerCart();
+    _lastReadOk = fresh != null;
     if (fresh != null) _queue.acceptServerCart(fresh);
     return _cart;
   }
+
+  /// Whether the last [refresh] reached the server; false means the cart shown
+  /// is the previous view (checkout re-checks before placing an order).
+  bool get lastReadOk => _lastReadOk;
+  bool _lastReadOk = true;
 
   /// The order was placed: the badge and every cart view empty at once.
   void clear() {

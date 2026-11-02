@@ -66,6 +66,15 @@ class _ProductPageState extends State<ProductPage> {
   @override
   void initState() {
     super.initState();
+    // A category/collection/tag supplied while opening this page is already
+    // an applied product filter. Keep it in the same state used by the filter
+    // page so it is visibly preselected when the drawer opens.
+    selectedCategoriesList = _splitFilterIds(widget.categoryId);
+    selectedCollectionsList = _splitFilterIds(widget.collectionId);
+    selectedTagsList = _splitFilterIds(widget.tagId);
+    isFilterApplied = selectedCategoriesList.isNotEmpty ||
+        selectedCollectionsList.isNotEmpty ||
+        selectedTagsList.isNotEmpty;
     _loadProductViewType();
     // Set before the listener is attached, so the first load already searches.
     if (widget.initialQuery.trim().isNotEmpty) {
@@ -73,9 +82,9 @@ class _ProductPageState extends State<ProductPage> {
     }
     _previousSearchText = searchController.text.trim();
     getProductsApi(
-        categoryIds: widget.categoryId,
-        collectionIds: widget.collectionId,
-        tagIds: widget.tagId,
+        categoryIds: selectedCategoriesList.join(','),
+        collectionIds: selectedCollectionsList.join(','),
+        tagIds: selectedTagsList.join(','),
         searchString: searchController.text.trim());
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
@@ -93,6 +102,12 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
+  List<String> _splitFilterIds(String ids) => ids
+      .split(',')
+      .map((id) => id.trim())
+      .where((id) => id.isNotEmpty)
+      .toList();
+
   Future<void> _loadProductViewType() async {
     final type = await SharedPreferencesUtil().getString('product_view');
     if (!mounted) return;
@@ -105,15 +120,9 @@ class _ProductPageState extends State<ProductPage> {
     isPaginating = true;
     currentPage++;
     getProductsApi(
-      categoryIds: selectedCategoriesList.isNotEmpty
-          ? selectedCategoriesList.join(',')
-          : widget.categoryId,
-      collectionIds: selectedCollectionsList.isNotEmpty
-          ? selectedCollectionsList.join(',')
-          : widget.collectionId,
-      tagIds: selectedTagsList.isNotEmpty
-          ? selectedTagsList.join(',')
-          : widget.tagId,
+      categoryIds: selectedCategoriesList.join(','),
+      collectionIds: selectedCollectionsList.join(','),
+      tagIds: selectedTagsList.join(','),
       searchString: searchController.text,
       minPrice: minPrice,
       maxPrice: maxPrice,
@@ -142,15 +151,9 @@ class _ProductPageState extends State<ProductPage> {
       final currentToken = ++_searchToken;
 
       getProductsApi(
-        categoryIds: selectedCategoriesList.isNotEmpty
-            ? selectedCategoriesList.join(',')
-            : widget.categoryId,
-        tagIds: selectedTagsList.isNotEmpty
-            ? selectedTagsList.join(',')
-            : widget.tagId,
-        collectionIds: selectedCollectionsList.isNotEmpty
-            ? selectedCollectionsList.join(',')
-            : widget.collectionId,
+        categoryIds: selectedCategoriesList.join(','),
+        tagIds: selectedTagsList.join(','),
+        collectionIds: selectedCollectionsList.join(','),
         searchString: newQuery,
         searchToken: currentToken, // Pass the token to the API call
       );
@@ -254,48 +257,44 @@ class _ProductPageState extends State<ProductPage> {
                       );
                       if (result != null && mounted) {
                         final data = result as Map<String, dynamic>;
-                        selectedCategoriesList =
-                            List<String>.from(data['selectedCategories'] ?? []);
-                        selectedCollectionsList = List<String>.from(
-                            data['selectedCollections'] ?? []);
-                        selectedTagsList =
-                            List<String>.from(data['selectedTags'] ?? []);
-                        minPrice = data['minPrice'];
-                        maxPrice = data['maxPrice'];
-                        sortBy = data['sortBy'];
-                        debugPrint('min price product ${minPrice}');
-                        debugPrint('max Price product ${maxPrice}');
-                        selectedSection =
-                            data['selectedSection'] ?? selectedSection;
-                        final categoryIds = selectedCategoriesList.isNotEmpty
-                            ? selectedCategoriesList.join(',')
-                            : widget.categoryId;
-                        final collectionIds = selectedCollectionsList.join(',');
-                        final tagIds = selectedTagsList.isNotEmpty
-                            ? selectedTagsList.join(',')
-                            : widget.tagId;
-                        currentPage = 0;
-                        filteredProducts.clear();
-                        getProductsApi(
-                          categoryIds: categoryIds.isNotEmpty
-                              ? categoryIds
-                              : widget.categoryId,
-                          collectionIds: collectionIds.isNotEmpty
-                              ? collectionIds
-                              : widget.collectionId,
-                          tagIds: tagIds.isNotEmpty ? tagIds : widget.tagId,
-                          searchString: searchController.text,
-                          minPrice: minPrice,
-                          maxPrice: maxPrice,
-                          sortBy: sortBy,
-                        );
+                        final newCategories = List<String>.from(data['selectedCategories'] ?? []);
+                        final newCollections = List<String>.from(data['selectedCollections'] ?? []);
+                        final newTags = List<String>.from(data['selectedTags'] ?? []);
+                        final newMinPrice = data['minPrice'];
+                        final newMaxPrice = data['maxPrice'];
+                        final newSortBy = data['sortBy'];
+                        final newSection = data['selectedSection'] ?? selectedSection;
+
                         setState(() {
-                          isFilterApplied = selectedCategoriesList.isNotEmpty ||
-                              selectedCollectionsList.isNotEmpty ||
-                              selectedTagsList.isNotEmpty ||
-                              (minPrice != null || maxPrice != null) ||
-                              sortBy != AppStrings.low_high;
+                          selectedCategoriesList = newCategories;
+                          selectedCollectionsList = newCollections;
+                          selectedTagsList = newTags;
+                          minPrice = newMinPrice;
+                          maxPrice = newMaxPrice;
+                          sortBy = newSortBy;
+                          selectedSection = newSection;
+                          currentPage = 0;
+                          filteredProducts.clear();
+                          isFilterApplied = newCategories.isNotEmpty ||
+                              newCollections.isNotEmpty ||
+                              newTags.isNotEmpty ||
+                              (newMinPrice != null || newMaxPrice != null) ||
+                              (newSortBy != null && newSortBy.trim().isNotEmpty);
                         });
+
+                        final categoryIds = newCategories.join(',');
+                        final collectionIds = newCollections.join(',');
+                        final tagIds = newTags.join(',');
+
+                        getProductsApi(
+                          categoryIds: categoryIds,
+                          collectionIds: collectionIds,
+                          tagIds: tagIds,
+                          searchString: searchController.text,
+                          minPrice: newMinPrice,
+                          maxPrice: newMaxPrice,
+                          sortBy: newSortBy,
+                        );
                       }
                     },
                     child: Container(

@@ -165,6 +165,7 @@ class AppStrings {
   static const String review_submitted = 'Review submitted!';
   static const String reviews = 'Reviews';
   static const String add_to_cart = 'Add to Cart';
+  static const String update_cart = 'Update Cart';
   static const String enter_valid_mob_no = 'Please enter a valid phone number';
   static const String profileImageUrl = "profileImageUrl";
   static const String digit_range =
@@ -206,9 +207,6 @@ class AppStrings {
       'We couldn\'t delete your account. Please try again.';
   static const String exitApp = 'Exit App?';
   static const String exitDescription = 'Are you sure you want to exit?';
-
-  static const String androidPackage = 'com.rodeodigital.wellmartmas';
-  static const String appId = '1611964854';
 
   static const String login = 'Login';
   static const String password = 'Password';

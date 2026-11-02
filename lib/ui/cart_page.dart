@@ -4,6 +4,12 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cfsession/cfsession.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfenums.dart';
+import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
+import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
 import 'package:waioz/model/cross_sell_products_response.dart';
 import 'package:waioz/model/shipping_response.dart' as PaymentSessionData;
 import 'package:waioz/model/view_cart_model.dart';
@@ -13,6 +19,7 @@ import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/ui/widgets/calculation_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/cart_item_card.dart';
+import 'package:waioz/ui/widgets/cashfree_emi_options.dart';
 import 'package:waioz/ui/widgets/common_header_app_bar.dart';
 import 'package:waioz/ui/widgets/coupon_bottom_sheet.dart';
 import 'package:waioz/ui/widgets/free_delivery_banner_widget.dart';
@@ -24,6 +31,7 @@ import 'package:waioz/ui/widgets/loyalty_checkout_widget.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/payment_method_bottom_sheet.dart';
 import 'package:waioz/ui/icici_payment_page.dart';
+import 'package:waioz/ui/product_detail_page.dart';
 import 'package:waioz/ui/widgets/product_recommendation_section.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -78,6 +86,9 @@ class _CartPageState extends State<CartPage>
   String? clientSecret;
   PaymentSessionData.Data? paytmData;
   Razorpay razorpay = Razorpay();
+  final CFPaymentGatewayService _cashfree = CFPaymentGatewayService();
+  String? cashfreePaymentSessionId;
+  String? cashfreeEnvironment;
   bool showPriceBreakdown = false;
 
   // Optimistic cart: totals are stale and checkout waits while this is true.
@@ -110,6 +121,7 @@ class _CartPageState extends State<CartPage>
   @override
   void initState() {
     super.initState();
+    _cashfree.setCallback(_verifyCashfreePayment, _cashfreeError);
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 2));
     _shakeController = AnimationController(
@@ -215,6 +227,8 @@ class _CartPageState extends State<CartPage>
         return 'Bank Transfer (NEFT)';
       case 'pp_stripe_stripe':
         return 'Credit / Debit Card';
+      case 'pp_cashfree_cashfree':
+        return 'Cashfree';
       default:
         return AppStrings.cash_on_delivery;
     }
@@ -236,6 +250,8 @@ class _CartPageState extends State<CartPage>
         return Icons.account_balance_wallet_rounded;
       case 'pp_stripe_stripe':
         return Icons.credit_card_rounded;
+      case 'pp_cashfree_cashfree':
+        return Icons.account_balance_wallet_rounded;
       default:
         return Icons.local_shipping_rounded;
     }
@@ -257,6 +273,8 @@ class _CartPageState extends State<CartPage>
         return const Color(0xFF2E7D32);
       case 'pp_stripe_stripe':
         return const Color(0xFF635BFF);
+      case 'pp_cashfree_cashfree':
+        return const Color(0xFF6D3DF5);
       default:
         return const Color(0xFF795548);
     }
@@ -402,6 +420,17 @@ class _CartPageState extends State<CartPage>
                                                       .toStringAsFixed(2)),
                                           quantity: cartItem.quantity!,
                                           isUpdating: cartItem.isUpdating!,
+                                          onTap: cartItem.productId != null
+                                              ? () async {
+                                                  await PageRouteUtils.push(
+                                                    context,
+                                                    ProductDetailPage(
+                                                        productId: cartItem
+                                                            .productId!),
+                                                  );
+                                                  if (mounted) getCartApi();
+                                                }
+                                              : null,
                                           priceUpdating: pendingLineIds
                                               .contains(cartItem.id),
                                           onRemoveAll: () =>
@@ -466,6 +495,11 @@ class _CartPageState extends State<CartPage>
 
                             // Payment Method Card
                             _buildPaymentMethodCard(),
+
+                            CashfreeEmiOptions(
+                              amount: _displayTotalAmount(),
+                              placement: 'cart',
+                            ),
 
                             // Free delivery progress banner — hides itself when
                             // no shipping address or no slabs configured.
@@ -838,10 +872,12 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<void> getCartApi() async {
+  /// True when the cart was read from the server just now.
+  Future<bool> getCartApi() async {
     final previousCartId = cartResponse?.cart?.id;
     await CartStore.instance.refresh(context);
-    if (!mounted) return;
+    final ok = CartStore.instance.lastReadOk;
+    if (!mounted) return ok;
     setState(() => apiLoading = false);
     final cartId = cartResponse?.cart?.id;
     if (cartId != null && cartId.isNotEmpty) {
@@ -851,6 +887,7 @@ class _CartPageState extends State<CartPage>
     }
     // Load wallet info after cart is ready
     await _loadWalletInfo();
+    return ok;
   }
 
   /// Every cart change, optimistic or confirmed, from any screen.
@@ -880,6 +917,9 @@ class _CartPageState extends State<CartPage>
     orderId = session?.data?.id ?? '';
     clientSecret = session?.data?.clientSecret ?? '';
     paytmData = pp_id == 'pp_paytm_paytm' ? session?.data : null;
+    final cashfree = pp_id == 'pp_cashfree_cashfree' ? session?.data : null;
+    cashfreePaymentSessionId = cashfree?.paymentSessionId;
+    cashfreeEnvironment = cashfree?.environment;
   }
 
   Future<void> getCrossSellingProductsApi(String cartId) async {
@@ -919,7 +959,7 @@ class _CartPageState extends State<CartPage>
         cartLoading = false;
       });
       // Refresh cart to ensure UI matches backend state after failure
-      getCartApi();
+      await getCartApi();
       print(e);
     }
   }
@@ -1173,38 +1213,83 @@ class _CartPageState extends State<CartPage>
     );
   }
 
-  void placeOrder(String paymentProviderId) async {
-    // Ensure cart has a shipping method attached before placing the order.
-    // Some backends rely on a subscriber to auto-attach (distance-based etc.),
-    // but if it fails the cart stays without one and complete-cart rejects
-    // with "No shipping method selected but the cart contains items that
-    // require shipping". Fetch options here and attach the first as fallback.
-    final hasShipping =
-        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
-    if (!hasShipping) {
+  /// Fetches available shipping options and attaches the first one to the cart.
+  /// Retries once on failure. Returns true if a method was successfully
+  /// attached (or was already present after the retry), false otherwise.
+  Future<bool> _tryAttachShipping() async {
+    final api = ApiService();
+    for (int attempt = 0; attempt < 2; attempt++) {
       try {
-        setState(() => cartLoading = true);
-        final api = ApiService();
         final shipping = await api.getShippingInfo(context);
         final first = shipping.shippingOptions?.isNotEmpty == true
             ? shipping.shippingOptions!.first
             : null;
-        if (first?.id != null) {
-          await api.updateShippingMethod(context, first!.id!);
-          await getCartApi();
-        } else {
-          setState(() => cartLoading = false);
+        if (first?.id == null) {
           AppUtils.showToast('No shipping method available for this address.');
-          return;
+          return false;
+        }
+        await api.updateShippingMethod(context, first!.id!);
+        await getCartApi();
+        if (cartResponse?.cart?.shippingMethods?.isNotEmpty == true) {
+          return true;
         }
       } catch (e) {
-        setState(() => cartLoading = false);
-        AppUtils.showToast(
-            'Could not attach shipping method. Please try again.');
-        return;
-      } finally {
-        setState(() => cartLoading = false);
+        if (attempt == 1) {
+          final msg = e.toString();
+          if (msg.contains('DELIVERY_INVALID_ADDRESS')) {
+            AppUtils.showToast(
+                'We couldn\'t locate your address. Please update it or re-pick from the map.');
+          } else if (msg.contains('DELIVERY_SERVICE_DOWN')) {
+            AppUtils.showToast(
+                'Delivery service temporarily unavailable. Please try again shortly.');
+          } else {
+            AppUtils.showToast(
+                'Could not attach shipping method. Please try again.');
+          }
+          return false;
+        }
+        // First attempt failed — wait briefly then retry once
+        await Future.delayed(const Duration(seconds: 1));
       }
+    }
+    AppUtils.showToast('Could not attach shipping method. Please try again.');
+    return false;
+  }
+
+  void placeOrder(String paymentProviderId) async {
+    // Refresh cart first — in-memory state may be stale; the shipping method
+    // may already have been attached server-side since the last fetch.
+    setState(() => cartLoading = true);
+    final refreshed = await getCartApi();
+
+    if (!refreshed) {
+      if (mounted) setState(() => cartLoading = false);
+      AppUtils.showToast(
+          'Unable to verify the latest cart availability. Please try again.');
+      return;
+    }
+
+    // The cart may have become stale while the app was backgrounded. Re-check
+    // the freshly fetched inventory result before opening an external gateway.
+    if (cartResponse?.cart?.error == true) {
+      if (mounted) setState(() => cartLoading = false);
+      AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+      return;
+    }
+
+    final hasShipping =
+        (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
+    if (!hasShipping) {
+      // Attempt to fetch shipping options and attach the first available one.
+      // Retries once on transient failure (network blip, Maps quota, etc.)
+      // before surfacing the error to the user.
+      final attached = await _tryAttachShipping();
+      if (!attached) {
+        setState(() => cartLoading = false);
+        return;
+      }
+    } else {
+      setState(() => cartLoading = false);
     }
 
     // A provider preselected from the cart (or the shopper's last order) may
@@ -1228,6 +1313,37 @@ class _CartPageState extends State<CartPage>
       case 'pp_razorpay_razorpay':
         makeRazorPayCall(orderId!);
         break;
+      case 'pp_cashfree_cashfree':
+        if (mounted) setState(() => cartLoading = true);
+        try {
+          // Create/reconcile the Cashfree session at the last possible moment
+          // and use only this response. Never open the SDK with a token cached
+          // by an earlier cart fetch because pricing subscribers can replace
+          // pending Medusa payment sessions.
+          final response = await ApiService()
+              .updatePaymentMethod(context, paymentProviderId);
+          final cashfreeSession = response.paymentCollection?.paymentSessions
+              ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
+              .firstOrNull;
+          final data = cashfreeSession?.data;
+          final cashfreeOrderId = data?.orderId ?? data?.id;
+          final paymentSessionId = data?.paymentSessionId;
+          if (cashfreeOrderId == null || paymentSessionId == null) {
+            throw StateError('Cashfree payment session is unavailable.');
+          }
+
+          cashfreePaymentSessionId = paymentSessionId;
+          cashfreeEnvironment = data?.environment;
+          orderId = cashfreeOrderId;
+          _openCashfree(cashfreeOrderId, paymentSessionId, data?.environment);
+        } catch (e) {
+          debugPrint('Cashfree checkout initialization failed: $e');
+          AppUtils.showToast(
+              'Unable to start Cashfree checkout. Please try again.');
+        } finally {
+          if (mounted) setState(() => cartLoading = false);
+        }
+        break;
       case 'pp_stripe_stripe':
         makeStripeCall(clientSecret!);
         break;
@@ -1241,45 +1357,66 @@ class _CartPageState extends State<CartPage>
         _makeWalletPayment();
         break;
       case 'pp_paytm_paytm':
-        makePaytmCall();
+        await makePaytmCall();
         break;
     }
   }
 
-  void makePaytmCall() {
-    final data = paytmData ??
-        cartResponse?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_paytm_paytm')
-            .firstOrNull
-            ?.data;
-    if (data == null ||
-        data.host == null ||
-        data.mid == null ||
-        (data.orderId ?? data.id) == null ||
-        (data.txnToken ?? data.token) == null ||
-        data.amount == null) {
-      AppUtils.showToast(
-          'Paytm payment session is incomplete. Please try again.');
-      return;
-    }
+  Future<void> makePaytmCall() async {
+    if (cartResponse == null) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PaytmPaymentPage(
-          data: data,
-          onSuccess: () {
-            Navigator.pop(context);
-            completeCart();
-          },
-          onFailure: (message, failure) {
-            Navigator.pop(context);
-            _showCompletionFailure(
-                failure ?? CompletionFailure.fromBody({'message': message}));
-          },
+    setState(() => cartLoading = true);
+
+    try {
+      // Paytm transaction tokens are short-lived. Always create a fresh
+      // session when checkout starts instead of reusing the one created when
+      // Paytm was selected earlier.
+      final response =
+          await ApiService().updatePaymentMethod(context, 'pp_paytm_paytm');
+      final data = response.paymentCollection?.paymentSessions
+          ?.where((session) => session.providerId == 'pp_paytm_paytm')
+          .firstOrNull
+          ?.data;
+
+      if (data == null ||
+          data.host == null ||
+          data.mid == null ||
+          (data.orderId ?? data.id) == null ||
+          (data.txnToken ?? data.token) == null ||
+          data.amount == null) {
+        AppUtils.showToast(
+            'Paytm payment session is incomplete. Please try again.');
+        return;
+      }
+
+      paytmData = data;
+      if (!mounted) return;
+      setState(() => cartLoading = false);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaytmPaymentPage(
+            data: data,
+            onSuccess: () {
+              Navigator.pop(context);
+              completeCart();
+            },
+            onFailure: (message, failure) {
+              Navigator.pop(context);
+              _showCompletionFailure(
+                  failure ?? CompletionFailure.fromBody({'message': message}));
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      AppUtils.showToast('Unable to start Paytm payment. Please try again.');
+    } finally {
+      if (mounted && cartLoading) {
+        setState(() => cartLoading = false);
+      }
+    }
   }
 
   Future<void> _makeIciciPayment() async {
@@ -1574,6 +1711,27 @@ class _CartPageState extends State<CartPage>
   }
 
   void handleExternalWalletSelected(ExternalWalletResponse response) {}
+
+  void _openCashfree(
+      String orderId, String paymentSessionId, String? environment) {
+    try {
+      final session = CFSessionBuilder()
+          .setEnvironment(environment == 'production'
+              ? CFEnvironment.PRODUCTION
+              : CFEnvironment.SANDBOX)
+          .setOrderId(orderId)
+          .setPaymentSessionId(paymentSessionId)
+          .build();
+      _cashfree
+          .doPayment(CFWebCheckoutPaymentBuilder().setSession(session).build());
+    } on CFException catch (e) {
+      AppUtils.showToast(e.message);
+    }
+  }
+
+  void _verifyCashfreePayment(String _orderId) => completeCart();
+  void _cashfreeError(CFErrorResponse error, String _orderId) =>
+      AppUtils.showToast(error.getMessage() ?? 'Cashfree payment failed');
 
   void makeStripeCall(String clientSecret) async {
     try {
