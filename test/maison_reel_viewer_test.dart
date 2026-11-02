@@ -9,7 +9,7 @@ List<LayoutDatum> _reels(int n) => [
       for (var i = 0; i < n; i++) LayoutDatum.fromJson({'image': '', 'title': 'Film ${i + 1}'})
     ];
 
-Future<void> _open(WidgetTester tester, int count, {int start = 0, bool still = false}) async {
+Future<void> _open(WidgetTester tester, int count, {int start = 0, bool still = false, String? cta}) async {
   await tester.pumpWidget(MaterialApp(
     home: MediaQuery(
       data: MediaQueryData(size: const Size(390, 844), disableAnimations: still),
@@ -18,6 +18,7 @@ Future<void> _open(WidgetTester tester, int count, {int start = 0, bool still = 
         items: _reels(count),
         start: start,
         colors: const MaisonColors(Colors.white, Colors.brown, Colors.black),
+        cta: cta ?? 'Shop this edit',
       ),
     ),
   ));
@@ -76,5 +77,12 @@ void main() {
 
     await _open(t, 3, still: true);
     expect(t.hasRunningAnimations, isFalse);
+  });
+
+  testWidgets('the shop button says what the store asks for', (t) async {
+    await _open(t, 2);
+    expect(find.text('Shop this edit'), findsOneWidget);
+    await _open(t, 2, cta: 'Shop now');
+    expect(find.text('Shop now'), findsOneWidget);
   });
 }
