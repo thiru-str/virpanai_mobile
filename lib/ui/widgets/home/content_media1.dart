@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:waioz/model/home_page_response.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
@@ -8,6 +7,8 @@ import '../../../utility/redirect_utils.dart';
 import 'grocery_shared.dart';
 import 'homepage_merch_shared.dart';
 import 'cms_text_color.dart';
+import 'maison/maison_shared.dart';
+import 'maison/maison_viewers.dart';
 
 // Blog1 — article / journal teaser rail.
 class Blog1 extends StatelessWidget {
@@ -123,7 +124,8 @@ class HowTo1 extends StatelessWidget {
   }
 }
 
-// Reels1 — vertical short-video reels rail with play + like count.
+// Reels1 — vertical short-video reels rail with play + like count. A reel with
+// a video opens the in-app reel viewer (MAISON's); one without follows its link.
 class Reels1 extends StatelessWidget {
   final Content content;
   const Reels1({super.key, required this.content});
@@ -150,7 +152,21 @@ class Reels1 extends StatelessWidget {
             return GestureDetector(
               onTap: () {
                 if (item.video != null && item.video!.isNotEmpty) {
-                  launchUrl(Uri.parse(item.video!), mode: LaunchMode.externalApplication);
+                  // Plays in the app, full screen with sound, swipe or arrows
+                  // to the next reel, and a button that follows the reel's link.
+                  final reels = items.where((d) => (d.video ?? '').trim().isNotEmpty).toList();
+                  final accent = parseCmsColor(content.layoutPrimaryColor) ?? AppColors.primary;
+                  Navigator.of(context).push(PageRouteBuilder(
+                    opaque: true,
+                    pageBuilder: (_, __, ___) => MaisonReelViewer(
+                      content: content,
+                      items: reels,
+                      start: reels.indexOf(item).clamp(0, reels.length - 1),
+                      colors: MaisonColors(Colors.white, accent, accent),
+                      cta: 'Shop now',
+                    ),
+                    transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
+                  ));
                 } else {
                   RedirectUtils.handleContentRedirect(
                     context: context,

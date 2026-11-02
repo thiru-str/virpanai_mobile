@@ -217,7 +217,11 @@ class MaisonReelViewer extends StatefulWidget {
   final List<LayoutDatum> items;
   final int start;
   final MaisonColors colors;
-  const MaisonReelViewer({super.key, required this.content, required this.items, required this.start, required this.colors});
+
+  /// The shop button's label when an item has no button text of its own.
+  final String cta;
+  const MaisonReelViewer(
+      {super.key, required this.content, required this.items, required this.start, required this.colors, this.cta = 'Shop this edit'});
 
   @override
   State<MaisonReelViewer> createState() => _MaisonReelViewerState();
@@ -257,6 +261,7 @@ class _MaisonReelViewerState extends State<MaisonReelViewer> {
             sound: _sound,
             content: widget.content,
             colors: widget.colors,
+            cta: widget.cta,
           ),
         ),
         Positioned(
@@ -369,7 +374,15 @@ class _Reel extends StatefulWidget {
   final bool sound;
   final Content content;
   final MaisonColors colors;
-  const _Reel({super.key, required this.item, required this.active, required this.sound, required this.content, required this.colors});
+  final String cta;
+  const _Reel(
+      {super.key,
+      required this.item,
+      required this.active,
+      required this.sound,
+      required this.content,
+      required this.colors,
+      required this.cta});
 
   @override
   State<_Reel> createState() => _ReelState();
@@ -447,7 +460,7 @@ class _ReelState extends State<_Reel> {
             ],
             const SizedBox(height: 16),
             MaisonPill(
-              label: cta.isNotEmpty ? cta : 'Shop this edit',
+              label: cta.isNotEmpty ? cta : widget.cta,
               fill: widget.colors.metal,
               icon: Icons.shopping_bag_outlined,
               onTap: () => _follow(context, widget.content, it),
