@@ -1206,12 +1206,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildProductDescription() {
-    final variantDesc = selectedVariant?.metadata?.description ?? '';
-    final productDesc =
-        product?.metadata?.additionalDescription ?? product?.description ?? '';
+    final String variantDesc =
+        selectedVariant?.metadata?.description ?? '';
+    final String plainDesc = product?.description ?? '';
+    final String htmlDesc =
+        product?.metadata?.additionalDescription ?? '';
 
-    final descriptionToShow =
-        (variantDesc?.isNotEmpty == true) ? variantDesc : productDesc;
+    // Variant description overrides everything when present.
+    // Otherwise show plain text description followed by rich HTML
+    // additional_description (which may contain images/banners).
+    final String textToShow =
+        variantDesc.isNotEmpty ? variantDesc : plainDesc;
+    final String htmlToShow = variantDesc.isNotEmpty ? '' : htmlDesc;
+
+    if (textToShow.isEmpty && htmlToShow.isEmpty) return const SizedBox();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1221,7 +1229,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           style: UiTypography.cardTitle().copyWith(fontSize: 18),
         ),
         const SizedBox(height: 10),
-        CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
+        if (textToShow.isNotEmpty)
+          CommonHtmlWidget(
+            htmlContent: textToShow.contains('<')
+                ? textToShow
+                : '<p>${textToShow.replaceAll('\n\n', '</p><p>').replaceAll('\n', '<br/>')}</p>',
+          ),
+        if (textToShow.isNotEmpty && htmlToShow.isNotEmpty)
+          const SizedBox(height: 8),
+        if (htmlToShow.isNotEmpty) CommonHtmlWidget(htmlContent: htmlToShow),
       ],
     );
   }
