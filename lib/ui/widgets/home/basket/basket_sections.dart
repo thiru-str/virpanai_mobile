@@ -58,12 +58,15 @@ class _BasketOfferCarousel1State extends State<BasketOfferCarousel1> {
     final items = _items;
     if (items.isEmpty) return const SizedBox.shrink();
     final colors = BasketColors.of(widget.content, ground: Colors.white);
+    // The card's copy (pill, two-line title, two-line line, button) fills 176pt
+    // at the default text size; a phone set to larger text needs the room.
+    final textScale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.35);
     return BasketSection(
       bg: colors.bg,
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(children: [
         SizedBox(
-          height: 176,
+          height: 176 * textScale,
           child: NotificationListener<ScrollStartNotification>(
             onNotification: (n) {
               if (n.dragDetails != null) _stopped = true;
@@ -165,9 +168,18 @@ class _OfferCard extends StatelessWidget {
                 width: w * 0.55,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 14, 4, 14),
-                  child: Column(
+                  // Narrow phones wrap the title onto more lines than the card
+                  // was drawn for: the copy then shrinks to fit instead of
+                  // running out of the bottom.
+                  child: LayoutBuilder(
+                    builder: (context, copyBox) => FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: copyBox.maxWidth,
+                        child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (kicker.isNotEmpty)
                         Container(
@@ -209,6 +221,9 @@ class _OfferCard extends StatelessWidget {
                         ),
                       ],
                     ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -441,12 +456,18 @@ class BasketBrandRail1 extends StatelessWidget {
     final items = (content.layoutData ?? []).take(20).toList();
     if (items.isEmpty) return const SizedBox.shrink();
     final colors = BasketColors.of(content);
+    // The rail is the 84pt plate plus the name and (when any brand has one)
+    // the count line; both lines have a fixed line height, so this is exact
+    // for any store font and text size.
+    final ts = MediaQuery.textScalerOf(context);
+    final hasLine = items.any((d) => (d.subTitle ?? '').isNotEmpty);
+    final railHeight = 84 + 6 + ts.scale(12) * 1.25 + (hasLine ? ts.scale(10.5) * 1.25 : 0) + 6;
     return BasketSection(
       bg: colors.bg,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         BasketSectionHead(content: content, colors: colors),
         SizedBox(
-          height: 124,
+          height: railHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -472,12 +493,12 @@ class BasketBrandRail1 extends StatelessWidget {
                   Text(items[i].title ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w800, color: colors.text)),
+                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w800, color: colors.text).copyWith(height: 1.25)),
                   if ((items[i].subTitle ?? '').isNotEmpty)
                     Text(items[i].subTitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: FontUtils.primaryFontStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: colors.accent)),
+                        style: FontUtils.primaryFontStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: colors.accent).copyWith(height: 1.25)),
                 ]),
               ),
             ),
