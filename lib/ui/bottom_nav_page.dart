@@ -8,6 +8,7 @@ import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
+import 'package:waioz/api/minipos_service.dart';
 import 'package:waioz/ui/minipos/minipos_page.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/ui/widgets/common_alert_dialog.dart';
@@ -31,7 +32,7 @@ class BottomNavPage extends StatefulWidget {
 }
 
 class _BottomNavPageState extends State<BottomNavPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   int _currentIndex = 0;
   HomePageResponse? homePageResponse;
   bool _isLoading = true;
@@ -40,13 +41,15 @@ class _BottomNavPageState extends State<BottomNavPage>
   late Animation<Offset> _slideAnimation;
 
   int? cartItems;
-  late StreamSubscription<ViewCartModel> _eventSubscription;
-  late StreamSubscription<TabSwitchEvent> _tabSwitchSub;
+  StreamSubscription<ViewCartModel>? _eventSubscription;
+  StreamSubscription<TabSwitchEvent>? _tabSwitchSub;
   bool isLoggedIn = false;
+  bool _miniPosEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     // Initialize animation for the bottom navigation bar
     _animationController = AnimationController(
@@ -64,15 +67,39 @@ class _BottomNavPageState extends State<BottomNavPage>
 
     // Delay animation start by 300ms
     Future.delayed(const Duration(milliseconds: 500), () {
-      _animationController.forward();
+      if (mounted) _animationController.forward();
     });
 
     AppUtils.isLoggedIn().then((value) {
+      if (!mounted) return;
       setState(() {
         isLoggedIn = value;
       });
       initializePages();
       listenToEvents();
+      if (value) unawaited(_refreshMiniPosAvailability());
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && isLoggedIn) {
+      unawaited(_refreshMiniPosAvailability());
+    }
+  }
+
+  Future<void> _refreshMiniPosAvailability() async {
+    bool enabled = false;
+    try {
+      final status = await MiniPosService.instance.get('minipos/status');
+      enabled = status['enabled'] == true;
+    } catch (_) {
+      // Keep the tab hidden when the feature status cannot be confirmed.
+    }
+    if (!mounted) return;
+    setState(() {
+      _miniPosEnabled = enabled;
+      if (!enabled && _currentIndex == _miniPosPage) _currentIndex = 0;
     });
   }
 
@@ -87,7 +114,8 @@ class _BottomNavPageState extends State<BottomNavPage>
     _tabSwitchSub = eventBus.on<TabSwitchEvent>().listen((event) {
       if (mounted) {
         setState(() {
-          _currentIndex = event.tabIndex;
+          _currentIndex =
+              _slotPages.contains(event.tabIndex) ? event.tabIndex : 0;
         });
       }
     });
@@ -109,6 +137,20 @@ class _BottomNavPageState extends State<BottomNavPage>
     }
   }
 
+  // Page indices stay stable (TabSwitchEvent uses them; 4 = account).
+  // MiniPOS occupies the middle slot without changing existing page indices.
+  List<int> get _slotPages => isLoggedIn
+      ? (_miniPosEnabled ? [0, 1, 3, 2, 4] : [0, 1, 2, 4])
+      : [0, 1, 2];
+
+  /// MiniPOS home stays inside the shell with the bottom navigation visible.
+  static const int _miniPosPage = 3;
+
+  int get _currentSlot {
+    final slot = _slotPages.indexOf(_currentIndex);
+    return slot < 0 ? 0 : slot;
+  }
+
   Widget _getPage() {
     switch (_currentIndex) {
       case 0:
@@ -117,8 +159,10 @@ class _BottomNavPageState extends State<BottomNavPage>
         return const CategoryPage(isFromBottomNav: true);
       case 2:
         return const CartPage(isFromBottomNav: true);
-      case 3:
-        return const MiniPosPage();
+      case _miniPosPage:
+        return isLoggedIn && _miniPosEnabled
+            ? MiniPosPage(onBack: () => setState(() => _currentIndex = 0))
+            : const HomePage();
       case 4:
         return isLoggedIn ? SettingsPage() : const HomePage();
       default:
@@ -128,10 +172,11 @@ class _BottomNavPageState extends State<BottomNavPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
     _eventSubscription
-        .cancel(); // Cancel the subscription to prevent memory leaks
-    _tabSwitchSub.cancel(); // Cancel the subscription to prevent memory leaks
+        ?.cancel(); // Cancel the subscription to prevent memory leaks
+    _tabSwitchSub?.cancel(); // Cancel the subscription to prevent memory leaks
     super.dispose();
   }
 
@@ -144,8 +189,11 @@ class _BottomNavPageState extends State<BottomNavPage>
 
           // If not on the first tab, go back to the previous tab
           if (_currentIndex > 0) {
+            final pages = _slotPages;
+            final position = pages.indexOf(_currentIndex);
             setState(() {
-              _currentIndex--; // Move to the previous tab
+              // Move to the previous visible tab
+              _currentIndex = position > 0 ? pages[position - 1] : 0;
             });
             return; // Don't proceed to exit dialog
           }
@@ -200,22 +248,38 @@ class _BottomNavPageState extends State<BottomNavPage>
                         ],
                       ),
                       child: BottomNavigationBar(
-                        currentIndex: _currentIndex,
-                        onTap: (index) {
+                        currentIndex: _currentSlot,
+                        onTap: (slot) {
                           setState(() {
-                            _currentIndex = index; // Update selected tab
+                            _currentIndex =
+                                _slotPages[slot]; // Update selected tab
                           });
                         },
                         items: [
                           const BottomNavigationBarItem(
-                            icon: ImageIcon(AssetImage(AppAssets.ic_menu_shop)),
+                            icon: SizedBox(
+                              height: 27,
+                              child: Center(
+                                  child: ImageIcon(
+                                      AssetImage(AppAssets.ic_menu_shop))),
+                            ),
                             label: AppStrings.shop,
                           ),
                           const BottomNavigationBarItem(
-                            icon: ImageIcon(
-                                AssetImage(AppAssets.ic_menu_categories)),
+                            icon: SizedBox(
+                              height: 27,
+                              child: Center(
+                                  child: ImageIcon(AssetImage(
+                                      AppAssets.ic_menu_categories))),
+                            ),
                             label: AppStrings.categories,
                           ),
+                          if (isLoggedIn && _miniPosEnabled)
+                            const BottomNavigationBarItem(
+                              icon: _MiniPosNavIcon(),
+                              activeIcon: _MiniPosNavIcon(),
+                              label: 'MiniPOS',
+                            ),
                           BottomNavigationBarItem(
                             icon: Stack(
                               clipBehavior: Clip.none,
@@ -261,14 +325,12 @@ class _BottomNavPageState extends State<BottomNavPage>
                           ),
                           if (isLoggedIn)
                             const BottomNavigationBarItem(
-                              icon: Icon(Icons.point_of_sale_outlined),
-                              activeIcon: Icon(Icons.point_of_sale),
-                              label: 'MiniPOS',
-                            ),
-                          if (isLoggedIn)
-                            const BottomNavigationBarItem(
-                              icon: ImageIcon(
-                                  AssetImage(AppAssets.ic_menu_account)),
+                              icon: SizedBox(
+                                height: 27,
+                                child: Center(
+                                    child: ImageIcon(
+                                        AssetImage(AppAssets.ic_menu_account))),
+                              ),
                               label: AppStrings.account,
                             ),
                         ],
@@ -359,4 +421,39 @@ class _BottomNavPageState extends State<BottomNavPage>
       print("Error fetching home page: $e");
     }
   }
+}
+
+class _MiniPosNavIcon extends StatelessWidget {
+  const _MiniPosNavIcon();
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: 56,
+        height: 27,
+        child: OverflowBox(
+          minWidth: 48,
+          maxWidth: 48,
+          minHeight: 48,
+          maxHeight: 48,
+          child: Transform.translate(
+            offset: const Offset(0, -10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.24),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Icon(Icons.point_of_sale, color: Colors.white, size: 25),
+              ),
+            ),
+          ),
+        ),
+      );
 }

@@ -1,34 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:waioz/api/minipos_service.dart';
 import 'package:waioz/ui/minipos/minipos_widgets.dart';
+import 'package:waioz/utility/app_colors.dart';
 
-const _vendorStatuses = {
-  'draft': (
-    'Draft',
-    'Complete your bank and business details to submit for review.'
-  ),
-  'pending_admin': (
-    'Pending',
-    'Your details have been submitted and are waiting for admin review.'
-  ),
-  'submitting': (
-    'Review',
-    'The administrator is reviewing your details and completing Cashfree onboarding.'
-  ),
-  'processing': (
-    'Review',
-    'The administrator will mark your vendor approved once Cashfree approves it.'
-  ),
-  'active': ('Approved', 'Your vendor account is approved for MiniPOS.'),
-  'rejected': (
-    'Rejected',
-    'Your onboarding was rejected. Review the feedback below before submitting again.'
-  ),
-  'blocked': (
-    'Blocked',
-    'Your vendor account is blocked. Contact the administrator for assistance.'
-  ),
-};
+/// Only three states are shown: Not connected, Verifying, Connected.
+enum _CashfreeState { notConnected, verifying, connected }
+
+_CashfreeState _stateOf(String status) {
+  if (status == 'active') return _CashfreeState.connected;
+  if (const ['pending_admin', 'submitting', 'processing'].contains(status)) {
+    return _CashfreeState.verifying;
+  }
+  return _CashfreeState.notConnected; // draft, rejected, blocked, none
+}
 
 class MiniPosVendorPage extends StatefulWidget {
   const MiniPosVendorPage({super.key});
@@ -39,7 +25,10 @@ class MiniPosVendorPage extends StatefulWidget {
 class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
   final _form = GlobalKey<FormState>();
   final _api = MiniPosService.instance;
-  final _holder = TextEditingController(),
+  final _vendorName = TextEditingController(),
+      _vendorEmail = TextEditingController(),
+      _vendorPhone = TextEditingController(),
+      _holder = TextEditingController(),
       _account = TextEditingController(),
       _ifsc = TextEditingController(),
       _bank = TextEditingController(),
@@ -60,14 +49,55 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
 
   @override
   void dispose() {
-    for (final c in [_holder, _account, _ifsc, _bank, _pan, _gst, _cin]) {
+    for (final c in [
+      _vendorName,
+      _vendorEmail,
+      _vendorPhone,
+      _holder,
+      _account,
+      _ifsc,
+      _bank,
+      _pan,
+      _gst,
+      _cin
+    ]) {
       c.dispose();
     }
     super.dispose();
   }
 
-  void _populateVendor(Map<String, dynamic>? vendor) {
+  void _populateVendor(Map<String, dynamic>? vendor,
+      [Map<String, dynamic>? customer]) {
     _vendor = vendor;
+    final profileName = [customer?['first_name'], customer?['last_name']]
+        .map((part) => '${part ?? ''}'.trim())
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+    String contactValue(String key, String profileValue) {
+      final saved = '${vendor?[key] ?? ''}'.trim();
+      return saved.isNotEmpty ? saved : profileValue;
+    }
+
+    String capitalizeName(String value) => value.replaceAllMapped(
+        RegExp(r'(^|[\s./&,-])([a-z])'),
+        (match) => '${match.group(1)}${match.group(2)!.toUpperCase()}');
+
+    String localPhone(String value) {
+      final digits = value.replaceAll(RegExp(r'\D'), '');
+      return digits.length == 12 && digits.startsWith('91')
+          ? digits.substring(2)
+          : digits;
+    }
+
+    _vendorName.text = contactValue(
+        'vendor_name',
+        capitalizeName(profileName.isNotEmpty
+            ? profileName
+            : '${customer?['company_name'] ?? ''}'.trim()));
+    _vendorEmail.text =
+        contactValue('email', '${customer?['email'] ?? ''}'.trim());
+    _vendorPhone.text =
+        localPhone(contactValue('phone', '${customer?['phone'] ?? ''}'.trim()));
     _holder.text = '${vendor?['account_holder_name'] ?? ''}';
     _account.text = '${vendor?['account_number'] ?? ''}';
     _ifsc.text = '${vendor?['ifsc'] ?? ''}';
@@ -96,6 +126,20 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
     });
     try {
       final data = await _api.get('minipos/vendor');
+      final vendor = data['vendor'] == null
+          ? null
+          : Map<String, dynamic>.from(data['vendor']);
+      Map<String, dynamic>? customer;
+      if (vendor == null) {
+        try {
+          final profile = await _api.get('store/customers/me');
+          if (profile['customer'] is Map) {
+            customer = Map<String, dynamic>.from(profile['customer']);
+          }
+        } catch (e) {
+          debugPrint('[MiniPOS vendor] Could not prefill contact: $e');
+        }
+      }
       final businessTypes = List<String>.from(data['business_types'] ?? []);
       if (businessTypes.isEmpty) {
         throw const MiniPosException(
@@ -104,9 +148,7 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
       if (mounted) {
         setState(() {
           _businessTypes = businessTypes;
-          _populateVendor(data['vendor'] == null
-              ? null
-              : Map<String, dynamic>.from(data['vendor']));
+          _populateVendor(vendor, customer);
         });
       }
     } catch (e) {
@@ -122,6 +164,9 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
     setState(() => _saving = true);
     try {
       final data = await _api.put('minipos/vendor', {
+        'vendor_name': _vendorName.text.trim(),
+        'email': _vendorEmail.text.trim(),
+        'phone': _vendorPhone.text.trim(),
         'account_holder_name': _holder.text.trim(),
         'account_number': _account.text.trim(),
         'ifsc': _ifsc.text.trim(),
@@ -133,9 +178,17 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
         'cin': _cin.text.trim()
       });
       if (mounted) {
-        setState(
-            () => _populateVendor(Map<String, dynamic>.from(data['vendor'])));
-        miniPosMessage(context, 'Submitted for admin review.');
+        final vendor = Map<String, dynamic>.from(data['vendor']);
+        setState(() => _populateVendor(vendor));
+        final state = _stateOf('${vendor['status'] ?? ''}');
+        if (state == _CashfreeState.connected) {
+          miniPosMessage(context, 'Vendor connected successfully');
+        } else if (state == _CashfreeState.verifying) {
+          miniPosMessage(context, 'Vendor details submitted for verification');
+        } else {
+          miniPosMessage(context,
+              '${vendor['admin_note'] ?? 'Vendor details could not be verified. Please review and resubmit.'}');
+        }
       }
     } catch (e) {
       if (mounted) miniPosMessage(context, e);
@@ -147,14 +200,22 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
   String? _req(String? v) => v == null || v.trim().isEmpty ? 'Required' : null;
   @override
   Widget build(BuildContext context) {
-    final active = _vendor?['status'] == 'active';
     final status = '${_vendor?['status'] ?? ''}';
-    final statusDetails = _vendorStatuses[status] ??
-        ('Status unavailable', 'Refresh to check your onboarding status.');
-    final needsAttention = status == 'rejected' || status == 'blocked';
+    final state = _stateOf(status);
+    final verifying = state == _CashfreeState.verifying;
+    final connected = state == _CashfreeState.connected;
+    // Fields and Connect are locked while Cashfree verifies (or once connected).
+    final locked = verifying || connected || status == 'blocked' || _saving;
     final note = '${_vendor?['admin_note'] ?? ''}'.trim();
     return MiniPosScaffold(
-        appBar: AppBar(title: const Text('Bank & vendor onboarding')),
+        appBar: AppBar(
+            title: Text(connected ? 'Vendor details' : 'Connect Vendor'),
+            actions: [
+              IconButton(
+                  tooltip: 'Check status',
+                  onPressed: _loading ? null : _load,
+                  icon: const Icon(Icons.refresh)),
+            ]),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
@@ -163,97 +224,276 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
                     key: _form,
                     child:
                         ListView(padding: const EdgeInsets.all(16), children: [
-                      if (_vendor != null) ...[
-                        Card(
-                            color: active
-                                ? Colors.green.shade50
-                                : needsAttention
-                                    ? Colors.red.shade50
-                                    : Colors.amber.shade50,
-                            child: ListTile(
-                                leading: Icon(
-                                    active
-                                        ? Icons.verified
-                                        : needsAttention
-                                            ? Icons.error_outline
-                                            : Icons.hourglass_top,
-                                    color: active
-                                        ? Colors.green
-                                        : needsAttention
-                                            ? Colors.red
-                                            : Colors.orange),
-                                title: Text('Status: ${statusDetails.$1}'),
-                                subtitle: Text(active
-                                    ? '${_vendor!['cashfree_vendor_id']}\n${_vendor!['bank_account_masked']} · ${_vendor!['ifsc_masked']}'
-                                    : '${statusDetails.$2}${note.isEmpty ? '' : '\nAdmin feedback: $note'}'))),
+                      if (verifying || connected) ...[
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: connected
+                                  ? Colors.green.shade50
+                                  : Colors.amber.shade50,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                  color: connected
+                                      ? Colors.green.shade200
+                                      : Colors.amber.shade200),
+                            ),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(
+                                  connected
+                                      ? Icons.verified_rounded
+                                      : Icons.hourglass_top_rounded,
+                                  size: 20,
+                                  color: connected
+                                      ? Colors.green.shade700
+                                      : Colors.orange.shade800),
+                              const SizedBox(width: 7),
+                              Text(connected ? 'Connected' : 'Verifying',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: connected
+                                          ? Colors.green.shade700
+                                          : Colors.orange.shade800)),
+                            ]),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ] else if (note.isNotEmpty) ...[
+                        // Why the last attempt did not connect.
+                        Text(note,
+                            style: TextStyle(
+                                color: Colors.red.shade700, fontSize: 13)),
                         const SizedBox(height: 16),
                       ],
-                      if (active)
-                        const Padding(
-                            padding: EdgeInsets.only(top: 12),
-                            child: Text(
-                                'Approved bank details can only be changed with administrator review.',
-                                style: TextStyle(color: Colors.black54)))
+                      if (connected)
+                        _connectedDetails()
                       else ...[
-                        _field(_holder, 'Account holder name', _req),
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 14),
+                          child: Text('Vendor contact',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700)),
+                        ),
+                        _field(
+                            _vendorName,
+                            'Vendor name',
+                            (v) => (v ?? '').trim().length >= 2
+                                ? null
+                                : 'Enter vendor name',
+                            enabled: !locked,
+                            capitalization: TextCapitalization.words),
+                        _field(
+                            _vendorEmail,
+                            'Vendor email',
+                            (v) => RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                                    .hasMatch((v ?? '').trim())
+                                ? null
+                                : 'Enter a valid email',
+                            keyboard: TextInputType.emailAddress,
+                            enabled: !locked,
+                            validateOnChange: true,
+                            capitalization: TextCapitalization.none),
+                        _field(
+                            _vendorPhone,
+                            'Vendor mobile number',
+                            (v) => RegExp(r'^[6-9]\d{9}$')
+                                    .hasMatch((v ?? '').trim())
+                                ? null
+                                : 'Enter 10 digits starting with 6, 7, 8 or 9',
+                            keyboard: TextInputType.phone,
+                            enabled: !locked,
+                            validateOnChange: true,
+                            prefixText: '+91 ',
+                            capitalization: TextCapitalization.none,
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10)
+                            ]),
+                        const SizedBox(height: 8),
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 14),
+                          child: Text('Bank details',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700)),
+                        ),
+                        _field(_holder, 'Account holder name', _req,
+                            enabled: !locked),
                         _field(
                             _account,
                             'Bank account number',
                             (v) => RegExp(r'^\d{6,20}$').hasMatch(v ?? '')
                                 ? null
                                 : 'Enter a valid account number',
-                            keyboard: TextInputType.number),
+                            keyboard: TextInputType.number,
+                            enabled: !locked),
                         _field(
                             _ifsc,
                             'IFSC code',
                             (v) => RegExp(r'^[A-Za-z]{4}0[A-Za-z0-9]{6}$')
                                     .hasMatch(v ?? '')
                                 ? null
-                                : 'Enter a valid IFSC'),
-                        _field(_bank, 'Bank name (optional)', null),
+                                : 'Enter a valid IFSC',
+                            enabled: !locked),
+                        _field(_bank, 'Bank name (optional)', null,
+                            enabled: !locked),
+                        const SizedBox(height: 8),
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 14),
+                          child: Text('KYC details',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700)),
+                        ),
                         _dropdown(
-                            'KYC account type',
+                            'Account type',
                             _accountType,
                             const ['BUSINESS', 'INDIVIDUAL'],
-                            (v) => setState(() => _accountType = v!)),
+                            (v) => setState(() => _accountType = v!),
+                            enabled: !locked),
                         _dropdown(
                             'Business type',
                             _businessType,
                             _businessTypes,
-                            (value) => setState(() => _businessType = value)),
+                            (value) => setState(() => _businessType = value),
+                            enabled: !locked),
                         _field(
                             _pan,
                             'PAN',
                             (v) => RegExp(r'^[A-Za-z]{5}\d{4}[A-Za-z]$')
                                     .hasMatch(v ?? '')
                                 ? null
-                                : 'Enter a valid PAN'),
-                        _field(_gst, 'GSTIN (optional)', null),
-                        _field(_cin, 'CIN (optional)', null),
+                                : 'Enter a valid PAN',
+                            enabled: !locked),
+                        _field(_gst, 'GSTIN (optional)', null,
+                            enabled: !locked),
+                        _field(_cin, 'CIN (optional)', null, enabled: !locked),
                         FilledButton(
-                            onPressed: _saving ? null : _save,
+                            onPressed: locked ? null : _save,
                             child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Text(_saving
-                                    ? 'Submitting…'
-                                    : 'Submit for admin review')))
+                                    ? 'Connecting'
+                                    : verifying
+                                        ? 'Verifying'
+                                        : 'Connect Vendor')))
                       ]
                     ])));
   }
 
+  Widget _connectedDetails() {
+    final vendor = _vendor!;
+    String shown(dynamic value) {
+      final text = '${value ?? ''}'.trim();
+      return text.isEmpty ? '-' : text;
+    }
+
+    final submitted =
+        DateTime.tryParse('${vendor['submitted_at'] ?? ''}')?.toLocal();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _detailsCard('Account details', [
+        ('Vendor ID', shown(vendor['cashfree_vendor_id'])),
+        ('Vendor name', shown(vendor['vendor_name'])),
+        ('Phone', shown(vendor['phone'])),
+        ('Email', shown(vendor['email'])),
+        (
+          'Submitted on',
+          submitted == null
+              ? '-'
+              : DateFormat('dd MMM yyyy, hh:mm a').format(submitted)
+        ),
+      ]),
+      const SizedBox(height: 12),
+      _detailsCard('Bank details', [
+        ('Account holder', shown(vendor['account_holder_name'])),
+        ('Account number', shown(vendor['account_number'])),
+        ('IFSC', shown(vendor['ifsc'])),
+        ('Bank name', shown(vendor['bank_name'])),
+      ]),
+      const SizedBox(height: 12),
+      _detailsCard('KYC details', [
+        ('Account type', shown(vendor['account_type'])),
+        ('Business type', shown(vendor['business_type'])),
+        ('PAN', shown(vendor['pan'])),
+        ('GSTIN', shown(vendor['gst'])),
+        ('CIN', shown(vendor['cin'])),
+      ]),
+      const SizedBox(height: 12),
+      const Text('To change these details, contact Gowelmart support.',
+          style: TextStyle(fontSize: 12, color: Colors.black54)),
+    ]);
+  }
+
+  Widget _detailsCard(String title, List<(String, String)> details) =>
+      Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.primary),
+        ),
+        child: Column(children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(title,
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w700)),
+            ),
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EC)),
+          for (var index = 0; index < details.length; index++) ...[
+            if (index > 0)
+              const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EC)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(
+                    flex: 2,
+                    child: Text(details[index].$1,
+                        style: const TextStyle(
+                            fontSize: 13, color: Colors.black54))),
+                const SizedBox(width: 12),
+                Expanded(
+                    flex: 3,
+                    child: Text(details[index].$2,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600))),
+              ]),
+            ),
+          ],
+        ]),
+      );
+
   Widget _field(TextEditingController c, String label,
-          String? Function(String?)? validator, {TextInputType? keyboard}) =>
+          String? Function(String?)? validator,
+          {TextInputType? keyboard,
+          bool enabled = true,
+          bool validateOnChange = false,
+          String? prefixText,
+          TextCapitalization capitalization = TextCapitalization.characters,
+          List<TextInputFormatter>? formatters}) =>
       Padding(
           padding: const EdgeInsets.only(bottom: 14),
           child: TextFormField(
               controller: c,
+              enabled: enabled,
               validator: validator,
+              autovalidateMode: validateOnChange
+                  ? AutovalidateMode.onUserInteraction
+                  : AutovalidateMode.disabled,
               keyboardType: keyboard,
-              textCapitalization: TextCapitalization.characters,
+              textCapitalization: capitalization,
+              inputFormatters: formatters,
               decoration: InputDecoration(
-                  labelText: label, border: const OutlineInputBorder())));
+                  labelText: label,
+                  prefixText: prefixText,
+                  border: const OutlineInputBorder())));
   Widget _dropdown(String label, String? value, List<String> items,
-          ValueChanged<String?> changed) =>
+          ValueChanged<String?> changed, {bool enabled = true}) =>
       Padding(
           padding: const EdgeInsets.only(bottom: 14),
           child: DropdownButtonFormField<String>(
@@ -268,5 +508,5 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
                       child: Text(v.replaceAll('_', ' '),
                           maxLines: 1, overflow: TextOverflow.ellipsis)))
                   .toList(),
-              onChanged: changed));
+              onChanged: enabled ? changed : null));
 }

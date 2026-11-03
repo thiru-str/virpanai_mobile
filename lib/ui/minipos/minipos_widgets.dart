@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/app_utils.dart';
 
 /// Use the app's brand palette for MiniPOS controls and dialogs.
 class MiniPosTheme extends StatelessWidget {
@@ -22,17 +24,28 @@ class MiniPosTheme extends StatelessWidget {
       data: theme.copyWith(
         colorScheme: scheme,
         primaryColor: AppColors.primary,
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: const Color(0xFFF5FEF2),
+        // Green header on every MiniPOS page, matching the MiniPOS home.
         appBarTheme: theme.appBarTheme.copyWith(
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.textColor,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.white),
+          actionsIconTheme: const IconThemeData(color: Colors.white),
+          titleTextStyle: theme.textTheme.titleLarge
+              ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+          systemOverlayStyle: SystemUiOverlayStyle.light,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
         ),
         cardTheme: theme.cardTheme.copyWith(
-          color: Colors.white,
+          color: Colors.transparent,
           surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: AppColors.primary),
+          ),
         ),
         dialogTheme: theme.dialogTheme.copyWith(
           backgroundColor: Colors.white,
@@ -54,14 +67,17 @@ class MiniPosTheme extends StatelessWidget {
 class MiniPosScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget body;
-  final Color? backgroundColor;
-  const MiniPosScaffold(
-      {super.key, this.appBar, required this.body, this.backgroundColor});
+  const MiniPosScaffold({super.key, this.appBar, required this.body});
 
   @override
   Widget build(BuildContext context) => MiniPosTheme(
         child: Scaffold(
-            appBar: appBar, body: body, backgroundColor: backgroundColor),
+          appBar: appBar,
+          body: Container(
+            decoration: const BoxDecoration(gradient: AppColors.linearGradient),
+            child: body,
+          ),
+        ),
       );
 }
 
@@ -89,14 +105,16 @@ String miniPosMoney(dynamic paise) => NumberFormat.currency(
       decimalDigits: 2,
     ).format((num.tryParse('$paise') ?? 0) / 100);
 
+String miniPosOrderLabel(Map<String, dynamic> order) {
+  final displayId = order['display_id'];
+  if (displayId is num && displayId > 0) return '#${displayId.toInt()}';
+  final legacy = '${order['order_number'] ?? ''}'.trim();
+  return legacy.isEmpty ? '—' : legacy;
+}
+
+/// Short toast, the same as the rest of the app.
 void miniPosMessage(BuildContext context, Object message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-        backgroundColor: AppColors.textColor,
-        content: Text(message.toString(),
-            style: const TextStyle(color: Colors.white)),
-        behavior: SnackBarBehavior.floating),
-  );
+  AppUtils.showToast(message.toString());
 }
 
 class MiniPosEmpty extends StatelessWidget {

@@ -9,9 +9,6 @@ import 'package:waioz/ui/address_list_page.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/edit_profile_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
-import 'package:waioz/ui/minipos/minipos_products_page.dart';
-import 'package:waioz/ui/minipos/minipos_vendor_page.dart';
-import 'package:waioz/ui/minipos/minipos_orders_page.dart';
 import 'package:waioz/ui/loyalty_page.dart';
 import 'package:waioz/ui/orders_history_page.dart';
 import 'package:waioz/ui/wallet_page.dart';
@@ -245,18 +242,6 @@ class _SettingsPageState extends State<SettingsPage> {
                             PageRouteUtils.pushWithSlide(
                                 context, OrdersHistoryPage());
                           }),
-                          _buildProfileItem('MiniPOS Products', () {
-                            PageRouteUtils.pushWithSlide(
-                                context, const MiniPosProductsPage());
-                          }),
-                          _buildProfileItem('MiniPOS Bank & Vendor', () {
-                            PageRouteUtils.pushWithSlide(
-                                context, const MiniPosVendorPage());
-                          }),
-                          _buildProfileItem('MiniPOS Orders', () {
-                            PageRouteUtils.pushWithSlide(
-                                context, const MiniPosOrdersPage());
-                          }),
                           if (enabledExtensions.contains('wallet'))
                             _buildProfileItem('My Wallet', () {
                               PageRouteUtils.pushWithSlide(
@@ -299,10 +284,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
               ),
-              Text(
-                '${AppStrings.app_version}: $_appVersion',
-                style: FontUtils.secondaryFontStyle(
-                    color: Colors.grey, fontSize: 12),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Text(
+                  '${AppStrings.app_version}: $_appVersion',
+                  style: FontUtils.secondaryFontStyle(
+                      color: Colors.grey, fontSize: 12),
+                ),
               )
             ],
           ))),
