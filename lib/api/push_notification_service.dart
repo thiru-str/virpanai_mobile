@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -133,70 +134,86 @@ class PushNotificationService {
   }
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
-    final notification = message.notification;
-
-    if (notification != null) {
-      // Extract data
-      final String? imageUrl = _getImageUrl(message);
-      final String body = notification.body ?? "";
-      final String title = notification.title ?? "";
-      String? downloadedImagePath;
-
-      if (imageUrl != null) {
-        try {
-          downloadedImagePath = await _downloadAndSaveFile(imageUrl);
-        } catch (error) {
-          // A bad or temporarily unavailable image must not suppress the text
-          // notification.
-          debugPrint('Unable to download notification image: $error');
-        }
-      }
-
-      // Android Style Information
-      StyleInformation styleInformation;
-
-      if (downloadedImagePath != null) {
-        // Show big picture if image exists
-        styleInformation = BigPictureStyleInformation(
-          FilePathAndroidBitmap(downloadedImagePath),
-          contentTitle: title,
-          summaryText: body,
-          hideExpandedLargeIcon: true,
-        );
-      } else {
-        // Fallback to big text
-        styleInformation = BigTextStyleInformation(
-          body,
-          contentTitle: title,
-          summaryText: body,
-        );
-      }
-
-      // Show notification
-      await _flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        title,
-        body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'default_channel',
-            'General Notifications',
-            styleInformation: styleInformation,
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
-          iOS: DarwinNotificationDetails(
-            attachments: downloadedImagePath != null
-                ? [DarwinNotificationAttachment(downloadedImagePath)]
-                : null,
-          ),
-        ),
-        payload: jsonEncode(message.data),
-      );
-    }
+    await PushNotificationService.showNotification(
+        _flutterLocalNotificationsPlugin, message);
   }
 
-  String? _getImageUrl(RemoteMessage message) {
+  /// Called from the foreground listener above AND from the top-level
+  /// background handler in main.dart (which creates its own plugin instance).
+  static Future<void> showNotification(
+    FlutterLocalNotificationsPlugin plugin,
+    RemoteMessage message,
+  ) async {
+    // Server sends data-only for Android (title/body in data map).
+    // iOS messages still have message.notification populated via APNs.
+    final String title =
+        message.notification?.title ?? message.data['title'] as String? ?? '';
+    final String body =
+        message.notification?.body ?? message.data['body'] as String? ?? '';
+    if (title.isEmpty && body.isEmpty) return;
+
+    final String? imageUrl = _resolveImageUrl(message);
+    Uint8List? imageBytes;
+    String? savedFilePath;
+
+    if (imageUrl != null) {
+      try {
+        final result = await _downloadImage(imageUrl);
+        imageBytes = result.$1;
+        savedFilePath = result.$2;
+      } catch (error) {
+        debugPrint('Unable to download notification image: $error');
+      }
+    }
+
+    StyleInformation styleInformation;
+    ByteArrayAndroidBitmap? largeIconBitmap;
+
+    if (imageBytes != null) {
+      // ByteArrayAndroidBitmap keeps image in memory — no FileProvider needed,
+      // works on all Android versions. largeIcon shows it in the collapsed row.
+      largeIconBitmap = ByteArrayAndroidBitmap(imageBytes);
+      styleInformation = BigPictureStyleInformation(
+        largeIconBitmap,
+        contentTitle: title,
+        summaryText: body,
+        hideExpandedLargeIcon: true,
+      );
+    } else {
+      styleInformation = BigTextStyleInformation(
+        body,
+        contentTitle: title,
+        summaryText: body,
+      );
+    }
+
+    final int notifId =
+        message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+    await plugin.show(
+      notifId,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'default_channel',
+          'General Notifications',
+          styleInformation: styleInformation,
+          largeIcon: largeIconBitmap,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(
+          attachments: savedFilePath != null
+              ? [DarwinNotificationAttachment(savedFilePath)]
+              : null,
+        ),
+      ),
+      payload: jsonEncode(message.data),
+    );
+  }
+
+  static String? _resolveImageUrl(RemoteMessage message) {
     final candidates = [
       message.data['image'],
       message.data['image_url'],
@@ -215,43 +232,55 @@ class PushNotificationService {
     return null;
   }
 
-  Future<String> _downloadAndSaveFile(String url) async {
+  // Returns (bytes, filePath). Bytes used for Android ByteArrayAndroidBitmap;
+  // file path used for iOS DarwinNotificationAttachment.
+  static Future<(Uint8List, String)> _downloadImage(String url) async {
     final Directory directory = await getTemporaryDirectory();
+    final dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 20),
+    ));
 
-    try {
-      final dio = Dio(BaseOptions(
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 15),
-      ));
-      final response = await dio.get<List<int>>(
-        url,
-        options: Options(responseType: ResponseType.bytes),
-      );
+    Exception? lastError;
+    for (int attempt = 1; attempt <= 2; attempt++) {
+      try {
+        final response = await dio.get<List<int>>(
+          url,
+          options: Options(responseType: ResponseType.bytes),
+        );
 
-      final contentType =
-          response.headers.value(Headers.contentTypeHeader) ?? '';
-      final urlExtension =
-          Uri.parse(url).pathSegments.lastOrNull?.split('.').last.toLowerCase();
-      final extension = switch (urlExtension) {
-        'png' || 'jpg' || 'jpeg' || 'gif' || 'webp' => urlExtension,
-        _ when contentType.contains('png') => 'png',
-        _ when contentType.contains('gif') => 'gif',
-        _ when contentType.contains('webp') => 'webp',
-        _ => 'jpg',
-      };
-      final filePath =
-          '${directory.path}/notification_${DateTime.now().microsecondsSinceEpoch}.$extension';
-      final file = File(filePath);
-      final bytes = response.data;
-      if (bytes == null || bytes.isEmpty) {
-        throw StateError('Notification image response was empty');
+        final rawBytes = response.data;
+        if (rawBytes == null || rawBytes.isEmpty) {
+          throw StateError('Notification image response was empty');
+        }
+        final bytes = Uint8List.fromList(rawBytes);
+
+        final contentType =
+            response.headers.value(Headers.contentTypeHeader) ?? '';
+        final urlExtension = Uri.parse(url)
+            .pathSegments
+            .lastOrNull
+            ?.split('.')
+            .last
+            .toLowerCase();
+        final extension = switch (urlExtension) {
+          'png' || 'jpg' || 'jpeg' || 'gif' || 'webp' => urlExtension,
+          _ when contentType.contains('png') => 'png',
+          _ when contentType.contains('gif') => 'gif',
+          _ when contentType.contains('webp') => 'webp',
+          _ => 'jpg',
+        };
+        final filePath =
+            '${directory.path}/notification_${DateTime.now().microsecondsSinceEpoch}.$extension';
+        await File(filePath).writeAsBytes(bytes, flush: true);
+        return (bytes, filePath);
+      } catch (e) {
+        lastError = e is Exception ? e : Exception(e.toString());
+        debugPrint('Notification image download attempt $attempt failed: $e');
+        if (attempt < 2) await Future.delayed(const Duration(seconds: 2));
       }
-      await file.writeAsBytes(bytes, flush: true);
-      return filePath;
-    } catch (e) {
-      print("❌ Error downloading file: $e");
-      rethrow;
     }
+    throw lastError!;
   }
 
   Future<void> handleNotificationTap(
