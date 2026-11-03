@@ -19,45 +19,125 @@ class CommonHtmlWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Html(
-      data: cleanHtml(htmlContent),
-      style: {
-        "img": Style(
-          display: Display.block, // Ensures it behaves as a block element
-          alignment: Alignment.center,
-          width: Width(250, Unit.percent), // Optional: Adjust size
-        ),
-        "body": Style(
-          color: Colors.black, // Default text color to white
-        ),
-        "div": Style(
-          margin: Margins.all(0),
-          color: Colors.black,
-        ),
-        "span": Style(
-          fontSize: FontSize(14),
-          color: Colors.black,
-        ),
-        "p": Style(
-          fontSize: FontSize(14),
-          color: Colors.black,
-        ),
-        "a": Style(
-          textDecoration: TextDecoration.underline
-        ),
-      },
-      onLinkTap: (String? url, Map<String, String> attributes, _) {
-        if (url != null && url.startsWith('mailto:')) {
-          // Use Gmail web URL to open in browser/Gmail app
-          _launchEmailWithFallback(url.replaceFirst('mailto:', ''));
-        } else if (url != null) {
-          _launchUrl(url);
-        }
-      },
-      /*extensions: const [
-        TableHtmlExtension(), // Enables table rendering support
-      ]*/
-    );
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final Color subtleColor =
+        isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666666);
+    // flutter_html resolves % against the element's intrinsic size, not the
+    // container. Use LayoutBuilder to get the exact available width in px.
+    return LayoutBuilder(builder: (context, constraints) {
+      final double contentWidth = constraints.maxWidth;
+      return Html(
+        data: cleanHtml(htmlContent),
+        style: {
+          "body": Style(
+            margin: Margins.zero,
+            padding: HtmlPaddings.zero,
+            color: textColor,
+            fontSize: FontSize(15),
+            lineHeight: LineHeight(1.65),
+          ),
+          "figure": Style(
+            display: Display.block,
+            margin: Margins.symmetric(vertical: 12),
+            width: Width(contentWidth, Unit.px),
+          ),
+          "img": Style(
+            display: Display.block,
+            alignment: Alignment.center,
+            width: Width(contentWidth, Unit.px),
+          ),
+          "p": Style(
+            color: textColor,
+            fontSize: FontSize(15),
+            lineHeight: LineHeight(1.65),
+            margin: Margins.only(bottom: 10),
+          ),
+          "div": Style(
+            color: textColor,
+            margin: Margins.zero,
+          ),
+          "span": Style(
+            color: textColor,
+            fontSize: FontSize(15),
+          ),
+          "h1": Style(
+            color: textColor,
+            fontSize: FontSize(22),
+            fontWeight: FontWeight.bold,
+            margin: Margins.only(top: 4, bottom: 8),
+          ),
+          "h2": Style(
+            color: textColor,
+            fontSize: FontSize(19),
+            fontWeight: FontWeight.bold,
+            margin: Margins.only(top: 4, bottom: 6),
+          ),
+          "h3": Style(
+            color: textColor,
+            fontSize: FontSize(17),
+            fontWeight: FontWeight.w600,
+            margin: Margins.only(top: 4, bottom: 6),
+          ),
+          "ul": Style(
+            margin: Margins.only(left: 4, bottom: 10),
+            padding: HtmlPaddings.only(left: 16),
+          ),
+          "ol": Style(
+            margin: Margins.only(left: 4, bottom: 10),
+            padding: HtmlPaddings.only(left: 16),
+          ),
+          "li": Style(
+            color: textColor,
+            fontSize: FontSize(15),
+            lineHeight: LineHeight(1.65),
+            margin: Margins.only(bottom: 4),
+          ),
+          "strong": Style(
+            color: textColor,
+            fontWeight: FontWeight.w700,
+          ),
+          "em": Style(
+            color: textColor,
+            fontStyle: FontStyle.italic,
+          ),
+          "blockquote": Style(
+            color: subtleColor,
+            fontStyle: FontStyle.italic,
+            margin: Margins.symmetric(vertical: 8),
+            padding: HtmlPaddings.only(left: 12),
+            border: Border(left: BorderSide(color: subtleColor, width: 3)),
+          ),
+          "a": Style(
+            color: const Color(0xFF1B6B3A),
+            textDecoration: TextDecoration.underline,
+          ),
+          "table": Style(
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+          ),
+          "td": Style(
+            color: textColor,
+            fontSize: FontSize(14),
+            padding: HtmlPaddings.all(8),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+          ),
+          "th": Style(
+            color: textColor,
+            fontSize: FontSize(14),
+            fontWeight: FontWeight.w700,
+            padding: HtmlPaddings.all(8),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+          ),
+        },
+        onLinkTap: (String? url, Map<String, String> attributes, _) {
+          if (url != null && url.startsWith('mailto:')) {
+            _launchEmailWithFallback(url.replaceFirst('mailto:', ''));
+          } else if (url != null) {
+            _launchUrl(url);
+          }
+        },
+      );
+    });
   }
 }
 
