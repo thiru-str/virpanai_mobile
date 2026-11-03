@@ -68,6 +68,19 @@ flutter {
     source '../..'
 }
 
+// Ensure javaPreCompileDebug runs before compileDebugJavaWithJavac for all subprojects.
+// Needed because some older Flutter plugins don't declare this dependency explicitly,
+// causing AGP 8.11.1+ validation to fail with "annotationProcessors.json does not exist".
+rootProject.subprojects {
+    afterEvaluate { proj ->
+        def preCompile = proj.tasks.findByName("javaPreCompileDebug")
+        def compile = proj.tasks.findByName("compileDebugJavaWithJavac")
+        if (preCompile != null && compile != null) {
+            compile.dependsOn(preCompile)
+        }
+    }
+}
+
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.1.1') // Use latest BOM
     implementation 'com.google.firebase:firebase-messaging'
