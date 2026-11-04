@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -31,7 +32,7 @@ class Grid11 extends StatelessWidget {
                   fit: BoxFit.fill,
                 )
               : null,
-          color: bgImage.isEmpty ? const Color(0xFFE7E9F3) : null,
+          color: bgImage.isEmpty ? cmsCard(context, const Color(0xFFE7E9F3)) : null,
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 148, 16, 20),
@@ -116,7 +117,7 @@ class _Grid11Item extends StatelessWidget {
               style: FontUtils.primaryFontStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
           ),

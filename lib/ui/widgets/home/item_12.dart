@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -48,7 +49,7 @@ class Item12 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2, // Allow up to 2 lines for the title
@@ -73,7 +74,7 @@ class Item12 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -140,7 +141,7 @@ class _Item12Card extends StatelessWidget {
       child: Container(
         width: 160,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade200),
         ),
@@ -186,9 +187,9 @@ class _Item12Card extends StatelessWidget {
                       backgroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                       foregroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.primary),
+                      MaterialStateProperty.all<Color>(cmsAccent(context, AppColors.primary)),
                       side: MaterialStateProperty.all<BorderSide>(
-                          BorderSide(color: AppColors.primary, width: 1)),
+                          BorderSide(color: cmsAccent(context, AppColors.primary), width: 1)),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
@@ -205,7 +206,7 @@ class _Item12Card extends StatelessWidget {
                     child: Text(
                       "ADD",
                       style: FontUtils.primaryFontStyle(
-                        color: AppColors.primary,
+                        color: cmsAccent(context, AppColors.primary),
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -229,7 +230,7 @@ class _Item12Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -240,7 +241,7 @@ class _Item12Card extends StatelessWidget {
                       ),
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: cmsCardText(context, Colors.grey),
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -272,7 +273,7 @@ class _Item12Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

@@ -295,11 +295,19 @@ class _LoyaltyPageState extends State<LoyaltyPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${_account!.pointsBalance ?? 0}',
-                  style: FontUtils.primaryFontStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+              // Flexible + FittedBox so a very large points balance scales
+              // down instead of overflowing the hero card on narrow phones.
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('${_account!.pointsBalance ?? 0}',
+                      maxLines: 1,
+                      style: FontUtils.primaryFontStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 8, left: 4),
                 child: Text('pts',

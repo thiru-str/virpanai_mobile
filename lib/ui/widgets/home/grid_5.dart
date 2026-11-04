@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -42,7 +43,7 @@ class Grid5 extends StatelessWidget {
                         style: FontUtils.secondaryFontStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textColor,
+                          color: cmsCardText(context, AppColors.textColor),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -53,7 +54,7 @@ class Grid5 extends StatelessWidget {
                         style: FontUtils.primaryFontStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF7B7B7B),
+                          color: cmsText(context, const Color(0xFF7B7B7B)),
                         ),
                       ),
                     ],
@@ -86,7 +87,7 @@ class Grid5 extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFE1E4ED),
+                color: cmsCard(context, const Color(0xFFE1E4ED)),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: GridView.builder(

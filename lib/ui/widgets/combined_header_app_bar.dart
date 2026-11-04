@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
+import 'package:waioz/ui/widgets/home/premium_app_headers.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
 
@@ -39,10 +41,28 @@ class CombinedHeaderAppBar extends StatelessWidget
     this.showBack = false,
   }) : super(key: key);
 
+  // The admin stores the central slug of the chosen header; older settings
+  // store the header-N key. Both name the same header.
+  static const Map<String, String> _slugToKey = {
+    'AppHeaderSplit1': 'header-9',
+    'AppHeaderCentered1': 'header-10',
+    'AppHeaderMinimal1': 'header-11',
+    'AppHeaderSearch1': 'header-12',
+    'AppHeaderTwoRow1': 'header-13',
+    'AppHeaderLocation1': 'header-14',
+    'AppHeaderPill1': 'header-15',
+    'AppHeaderGradient1': 'header-16',
+    'AppHeaderCategoryTabs1': 'header-17',
+    'AppHeaderLuxe1': 'header-18',
+    'AppHeaderBasket1': 'header-19',
+  };
+
+  static String normalizeHeaderType(String type) => _slugToKey[type] ?? type;
+
   @override
   Widget build(BuildContext context) {
     debugPrint('App bar $headerType');
-    switch (headerType) {
+    switch (normalizeHeaderType(headerType)) {
       case "header-1":
         return _buildHeader1();
       case "header-2":
@@ -59,13 +79,41 @@ class CombinedHeaderAppBar extends StatelessWidget
         return _buildHeader7(context);
       case "header-8":
         return _buildCustomSearchHeader(context);
+      // Premium header family (header-9 .. header-18)
+      case "header-9":
+        return AppHeaderSplit1(cartCount: cartCount);
+      case "header-10":
+        return AppHeaderCentered1(cartCount: cartCount);
+      case "header-11":
+        return AppHeaderMinimal1(cartCount: cartCount);
+      case "header-12":
+        return AppHeaderSearch1(cartCount: cartCount);
+      case "header-13":
+        return AppHeaderTwoRow1(cartCount: cartCount);
+      case "header-14":
+        return AppHeaderLocation1(cartCount: cartCount);
+      case "header-15":
+        return AppHeaderPill1(cartCount: cartCount);
+      case "header-16":
+        return AppHeaderGradient1(cartCount: cartCount);
+      case "header-17":
+        return AppHeaderCategoryTabs1(cartCount: cartCount);
+      case "header-18":
+        return AppHeaderLuxe1(cartCount: cartCount);
+      case "header-19":
+        return AppHeaderBasket1(
+          cartCount: cartCount,
+          onCartClick: onCartClick,
+          onSearchClick: onSearchClick,
+          onProfileTap: onProfileTap,
+        );
       default:
         return _buildHeader1();
     }
   }
 
   static double resolveHeaderHeight(String headerType) {
-    switch (headerType) {
+    switch (normalizeHeaderType(headerType)) {
       case "header-1":
         return 70;
       case "header-2":
@@ -82,6 +130,28 @@ class CombinedHeaderAppBar extends StatelessWidget
         return 140;
       case "header-8":
         return 130;
+      case "header-9":
+        return 64;
+      case "header-10":
+        return 64;
+      case "header-11":
+        return 60;
+      case "header-12":
+        return 68;
+      case "header-13":
+        return 116;
+      case "header-14":
+        return 116;
+      case "header-15":
+        return 68;
+      case "header-16":
+        return 112;
+      case "header-17":
+        return 104;
+      case "header-18":
+        return 60;
+      case "header-19":
+        return AppHeaderBasket1.height;
       default:
         return 120;
     }

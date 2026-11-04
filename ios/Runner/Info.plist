@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>VirpanAI</string>
+	<string>Galaxy Healthcare</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -40,17 +40,25 @@
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>FlutterDeepLinkingEnabled</key>
-    <false/>
+	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>amazonpay</string><string>upi</string><string>credpay</string><string>bhim</string>
-		<string>paytmmp</string><string>phonepe</string><string>tez</string><string>navipay</string>
-		<string>mobikwik</string><string>myairtel</string><string>whatsapp</string>
+		<string>amazonpay</string>
+		<string>upi</string>
+		<string>credpay</string>
+		<string>bhim</string>
+		<string>paytmmp</string>
+		<string>phonepe</string>
+		<string>tez</string>
+		<string>navipay</string>
+		<string>mobikwik</string>
+		<string>myairtel</string>
+		<string>whatsapp</string>
 	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

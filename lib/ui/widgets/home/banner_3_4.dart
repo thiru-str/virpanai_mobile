@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -73,7 +74,7 @@ class _BannerGridSection extends StatelessWidget {
               style: FontUtils.secondaryFontStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textColor,
+                color: cmsCardText(context, AppColors.textColor),
               ),
             ),
             if ((content.layoutSubTitle ?? '').isNotEmpty) ...[
@@ -85,7 +86,7 @@ class _BannerGridSection extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: FontUtils.primaryFontStyle(
                   fontSize: 12,
-                  color: const Color(0xFF6B6B6B),
+                  color: cmsCardText(context, const Color(0xFF6B6B6B)),
                 ),
               ),
             ],

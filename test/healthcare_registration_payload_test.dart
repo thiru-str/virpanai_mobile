@@ -50,4 +50,59 @@ void main() {
     expect(payload['drug_licence_valid_from'], '2026-01-01');
     expect(payload['drug_licence_valid_to'], '2027-01-01');
   });
+
+  test('email registration adds the password and device id', () {
+    final payload = buildHealthcareRegistrationPayload(
+      phone: '9876543210',
+      countryCode: '+91',
+      fullName: 'General User',
+      email: 'general@example.com',
+      userType: 'general_user',
+      password: ' pass word ',
+      deviceId: 'device-1',
+    );
+
+    expect(payload, {
+      'phone': '9876543210',
+      'country_code': '+91',
+      'full_name': 'General User',
+      'email': 'general@example.com',
+      'user_type': 'general_user',
+      'password': ' pass word ',
+      'device_id': 'device-1',
+    });
+  });
+
+  test('doctor email registration keeps the password', () {
+    final payload = buildHealthcareRegistrationPayload(
+      phone: '9876543210',
+      countryCode: '+91',
+      fullName: 'Doctor One',
+      email: 'doctor@example.com',
+      userType: 'doctor',
+      password: 'secret',
+      deviceId: 'device-1',
+    );
+
+    expect(payload['password'], 'secret');
+    expect(payload['device_id'], 'device-1');
+    expect(payload['aadhaar_document_url'], '[]');
+  });
+
+  test('empty password and device id are left out of the OTP payload', () {
+    for (final userType in ['general_user', 'doctor']) {
+      final payload = buildHealthcareRegistrationPayload(
+        phone: '9876543210',
+        countryCode: '+91',
+        fullName: 'User',
+        email: 'user@example.com',
+        userType: userType,
+        password: '',
+        deviceId: '',
+      );
+
+      expect(payload.containsKey('password'), isFalse);
+      expect(payload.containsKey('device_id'), isFalse);
+    }
+  });
 }

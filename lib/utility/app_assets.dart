@@ -19,6 +19,8 @@ class AppAssets {
   static const String ic_discount = 'images/ic_discount.png';
   static const String ic_no_transaction = 'images/ic_no_transaction.png';
   static const String app_icon = 'images/app_icon.png';
+  // Wide logo for headers that put it on a white plate (header-19).
+  static const String app_logo_wide = 'images/app_logo_wide.png';
   static const String ic_no_image = 'images/ic_no_image.svg';
   static const String order_shipped = 'images/order_shipped.svg';
   static const String order_processing = 'images/order_processing.svg';

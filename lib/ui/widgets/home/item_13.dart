@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_strings.dart';
@@ -44,7 +45,7 @@ class Item13 extends StatelessWidget {
                       style: FontUtils.secondaryFontStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: cmsCardText(context, AppColors.textColor),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -67,7 +68,7 @@ class Item13 extends StatelessWidget {
                             style: FontUtils.primaryFontStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: cmsCardText(context, AppColors.textColor),
                             ),
                           ),
                           const Icon(Icons.chevron_right, size: 18),
@@ -138,7 +139,7 @@ class _Item13Card extends StatelessWidget {
       child: Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cmsCard(context, Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300),
         ),
@@ -230,7 +231,7 @@ class _Item13Card extends StatelessWidget {
                 style: FontUtils.primaryFontStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: cmsCardText(context, Colors.black),
                   letterSpacing: 0.1,
                 ),
                 maxLines: 2,
@@ -250,7 +251,7 @@ class _Item13Card extends StatelessWidget {
                     style: FontUtils.primaryFontStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: cmsCardText(context, Colors.black),
                     ),
                   ),
                   const SizedBox(width: 6),

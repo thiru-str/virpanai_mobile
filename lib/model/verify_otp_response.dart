@@ -13,6 +13,7 @@ String verifyOtpResponseToJson(VerifyOtpResponse data) =>
 class VerifyOtpResponse {
   String? token;
   bool? newUser;
+  String? status;
   bool? success;
   String? message;
   String? reason;
@@ -21,13 +22,23 @@ class VerifyOtpResponse {
   VerifyOtpResponse({
     this.token,
     this.newUser,
+    this.status,
     this.success,
     this.message,
     this.reason,
     this.error,
   });
 
-  bool get hasFailure => success == false || (error?.hasDetails ?? false);
+  /// Why sign-in was refused, e.g. "Wait for approval" or "Account blocked."
+  String? get errorMessage => error?.message;
+
+  /// The backend answers 200 with `status: "error"` and an empty token when
+  /// the account may not sign in yet.
+  bool get isRefused =>
+      status == 'error' || (newUser != true && (token ?? '').isEmpty);
+
+  bool get hasFailure =>
+      status == 'error' || success == false || (error?.hasDetails ?? false);
 
   String get failureMessage =>
       error?.message ?? message ?? reason ?? 'Unable to log in';
@@ -36,6 +47,7 @@ class VerifyOtpResponse {
       VerifyOtpResponse(
         token: json["token"],
         newUser: json["newUser"],
+        status: json["status"]?.toString(),
         success: json["success"],
         message: json["message"],
         reason: json["reason"],
@@ -47,6 +59,7 @@ class VerifyOtpResponse {
   Map<String, dynamic> toJson() => {
         "token": token,
         "newUser": newUser,
+        "status": status,
         "success": success,
         "message": message,
         "reason": reason,
@@ -65,8 +78,8 @@ class VerifyOtpError {
       (message?.trim().isNotEmpty ?? false);
 
   factory VerifyOtpError.fromJson(Map<String, dynamic> json) => VerifyOtpError(
-        code: json['code'],
-        message: json['message'],
+        code: json['code']?.toString(),
+        message: json['message']?.toString(),
       );
 
   Map<String, dynamic> toJson() => {

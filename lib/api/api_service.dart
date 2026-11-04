@@ -16,7 +16,6 @@ import 'package:waioz/model/return_response.dart';
 import 'package:waioz/model/return_success_response.dart';
 import 'package:waioz/model/store_content_response.dart';
 import 'package:waioz/model/customer_response.dart';
-import 'package:waioz/model/delete_response.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
 import 'package:waioz/model/wallet_response.dart';
@@ -42,6 +41,7 @@ import 'package:waioz/ui/welcome_page.dart';
 import 'package:waioz/utility/app_config.dart';
 import 'package:waioz/utility/app_error_reporter.dart';
 import 'package:waioz/utility/app_logger.dart';
+import 'package:waioz/utility/checkout_completion.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import '../model/cancel_order_response.dart';
 import '../model/custom_page_response.dart';
@@ -55,7 +55,32 @@ import '../utility/app_utils.dart';
 import '../utility/shared_preferences_util.dart';
 import 'package:waioz/model/check_out_shipping_address_model.dart' as CheckOut;
 
+/// A non-200 answer, carrying the backend's own message for the shopper.
+class ApiException implements Exception {
+  final int? statusCode;
+  final String? code;
+  final String message;
+  final dynamic body;
+
+  const ApiException({
+    required this.message,
+    this.statusCode,
+    this.code,
+    this.body,
+  });
+
+  @override
+  String toString() => message;
+}
+
 class ApiService {
+  // A `+`-prefixed field keeps the store-cart defaults, so cart mutations
+  // answer with the same cart a GET returns (address, payment sessions,
+  // stock flags) instead of the compact shape non-web clients get otherwise.
+  static const Map<String, dynamic> _fullCartQuery = {'fields': '+metadata'};
+  static const String _connectionErrorMessage =
+      'Could not reach the store. Please check your connection and try again.';
+
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   late final Dio _dio;
@@ -98,8 +123,9 @@ class ApiService {
     String endpoint,
     Map<String, dynamic>? data,
     T Function(Map<String, dynamic>) fromJson,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    Set<int> bodyStatuses = const {},
+  }) async {
     try {
       await setPublishableKey();
 
@@ -111,7 +137,8 @@ class ApiService {
           await _dio.post(endpoint, data: data ?? {}, options: Options(
         validateStatus: (status) {
           // Accept status codes 400-499 as valid responses for handling errors manually
-          return status != null && status < 500;
+          return status != null &&
+              (status < 500 || bodyStatuses.contains(status));
         },
       ));
       if (response.statusCode == 200) {
@@ -126,12 +153,20 @@ class ApiService {
           AppLogger.logFullJson(response.data);
         }
         return fromJson(response.data);
+      } else if (bodyStatuses.contains(response.statusCode) &&
+          response.data is Map<String, dynamic>) {
+        // The caller shows this answer's message itself.
+        return fromJson(response.data);
       } else if (response.statusCode == 401) {
         final errorMsg = _extractErrorMessage(response.data);
         await _handleLogout(context, errorMsg);
         throw Exception('Unauthorized: $errorMsg');
       } else {
-        AppUtils.showToast(_extractErrorMessage(response.data));
+        // A 5xx only gets here from bodyStatuses without a JSON body, e.g. a
+        // gateway's HTML page, which is not fit to show.
+        AppUtils.showToast(response.statusCode! >= 500
+            ? _connectionErrorMessage
+            : _extractErrorMessage(response.data));
         throw Exception('Unexpected status code: ${response.statusCode}');
       }
     } catch (e, stacktrace) {
@@ -312,6 +347,54 @@ class ApiService {
     }
   }
 
+  /// Sends a JSON request and returns the 200 body. Any other answer throws an
+  /// [ApiException] with the backend's message; showing it is up to the caller.
+  Future<Map<String, dynamic>> _sendJson(
+    String method,
+    String endpoint, {
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
+    BuildContext? context,
+  }) async {
+    await setPublishableKey();
+    await addToken();
+    AppLogger.print('API Request:', '$method ${_dio.options.baseUrl}$endpoint');
+
+    final Response<dynamic> response;
+    try {
+      response = await _dio.request(
+        endpoint,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(method: method, validateStatus: (_) => true),
+      );
+    } catch (e, stacktrace) {
+      AppErrorReporter.instance.recordHandled(
+        e,
+        stacktrace,
+        reason: '$method request failed',
+        attributes: {'endpoint': endpoint, 'method': method},
+      );
+      throw const ApiException(message: _connectionErrorMessage);
+    }
+
+    final status = response.statusCode;
+    final body = response.data;
+    if (status == 200 && body is Map) return Map<String, dynamic>.from(body);
+
+    final message = _extractErrorMessage(body);
+    AppLogger.print('API Error:', '$method $endpoint status=$status');
+    if (status == 401 && context != null && context.mounted) {
+      await _handleLogout(context, message);
+    }
+    throw ApiException(
+      statusCode: status,
+      code: body is Map ? body['code']?.toString() : null,
+      message: message,
+      body: body,
+    );
+  }
+
   Future<void> _handleLogout(BuildContext context, String? message) async {
     // Optionally show a toast with the message
     if (message != null) {
@@ -467,11 +550,19 @@ class ApiService {
     BuildContext context,
     Map<String, dynamic> payload,
   ) async {
+    // Only an email registration signs in here; the OTP payload goes as built.
+    final isEmailRegistration = payload.containsKey('password');
+    final deviceId = isEmailRegistration ? await _updateToken() : null;
     return _makePostRequest<Map<String, dynamic>>(
       "store/healthcare-user/register",
-      payload,
+      {
+        ...payload,
+        if (deviceId != null && deviceId.isNotEmpty) "device_id": deviceId,
+      },
       (data) => data,
       context,
+      // Validation failures: 400 {success: false, message, errors}.
+      bodyStatuses: isEmailRegistration ? const {400} : const {},
     );
   }
 
@@ -816,41 +907,49 @@ class ApiService {
     );
   }
 
-  Future<CartResponse> addCart(
-      BuildContext context, int qty, String variantId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    try {
-      return await _makePostRequest(
-        'store/custom-carts/$cartId/line-items',
-        {"variant_id": variantId, "quantity": qty, "metadata": {}},
-        (json) => CartResponse.fromJson(json),
-        context,
-      );
-    } catch (e) {
-      // Cart is inactive (completed after a previous order) — auto-recover by
-      // fetching a fresh cart from the home page endpoint, then retry once.
-      if (e.toString().contains('status code: 409')) {
-        try {
-          final homeResponse = await getHomePage(context);
-          final newCartId = homeResponse.global?.cartId;
-          if (newCartId != null &&
-              newCartId.isNotEmpty &&
-              newCartId != cartId) {
-            await SharedPreferencesUtil().saveString('cart_id', newCartId);
-            return await _makePostRequest(
-              'store/custom-carts/$newCartId/line-items',
-              {"variant_id": variantId, "quantity": qty, "metadata": {}},
-              (json) => CartResponse.fromJson(json),
-              context,
-            );
-          }
-        } catch (_) {
-          // Refresh failed — fall through to rethrow original error
-        }
-      }
-      rethrow;
-    }
+  /// Adds [quantity] of a variant (the backend raises an existing line) and
+  /// returns the settled cart body `{ cart }`.
+  Future<Map<String, dynamic>> addCartLine(
+      BuildContext? context, String variantId, int quantity) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'POST',
+      'store/custom-carts/$cartId/line-items',
+      data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  /// Sets a line's quantity; the body may carry a `notice` when the backend
+  /// lowered it to the stock that is left.
+  Future<Map<String, dynamic>> updateCartLine(
+      BuildContext? context, String lineId, int quantity) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'POST',
+      'store/custom-carts/$cartId/line-items/$lineId',
+      data: {"quantity": quantity, "metadata": {}},
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  Future<Map<String, dynamic>> deleteCartLine(
+      BuildContext? context, String lineId) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson(
+      'DELETE',
+      'store/custom-carts/$cartId/line-items/$lineId',
+      queryParameters: _fullCartQuery,
+      context: context,
+    );
+  }
+
+  /// The settled cart body `{ cart }`, unparsed, for the cart store.
+  Future<Map<String, dynamic>> getCartJson(BuildContext? context) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    return _sendJson('GET', 'store/custom-carts/$cartId', context: context);
   }
 
   Future<CartResponse> getCart(BuildContext context) async {
@@ -938,31 +1037,6 @@ class ApiService {
       'store/carts/$cartId',
       {"shipping_address": address, "billing_address": address},
       (json) => CartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<CartResponse> updateCart(
-      BuildContext context, int qty, String cartItemId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
-      {"quantity": qty, "metadata": {}},
-      (json) => CartResponse.fromJson(json),
-      context,
-    );
-  }
-
-  Future<DeleteResponse> removeCart(
-      BuildContext context, String cartItemId) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makeDeleteRequest(
-      'store/custom-carts/$cartId/line-items/$cartItemId',
-      null,
-      null,
-      (json) => DeleteResponse.fromJson(json),
       context,
     );
   }
@@ -1073,27 +1147,39 @@ class ApiService {
     );
   }
 
-  Future<PaymentMethodResponse> updatePaymentMethod(BuildContext context,
-      String paymentProviderId, CartResponse cartResponse) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
+  /// Creates the session for the chosen provider and stores the choice on the
+  /// cart. When the open Razorpay order is reused the body carries
+  /// `payment_session` instead of `payment_collection`, so callers read the
+  /// session from the cart afterwards. Throws [ApiException] with the
+  /// backend's message.
+  Future<PaymentMethodResponse> updatePaymentMethod(
+      BuildContext context, String paymentProviderId) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    final body = await _sendJson(
+      'POST',
       'store/update-payment-method/$cartId',
-      {"payment_provider_id": paymentProviderId},
-      (json) => PaymentMethodResponse.fromJson(json),
-      context,
+      data: {"payment_provider_id": paymentProviderId},
+      context: context,
     );
+    return PaymentMethodResponse.fromJson(body);
   }
 
-  Future<PlaceOrderResponse> completeCart(BuildContext context) async {
-    await addToken();
-    String? cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _makePostRequest(
-      'store/custom-carts/$cartId/complete',
-      null,
-      (json) => PlaceOrderResponse.fromJson(json),
-      context,
-    );
+  /// Completes the cart. A failed completion creates no order: the backend
+  /// answers 409 with why, and refunds an online payment itself.
+  Future<CartCompletionResult> completeCart(BuildContext context) async {
+    final cartId = await SharedPreferencesUtil().getString('cart_id');
+    try {
+      final body = await _sendJson(
+        'POST',
+        'store/custom-carts/$cartId/complete',
+        data: const {},
+        context: context,
+      );
+      return CartCompletionResult.fromSuccessBody(body);
+    } on ApiException catch (error) {
+      final body = error.body is Map ? error.body : {'message': error.message};
+      return CartCompletionResult.failed(CompletionFailure.fromBody(body));
+    }
   }
 
   Future<Map<String, dynamic>> getCashfreeEmiOptions(num amount) async {
@@ -1397,7 +1483,10 @@ class ApiService {
         "store/customers/email-login",
         {"device_id": deviceId, "email": email, "password": password},
         (data) => VerifyOtpResponse.fromJson(data),
-        context);
+        context,
+        // Refusals the page explains: blocked, awaiting approval, rejected,
+        // and an approval check that could not run.
+        bodyStatuses: const {403, 503});
     await AppErrorReporter.instance.addBreadcrumb(
       'customer_login',
       attributes: {

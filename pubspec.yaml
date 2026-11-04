@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+4
+version: 1.6.0+17
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -93,10 +93,14 @@ dependencies:
 
 
 dependency_overrides:
-  # flutter_html 3.0.0 uses html's internal qs.matches, removed in 0.15.7.
-  html: 0.15.6
   stripe_platform_interface: ^10.2.0
   stripe_android: ^10.2.0
+  # flutter_html (3.0.0) calls html's internal src/query_selector `matches()`,
+  # which was REMOVED in html 0.15.7 — so a fresh `pub get` (pubspec.lock is
+  # git-ignored) resolves html 0.15.7 and the app fails to compile
+  # ("Method not found: 'matches'"). Cap html below 0.15.7 (0.15.5/0.15.6 still
+  # ship matches() and satisfy flutter_html's ^0.15.5) so fresh builds compile.
+  html: '>=0.15.5 <0.15.7'
 
 dev_dependencies:
   flutter_test:

@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/shipping_response.dart';
 import 'package:waioz/utility/app_colors.dart';
+import 'package:waioz/utility/checkout_completion.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaytmPaymentPage extends StatefulWidget {
   final Data data;
   final VoidCallback onSuccess;
-  final void Function(String message) onFailure;
+  /// The message to show, and the settled failure when the backend's
+  /// callback redirect carried one (no order was created).
+  final void Function(String message, CompletionFailure? failure) onFailure;
 
   const PaytmPaymentPage({
     super.key,
@@ -61,7 +64,8 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
 
             if (url.contains('/order/transaction/failed/')) {
               _done = true;
-              widget.onFailure(_failureMessageFromUrl(url));
+              widget.onFailure(_failureMessageFromUrl(url),
+                  CompletionFailure.fromFailedRedirect(url));
               return NavigationDecision.prevent;
             }
 
@@ -104,7 +108,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
         ['APP_CLOSED', 'SESSION_EXPIRED', 'PAYTM_EXPIRY', 'TXN_ABORT', 'TXN_FAILURE']
             .contains(eventName)) {
       _done = true;
-      widget.onFailure(_notifyMessage(eventName));
+      widget.onFailure(_notifyMessage(eventName), null);
       return;
     }
 
@@ -118,6 +122,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
                 : null)
             ?.toString() ??
             'Paytm payment was not completed.',
+        null,
       );
     }
   }
@@ -153,7 +158,7 @@ class _PaytmPaymentPageState extends State<PaytmPaymentPage> {
     if (!mounted || shouldSkip != true || _done) return;
 
     _done = true;
-    widget.onFailure(_notifyMessage('APP_CLOSED'));
+    widget.onFailure(_notifyMessage('APP_CLOSED'), null);
   }
 
   String _failureMessageFromUrl(String url) {

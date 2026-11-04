@@ -295,9 +295,6 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.arrow_forward_rounded,
-                                  color: Colors.white, size: 20),
                             ],
                           ),
                   ),
@@ -313,8 +310,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
 
   void sendOtp() async {
     try {
+      // Blocks a second tap from sending another OTP while this one is sent.
       setState(() {
-        apiCalling = false;
+        apiCalling = true;
       });
       final ApiService apiService = ApiService();
       sendOtpResponse =
@@ -323,6 +321,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         AppUtils.showToast(sendOtpResponse!.otp!);
       }*/
 
+      if (!mounted) return;
+      setState(() {
+        apiCalling = false;
+      });
       PageRouteUtils.pushWithSlide(
           context,
           OtpVerificationPage(
@@ -370,7 +372,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
 
       if (mounted) {
         if (widget.redirectPage != null) {
-          getHomePageApi();
+          // The signed-in cart id must be stored before the page it returns
+          // to reads the cart.
+          await getHomePageApi();
+          if (!mounted) return;
           setState(() {
             apiCalling = false;
           });
@@ -387,7 +392,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     }
   }
 
-  void getHomePageApi() async {
+  Future<void> getHomePageApi() async {
     try {
       final ApiService apiService = ApiService();
       final response = await apiService.getHomePage(context);

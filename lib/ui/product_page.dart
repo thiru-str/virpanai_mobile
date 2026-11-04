@@ -26,12 +26,16 @@ class ProductPage extends StatefulWidget {
   final String tagId;
   final bool isFromBrand;
 
+  /// Opens the list already searched for this text (a "results/<text>" link).
+  final String initialQuery;
+
   const ProductPage(
       {super.key,
       this.categoryId = '',
       this.isFromBrand = false,
       this.collectionId = '',
-      this.tagId = ''});
+      this.tagId = '',
+      this.initialQuery = ''});
 
   @override
   State<ProductPage> createState() => _ProductPageState();
@@ -71,10 +75,16 @@ class _ProductPageState extends State<ProductPage> {
         selectedCollectionsList.isNotEmpty ||
         selectedTagsList.isNotEmpty;
     _loadProductViewType();
+    // Set before the listener is attached, so the first load already searches.
+    if (widget.initialQuery.trim().isNotEmpty) {
+      searchController.text = widget.initialQuery.trim();
+    }
+    _previousSearchText = searchController.text.trim();
     getProductsApi(
         categoryIds: selectedCategoriesList.join(','),
         collectionIds: selectedCollectionsList.join(','),
-        tagIds: selectedTagsList.join(','));
+        tagIds: selectedTagsList.join(','),
+        searchString: searchController.text.trim());
     scrollController.addListener(() {
       if (!scrollController.hasClients) return;
 

@@ -11,6 +11,11 @@ import 'package:waioz/ui/widgets/home/Slider2.dart';
 import 'package:waioz/ui/widgets/home/banner1.dart';
 import 'package:waioz/ui/widgets/home/banner_2.dart';
 import 'package:waioz/ui/widgets/home/banner_3_4.dart';
+import 'package:waioz/ui/widgets/home/banner_5.dart';
+import 'package:waioz/ui/widgets/home/marketplace_registry.dart';
+import 'package:waioz/ui/widgets/home/cms_text_color.dart';
+import 'package:waioz/ui/widgets/home/banner_6.dart';
+import 'package:waioz/ui/widgets/home/banner_7.dart';
 import 'package:waioz/ui/widgets/home/grid_2.dart';
 import 'package:waioz/ui/widgets/home/grid_3.dart';
 import 'package:waioz/ui/widgets/home/grid_5.dart';
@@ -23,8 +28,13 @@ import 'package:waioz/ui/widgets/home/item_11.dart';
 import 'package:waioz/ui/widgets/home/item_12.dart';
 import 'package:waioz/ui/widgets/home/item_13.dart';
 import 'package:waioz/ui/widgets/home/item_14.dart';
+import 'package:waioz/ui/widgets/home/item_15.dart';
+import 'package:waioz/ui/widgets/home/item_16.dart';
 import 'package:waioz/ui/widgets/home/item_9.dart';
 import 'package:waioz/ui/widgets/home/slider_1.dart';
+import 'package:waioz/ui/widgets/home/slider_10.dart';
+import 'package:waioz/ui/widgets/home/slider_11.dart';
+import 'package:waioz/ui/widgets/home/slider_12.dart';
 import 'package:waioz/ui/widgets/home/slider_6.dart';
 import 'package:waioz/ui/widgets/home/slider_7.dart';
 import 'package:waioz/ui/widgets/home/slider_9.dart';
@@ -38,6 +48,37 @@ import 'package:waioz/ui/widgets/home/item_5.dart';
 import 'package:waioz/ui/widgets/home/item_6.dart';
 import 'package:waioz/ui/widgets/home/item_7.dart';
 import 'package:waioz/ui/widgets/home/slider_3.dart';
+// --- marketplace list components (Slider50+/Banner8+/Collection3+) ---
+import 'package:waioz/ui/widgets/home/slider50.dart';
+import 'package:waioz/ui/widgets/home/slider51.dart';
+import 'package:waioz/ui/widgets/home/slider52.dart';
+import 'package:waioz/ui/widgets/home/slider53.dart';
+import 'package:waioz/ui/widgets/home/slider54.dart';
+import 'package:waioz/ui/widgets/home/slider55.dart';
+import 'package:waioz/ui/widgets/home/slider56.dart';
+import 'package:waioz/ui/widgets/home/slider57.dart';
+import 'package:waioz/ui/widgets/home/slider58.dart';
+import 'package:waioz/ui/widgets/home/slider59.dart';
+import 'package:waioz/ui/widgets/home/banner8.dart';
+import 'package:waioz/ui/widgets/home/banner9.dart';
+import 'package:waioz/ui/widgets/home/banner10.dart';
+import 'package:waioz/ui/widgets/home/banner11.dart';
+import 'package:waioz/ui/widgets/home/banner12.dart';
+import 'package:waioz/ui/widgets/home/banner13.dart';
+import 'package:waioz/ui/widgets/home/banner14.dart';
+import 'package:waioz/ui/widgets/home/banner15.dart';
+import 'package:waioz/ui/widgets/home/banner16.dart';
+import 'package:waioz/ui/widgets/home/banner17.dart';
+import 'package:waioz/ui/widgets/home/collection3.dart';
+import 'package:waioz/ui/widgets/home/collection4.dart';
+import 'package:waioz/ui/widgets/home/collection5.dart';
+import 'package:waioz/ui/widgets/home/collection6.dart';
+import 'package:waioz/ui/widgets/home/collection7.dart';
+import 'package:waioz/ui/widgets/home/collection8.dart';
+import 'package:waioz/ui/widgets/home/collection9.dart';
+import 'package:waioz/ui/widgets/home/collection10.dart';
+import 'package:waioz/ui/widgets/home/collection11.dart';
+import 'package:waioz/ui/widgets/home/collection12.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
@@ -47,9 +88,13 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/ui_typography.dart';
 import 'package:waioz/utility/page_route_utils.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
+import 'package:waioz/utility/cart_store.dart';
 
 import '../../api/api_service.dart';
 import '../utility/app_utils.dart';
+import 'bottom_nav_page.dart';
+import 'phone_number_page.dart';
+import 'widgets/login_prompt.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -198,7 +243,14 @@ class _HomePageState extends State<HomePage> {
               context, const SearchAddressPage());
           initializePages();
         },
-        onProfileTap: () => eventBus.fire(TabSwitchEvent(4)),
+        // A guest has no Account tab (the bar shows 3 tabs); sign them in.
+        onProfileTap: () async {
+          if (await AppUtils.isLoggedIn()) {
+            eventBus.fire(TabSwitchEvent(4));
+          } else if (context.mounted) {
+            PageRouteUtils.pushWithSlide(context, const PhoneNumberPage());
+          }
+        },
       );
     }
 
@@ -338,8 +390,50 @@ class _HomePageState extends State<HomePage> {
       "item12",
       "item13",
       "item14",
+      "Slider10",
+      "Slider11",
+      "Slider12",
+      "Banner5",
+      "Banner6",
+      "Banner7",
+      "item15",
+      "item16",
+      ...kMarketplaceLayouts,
+          "Slider50",
+      "Slider51",
+      "Slider52",
+      "Slider53",
+      "Slider54",
+      "Slider55",
+      "Slider56",
+      "Slider57",
+      "Slider58",
+      "Slider59",
+      "Banner8",
+      "Banner9",
+      "Banner10",
+      "Banner11",
+      "Banner12",
+      "Banner13",
+      "Banner14",
+      "Banner15",
+      "Banner16",
+      "Banner17",
+      "Collection3",
+      "Collection4",
+      "Collection5",
+      "Collection6",
+      "Collection7",
+      "Collection8",
+      "Collection9",
+      "Collection10",
+      "Collection11",
+      "Collection12",
     };
 
+    if (kMarketplaceNoDataLayouts.contains(content.layoutName)) {
+      return true; // copy-only components render without layoutData
+    }
     return supportedLayouts.contains(content.layoutName) &&
         (content.layoutData?.isNotEmpty ?? false);
   }
@@ -355,7 +449,12 @@ class _HomePageState extends State<HomePage> {
           final homePageContent = content[index];
           return AppReveal(
             index: index,
-            child: getLayoutWidget(homePageContent),
+            child: CmsTextColor(
+              color: parseCmsColor(homePageContent.layoutSecondaryColor),
+              cardColor: parseCmsColor(homePageContent.layoutCardColor),
+              accent: parseCmsColor(homePageContent.layoutPrimaryColor),
+              child: clampCmsTextScale(context, getLayoutWidget(homePageContent)),
+            ),
           );
         }
 
@@ -503,6 +602,23 @@ class _HomePageState extends State<HomePage> {
                   await addCart(deltaQty, variantId);
                 },
               );
+      case "Slider10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider10(
+                content: homePageContent!,
+                onCartQtyChanged: (deltaQty, variantId) async {
+                  await addCart(deltaQty, variantId);
+                },
+              );
+      case "Slider11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider11(content: homePageContent!);
+      case "Slider12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider12(content: homePageContent!);
       case "Banner1":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -515,6 +631,18 @@ class _HomePageState extends State<HomePage> {
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
             : Banner4(content: homePageContent!);
+      case "Banner5":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner5(content: homePageContent!);
+      case "Banner6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner6(content: homePageContent!);
+      case "Banner7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner7(content: homePageContent!);
       case "item9":
         return homePageContent?.layoutData?.isEmpty == true
             ? const SizedBox()
@@ -555,8 +683,153 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Item14(content: homePageContent!),
               );
+      case "item15":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item15(
+                  content: homePageContent!,
+                  onCartQtyChanged: (deltaQty, variantId) async {
+                    await addCart(deltaQty, variantId);
+                  },
+                ),
+              );
+      case "item16":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Item16(content: homePageContent!),
+              );
+      case "Slider50":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider50(content: homePageContent!);
+      case "Slider51":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider51(content: homePageContent!);
+      case "Slider52":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider52(content: homePageContent!);
+      case "Slider53":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider53(content: homePageContent!);
+      case "Slider54":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider54(content: homePageContent!);
+      case "Slider55":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider55(content: homePageContent!);
+      case "Slider56":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider56(content: homePageContent!);
+      case "Slider57":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider57(content: homePageContent!);
+      case "Slider58":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider58(content: homePageContent!);
+      case "Slider59":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Slider59(content: homePageContent!);
+      case "Banner8":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner8(content: homePageContent!);
+      case "Banner9":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner9(content: homePageContent!);
+      case "Banner10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner10(content: homePageContent!);
+      case "Banner11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner11(content: homePageContent!);
+      case "Banner12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner12(content: homePageContent!);
+      case "Banner13":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner13(content: homePageContent!);
+      case "Banner14":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner14(content: homePageContent!);
+      case "Banner15":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner15(content: homePageContent!);
+      case "Banner16":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner16(content: homePageContent!);
+      case "Banner17":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Banner17(content: homePageContent!);
+      case "Collection3":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection3(content: homePageContent!);
+      case "Collection4":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection4(content: homePageContent!);
+      case "Collection5":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection5(content: homePageContent!);
+      case "Collection6":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection6(content: homePageContent!);
+      case "Collection7":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection7(content: homePageContent!);
+      case "Collection8":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection8(content: homePageContent!);
+      case "Collection9":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection9(content: homePageContent!);
+      case "Collection10":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection10(content: homePageContent!);
+      case "Collection11":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection11(content: homePageContent!);
+      case "Collection12":
+        return homePageContent?.layoutData?.isEmpty == true
+            ? const SizedBox()
+            : Collection12(content: homePageContent!);
       default:
-        return const SizedBox();
+        return marketplaceHomeWidget(
+              homePageContent!,
+              onCartQtyChanged: (delta, variantId) async {
+                await addCart(delta, variantId);
+              },
+            ) ??
+            const SizedBox();
     }
   }
 
@@ -622,44 +895,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // The cart store publishes the badge, images and stepper quantities through
+  // ViewCartModel, which listenToEvents applies.
   void getCartApi() async {
-    try {
-      if (!isLoggedIn) {
-        return;
-      }
-      final ApiService apiService = ApiService();
-      cartResponse = await apiService.getCart(context);
-      final productItems = cartResponse?.cart?.items
-              ?.where((item) => !item.isPlatformFee)
-              .toList() ??
-          [];
-      setState(() {
-        cartItems = productItems.length;
-        cartItemImages =
-            productItems.map((item) => item.thumbnail ?? "").toList();
-      });
-      if (productItems.isNotEmpty) {
-        final qtyMap = <String, int>{};
-        for (var item in productItems) {
-          if (item.variantId != null)
-            qtyMap[item.variantId!] = item.quantity ?? 0;
-        }
-
-        eventBus.fire(ViewCartModel(cartItems, cartItemImages, qtyMap));
-        //eventBus.fire(ViewCartModel(cartItems!, cartItemImages!));
-      }
-    } catch (e) {
-      print(e);
-    }
+    if (!isLoggedIn) return;
+    cartResponse = await CartStore.instance.refresh(context);
   }
 
+  // Steppers send +1/-1; the card and badge change on tap and the request
+  // waits its turn in the cart queue.
   Future<void> addCart(int qty, String variantId) async {
-    try {
-      final apiService = ApiService();
-      await apiService.addCart(context, qty, variantId);
-      getCartApi();
-    } catch (e) {
-      print(e);
+    // A guest has no cart on the server; the app signs them in first, as the
+    // product page does.
+    if (!await AppUtils.isLoggedIn()) {
+      if (mounted) await showLoginPromptDialog(context, redirectPage: const BottomNavPage());
+      return;
     }
+    await CartStore.instance.changeVariantQuantity(context, variantId, qty);
   }
 }

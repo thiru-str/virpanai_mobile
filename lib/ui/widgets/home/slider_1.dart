@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -82,11 +83,11 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                     Text(widget.content.layoutTitle??'',style: FontUtils.primaryFontStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),),
                     Text(widget.content.layoutSubTitle??'',style: FontUtils.primaryFontStyle(
                       fontSize: 14,
-                      color: AppColors.textColor,
+                      color: cmsCardText(context, AppColors.textColor),
                     ),),
                   ],
                 ),
@@ -222,7 +223,7 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                                               widthFactor: value,
                                               child: Container(
                                                 decoration: BoxDecoration(
-                                                  color: Colors.white,
+                                                  color: cmsCard(context, Colors.white),
                                                   borderRadius: BorderRadius.circular(4),
                                                 ),
                                               ),
