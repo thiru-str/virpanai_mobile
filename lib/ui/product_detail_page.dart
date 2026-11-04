@@ -107,6 +107,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   final ScrollController _scrollController = ScrollController();
   bool _showStickyHeader = false;
+  // Defers flutter_html first layout to after the initial frame so the page
+  // becomes interactive immediately without waiting for HTML parsing.
+  bool _descriptionReady = false;
+
+  // Completed when _loadAddOnProducts finishes (success or failure).
+  // The Add-to-Cart handler awaits this so it never opens an empty sheet.
+  Completer<void>? _addOnLoadCompleter;
 
   @override
   void initState() {
@@ -176,23 +183,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() => apiLoading = true);
 
     try {
-      await getProductsApi();
-      // Await cart so qty is ready before the loader hides — avoids the
-      // flash of 0→N qty after the product is visible.
-      if (isLoggedIn) await getCartApi();
+      // Product + cart fire in parallel — the two biggest network calls.
+      // Sequential was: productApi (3-5s) THEN cartApi (2-5s) = 5-10s blank screen.
+      // Parallel: max(productApi, cartApi) = 3-5s.
+      await Future.wait([
+        getProductsApi(),
+        if (isLoggedIn) getCartApi(),
+      ]);
       if (mounted) {
         setState(() => apiLoading = false);
+        // Let the first frame render (without flutter_html) so the page is
+        // interactive immediately. flutter_html layout starts next frame.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _descriptionReady = true);
+        });
       }
 
-      // Load non-critical sections in background after primary PDP is visible.
-      // getProductsInfoApi triggers related/upselling after checking their counts.
+      // All background calls fire in parallel after the page is visible.
+      // related/upselling don't need product-info — fire them immediately.
       if (isLoggedIn) unawaited(getReviewApi());
       unawaited(getProductsInfoApi());
+      unawaited(getRelatedProductsApi());
+      unawaited(getUpSellingProductsApi());
     } catch (e) {
       print("Error fetching initial data: $e");
-      if (mounted) {
-        setState(() => apiLoading = false);
-      }
+      if (mounted) setState(() => apiLoading = false);
     }
   }
 
@@ -674,14 +689,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-            child: buildProductDescription(),
+            // RepaintBoundary isolates flutter_html from unrelated setStates
+            // (cart updates, delivery config, favourites, etc.). Each background
+            // API completing would otherwise re-layout the entire HTML tree —
+            // fatal on old Samsung devices with limited GPU memory.
+            child: RepaintBoundary(child: buildProductDescription()),
           ),
-          buildRelatedProducts(),
-          buildUpSellingProducts(),
+          RepaintBoundary(child: buildRelatedProducts()),
+          RepaintBoundary(child: buildUpSellingProducts()),
           if (reviewResponse != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-              child: buildReviews(),
+              child: RepaintBoundary(child: buildReviews()),
             ),
         ],
       ),
@@ -1220,6 +1239,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final String htmlToShow = variantDesc.isNotEmpty ? '' : htmlDesc;
 
     if (textToShow.isEmpty && htmlToShow.isEmpty) return const SizedBox();
+    // Skip first frame — let the page become interactive before HTML lays out.
+    if (!_descriptionReady) return const SizedBox(height: 8);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1295,23 +1316,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             rating: double.tryParse(customerReview?.rating ?? "") ?? 0,
             timestamp: _formatReviewDate(customerReview?.updatedAt),
           ),
-        ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: productReviews.length,
-          itemBuilder: (context, index) {
-            final review = productReviews[index];
-            return ReviewCard(
-              profileImageUrl: AppStrings.profileImageUrl,
-              name: _reviewerName(
-                review.customer?.firstName,
-                review.customer?.lastName,
-              ),
-              reviewText: review.description ?? "",
-              rating: double.tryParse(review.rating ?? "") ?? 0,
-              timestamp: _formatReviewDate(review.updatedAt),
-            );
-          },
+        // Column avoids shrinkWrap+NeverScrollable which forces eager measure
+        // of every child — extra memory pressure on low-RAM devices.
+        Column(
+          children: productReviews.map((review) => ReviewCard(
+            profileImageUrl: AppStrings.profileImageUrl,
+            name: _reviewerName(
+              review.customer?.firstName,
+              review.customer?.lastName,
+            ),
+            reviewText: review.description ?? "",
+            rating: double.tryParse(review.rating ?? "") ?? 0,
+            timestamp: _formatReviewDate(review.updatedAt),
+          )).toList(),
         ),
       ],
     );
@@ -1530,6 +1547,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       return;
                     }
                     if ((addOnProductsCount ?? 0) > 0) {
+                      // If add-ons are still fetching, wait up to 10s before
+                      // opening the sheet — prevents an empty bottom sheet.
+                      if (addOnProductsResponse == null &&
+                          _addOnLoadCompleter != null &&
+                          !_addOnLoadCompleter!.isCompleted) {
+                        await _addOnLoadCompleter!.future
+                            .timeout(const Duration(seconds: 10),
+                                onTimeout: () {});
+                      }
+                      if (!mounted) return;
                       final selectedAddOns = await showAddOnBottomSheet(
                         context,
                         addOnProductsResponse?.products ?? [],
@@ -1591,59 +1618,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final response =
           await apiService.productDetail(context, widget.productId);
       if (!mounted) return;
-      setState(() {
-        product = response.product;
-      });
-      if (product != null &&
-          product!.variants != null &&
-          product!.variants!.isNotEmpty) {
-        // Case 1: Single variant — nothing meaningful to select
-        if (product!.variants!.length == 1) {
-          setState(() {
-            selectedVariantId = product!.variants!.first.id;
-            selectedVariant = product!.variants!.first;
-            showVariantSelection = false;
-            stockNotAvailable = !isStockAvailable(product!.variants!.first);
-          });
+
+      // Compute all derived state before setState so only ONE rebuild fires.
+      final p = response.product;
+      ProductResponse.Variant? selVariant;
+      String? selVariantId;
+      Map<String, ProductResponse.Value?> selOptions = {};
+      bool showVariants = false;
+      bool noStock = false;
+
+      if (p != null && p.variants != null && p.variants!.isNotEmpty) {
+        if (p.variants!.length == 1) {
+          selVariant = p.variants!.first;
+          selVariantId = selVariant.id;
+          noStock = !isStockAvailable(selVariant);
+          showVariants = false;
         } else {
-          final cheapestAvailable = getCheapestAvailableVariant(product!);
-
-          if (cheapestAvailable != null) {
-            setState(() {
-              selectedVariant = cheapestAvailable;
-              selectedVariantId = cheapestAvailable.id;
-              stockNotAvailable = !isStockAvailable(cheapestAvailable);
-
-              // fill selectedOptions for UI highlighting
-              selectedOptions = {};
-              for (final opt in cheapestAvailable.options ?? []) {
-                final productOption = product!.options
-                    ?.where((po) => po.id == opt.optionId)
-                    .cast<ProductOption?>()
-                    .firstOrNull;
-
-                if (productOption == null) continue;
-
-                final matchedValue = productOption.values
-                    ?.where((v) => v.id == opt.id)
-                    .cast<Value?>()
-                    .firstOrNull;
-
-                if (matchedValue != null) {
-                  selectedOptions[productOption.id!] = matchedValue;
-                }
-              }
-
-              showVariantSelection = true;
-            });
+          final cheapest = getCheapestAvailableVariant(p);
+          if (cheapest != null) {
+            selVariant = cheapest;
+            selVariantId = cheapest.id;
+            noStock = !isStockAvailable(cheapest);
+            showVariants = true;
+            for (final opt in cheapest.options ?? []) {
+              final productOption = p.options
+                  ?.where((po) => po.id == opt.optionId)
+                  .cast<ProductOption?>()
+                  .firstOrNull;
+              if (productOption == null) continue;
+              final matchedValue = productOption.values
+                  ?.where((v) => v.id == opt.id)
+                  .cast<Value?>()
+                  .firstOrNull;
+              if (matchedValue != null) selOptions[productOption.id!] = matchedValue;
+            }
           }
         }
       } else {
-        setState(() {
-          selectedVariantId = product?.id;
-          showVariantSelection = false;
-        });
+        selVariantId = p?.id;
+        showVariants = false;
       }
+
+      setState(() {
+        product = p;
+        selectedVariant = selVariant;
+        selectedVariantId = selVariantId;
+        selectedOptions = selOptions;
+        showVariantSelection = showVariants;
+        stockNotAvailable = noStock;
+      });
     } catch (e) {
       rethrow;
     }
@@ -1769,14 +1792,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       if ((response.addOnProductCount ?? 0) > 0) {
         unawaited(_loadAddOnProducts(variantId));
       }
-      if ((response.relatedProductCount ?? 0) > 0 &&
-          (relatedProductsResponse?.products?.isEmpty ?? true)) {
-        unawaited(getRelatedProductsApi());
-      }
-      if ((response.upSellingProductCount ?? 0) > 0 &&
-          (upSellProductsResponse?.products?.isEmpty ?? true)) {
-        unawaited(getUpSellingProductsApi());
-      }
+      // related + upselling already fired in parallel from fetchInitialData.
     } catch (e) {
       debugPrint('product info error: $e');
     }
@@ -1793,20 +1809,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> _loadAddOnProducts(String requestVariantId) async {
+    _addOnLoadCompleter = Completer<void>();
     try {
       final apiService = ApiService();
       final response =
           await apiService.addOnProducts(context, widget.productId);
-      if (!mounted || selectedVariantId != requestVariantId) return;
+      if (!mounted || selectedVariantId != requestVariantId) {
+        _addOnLoadCompleter?.complete();
+        return;
+      }
       final products = response.products ?? [];
       setState(() {
         addOnProductsResponse = response;
         // All addon products are out of stock — skip the popup
         if (products.isEmpty) addOnProductsCount = 0;
       });
+      _addOnLoadCompleter?.complete();
     } catch (e) {
       // Add-on load is non-blocking for primary PDP render.
       if (mounted) setState(() => addOnProductsCount = 0);
+      _addOnLoadCompleter?.complete();
     }
   }
 
@@ -2159,27 +2181,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           Uri.parse(url).pathSegments.last.replaceAll('.mp4', '.jpg');
       final cachedFile = File('${cacheDir.path}/$fileName');
 
+      // Always use the cached version first — avoids re-downloading the video.
       if (await cachedFile.exists()) {
         thumbnailMap[url] = cachedFile;
         continue;
       }
 
       try {
+        // maxWidth 240 + quality 60: VideoThumbnail downloads the source file
+        // to decode the first frame. Keeping the output small reduces the
+        // in-memory bitmap size on the platform side, which matters on
+        // low-RAM (2 GB) Android devices that crash on large allocations.
         final uint8list = await VideoThumbnail.thumbnailData(
           video: url,
           imageFormat: ImageFormat.JPEG,
-          maxWidth: 320,
-          quality: 75,
+          maxWidth: 240,
+          quality: 60,
         );
 
         if (uint8list != null) {
           await cachedFile.writeAsBytes(uint8list);
           thumbnailMap[url] = cachedFile;
+        } else {
+          thumbnailMap[url] = null;
         }
       } catch (e) {
-        print('Thumbnail generation failed for $url: $e');
+        // Silently skip — the video slot shows a play-button placeholder
+        // without a thumbnail, which is safe on all devices.
         thumbnailMap[url] = null;
       }
+
+      // Yield between videos so the UI thread breathes on slow devices.
+      await Future.delayed(Duration.zero);
     }
 
     return thumbnailMap;

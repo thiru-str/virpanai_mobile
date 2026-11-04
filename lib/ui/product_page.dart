@@ -567,8 +567,6 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () async {
-                      debugPrint('min price filter ${minPrice}');
-                      debugPrint('max Price filter ${maxPrice}');
                       final result = await PageRouteUtils.push(
                         context,
                         FilterPage(
@@ -828,7 +826,6 @@ class _ProductPageState extends State<ProductPage> with TutorialMixin {
           isPaginating = false;
         });
       }
-      print(e);
     }
   }
 

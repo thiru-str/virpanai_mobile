@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:waioz/model/delivery_schedule_response.dart';
@@ -150,7 +149,7 @@ class ApiService {
             'status=${payload?['status']}, components=${content is List ? content.length : 0}',
           );
         } else {
-          AppLogger.logFullJson(response.data);
+          AppLogger.print('response statuscode:', '${response.statusCode}');
         }
         return fromJson(response.data);
       } else if (response.statusCode == 401) {
@@ -205,7 +204,6 @@ class ApiService {
 
       AppLogger.print('response  statuscode:', '${response.statusCode}');
       if (response.statusCode == 200) {
-        AppLogger.logFullJson(response.data);
         return fromJson(response.data);
       } else if (response.statusCode == 400) {
         AppUtils.showToast(_extractErrorMessage(response.data));

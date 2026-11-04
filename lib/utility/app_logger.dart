@@ -48,6 +48,13 @@ class AppLogger {
 
     try {
       if (data is Map || data is List) {
+        // Compact-encode first to gauge size. Pretty-printing large responses
+        // blocks the main isolate for seconds/minutes; skip those entirely.
+        final compact = jsonEncode(data);
+        if (compact.length > 8000) {
+          _logger.i('[body ~${compact.length} chars — skipped to avoid UI block]');
+          return;
+        }
         final pretty = JsonEncoder.withIndent('  ').convert(data);
         _logger.i(pretty);
         return;
