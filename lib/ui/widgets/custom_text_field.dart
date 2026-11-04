@@ -5,6 +5,7 @@ import 'package:waioz/utility/ui_typography.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
+  final String? labelText;
   final TextEditingController controller;
   final String? Function(String?) validator;
   final bool isPassword;
@@ -14,10 +15,13 @@ class CustomTextField extends StatefulWidget {
   final bool enabled;
   final List<TextInputFormatter>? inputFormatters;
   final TextCapitalization textCapitalization;
+  final bool autocorrect;
+  final bool enableSuggestions;
 
   const CustomTextField({
     Key? key,
     required this.hintText,
+    this.labelText,
     required this.controller,
     required this.validator,
     this.isPassword = false,
@@ -27,12 +31,13 @@ class CustomTextField extends StatefulWidget {
     this.enabled = true,
     this.inputFormatters,
     this.textCapitalization = TextCapitalization.sentences,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
   }) : super(key: key);
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
 }
-
 
 class _CustomTextFieldState extends State<CustomTextField> {
   late bool _obscureText;
@@ -54,7 +59,19 @@ class _CustomTextFieldState extends State<CustomTextField> {
       maxLines: widget.maxLines,
       inputFormatters: widget.inputFormatters,
       textCapitalization: widget.textCapitalization,
+      autocorrect: widget.autocorrect,
+      enableSuggestions: widget.enableSuggestions,
       decoration: InputDecoration(
+        labelText: widget.labelText,
+        floatingLabelBehavior: widget.labelText == null
+            ? FloatingLabelBehavior.auto
+            : FloatingLabelBehavior.always,
+        labelStyle: UiTypography.searchHint().copyWith(
+          color: AppColors.textColor,
+        ),
+        floatingLabelStyle: UiTypography.searchHint().copyWith(
+          color: AppColors.primary,
+        ),
         hintText: widget.hintText,
         hintStyle: UiTypography.searchHint(),
         filled: true,
@@ -75,20 +92,19 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         suffixIcon: widget.isPassword
             ? IconButton(
-          icon: Icon(
-            _obscureText ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscureText = !_obscureText;
-            });
-          },
-        )
+                icon: Icon(
+                  _obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureText = !_obscureText;
+                  });
+                },
+              )
             : null,
       ),
       validator: widget.validator,
     );
   }
 }
-

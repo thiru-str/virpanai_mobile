@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waioz/model/healthcare_registration_payload.dart';
@@ -18,6 +19,8 @@ import '../utility/app_assets.dart';
 import '../utility/app_colors.dart';
 import '../utility/font_utils.dart';
 import '../utility/page_route_utils.dart';
+import '../utility/registration_input_formatters.dart';
+import '../utility/registration_validators.dart';
 import '../utility/shared_preferences_util.dart';
 import '../utility/ui_typography.dart';
 import 'bottom_nav_page.dart';
@@ -25,8 +28,23 @@ import 'bottom_nav_page.dart';
 class _HealthcareDocument {
   final String id;
   final String name;
+  final String? localPath;
+  final String? url;
 
-  const _HealthcareDocument({required this.id, required this.name});
+  const _HealthcareDocument({
+    required this.id,
+    required this.name,
+    this.localPath,
+    this.url,
+  });
+
+  bool get isImage {
+    final normalizedName = name.toLowerCase();
+    return normalizedName.endsWith('.jpg') ||
+        normalizedName.endsWith('.jpeg') ||
+        normalizedName.endsWith('.png') ||
+        normalizedName.endsWith('.webp');
+  }
 }
 
 class RegisterPage extends StatefulWidget {
@@ -53,7 +71,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
   final TextEditingController referralCodeController = TextEditingController();
-  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController aadhaarNumberController = TextEditingController();
   final TextEditingController drugLicenceNumberController =
       TextEditingController();
@@ -271,48 +290,76 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
-                        hintText: 'Full Name',
-                        controller: fullNameController,
+                        labelText: 'First Name',
+                        hintText: 'Enter first name',
+                        controller: firstNameController,
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                                ? 'Please enter Full Name'
+                                ? 'Please enter First Name'
                                 : null,
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
-                        hintText: AppStrings.email,
+                        labelText: 'Last Name',
+                        hintText: 'Enter last name',
+                        controller: lastNameController,
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                                ? 'Please enter Last Name'
+                                : null,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        labelText: AppStrings.email,
+                        hintText: 'Enter email address',
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         textCapitalization: TextCapitalization.none,
-                        validator: (value) {
-                          final email = value?.trim() ?? '';
-                          if (email.isEmpty) return 'Please enter Email';
-                          if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                              .hasMatch(email)) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
+                        validator: validateRegistrationEmail,
                       ),
                       if (isEmailLogin) ..._buildEmailCredentialFields(),
                       if (isDoctor) ...[
                         const SizedBox(height: 16),
                         CustomTextField(
-                          hintText: 'Aadhaar Number',
+                          labelText: 'Aadhaar Number',
+                          hintText: 'Enter 12-digit Aadhaar number',
                           controller: aadhaarNumberController,
-                          validator: _requiredHealthcareField('Aadhaar Number'),
+                          keyboardType: TextInputType.number,
+                          maxLength: 12,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(12),
+                          ],
+                          validator: validateAadhaarNumber,
                         ),
                         const SizedBox(height: 12),
                         _buildHealthcareDocumentField(
-                          field: 'aadhaar_document',
-                          label: 'Aadhaar Upload',
+                          field: 'aadhaar_front_document',
+                          label: 'Aadhaar Front',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildHealthcareDocumentField(
+                          field: 'aadhaar_back_document',
+                          label: 'Aadhaar Back',
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
-                          hintText: 'Drug Licence Number',
+                          labelText: 'Drug Licence Number',
+                          hintText: 'Enter drug licence number',
                           controller: drugLicenceNumberController,
-                          validator:
-                              _requiredHealthcareField('Drug Licence Number'),
+                          keyboardType: TextInputType.visiblePassword,
+                          textCapitalization: TextCapitalization.characters,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          maxLength: 50,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[A-Za-z0-9/-]'),
+                            ),
+                            const UpperCaseTextFormatter(),
+                            LengthLimitingTextInputFormatter(50),
+                          ],
+                          validator: validateDrugLicenceNumber,
                         ),
                         const SizedBox(height: 12),
                         _buildHealthcareDocumentField(
@@ -323,18 +370,32 @@ class _RegisterPageState extends State<RegisterPage> {
                         _buildHealthcareDateField(
                           label: 'Drug Licence Valid From',
                           controller: drugLicenceValidFromController,
+                          validator: validateDrugLicenceValidFrom,
                         ),
                         const SizedBox(height: 16),
                         _buildHealthcareDateField(
                           label: 'Drug Licence Valid To',
                           controller: drugLicenceValidToController,
+                          validator: (value) => validateDrugLicenceValidTo(
+                            value,
+                            drugLicenceValidFromController.text,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
-                          hintText: 'PAN Number',
+                          labelText: 'PAN Number',
+                          hintText: 'Enter PAN number',
                           controller: panNumberController,
                           textCapitalization: TextCapitalization.characters,
-                          validator: _requiredHealthcareField('PAN Number'),
+                          maxLength: 10,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[A-Za-z0-9]'),
+                            ),
+                            const UpperCaseTextFormatter(),
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          validator: validatePanNumber,
                         ),
                         const SizedBox(height: 12),
                         _buildHealthcareDocumentField(
@@ -343,10 +404,19 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
-                          hintText: 'GST Number',
+                          labelText: 'GST Number',
+                          hintText: 'Enter GST number',
                           controller: gstNumberController,
                           textCapitalization: TextCapitalization.characters,
-                          validator: _requiredHealthcareField('GST Number'),
+                          maxLength: 15,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[A-Za-z0-9]'),
+                            ),
+                            const UpperCaseTextFormatter(),
+                            LengthLimitingTextInputFormatter(15),
+                          ],
+                          validator: validateGstNumber,
                         ),
                         const SizedBox(height: 12),
                         _buildHealthcareDocumentField(
@@ -428,7 +498,15 @@ class _RegisterPageState extends State<RegisterPage> {
           color: AppColors.textColor,
         ),
         decoration: InputDecoration(
-          hintText: AppStrings.mobile_number,
+          labelText: AppStrings.mobile_number,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          labelStyle: UiTypography.searchHint().copyWith(
+            color: AppColors.textColor,
+          ),
+          floatingLabelStyle: UiTypography.searchHint().copyWith(
+            color: AppColors.primary,
+          ),
+          hintText: 'Enter mobile number',
           hintStyle: UiTypography.searchHint(),
           fillColor: Colors.white,
           filled: true,
@@ -472,34 +550,33 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       const SizedBox(height: 16),
       CustomTextField(
-        hintText: AppStrings.password,
+        labelText: AppStrings.password,
+        hintText: 'Enter password',
         controller: passwordController,
         textCapitalization: TextCapitalization.none,
         inputFormatters: [
           FilteringTextInputFormatter.allow(
             RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
-          )
+          ),
+          LengthLimitingTextInputFormatter(128),
         ],
         isPassword: true,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return AppStrings.password_required;
-          }
-          if (value.length < 5) {
-            return AppStrings.password_min_length;
-          }
-          return null;
-        },
+        validator: (value) => validateRegistrationPassword(
+          value,
+          requiredMessage: AppStrings.password_required,
+        ),
       ),
       const SizedBox(height: 16),
       CustomTextField(
-        hintText: AppStrings.confirm_password,
+        labelText: AppStrings.confirm_password,
+        hintText: 'Re-enter password',
         controller: confirmPasswordController,
         textCapitalization: TextCapitalization.none,
         inputFormatters: [
           FilteringTextInputFormatter.allow(
             RegExp(r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]"),
-          )
+          ),
+          LengthLimitingTextInputFormatter(128),
         ],
         isPassword: true,
         validator: (value) {
@@ -513,11 +590,6 @@ class _RegisterPageState extends State<RegisterPage> {
         },
       ),
     ];
-  }
-
-  String? Function(String?) _requiredHealthcareField(String label) {
-    return (value) =>
-        value == null || value.trim().isEmpty ? 'Please enter $label' : null;
   }
 
   Widget _buildUserTypeOption({required String value, required String label}) {
@@ -569,13 +641,22 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildHealthcareDateField({
     required String label,
     required TextEditingController controller,
+    required String? Function(String?) validator,
   }) {
     return TextFormField(
       controller: controller,
       readOnly: true,
       onTap: () => _selectHealthcareDate(controller),
       decoration: InputDecoration(
-        hintText: label,
+        labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: UiTypography.searchHint().copyWith(
+          color: AppColors.textColor,
+        ),
+        floatingLabelStyle: UiTypography.searchHint().copyWith(
+          color: AppColors.primary,
+        ),
+        hintText: 'Select date',
         hintStyle: UiTypography.searchHint(),
         filled: true,
         fillColor: Colors.white,
@@ -595,7 +676,7 @@ class _RegisterPageState extends State<RegisterPage> {
           borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
-      validator: _requiredHealthcareField(label),
+      validator: validator,
     );
   }
 
@@ -647,21 +728,35 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: uploading
-                ? null
-                : () => _pickAndUploadHealthcareDocuments(field),
-            icon: uploading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.upload_file_outlined),
-            label: Text(uploading ? 'Uploading...' : 'Choose files'),
-          ),
+          if (documents.isEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: uploading
+                      ? null
+                      : () => _pickAndUploadHealthcareDocument(field),
+                  icon: uploading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.upload_file_outlined),
+                  label: Text(uploading ? 'Uploading...' : 'Choose file'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: uploading
+                      ? null
+                      : () => _takeAndUploadHealthcareDocument(field),
+                  icon: const Icon(Icons.camera_alt_outlined),
+                  label: const Text('Take photo'),
+                ),
+              ],
+            ),
           Text(
-            'Images or PDF files',
+            'JPG, PNG, WebP or PDF. One file only.',
             style: FontUtils.secondaryFontStyle(
               fontSize: 12,
               color: AppColors.textColor50,
@@ -674,16 +769,76 @@ class _RegisterPageState extends State<RegisterPage> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle_rounded,
-                        color: Colors.green.shade600, size: 18),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        document.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: FontUtils.secondaryFontStyle(fontSize: 12),
+                    if (document.isImage)
+                      InkWell(
+                        key:
+                            ValueKey('preview-thumbnail-$field-${document.id}'),
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () => _showHealthcareDocumentPreview(document),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: _buildHealthcareDocumentImage(document),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.shade100),
+                        ),
+                        child: Icon(
+                          Icons.picture_as_pdf_outlined,
+                          color: Colors.red.shade700,
+                        ),
                       ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            document.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: FontUtils.secondaryFontStyle(fontSize: 12),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            document.isImage
+                                ? 'Tap to preview'
+                                : 'PDF uploaded',
+                            style: FontUtils.secondaryFontStyle(
+                              fontSize: 11,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (document.isImage)
+                      IconButton(
+                        key: ValueKey('preview-$field-${document.id}'),
+                        tooltip: 'Preview ${document.name}',
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.visibility_outlined, size: 20),
+                        onPressed: () =>
+                            _showHealthcareDocumentPreview(document),
+                      ),
+                    IconButton(
+                      key: ValueKey('remove-$field-${document.id}'),
+                      tooltip: 'Remove ${document.name}',
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.close_rounded, size: 18),
+                      onPressed: uploading
+                          ? null
+                          : () => _removeHealthcareDocument(field, document),
                     ),
                   ],
                 ),
@@ -702,37 +857,168 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Future<void> _pickAndUploadHealthcareDocuments(String field) async {
+  Widget _buildHealthcareDocumentImage(
+    _HealthcareDocument document, {
+    BoxFit fit = BoxFit.cover,
+  }) {
+    final localPath = document.localPath;
+    if (localPath != null && localPath.isNotEmpty) {
+      return Image.file(
+        File(localPath),
+        fit: fit,
+        errorBuilder: (_, __, ___) => _documentPreviewError(),
+      );
+    }
+
+    final url = document.url;
+    if (url != null && url.isNotEmpty) {
+      return Image.network(
+        url,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _documentPreviewError(),
+      );
+    }
+
+    return _documentPreviewError();
+  }
+
+  Widget _documentPreviewError() => Container(
+        color: const Color(0xFFF3F4F6),
+        alignment: Alignment.center,
+        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+      );
+
+  Future<void> _showHealthcareDocumentPreview(
+    _HealthcareDocument document,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        final screenSize = MediaQuery.sizeOf(dialogContext);
+        return Dialog(
+          backgroundColor: Colors.black,
+          insetPadding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: screenSize.width * 0.9,
+            height: screenSize.height * 0.75,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4,
+                    child: Center(
+                      child: _buildHealthcareDocumentImage(
+                        document,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton.filled(
+                    tooltip: 'Close preview',
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _removeHealthcareDocument(
+    String field,
+    _HealthcareDocument document,
+  ) {
+    setState(() {
+      final documents = [...?_healthcareDocuments[field]]
+        ..removeWhere((item) => item.id == document.id);
+      if (documents.isEmpty) {
+        _healthcareDocuments.remove(field);
+      } else {
+        _healthcareDocuments[field] = documents;
+      }
+    });
+  }
+
+  Future<void> _pickAndUploadHealthcareDocument(String field) async {
     final selection = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
+      allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'],
+      allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
     );
     if (selection == null || selection.files.isEmpty || !mounted) return;
 
-    setState(() => _uploadingHealthcareDocuments[field] = true);
-    final uploaded = <_HealthcareDocument>[];
+    final selectedFile = selection.files.single;
+    final path = selectedFile.path;
+    if (path == null) return;
+    await _uploadHealthcareDocument(
+      field: field,
+      path: path,
+      name: selectedFile.name,
+    );
+  }
+
+  Future<void> _takeAndUploadHealthcareDocument(String field) async {
     try {
-      for (final selectedFile in selection.files) {
-        if (selectedFile.path == null) continue;
-        final response = await ApiService().uploadHealthcareDocument(
-          context,
-          File(selectedFile.path!),
-          field,
-        );
-        final id = response['id']?.toString() ?? '';
-        if (id.isNotEmpty) {
-          uploaded.add(_HealthcareDocument(id: id, name: selectedFile.name));
-        }
-      }
+      final photo = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+      );
+      if (photo == null || !mounted) return;
+      await _uploadHealthcareDocument(
+        field: field,
+        path: photo.path,
+        name: photo.name,
+      );
+    } catch (error) {
       if (!mounted) return;
-      setState(() {
-        _healthcareDocuments[field] = [
-          ...?_healthcareDocuments[field],
-          ...uploaded,
-        ];
-        if (uploaded.isNotEmpty) _healthcareDocumentErrors.remove(field);
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to take photo: ${_cleanError(error)}'),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+    }
+  }
+
+  Future<void> _uploadHealthcareDocument({
+    required String field,
+    required String path,
+    required String name,
+  }) async {
+    if ((_healthcareDocuments[field] ?? const []).isNotEmpty) return;
+
+    setState(() => _uploadingHealthcareDocuments[field] = true);
+    try {
+      final response = await ApiService().uploadHealthcareDocument(
+        context,
+        File(path),
+        field,
+      );
+      final id = response['id']?.toString() ?? '';
+      if (!mounted) return;
+      if (id.isNotEmpty) {
+        final url =
+            response['url']?.toString() ?? response['path']?.toString() ?? '';
+        setState(() {
+          _healthcareDocuments[field] = [
+            _HealthcareDocument(
+              id: id,
+              name: name,
+              localPath: path,
+              url: url,
+            ),
+          ];
+          _healthcareDocumentErrors.remove(field);
+        });
+      }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -752,7 +1038,8 @@ class _RegisterPageState extends State<RegisterPage> {
     FocusScope.of(context).unfocus();
     final formValid = _formKey.currentState?.validate() ?? false;
     const requiredDocuments = [
-      'aadhaar_document',
+      'aadhaar_front_document',
+      'aadhaar_back_document',
       'drug_licence_document',
       'pan_document',
       'gst_document',
@@ -779,7 +1066,8 @@ class _RegisterPageState extends State<RegisterPage> {
     final payload = buildHealthcareRegistrationPayload(
       phone: isEmailLogin ? _phoneNo ?? '' : widget.phoneNo,
       countryCode: isEmailLogin ? _countryCode ?? '' : widget.countryCode,
-      fullName: fullNameController.text,
+      firstName: firstNameController.text,
+      lastName: lastNameController.text,
       email: emailController.text,
       userType: _userType,
       aadhaarNumber: aadhaarNumberController.text,
@@ -883,8 +1171,7 @@ class _RegisterPageState extends State<RegisterPage> {
   /// installed) does not stop the registration.
   Future<bool> _isReferralCodeAccepted(String referralCode) async {
     if (referralCode.isEmpty) return true;
-    const invalidMessage =
-        'Invalid referral code. Please check and try again.';
+    const invalidMessage = 'Invalid referral code. Please check and try again.';
     try {
       final validateResp =
           await ApiService().validateReferralCode(referralCode);
@@ -940,11 +1227,13 @@ class _RegisterPageState extends State<RegisterPage> {
     final apiService = ApiService();
     final refreshed = await apiService.refreshToken(context, widget.token);
     final token = refreshed.token ?? '';
-    if (token.isEmpty) throw Exception('Registered. Please log in to continue.');
+    if (token.isEmpty)
+      throw Exception('Registered. Please log in to continue.');
     await SharedPreferencesUtil().saveString('token', token);
     await getHomePageApi();
     if (!mounted) return;
-    PageRouteUtils.pushAndRemoveUntil(context, widget.redirectPage ?? const BottomNavPage());
+    PageRouteUtils.pushAndRemoveUntil(
+        context, widget.redirectPage ?? const BottomNavPage());
   }
 
   List<String> _documentIds(String field) => (_healthcareDocuments[field] ?? [])
@@ -970,7 +1259,17 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: referralCodeController,
       style: FontUtils.primaryFontStyle(fontSize: 14),
       decoration: InputDecoration(
-        hintText: 'Referral code or phone (optional)',
+        labelText: 'Referral Code or Phone',
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: FontUtils.primaryFontStyle(
+          fontSize: 14,
+          color: AppColors.textColor,
+        ),
+        floatingLabelStyle: FontUtils.primaryFontStyle(
+          fontSize: 14,
+          color: AppColors.primary,
+        ),
+        hintText: 'Enter referral code or phone (optional)',
         hintStyle: FontUtils.primaryFontStyle(
             fontSize: 14, color: Colors.grey.shade400),
         contentPadding:

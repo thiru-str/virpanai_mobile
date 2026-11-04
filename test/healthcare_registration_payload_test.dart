@@ -6,7 +6,8 @@ void main() {
     final payload = buildHealthcareRegistrationPayload(
       phone: '9876543210',
       countryCode: '+91',
-      fullName: ' General User ',
+      firstName: ' General ',
+      lastName: ' User ',
       email: ' general@example.com ',
       userType: 'general_user',
       aadhaarNumber: 'ignored',
@@ -15,6 +16,8 @@ void main() {
     expect(payload, {
       'phone': '9876543210',
       'country_code': '+91',
+      'first_name': 'General',
+      'last_name': 'User',
       'full_name': 'General User',
       'email': 'general@example.com',
       'user_type': 'general_user',
@@ -25,7 +28,8 @@ void main() {
     final payload = buildHealthcareRegistrationPayload(
       phone: '9876543210',
       countryCode: '+91',
-      fullName: 'Doctor One',
+      firstName: 'Doctor',
+      lastName: 'One',
       email: 'doctor@example.com',
       userType: 'doctor',
       aadhaarNumber: '1234',
@@ -35,16 +39,23 @@ void main() {
       panNumber: 'PAN-1',
       gstNumber: 'GST-1',
       documentIds: const {
-        'aadhaar_document': ['file_a'],
-        'drug_licence_document': ['file_d1', 'file_d2'],
+        'aadhaar_front_document': ['file_a_front'],
+        'aadhaar_back_document': ['file_a_back'],
+        'drug_licence_document': ['file_d'],
         'pan_document': ['file_p'],
         'gst_document': ['file_g'],
       },
     );
 
     expect(payload['user_type'], 'doctor');
-    expect(payload['aadhaar_document_url'], '["file_a"]');
-    expect(payload['drug_licence_document_url'], '["file_d1","file_d2"]');
+    expect(payload['first_name'], 'Doctor');
+    expect(payload['last_name'], 'One');
+    expect(payload['full_name'], 'Doctor One');
+    expect(
+      payload['aadhaar_document_url'],
+      '["file_a_front","file_a_back"]',
+    );
+    expect(payload['drug_licence_document_url'], '["file_d"]');
     expect(payload['pan_document_url'], '["file_p"]');
     expect(payload['gst_document_url'], '["file_g"]');
     expect(payload['drug_licence_valid_from'], '2026-01-01');
@@ -55,7 +66,8 @@ void main() {
     final payload = buildHealthcareRegistrationPayload(
       phone: '9876543210',
       countryCode: '+91',
-      fullName: 'General User',
+      firstName: 'General',
+      lastName: 'User',
       email: 'general@example.com',
       userType: 'general_user',
       password: ' pass word ',
@@ -65,6 +77,8 @@ void main() {
     expect(payload, {
       'phone': '9876543210',
       'country_code': '+91',
+      'first_name': 'General',
+      'last_name': 'User',
       'full_name': 'General User',
       'email': 'general@example.com',
       'user_type': 'general_user',
@@ -77,7 +91,8 @@ void main() {
     final payload = buildHealthcareRegistrationPayload(
       phone: '9876543210',
       countryCode: '+91',
-      fullName: 'Doctor One',
+      firstName: 'Doctor',
+      lastName: 'One',
       email: 'doctor@example.com',
       userType: 'doctor',
       password: 'secret',
@@ -94,7 +109,8 @@ void main() {
       final payload = buildHealthcareRegistrationPayload(
         phone: '9876543210',
         countryCode: '+91',
-        fullName: 'User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'user@example.com',
         userType: userType,
         password: '',
