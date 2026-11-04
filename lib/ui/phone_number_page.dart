@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +12,7 @@ import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/registration_validators.dart';
 import 'package:waioz/utility/ui_typography.dart';
 
 import '../api/api_service.dart';
@@ -22,7 +22,7 @@ import 'bottom_nav_page.dart';
 
 class PhoneNumberPage extends StatefulWidget {
   final Widget? redirectPage;
-  const PhoneNumberPage({super.key,this.redirectPage});
+  const PhoneNumberPage({super.key, this.redirectPage});
 
   @override
   _PhoneNumberPageState createState() => _PhoneNumberPageState();
@@ -61,8 +61,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
       hintStyle: UiTypography.searchHint(),
       filled: true,
       fillColor: Colors.white,
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -95,7 +94,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
@@ -131,9 +130,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  isEmailLogin
-                      ? AppStrings.email
-                      : AppStrings.mobile_number,
+                  isEmailLogin ? AppStrings.email : AppStrings.mobile_number,
                   style: FontUtils.secondaryFontStyle(
                     fontSize: 14,
                     color: AppColors.textColor50,
@@ -148,29 +145,21 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     children: [
                       if (isEmailLogin) ...[
                         _fieldLabel(AppStrings.email),
-
                         CustomTextField(
                           hintText: AppStrings.email,
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (!isEmailLogin) return null;
-                            if (value == null || value.isEmpty) {
-                              return AppStrings.email_required;
-                            }
-                            if (!RegExp(
-                              r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                            ).hasMatch(value)) {
-                              return AppStrings.enter_valid_email;
-                            }
-                            return null;
-                          },
+                          textCapitalization: TextCapitalization.none,
+                          validator: (value) => !isEmailLogin
+                              ? null
+                              : validateRegistrationEmail(
+                                  value,
+                                  requiredMessage: AppStrings.email_required,
+                                  invalidMessage: AppStrings.enter_valid_email,
+                                ),
                         ),
-
                         const SizedBox(height: 16),
-
                         _fieldLabel(AppStrings.password),
-
                         CustomTextField(
                           hintText: AppStrings.password,
                           controller: passwordController,
@@ -180,7 +169,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(
-                                  r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
+                                r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
                               ),
                             ),
                           ],
@@ -189,6 +178,10 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                             if (value == null || value.isEmpty) {
                               return AppStrings.password_required;
                             }
+                            // This is login, not password creation. Keep
+                            // accepting credentials created under the legacy
+                            // minimum; the 8-128 policy is enforced by the
+                            // registration form and backend.
                             if (value.length < 5) {
                               return AppStrings.password_min_length;
                             }
@@ -205,12 +198,12 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                                 redirectPage: widget.redirectPage,
                               ));
                         })
-
                       ] else ...[
                         _fieldLabel(AppStrings.mobile_number),
-
                         IntlPhoneField(
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                           dropdownTextStyle: FontUtils.primaryFontStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -221,7 +214,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                             fontWeight: FontWeight.w500,
                             color: AppColors.textColor,
                           ),
-                          decoration: _fieldDecoration(AppStrings.mobile_number),
+                          decoration:
+                              _fieldDecoration(AppStrings.mobile_number),
                           initialCountryCode: AppStrings.country_code,
                           onChanged: (phone) {
                             _phoneNumber = phone.number;
@@ -257,10 +251,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                       ),
                     ),
                     onPressed: () {
-                      if(apiCalling)
-                        {
-                          return;
-                        }
+                      if (apiCalling) {
+                        return;
+                      }
                       if (_formKey.currentState!.validate()) {
                         if (isEmailLogin) {
                           loginWithEmail();
@@ -286,9 +279,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                isEmailLogin
-                                    ? AppStrings.login
-                                    : 'Continue',
+                                isEmailLogin ? AppStrings.login : 'Continue',
                                 style: FontUtils.primaryFontStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -331,7 +322,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             countryCode: _countryCode!,
             phoneNo: _phoneNumber!,
             otp: sendOtpResponse!.otp!,
-            redirectPage:widget.redirectPage,
+            redirectPage: widget.redirectPage,
           ));
     } catch (e) {
       setState(() {
@@ -432,8 +423,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = onRegisterTap,
+                recognizer: TapGestureRecognizer()..onTap = onRegisterTap,
               ),
             ],
           ),
@@ -441,8 +431,4 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
       ),
     );
   }
-
-
-
-
 }

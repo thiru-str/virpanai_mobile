@@ -6,8 +6,8 @@ class AppConfig {
   // iOS Simulator: http://localhost:9000/
   // Android Emulator: http://10.0.2.2:9000/
   // Physical device (same WiFi): http://<your-Mac-LAN-ip>:9000/
-  // static const String baseUrl = 'http://192.168.0.19:9000/';
-  static const String baseUrl = 'https://api.galaxyhealthcare.in/';
+  static const String baseUrl = 'http://192.168.0.19:9000/';
+  // static const String baseUrl = 'https://api.galaxyhealthcare.in/';
   static const String googleApiKey = 'AIzaSyBYqO1N5Rr6fnLeOz4fxSPcPwHy77CNe_c';
   static const String publishableKeyStripe =
       'pk_test_51QjKGFC5ZYai6Al85lKNzizk9i1E4ViPFg98dC4VECB9cEYPidOj6Pig2orwg1SKVGDndepP8McSJ4jPhnxhEIKj00aaPJefmb';

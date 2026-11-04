@@ -3,7 +3,8 @@ import 'dart:convert';
 Map<String, dynamic> buildHealthcareRegistrationPayload({
   required String phone,
   required String countryCode,
-  required String fullName,
+  required String firstName,
+  required String lastName,
   required String email,
   required String userType,
   String aadhaarNumber = '',
@@ -16,10 +17,17 @@ Map<String, dynamic> buildHealthcareRegistrationPayload({
   String password = '',
   String deviceId = '',
 }) {
+  final normalizedFirstName = firstName.trim();
+  final normalizedLastName = lastName.trim();
+
   final payload = <String, dynamic>{
     'phone': phone,
     'country_code': countryCode,
-    'full_name': fullName.trim(),
+    'first_name': normalizedFirstName,
+    'last_name': normalizedLastName,
+    'full_name': [normalizedFirstName, normalizedLastName]
+        .where((part) => part.isNotEmpty)
+        .join(' '),
     'email': email.trim(),
     'user_type': userType,
     if (password.isNotEmpty) 'password': password,
@@ -28,10 +36,14 @@ Map<String, dynamic> buildHealthcareRegistrationPayload({
 
   if (userType != 'doctor') return payload;
 
+  final aadhaarDocumentIds = <String>[
+    ...documentIds['aadhaar_front_document'] ?? const <String>[],
+    ...documentIds['aadhaar_back_document'] ?? const <String>[],
+  ];
+
   payload.addAll({
     'aadhaar_number': aadhaarNumber.trim(),
-    'aadhaar_document_url':
-        jsonEncode(documentIds['aadhaar_document'] ?? const <String>[]),
+    'aadhaar_document_url': jsonEncode(aadhaarDocumentIds),
     'drug_licence_number': drugLicenceNumber.trim(),
     'drug_licence_document_url':
         jsonEncode(documentIds['drug_licence_document'] ?? const <String>[]),
