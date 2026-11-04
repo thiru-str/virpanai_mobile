@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:newrelic_mobile/config.dart';
@@ -23,8 +25,32 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_service.dart';
+import 'api/push_notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+@pragma('vm:entry-point')
+Future<void> _firebaseBackgroundMessageHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+
+  final plugin = FlutterLocalNotificationsPlugin();
+  await plugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+  );
+  await plugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(const AndroidNotificationChannel(
+        'default_channel',
+        'General Notifications',
+        description: 'Used for general app notifications',
+        importance: Importance.high,
+      ));
+
+  await PushNotificationService.showNotification(plugin, message);
+}
 
 Future<void> main() async {
   await runZonedGuarded(() async {
@@ -48,6 +74,7 @@ Future<void> main() async {
     await CurrencyUtil.initializeCurrencySymbol(currencySymbol);
 
     await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessageHandler);
 
     // Render immediately using cached config (if present), then refresh in background.
     final PublicDetailsResponse? cachedPublicDetails =
