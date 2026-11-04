@@ -2376,8 +2376,9 @@ class _CartPageState extends State<CartPage>
                             AppStrings.remove_unavailable_stock_items);
                         return;
                       }
-                      if ((cartResponse?.cart?.shippingAddress?.address1 ?? '')
-                          .isEmpty) {
+                      if (_fulfillment.type != 'pickup' &&
+                          (cartResponse?.cart?.shippingAddress?.address1 ?? '')
+                              .isEmpty) {
                         AppUtils.showToast(AppStrings.add_address_to_proceed);
                         return;
                       }
