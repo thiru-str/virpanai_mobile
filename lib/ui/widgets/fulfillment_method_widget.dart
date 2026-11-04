@@ -66,6 +66,10 @@ class _FulfillmentMethodWidgetState extends State<FulfillmentMethodWidget> {
       setState(() { _config = cfg; _loading = false; });
       if (!cfg.scheduledDeliveryEnabled && !cfg.pickupEnabled) {
         widget.onChanged(const FulfillmentSelection(type: 'standard'));
+      } else if (_selection.type != 'standard') {
+        // Notify parent of the selection restored from cart metadata so its
+        // _fulfillment state matches what this widget displays (e.g. 'pickup').
+        widget.onChanged(_selection);
       }
     } catch (_) {
       if (mounted) {
