@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyC4dfezRufMFU_k6-m_fG2CaPIW3WuhqM4</string>
+	<string>AIzaSyDn8YQMVHxgJZY3x_NztH964QQkeupJnyI</string>
 	<key>GCM_SENDER_ID</key>
-	<string>817601812747</string>
+	<string>204951730540</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>id.waioz.cartel</string>
+	<string>com.galaxyhealthcare.dist</string>
 	<key>PROJECT_ID</key>
-	<string>cartel-ba03b</string>
+	<string>galaxy-healthcare-android</string>
 	<key>STORAGE_BUCKET</key>
-	<string>cartel-ba03b.firebasestorage.app</string>
+	<string>galaxy-healthcare-android.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:817601812747:ios:19e1b2711908089b4caa0e</string>
+	<string>1:204951730540:ios:a2c31f73e97943d5efdb49</string>
 </dict>
 </plist>

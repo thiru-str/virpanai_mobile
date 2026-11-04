@@ -437,40 +437,34 @@ class ApiService {
   }
 
   Future<String?> _updateToken() async {
-    String? fcmToken = await SharedPreferencesUtil().getString('fcm_token');
-
-    if (fcmToken == null || fcmToken.isEmpty) {
-      try {
-        fcmToken = await FirebaseMessaging.instance.getToken();
-        if (fcmToken != null && fcmToken.isNotEmpty) {
-          AppLogger.print('FCM token: ', fcmToken);
-          await SharedPreferencesUtil().saveString('fcm_token', fcmToken);
-        } else {
-          AppLogger.print('Failed to generate a new FCM token', '');
-          return null;
-        }
-      } catch (e) {
-        AppLogger.print('Error getting FCM token: $e', '');
+    try {
+      // Always resolve the token from the active Firebase project. A token
+      // cached before a client migration belongs to the previous sender ID.
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null || fcmToken.isEmpty) {
+        AppLogger.print('Failed to generate a new FCM token', '');
         return null;
       }
+
+      await SharedPreferencesUtil().saveString('fcm_token', fcmToken);
+      return fcmToken;
+    } catch (e) {
+      AppLogger.print('Error getting FCM token: $e', '');
+      return null;
     }
+  }
 
-    // 3. Check if the token we have has been uploaded
-    String uploadedToken =
-        await SharedPreferencesUtil().getString('fcm_token_uploaded') ?? '';
-
-    // 4. If it's a new token, upload it to the server
-    if (fcmToken != uploadedToken) {
-      AppLogger.print('Uploading new FCM token', fcmToken);
-      // Note: It's generally advised to avoid passing 'context' to long-lived operations
-      // as it might be disposed. Consider providing a way to get a fresh context or use a global navigator key.
-      await SharedPreferencesUtil().saveString('fcm_token_uploaded', fcmToken);
-    } else {
-      AppLogger.print('FCM token already uploaded', '');
+  Future<void> syncDeviceToken(String deviceToken) async {
+    await addToken();
+    await setPublishableKey();
+    final response = await _dio.post(
+      'store/customers/device-token',
+      data: {'device_id': deviceToken},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+          'Device token sync failed with status ${response.statusCode}');
     }
-
-    // 5. Return the token to the caller
-    return fcmToken;
   }
 
   Future<RegisterResponse> register(
