@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
@@ -25,7 +25,7 @@ Widget merchImageOrFallback(
   ImageFallbackWidget fallback() =>
       ImageFallbackWidget(h: height, w: width, fit: fallbackFit ?? fit);
   if (url.isEmpty) return fallback();
-  return CachedNetworkImage(
+  return StoreImage(
     imageUrl: url,
     fit: fit,
     width: width,
@@ -230,7 +230,7 @@ class HomeMerchCompactCard extends StatelessWidget {
                               w: double.infinity,
                               fit: BoxFit.contain,
                             )
-                          : CachedNetworkImage(
+                          : StoreImage(
                               imageUrl: image,
                               fit: BoxFit.cover,
                               width: double.infinity,
@@ -420,7 +420,7 @@ class HomeMerchEditorialCard extends StatelessWidget {
                             w: double.infinity,
                             fit: BoxFit.contain,
                           )
-                        : CachedNetworkImage(
+                        : StoreImage(
                             imageUrl: image,
                             fit: BoxFit.cover,
                             width: double.infinity,

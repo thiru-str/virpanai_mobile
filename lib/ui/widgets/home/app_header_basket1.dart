@@ -6,7 +6,8 @@ import 'package:waioz/utility/font_utils.dart';
 
 /// AppHeaderBasket1 (theme header "header-19") — the app side of the web's
 /// HeaderBasket1: a bar in the store's primary colour with the wide logo on a
-/// white plate (so any logo reads on any brand colour), account + cart on the
+/// white plate (so any logo reads on any brand colour; a logo made for the bar
+/// turns it off with [AppConfig.headerLogoOnPlate]), account + cart on the
 /// right, and a full-width white search pill underneath. No location picker.
 ///
 /// The wide logo is the bundled `images/app_logo_wide.png`; a branch without
@@ -32,7 +33,9 @@ class AppHeaderBasket1 extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final bar = AppColors.primary;
-    final on = bar.computeLuminance() > 0.5 ? const Color(0xFF1B1F1D) : Colors.white;
+    final on =
+        bar.computeLuminance() > 0.5 ? const Color(0xFF1B1F1D) : Colors.white;
+    const plate = AppConfig.headerLogoOnPlate;
     return AppBar(
       scrolledUnderElevation: 0,
       elevation: 0,
@@ -49,31 +52,48 @@ class AppHeaderBasket1 extends StatelessWidget implements PreferredSizeWidget {
               child: Row(children: [
                 Container(
                   height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  padding: plate
+                      ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+                      : EdgeInsets.zero,
+                  decoration: plate
+                      ? BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8))
+                      : null,
                   // A fixed box so the bar never jumps while the logo decodes.
                   child: Image.asset(
                     AppAssets.app_logo_wide,
-                    width: 112,
-                    height: 32,
+                    width: plate ? 112 : 176,
+                    height: plate ? 32 : 40,
                     fit: BoxFit.contain,
+                    alignment: plate ? Alignment.center : Alignment.centerLeft,
                     errorBuilder: (_, __, ___) => SizedBox(
-                      width: 112,
+                      width: plate ? 112 : 176,
                       height: 32,
                       child: Center(
                         child: Text(AppConfig.appName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(
-                              fontSize: 15, fontWeight: FontWeight.w800, color: bar)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: FontUtils.primaryFontStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: plate ? bar : on)),
                       ),
                     ),
                   ),
                 ),
                 const Spacer(),
-                _HeaderIcon(icon: Icons.person_outline_rounded, color: on, onTap: onProfileTap, label: 'Account'),
                 _HeaderIcon(
-                    icon: Icons.shopping_cart_outlined, color: on, onTap: onCartClick, label: 'Cart', badge: cartCount),
+                    icon: Icons.person_outline_rounded,
+                    color: on,
+                    onTap: onProfileTap,
+                    label: 'Account'),
+                _HeaderIcon(
+                    icon: Icons.shopping_cart_outlined,
+                    color: on,
+                    onTap: onCartClick,
+                    label: 'Cart',
+                    badge: cartCount),
               ]),
             ),
             const SizedBox(height: 8),
@@ -88,17 +108,22 @@ class AppHeaderBasket1 extends StatelessWidget implements PreferredSizeWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 10, offset: const Offset(0, 3)),
+                      BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3)),
                     ],
                   ),
                   child: Row(children: [
-                    const Icon(Icons.search_rounded, size: 21, color: Color(0xFF6B7280)),
+                    const Icon(Icons.search_rounded,
+                        size: 21, color: Color(0xFF6B7280)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text('Search products, brands and more',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: FontUtils.secondaryFontStyle(fontSize: 14, color: const Color(0xFF6B7280))),
+                          style: FontUtils.secondaryFontStyle(
+                              fontSize: 14, color: const Color(0xFF6B7280))),
                     ),
                   ]),
                 ),
@@ -117,7 +142,12 @@ class _HeaderIcon extends StatelessWidget {
   final VoidCallback? onTap;
   final String label;
   final int badge;
-  const _HeaderIcon({required this.icon, required this.color, required this.onTap, required this.label, this.badge = 0});
+  const _HeaderIcon(
+      {required this.icon,
+      required this.color,
+      required this.onTap,
+      required this.label,
+      this.badge = 0});
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -129,26 +159,33 @@ class _HeaderIcon extends StatelessWidget {
           child: SizedBox(
             width: 44,
             height: 44,
-            child: Stack(clipBehavior: Clip.none, alignment: Alignment.center, children: [
-              Icon(icon, size: 26, color: color),
-              if (badge > 0)
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: Container(
-                    constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE11D48),
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(color: Colors.white, width: 1.4),
+            child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Icon(icon, size: 26, color: color),
+                  if (badge > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        constraints:
+                            const BoxConstraints(minWidth: 17, minHeight: 17),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE11D48),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(color: Colors.white, width: 1.4),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(badge > 99 ? '99+' : '$badge',
+                            style: FontUtils.primaryFontStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white)),
+                      ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(badge > 99 ? '99+' : '$badge',
-                        style: FontUtils.primaryFontStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Colors.white)),
-                  ),
-                ),
-            ]),
+                ]),
           ),
         ),
       );

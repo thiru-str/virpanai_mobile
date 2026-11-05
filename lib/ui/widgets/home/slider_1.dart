@@ -1,10 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:waioz/model/home_page_response.dart';
 
-import '../../../utility/app_assets.dart';
 import '../../../utility/app_colors.dart';
 import '../../../utility/app_utils.dart';
 import '../../../utility/font_utils.dart';
@@ -148,7 +147,7 @@ class _Slider1State extends State<Slider1> with SingleTickerProviderStateMixin {
                           height: bannerHeight,
                           child: Stack(
                             children: [
-                              CachedNetworkImage(
+                              StoreImage(
                                 imageUrl: currentData.image ?? '',
                                 width: double.infinity,
                                 height: bannerHeight,
@@ -256,10 +255,7 @@ Widget _fallbackWidget() {
     height: _Slider1State._minimumBannerHeight,
     color: AppColors.secondary,
     alignment: Alignment.center,
-    child: SvgPicture.asset(
-      AppAssets.ic_no_image,
-      height: 80,
-    ),
+    child: const NoImageMark(height: 80),
   );
 }
 

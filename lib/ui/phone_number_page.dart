@@ -96,6 +96,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: const Color(0xFFF9F9FB),
         appBar: AppBar(
           backgroundColor: const Color(0xFFF9F9FB),
@@ -113,185 +114,203 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
         ),
         body: SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                // Title
-                Text(
-                  isEmailLogin ? AppStrings.login : AppStrings.enter_mob_no,
-                  style: UiTypography.cardTitle().copyWith(
-                    fontSize: 24,
-                    height: 1.2,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  isEmailLogin ? AppStrings.email : AppStrings.mobile_number,
-                  style: FontUtils.secondaryFontStyle(
-                    fontSize: 14,
-                    color: AppColors.textColor50,
-                  ).copyWith(height: 1.5),
-                ),
-                const SizedBox(height: 28),
-                // Form for phone input
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (isEmailLogin) ...[
-                        _fieldLabel(AppStrings.email),
-                        CustomTextField(
-                          hintText: AppStrings.email,
-                          controller: emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textCapitalization: TextCapitalization.none,
-                          validator: (value) => !isEmailLogin
-                              ? null
-                              : validateRegistrationEmail(
-                                  value,
-                                  requiredMessage: AppStrings.email_required,
-                                  invalidMessage: AppStrings.enter_valid_email,
-                                ),
-                        ),
-                        const SizedBox(height: 16),
-                        _fieldLabel(AppStrings.password),
-                        CustomTextField(
-                          hintText: AppStrings.password,
-                          controller: passwordController,
-                          textCapitalization: TextCapitalization.none,
-                          isPassword: true,
-                          keyboardType: TextInputType.visiblePassword,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(
-                                r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
-                              ),
-                            ),
-                          ],
-                          validator: (value) {
-                            if (!isEmailLogin) return null;
-                            if (value == null || value.isEmpty) {
-                              return AppStrings.password_required;
-                            }
-                            // This is login, not password creation. Keep
-                            // accepting credentials created under the legacy
-                            // minimum; the 8-128 policy is enforced by the
-                            // registration form and backend.
-                            if (value.length < 5) {
-                              return AppStrings.password_min_length;
-                            }
-                            return null;
-                          },
-                        ),
-                        newToAppRegisterText(onRegisterTap: () {
-                          PageRouteUtils.pushWithSlide(
-                              context,
-                              RegisterPage(
-                                phoneNo: '',
-                                countryCode: '',
-                                token: '',
-                                redirectPage: widget.redirectPage,
-                              ));
-                        })
-                      ] else ...[
-                        _fieldLabel(AppStrings.mobile_number),
-                        IntlPhoneField(
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          dropdownTextStyle: FontUtils.primaryFontStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textColor,
+          child: LayoutBuilder(
+            builder: (context, viewport) => SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: viewport.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        // Title
+                        Text(
+                          isEmailLogin
+                              ? AppStrings.login
+                              : AppStrings.enter_mob_no,
+                          style: UiTypography.cardTitle().copyWith(
+                            fontSize: 24,
+                            height: 1.2,
+                            letterSpacing: -0.3,
                           ),
-                          style: FontUtils.primaryFontStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textColor,
-                          ),
-                          decoration:
-                              _fieldDecoration(AppStrings.mobile_number),
-                          initialCountryCode: AppStrings.country_code,
-                          onChanged: (phone) {
-                            _phoneNumber = phone.number;
-                            _countryCode = phone.countryCode;
-                          },
-                          validator: (value) {
-                            if (value == null || value.number.isEmpty) {
-                              return AppStrings.enter_valid_mob_no;
-                            }
-                            if (value.number.length < 10 ||
-                                value.number.length > 15) {
-                              return AppStrings.digit_range;
-                            }
-                            return null;
-                          },
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                const Spacer(),
-                // Submit button — full-width primary CTA at bottom
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 54),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      if (apiCalling) {
-                        return;
-                      }
-                      if (_formKey.currentState!.validate()) {
-                        if (isEmailLogin) {
-                          loginWithEmail();
-                        } else {
-                          if (_phoneNumber != null) {
-                            sendOtp();
-                          } else {
-                            AppUtils.showToast(AppStrings.enter_mob_no);
-                          }
-                        }
-                      }
-                    },
-                    child: apiCalling
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        const SizedBox(height: 8),
+                        Text(
+                          isEmailLogin
+                              ? AppStrings.email
+                              : AppStrings.mobile_number,
+                          style: FontUtils.secondaryFontStyle(
+                            fontSize: 14,
+                            color: AppColors.textColor50,
+                          ).copyWith(height: 1.5),
+                        ),
+                        const SizedBox(height: 28),
+                        // Form for phone input
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                isEmailLogin ? AppStrings.login : 'Continue',
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                              if (isEmailLogin) ...[
+                                _fieldLabel(AppStrings.email),
+                                CustomTextField(
+                                  hintText: AppStrings.email,
+                                  controller: emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  textCapitalization: TextCapitalization.none,
+                                  validator: (value) => !isEmailLogin
+                                      ? null
+                                      : validateRegistrationEmail(
+                                          value,
+                                          requiredMessage:
+                                              AppStrings.email_required,
+                                          invalidMessage:
+                                              AppStrings.enter_valid_email,
+                                        ),
                                 ),
-                              ),
+                                const SizedBox(height: 16),
+                                _fieldLabel(AppStrings.password),
+                                CustomTextField(
+                                  hintText: AppStrings.password,
+                                  controller: passwordController,
+                                  textCapitalization: TextCapitalization.none,
+                                  isPassword: true,
+                                  keyboardType: TextInputType.visiblePassword,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(
+                                        r"[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'\,.<>\/\?\\|]",
+                                      ),
+                                    ),
+                                  ],
+                                  validator: (value) {
+                                    if (!isEmailLogin) return null;
+                                    if (value == null || value.isEmpty) {
+                                      return AppStrings.password_required;
+                                    }
+                                    // This is login, not password creation. Keep
+                                    // accepting credentials created under the legacy
+                                    // minimum; the 8-128 policy is enforced by the
+                                    // registration form and backend.
+                                    if (value.length < 5) {
+                                      return AppStrings.password_min_length;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                newToAppRegisterText(onRegisterTap: () {
+                                  PageRouteUtils.pushWithSlide(
+                                      context,
+                                      RegisterPage(
+                                        phoneNo: '',
+                                        countryCode: '',
+                                        token: '',
+                                        redirectPage: widget.redirectPage,
+                                      ));
+                                })
+                              ] else ...[
+                                _fieldLabel(AppStrings.mobile_number),
+                                IntlPhoneField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                  dropdownTextStyle: FontUtils.primaryFontStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textColor,
+                                  ),
+                                  style: FontUtils.primaryFontStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textColor,
+                                  ),
+                                  decoration: _fieldDecoration(
+                                      AppStrings.mobile_number),
+                                  initialCountryCode: AppStrings.country_code,
+                                  onChanged: (phone) {
+                                    _phoneNumber = phone.number;
+                                    _countryCode = phone.countryCode;
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.number.isEmpty) {
+                                      return AppStrings.enter_valid_mob_no;
+                                    }
+                                    if (value.number.length < 10 ||
+                                        value.number.length > 15) {
+                                      return AppStrings.digit_range;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
                             ],
                           ),
+                        ),
+
+                        const Spacer(),
+                        // Submit button — full-width primary CTA at bottom
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              elevation: 0,
+                              minimumSize: const Size(double.infinity, 54),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (apiCalling) {
+                                return;
+                              }
+                              if (_formKey.currentState!.validate()) {
+                                if (isEmailLogin) {
+                                  loginWithEmail();
+                                } else {
+                                  if (_phoneNumber != null) {
+                                    sendOtp();
+                                  } else {
+                                    AppUtils.showToast(AppStrings.enter_mob_no);
+                                  }
+                                }
+                              }
+                            },
+                            child: apiCalling
+                                ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        isEmailLogin
+                                            ? AppStrings.login
+                                            : 'Continue',
+                                        style: FontUtils.primaryFontStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-              ],
+              ),
             ),
           ),
         ),

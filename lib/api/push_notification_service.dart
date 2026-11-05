@@ -37,6 +37,7 @@ class PushNotificationService {
 
     await _refreshAndSyncToken();
 
+    // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('Foreground message received: ${message.notification?.title}');
       _showLocalNotification(message);
@@ -46,6 +47,7 @@ class PushNotificationService {
       handleNotificationTap(message, context);
     });
 
+    // Handle notification click when app is opened from terminated state
     final initialMessage = await _firebaseMessaging.getInitialMessage();
     if (initialMessage != null) {
       handleNotificationTap(initialMessage, context);
@@ -80,7 +82,7 @@ class PushNotificationService {
       await ApiService().syncDeviceToken(token);
       await preferences.saveString('fcm_token_uploaded', token);
     } catch (error) {
-      // Keep the token pending so the next launch/token refresh retries it.
+      // Leave this token pending so the next launch or token refresh retries.
       debugPrint('Unable to sync FCM token with backend: $error');
     }
   }
@@ -102,6 +104,7 @@ class PushNotificationService {
       },
     );
 
+    // Android 8+ channel
     if (Platform.isAndroid) {
       await _flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
@@ -124,6 +127,7 @@ class PushNotificationService {
     FlutterLocalNotificationsPlugin plugin,
     RemoteMessage message,
   ) async {
+    // Server sends data-only for Android while iOS uses an APNs alert.
     final title =
         message.notification?.title ?? message.data['title'] as String? ?? '';
     final body =
@@ -204,6 +208,7 @@ class PushNotificationService {
     return null;
   }
 
+  // Returns bytes for Android and a file path for the iOS attachment.
   static Future<(Uint8List, String)> _downloadImage(String url) async {
     final directory = await getTemporaryDirectory();
     final dio = Dio(BaseOptions(
@@ -222,7 +227,6 @@ class PushNotificationService {
         if (rawBytes == null || rawBytes.isEmpty) {
           throw StateError('Notification image response was empty');
         }
-
         final bytes = Uint8List.fromList(rawBytes);
         final contentType =
             response.headers.value(Headers.contentTypeHeader) ?? '';

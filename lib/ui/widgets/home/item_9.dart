@@ -2,7 +2,7 @@ import 'dart:async';
 import 'cms_text_color.dart';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/utility/app_logger.dart';
@@ -193,7 +193,7 @@ class _Item9Card extends StatelessWidget {
               ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
-                child: CachedNetworkImage(
+                child: StoreImage(
                   imageUrl: layoutData.image ?? '',
                   height: 150,
                   width: double.infinity,

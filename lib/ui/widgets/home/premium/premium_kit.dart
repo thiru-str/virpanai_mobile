@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/currency_util.dart';
@@ -100,7 +100,7 @@ class PImage extends StatelessWidget {
     if (url == null || url!.trim().isEmpty) {
       img = _placeholder();
     } else {
-      img = CachedNetworkImage(
+      img = StoreImage(
         imageUrl: url!,
         fit: fit,
         fadeInDuration: const Duration(milliseconds: 200),

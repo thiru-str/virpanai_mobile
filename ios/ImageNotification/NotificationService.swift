@@ -53,7 +53,7 @@ final class NotificationService: UNNotificationServiceExtension {
                 )
                 content.attachments = [attachment]
             } catch {
-                // Deliver the text notification when the attachment is invalid.
+                // Deliver the notification without an image if the attachment cannot be created.
             }
 
             self.deliver(content)

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
+import 'atelier/atelier_sections.dart';
+import 'maison/maison_sections.dart';
+import 'theatre/theatre_sections.dart';
 import 'basket/basket_sections.dart';
 import 'grocery_grid1.dart';
 import 'product_grid_two1.dart';
@@ -196,7 +199,8 @@ const List<String> kMarketplaceLayouts = [
   'Blog1', 'Story1', 'HowTo1', 'Reels1',
   // per-vertical depth
   'SearchHeroVertical1', 'ServiceBooking1', 'WalletCashback1', 'StorePickup1',
-  'RestaurantOffers1', 'ElectronicsDeals1', 'PharmacyCategories1', 'BeautyShades1',
+  'RestaurantOffers1', 'ElectronicsDeals1', 'PharmacyCategories1',
+  'BeautyShades1',
   // media + conversion depth
   'Instagram1', 'Ugc1', 'Gallery1', 'BeforeAfter1',
   'SizeGuide1', 'PincodeCheck1', 'AppPromo1', 'Membership1',
@@ -212,21 +216,41 @@ const List<String> kMarketplaceLayouts = [
   'LoyaltyProgress1', 'RatingSummary1',
   // finishing B
   'VideoBanner1', 'TextCta1', 'CountBadgeRail1', 'SubscribeBox1', 'FaqCompact1',
-  'ContactSupport1', 'FooterCta1', 'AnnouncementBar1', 'StickyOffer1', 'PromoMarquee1',
+  'ContactSupport1', 'FooterCta1', 'AnnouncementBar1', 'StickyOffer1',
+  'PromoMarquee1',
   // food / organic (SATVA genre)
-  'Certifications1', 'NutritionFacts1', 'Recipe1', 'SubscriptionBox1', 'FarmStory1',
+  'Certifications1', 'NutritionFacts1', 'Recipe1', 'SubscriptionBox1',
+  'FarmStory1',
   // supermarket / quick-commerce (FRESHKART genre) — compact cards
   'CategoryMini1', 'ProductMini1', 'DealStrip1',
   'ProductStepper1', 'CategoryCircle1', 'CategoryPills1', 'ReorderRail1',
   // reusable product components (any genre)
-  'ProductListRow1', 'ProductHeroGrid1', 'ProductCarouselXL1', 'ProductRatingGrid1',
+  'ProductListRow1', 'ProductHeroGrid1', 'ProductCarouselXL1',
+  'ProductRatingGrid1',
   // PREMIUM native (2026-09) — built on the premium design kit (premium/*)
-  'PremiumProductRail1', 'PremiumProductGrid1', 'PremiumBundle1', 'PremiumSpotlight1',
+  'PremiumProductRail1', 'PremiumProductGrid1', 'PremiumBundle1',
+  'PremiumSpotlight1',
   'PremiumHero1', 'PremiumCategoryGrid1', 'PremiumOfferDuo1',
   'PremiumReviews1', 'PremiumTrust1', 'PremiumFaq1', 'PremiumAppDownload1',
   // BASKET quick-commerce family (2026-10) — app side of the web basket-*.tsx
   'BasketOfferCarousel1', 'BasketCategoryGrid1', 'ProductBasketRail1',
-  'ProductBasketGrid1', 'BasketAisleTabs1', 'BasketBrandRail1', 'BasketPromiseStrip1',
+  'ProductBasketGrid1', 'BasketAisleTabs1', 'BasketBrandRail1',
+  'BasketPromiseStrip1',
+  // ATELIER boutique family (2026-10) — app side of the web atelier-*.tsx,
+  // with the general sections a boutique home uses (poster art, films, reviews, FAQ)
+  'PosterBanner1', 'AtelierCategoryArches1', 'ProductAtelierGrid1',
+  'AtelierDrapeStory1',
+  'AtelierLookRail1', 'AtelierPromiseBand1', 'VideoShowcase1', 'ReviewGallery1',
+  'Faq2',
+  // MAISON premium app-native family (2026-10) — same catalogue data, app-only
+  // patterns: story rings + viewer, 3D carousel, staggered grid, full-screen reels
+  'MaisonHero1', 'MaisonStories1', 'ProductMaisonCarousel1',
+  'ProductMaisonGrid1',
+  'MaisonReels1', 'MaisonChapter1', 'MaisonVoices1',
+  // THEATRE home-cinema family (2026-11) — app side of the web theatre-*.tsx
+  'TheatreHero1', 'TheatreSpotlights1', 'ProductTheatreGrid1',
+  'TheatreLayouts1',
+  'TheatreReels1', 'TheatreBudget1', 'TheatreBrandWall1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -246,8 +270,10 @@ const Set<String> kMarketplaceNoDataLayouts = {
   'CategoryRowList1', 'CategoryImageTile1', 'CategoryIconCircle1',
   'CategoryBigCard1', 'CategoryTileLabel1', 'CategoryFeatureSplit1',
   'HeroImageBanner1', 'SplitBanner1', 'GradientCtaBar1', 'DualOfferBanner1',
-  'CarouselBanner1', 'TriplePromoBanner1', 'CountdownBanner1', 'VideoHeroBanner1',
-  'ProductGridThree1', 'ProductWideRail1', 'ProductMiniList1', 'ProductRankedList1',
+  'CarouselBanner1', 'TriplePromoBanner1', 'CountdownBanner1',
+  'VideoHeroBanner1',
+  'ProductGridThree1', 'ProductWideRail1', 'ProductMiniList1',
+  'ProductRankedList1',
   'ProductWishlistGrid1', 'ProductCircleThumbRail1', 'ProductPosterRail1',
   'ProductTwoRowScroll1', 'ProductBigImageGrid1',
   'ProductAddGrid1', 'ProductAddRail1', 'ProductStepperList1',
@@ -271,11 +297,13 @@ const Set<String> kMarketplaceNoDataLayouts = {
   'CategoryGradientTiles1', 'CategoryWidePillRail1', 'CategoryDuoFeature1',
   'CustomPromoTicker1', 'CustomComparisonTable1', 'CustomLogoStrip1',
   'SlimOfferBar1', 'PaymentOffersBanner1', 'ShippingPromiseBanner1',
-  'ProductHeroSpotlight1', 'ProductBestsellerRankRail1', 'ProductColorSwatchGrid1',
+  'ProductHeroSpotlight1', 'ProductBestsellerRankRail1',
+  'ProductColorSwatchGrid1',
   'CategoryTextArrowList1', 'CategoryHeroPlusRail1', 'CategoryNumberedList1',
   'CustomValuePropsRow1', 'CustomEditorialCta1', 'CustomImageQuoteCard1',
   'SpinWheelBanner1', 'WhatsappOrderBanner1', 'StoreVisitBanner1',
-  'ProductTallCardRail1', 'ProductComboOfferGrid1', 'ProductRecentlyViewedRail1', 'ProductSpotlightDuo1',
+  'ProductTallCardRail1', 'ProductComboOfferGrid1',
+  'ProductRecentlyViewedRail1', 'ProductSpotlightDuo1',
   'CategoryFullBleedList1', 'CategoryQuadFeature1', 'CategoryFlatIconCards1',
   'CustomHeroStat1', 'CustomZigzagRows1', 'CustomChecklistCard1',
   'GiftCardBanner1', 'LoyaltyPointsBanner1', 'SocialFollowBanner1',
@@ -309,15 +337,69 @@ Widget? marketplaceHomeWidget(Content content,
     case 'BasketCategoryGrid1':
       return BasketCategoryGrid1(content: content);
     case 'ProductBasketRail1':
-      return ProductBasketRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductBasketRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductBasketGrid1':
-      return ProductBasketGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductBasketGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'BasketAisleTabs1':
-      return BasketAisleTabs1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return BasketAisleTabs1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'BasketBrandRail1':
       return BasketBrandRail1(content: content);
     case 'BasketPromiseStrip1':
       return BasketPromiseStrip1(content: content);
+    case 'PosterBanner1':
+      return PosterBanner1(content: content);
+    case 'AtelierCategoryArches1':
+      return AtelierCategoryArches1(content: content);
+    case 'ProductAtelierGrid1':
+      return ProductAtelierGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'AtelierDrapeStory1':
+      return AtelierDrapeStory1(content: content);
+    case 'AtelierLookRail1':
+      return AtelierLookRail1(content: content);
+    case 'AtelierPromiseBand1':
+      return AtelierPromiseBand1(content: content);
+    case 'VideoShowcase1':
+      return VideoShowcase1(content: content);
+    case 'ReviewGallery1':
+      return ReviewGallery1(content: content);
+    case 'Faq2':
+      return Faq2(content: content);
+    case 'MaisonHero1':
+      return MaisonHero1(content: content);
+    case 'MaisonStories1':
+      return MaisonStories1(content: content);
+    case 'ProductMaisonCarousel1':
+      return ProductMaisonCarousel1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'ProductMaisonGrid1':
+      return ProductMaisonGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'MaisonReels1':
+      return MaisonReels1(content: content);
+    case 'MaisonChapter1':
+      return MaisonChapter1(content: content);
+    case 'MaisonVoices1':
+      return MaisonVoices1(content: content);
+    case 'TheatreHero1':
+      return TheatreHero1(content: content);
+    case 'TheatreSpotlights1':
+      return TheatreSpotlights1(content: content);
+    case 'ProductTheatreGrid1':
+      return ProductTheatreGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'TheatreLayouts1':
+      return TheatreLayouts1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'TheatreReels1':
+      return TheatreReels1(content: content);
+    case 'TheatreBudget1':
+      return TheatreBudget1(content: content);
+    case 'TheatreBrandWall1':
+      return TheatreBrandWall1(content: content);
     case 'CategoryChips1':
       return CategoryChips1(content: content);
     case 'GroceryGrid1':
@@ -519,7 +601,8 @@ Widget? marketplaceHomeWidget(Content content,
     case 'DealStrip1':
       return DealStrip1(content: content);
     case 'ProductStepper1':
-      return ProductStepper1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductStepper1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryCircle1':
       return CategoryCircle1(content: content);
     case 'CategoryPills1':
@@ -527,25 +610,35 @@ Widget? marketplaceHomeWidget(Content content,
     case 'ReorderRail1':
       return ReorderRail1(content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductListRow1':
-      return ProductListRow1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductListRow1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductHeroGrid1':
-      return ProductHeroGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductHeroGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductCarouselXL1':
-      return ProductCarouselXL1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductCarouselXL1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductRatingGrid1':
-      return ProductRatingGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductRatingGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductGridTwo1':
-      return ProductGridTwo1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductGridTwo1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductRailCompact1':
-      return ProductRailCompact1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductRailCompact1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductListStack1':
-      return ProductListStack1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductListStack1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductDealGrid1':
-      return ProductDealGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductDealGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductEditorialRail1':
-      return ProductEditorialRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductEditorialRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductQuickAddGrid1':
-      return ProductQuickAddGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductQuickAddGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryCircleRail1':
       return CategoryCircleRail1(content: content);
     case 'CategoryGridSquare1':
@@ -581,29 +674,41 @@ Widget? marketplaceHomeWidget(Content content,
     case 'VideoHeroBanner1':
       return VideoHeroBanner1(content: content);
     case 'ProductGridThree1':
-      return ProductGridThree1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductGridThree1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductWideRail1':
-      return ProductWideRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductWideRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductMiniList1':
-      return ProductMiniList1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductMiniList1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductRankedList1':
-      return ProductRankedList1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductRankedList1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductWishlistGrid1':
-      return ProductWishlistGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductWishlistGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductCircleThumbRail1':
-      return ProductCircleThumbRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductCircleThumbRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductPosterRail1':
-      return ProductPosterRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductPosterRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductTwoRowScroll1':
-      return ProductTwoRowScroll1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductTwoRowScroll1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductBigImageGrid1':
-      return ProductBigImageGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductBigImageGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductAddGrid1':
-      return ProductAddGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductAddGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductAddRail1':
-      return ProductAddRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductAddRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductStepperList1':
-      return ProductStepperList1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductStepperList1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryScrollStrip1':
       return CategoryScrollStrip1(content: content);
     case 'CategoryMegaGrid1':
@@ -623,11 +728,14 @@ Widget? marketplaceHomeWidget(Content content,
     case 'FullWidthBanner1':
       return FullWidthBanner1(content: content);
     case 'ProductSizePillGrid1':
-      return ProductSizePillGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductSizePillGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductBundleCard1':
-      return ProductBundleCard1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductBundleCard1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductTabbedRail1':
-      return ProductTabbedRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductTabbedRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryTabbedGrid1':
       return CategoryTabbedGrid1(content: content);
     case 'CategoryNestedList1':
@@ -647,11 +755,14 @@ Widget? marketplaceHomeWidget(Content content,
     case 'TrustStripBanner1':
       return TrustStripBanner1(content: content);
     case 'ProductHorizontalCardList1':
-      return ProductHorizontalCardList1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductHorizontalCardList1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductGridFour1':
-      return ProductGridFour1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductGridFour1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductCompareRow1':
-      return ProductCompareRow1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductCompareRow1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryBannerList1':
       return CategoryBannerList1(content: content);
     case 'CategoryColorBlock1':
@@ -671,11 +782,14 @@ Widget? marketplaceHomeWidget(Content content,
     case 'BogoBanner1':
       return BogoBanner1(content: content);
     case 'ProductFeaturedCarousel1':
-      return ProductFeaturedCarousel1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductFeaturedCarousel1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductSplitFeature1':
-      return ProductSplitFeature1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductSplitFeature1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductFlashDealList1':
-      return ProductFlashDealList1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductFlashDealList1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryMasonry1':
       return CategoryMasonry1(content: content);
     case 'CategoryCircleGrid1':
@@ -695,11 +809,14 @@ Widget? marketplaceHomeWidget(Content content,
     case 'ReferralBanner1':
       return ReferralBanner1(content: content);
     case 'ProductSubscriptionCard1':
-      return ProductSubscriptionCard1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductSubscriptionCard1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductFilterGrid1':
-      return ProductFilterGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductFilterGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductLookbookRail1':
-      return ProductLookbookRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductLookbookRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryAccordion1':
       return CategoryAccordion1(content: content);
     case 'CategoryCountGrid1':
@@ -719,11 +836,14 @@ Widget? marketplaceHomeWidget(Content content,
     case 'WelcomeOfferBanner1':
       return WelcomeOfferBanner1(content: content);
     case 'ProductFbtBundle1':
-      return ProductFbtBundle1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductFbtBundle1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductDiscountZoneGrid1':
-      return ProductDiscountZoneGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductDiscountZoneGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductGiftGuideRail1':
-      return ProductGiftGuideRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductGiftGuideRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryGradientTiles1':
       return CategoryGradientTiles1(content: content);
     case 'CategoryWidePillRail1':
@@ -743,11 +863,14 @@ Widget? marketplaceHomeWidget(Content content,
     case 'ShippingPromiseBanner1':
       return ShippingPromiseBanner1(content: content);
     case 'ProductHeroSpotlight1':
-      return ProductHeroSpotlight1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductHeroSpotlight1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductBestsellerRankRail1':
-      return ProductBestsellerRankRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductBestsellerRankRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductColorSwatchGrid1':
-      return ProductColorSwatchGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductColorSwatchGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryTextArrowList1':
       return CategoryTextArrowList1(content: content);
     case 'CategoryHeroPlusRail1':
@@ -767,13 +890,17 @@ Widget? marketplaceHomeWidget(Content content,
     case 'StoreVisitBanner1':
       return StoreVisitBanner1(content: content);
     case 'ProductTallCardRail1':
-      return ProductTallCardRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductTallCardRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductComboOfferGrid1':
-      return ProductComboOfferGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductComboOfferGrid1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductRecentlyViewedRail1':
-      return ProductRecentlyViewedRail1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductRecentlyViewedRail1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'ProductSpotlightDuo1':
-      return ProductSpotlightDuo1(content: content, onCartQtyChanged: onCartQtyChanged);
+      return ProductSpotlightDuo1(
+          content: content, onCartQtyChanged: onCartQtyChanged);
     case 'CategoryFullBleedList1':
       return CategoryFullBleedList1(content: content);
     case 'CategoryQuadFeature1':

@@ -42,7 +42,9 @@ class _BasketOfferCarousel1State extends State<BasketOfferCarousel1> {
     _timer = Timer.periodic(const Duration(milliseconds: 4800), (_) {
       if (_stopped || !_page.hasClients || _items.length < 2) return;
       final next = (_index + 1) % _items.length;
-      _page.animateToPage(next, duration: const Duration(milliseconds: 520), curve: Curves.easeOutCubic);
+      _page.animateToPage(next,
+          duration: const Duration(milliseconds: 520),
+          curve: Curves.easeOutCubic);
     });
   }
 
@@ -58,12 +60,16 @@ class _BasketOfferCarousel1State extends State<BasketOfferCarousel1> {
     final items = _items;
     if (items.isEmpty) return const SizedBox.shrink();
     final colors = BasketColors.of(widget.content, ground: Colors.white);
+    // The card's copy (pill, two-line title, two-line line, button) fills 176pt
+    // at the default text size; a phone set to larger text needs the room.
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.35);
     return BasketSection(
       bg: colors.bg,
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(children: [
         SizedBox(
-          height: 176,
+          height: 176 * textScale,
           child: NotificationListener<ScrollStartNotification>(
             onNotification: (n) {
               if (n.dragDetails != null) _stopped = true;
@@ -76,7 +82,8 @@ class _BasketOfferCarousel1State extends State<BasketOfferCarousel1> {
               onPageChanged: (i) => setState(() => _index = i),
               itemBuilder: (_, i) => Padding(
                 padding: EdgeInsets.only(left: i == 0 ? 16 : 6, right: 6),
-                child: _OfferCard(content: widget.content, item: items[i], index: i),
+                child: _OfferCard(
+                    content: widget.content, item: items[i], index: i),
               ),
             ),
           ),
@@ -91,7 +98,9 @@ class _BasketOfferCarousel1State extends State<BasketOfferCarousel1> {
                 height: 6,
                 width: i == _index ? 18 : 6,
                 decoration: BoxDecoration(
-                  color: i == _index ? colors.accent : colors.text.withValues(alpha: 0.18),
+                  color: i == _index
+                      ? colors.accent
+                      : colors.text.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -106,21 +115,27 @@ class _OfferCard extends StatelessWidget {
   final Content content;
   final LayoutDatum item;
   final int index;
-  const _OfferCard({required this.content, required this.item, required this.index});
+  const _OfferCard(
+      {required this.content, required this.item, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final card = basketParseColor(item.rawString('background_color')) ?? kBasketTints[index % kBasketTints.length];
+    final card = basketParseColor(item.rawString('background_color')) ??
+        kBasketTints[index % kBasketTints.length];
     final ink = basketOn(card);
     final kicker = item.featureText ?? '';
     final cta = basketField(item, ['button_text', 'btnText']);
-    final main = (item.image ?? '').isNotEmpty ? item.image : basketField(item, ['mobileImage', 'mobileMedia']);
+    final main = (item.image ?? '').isNotEmpty
+        ? item.image
+        : basketField(item, ['mobileImage', 'mobileMedia']);
     final extras = [
       basketField(item, ['primary_image', 'primaryMedia']),
-      basketField(item, ['secondary_image', 'secondary_media', 'secondaryMedia']),
+      basketField(
+          item, ['secondary_image', 'secondary_media', 'secondaryMedia']),
     ].where((s) => s.isNotEmpty).toList();
 
-    Widget plate(String? url, double size, double radius, double pad) => Container(
+    Widget plate(String? url, double size, double radius, double pad) =>
+        Container(
           width: size,
           height: size,
           padding: EdgeInsets.all(pad),
@@ -128,10 +143,15 @@ class _OfferCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(radius),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.13), blurRadius: 22, offset: const Offset(0, 8)),
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.13),
+                  blurRadius: 22,
+                  offset: const Offset(0, 8)),
             ],
           ),
-          child: ClipRRect(borderRadius: BorderRadius.circular(radius - 4), child: BasketImage(url: url)),
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius - 4),
+              child: BasketImage(url: url)),
         );
 
     return GestureDetector(
@@ -155,9 +175,15 @@ class _OfferCard extends StatelessWidget {
                 child: plate(main, mainSize, 16, 8),
               ),
               if (extras.isNotEmpty)
-                Positioned(right: 14 + mainSize * 0.62, bottom: h * 0.1, child: plate(extras[0], art * 0.34, 12, 5)),
+                Positioned(
+                    right: 14 + mainSize * 0.62,
+                    bottom: h * 0.1,
+                    child: plate(extras[0], art * 0.34, 12, 5)),
               if (extras.length > 1)
-                Positioned(right: 14 + mainSize * 0.38, top: h * 0.08, child: plate(extras[1], art * 0.3, 12, 5)),
+                Positioned(
+                    right: 14 + mainSize * 0.38,
+                    top: h * 0.08,
+                    child: plate(extras[1], art * 0.3, 12, 5)),
               Positioned(
                 left: 0,
                 top: 0,
@@ -165,50 +191,77 @@ class _OfferCard extends StatelessWidget {
                 width: w * 0.55,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 14, 4, 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (kicker.isNotEmpty)
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: ink.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(kicker.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(
-                                  fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.6, color: ink)),
+                  // Narrow phones wrap the title onto more lines than the card
+                  // was drawn for: the copy then shrinks to fit instead of
+                  // running out of the bottom.
+                  child: LayoutBuilder(
+                    builder: (context, copyBox) => FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: copyBox.maxWidth,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (kicker.isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: ink.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(kicker.toUpperCase(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FontUtils.primaryFontStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.6,
+                                        color: ink)),
+                              ),
+                            Text(item.title ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: FontUtils.primaryFontStyle(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.3,
+                                        color: ink)
+                                    .copyWith(height: 1.1)),
+                            if ((item.subTitle ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 5),
+                              Text(item.subTitle!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FontUtils.secondaryFontStyle(
+                                          fontSize: 11.5,
+                                          color: ink.withValues(alpha: 0.75))
+                                      .copyWith(height: 1.3)),
+                            ],
+                            if (cta.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 13, vertical: 7),
+                                decoration: BoxDecoration(
+                                    color: ink,
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: Text(cta,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FontUtils.primaryFontStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: card)),
+                              ),
+                            ],
+                          ],
                         ),
-                      Text(item.title ?? '',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: FontUtils.primaryFontStyle(
-                                  fontSize: 19, fontWeight: FontWeight.w800, letterSpacing: -0.3, color: ink)
-                              .copyWith(height: 1.1)),
-                      if ((item.subTitle ?? '').isNotEmpty) ...[
-                        const SizedBox(height: 5),
-                        Text(item.subTitle!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: FontUtils.secondaryFontStyle(fontSize: 11.5, color: ink.withValues(alpha: 0.75))
-                                .copyWith(height: 1.3)),
-                      ],
-                      if (cta.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                          decoration: BoxDecoration(color: ink, borderRadius: BorderRadius.circular(20)),
-                          child: Text(cta,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: FontUtils.primaryFontStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: card)),
-                        ),
-                      ],
-                    ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -254,7 +307,8 @@ class BasketCategoryGrid1 extends StatelessWidget {
                         height: w,
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
-                          color: basketParseColor(items[i].rawString('background_color')) ??
+                          color: basketParseColor(
+                                  items[i].rawString('background_color')) ??
                               kBasketTints[i % kBasketTints.length],
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -262,7 +316,9 @@ class BasketCategoryGrid1 extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           child: ColoredBox(
                             color: Colors.white,
-                            child: Padding(padding: const EdgeInsets.all(5), child: BasketImage(url: items[i].image)),
+                            child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: BasketImage(url: items[i].image)),
                           ),
                         ),
                       ),
@@ -272,7 +328,9 @@ class BasketCategoryGrid1 extends StatelessWidget {
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           style: FontUtils.primaryFontStyle(
-                                  fontSize: 11.5, fontWeight: FontWeight.w700, color: colors.text.withValues(alpha: 0.9))
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: colors.text.withValues(alpha: 0.9))
                               .copyWith(height: 1.2)),
                     ]),
                   ),
@@ -290,7 +348,8 @@ class BasketCategoryGrid1 extends StatelessWidget {
 class ProductBasketRail1 extends StatelessWidget {
   final Content content;
   final BasketCartChange? onCartQtyChanged;
-  const ProductBasketRail1({super.key, required this.content, this.onCartQtyChanged});
+  const ProductBasketRail1(
+      {super.key, required this.content, this.onCartQtyChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -300,8 +359,12 @@ class ProductBasketRail1 extends StatelessWidget {
     return BasketSection(
       bg: colors.bg,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        BasketSectionHead(content: content, colors: colors, onSeeAll: basketSeeAll(context, content)),
-        BasketTileRail(items: items, colors: colors, onCartQtyChanged: onCartQtyChanged),
+        BasketSectionHead(
+            content: content,
+            colors: colors,
+            onSeeAll: basketSeeAll(context, content)),
+        BasketTileRail(
+            items: items, colors: colors, onCartQtyChanged: onCartQtyChanged),
       ]),
     );
   }
@@ -312,7 +375,8 @@ class ProductBasketRail1 extends StatelessWidget {
 class ProductBasketGrid1 extends StatelessWidget {
   final Content content;
   final BasketCartChange? onCartQtyChanged;
-  const ProductBasketGrid1({super.key, required this.content, this.onCartQtyChanged});
+  const ProductBasketGrid1(
+      {super.key, required this.content, this.onCartQtyChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -322,19 +386,30 @@ class ProductBasketGrid1 extends StatelessWidget {
     return BasketSection(
       bg: colors.bg,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        BasketSectionHead(content: content, colors: colors, onSeeAll: basketSeeAll(context, content)),
+        BasketSectionHead(
+            content: content,
+            colors: colors,
+            onSeeAll: basketSeeAll(context, content)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LayoutBuilder(builder: (context, box) {
-            final cols = box.maxWidth >= 560 ? 4 : box.maxWidth >= 400 ? 3 : 2;
+            final cols = box.maxWidth >= 560
+                ? 4
+                : box.maxWidth >= 400
+                    ? 3
+                    : 2;
             const gap = 10.0;
             final w = (box.maxWidth - gap * (cols - 1)) / cols;
             return Wrap(spacing: gap, runSpacing: gap, children: [
               for (final item in items)
                 SizedBox(
                   width: w,
-                  height: BasketTile.heightFor(w, pack: BasketTile.anyPack(items)),
-                  child: BasketTile(item: item, colors: colors, onCartQtyChanged: onCartQtyChanged),
+                  height:
+                      BasketTile.heightFor(w, pack: BasketTile.anyPack(items)),
+                  child: BasketTile(
+                      item: item,
+                      colors: colors,
+                      onCartQtyChanged: onCartQtyChanged),
                 ),
             ]);
           }),
@@ -351,7 +426,8 @@ class ProductBasketGrid1 extends StatelessWidget {
 class BasketAisleTabs1 extends StatefulWidget {
   final Content content;
   final BasketCartChange? onCartQtyChanged;
-  const BasketAisleTabs1({super.key, required this.content, this.onCartQtyChanged});
+  const BasketAisleTabs1(
+      {super.key, required this.content, this.onCartQtyChanged});
 
   @override
   State<BasketAisleTabs1> createState() => _BasketAisleTabs1State();
@@ -363,7 +439,8 @@ class _BasketAisleTabs1State extends State<BasketAisleTabs1> {
   @override
   Widget build(BuildContext context) {
     final tabs = (widget.content.layoutData ?? [])
-        .where((t) => (t.title ?? '').isNotEmpty && basketMultiProducts(t).isNotEmpty)
+        .where((t) =>
+            (t.title ?? '').isNotEmpty && basketMultiProducts(t).isNotEmpty)
         .toList();
     if (tabs.isEmpty) return const SizedBox.shrink();
     final colors = BasketColors.of(widget.content);
@@ -400,7 +477,9 @@ class _BasketAisleTabs1State extends State<BasketAisleTabs1> {
                       style: FontUtils.primaryFontStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: on ? colors.onAccent : colors.cardText.withValues(alpha: 0.8))),
+                          color: on
+                              ? colors.onAccent
+                              : colors.cardText.withValues(alpha: 0.8))),
                 ),
               );
             },
@@ -416,11 +495,15 @@ class _BasketAisleTabs1State extends State<BasketAisleTabs1> {
         if (hasSeeAll)
           Center(
             child: GestureDetector(
-              onTap: () => RedirectUtils.handleContentRedirectViewAll(context: context, redirectData: redirect!),
+              onTap: () => RedirectUtils.handleContentRedirectViewAll(
+                  context: context, redirectData: redirect!),
               child: Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text('See all ${current.title} ›',
-                    style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w700, color: colors.accent)),
+                    style: FontUtils.primaryFontStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: colors.accent)),
               ),
             ),
           ),
@@ -441,12 +524,22 @@ class BasketBrandRail1 extends StatelessWidget {
     final items = (content.layoutData ?? []).take(20).toList();
     if (items.isEmpty) return const SizedBox.shrink();
     final colors = BasketColors.of(content);
+    // The rail is the 84pt plate plus the name and (when any brand has one)
+    // the count line; both lines have a fixed line height, so this is exact
+    // for any store font and text size.
+    final ts = MediaQuery.textScalerOf(context);
+    final hasLine = items.any((d) => (d.subTitle ?? '').isNotEmpty);
+    final railHeight = 84 +
+        6 +
+        ts.scale(12) * 1.25 +
+        (hasLine ? ts.scale(10.5) * 1.25 : 0) +
+        6;
     return BasketSection(
       bg: colors.bg,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         BasketSectionHead(content: content, colors: colors),
         SizedBox(
-          height: 124,
+          height: railHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -472,12 +565,20 @@ class BasketBrandRail1 extends StatelessWidget {
                   Text(items[i].title ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FontUtils.primaryFontStyle(fontSize: 12, fontWeight: FontWeight.w800, color: colors.text)),
+                      style: FontUtils.primaryFontStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: colors.text)
+                          .copyWith(height: 1.25)),
                   if ((items[i].subTitle ?? '').isNotEmpty)
                     Text(items[i].subTitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: FontUtils.primaryFontStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: colors.accent)),
+                        style: FontUtils.primaryFontStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: colors.accent)
+                            .copyWith(height: 1.25)),
                 ]),
               ),
             ),
@@ -507,14 +608,21 @@ class BasketPromiseStrip1 extends StatelessWidget {
   // The promise's words pick its icon; the web's order is the fallback.
   static IconData _iconFor(String text, int i) {
     final t = text.toLowerCase();
-    if (RegExp(r'deliver|ship|dispatch').hasMatch(t)) return Icons.local_shipping_outlined;
-    if (RegExp(r'price|offer|save|discount|%').hasMatch(t)) return Icons.sell_outlined;
-    if (RegExp(r'return|exchange|refund').hasMatch(t)) return Icons.autorenew_rounded;
-    if (RegExp(r'\bhelp|\bcall\b|\bsupport\b|\bchat\b|expert').hasMatch(t)) return Icons.support_agent_outlined;
-    if (RegExp(r'secure|safe|pay').hasMatch(t)) return Icons.lock_outline_rounded;
-    if (RegExp(r'since|genuine|trust|original|certified|authentic').hasMatch(t)) return Icons.verified_outlined;
+    if (RegExp(r'deliver|ship|dispatch').hasMatch(t))
+      return Icons.local_shipping_outlined;
+    if (RegExp(r'price|offer|save|discount|%').hasMatch(t))
+      return Icons.sell_outlined;
+    if (RegExp(r'return|exchange|refund').hasMatch(t))
+      return Icons.autorenew_rounded;
+    if (RegExp(r'\bhelp|\bcall\b|\bsupport\b|\bchat\b|expert').hasMatch(t))
+      return Icons.support_agent_outlined;
+    if (RegExp(r'secure|safe|pay').hasMatch(t))
+      return Icons.lock_outline_rounded;
+    if (RegExp(r'since|genuine|trust|original|certified|authentic').hasMatch(t))
+      return Icons.verified_outlined;
     // a count claim ("202 supports", "10 departments") is about the range
-    if (RegExp(r'^\d|department|categor|range|product|essential').hasMatch(t)) return Icons.grid_view_rounded;
+    if (RegExp(r'^\d|department|categor|range|product|essential').hasMatch(t))
+      return Icons.grid_view_rounded;
     return _fallback[i % _fallback.length];
   }
 
@@ -537,26 +645,36 @@ class BasketPromiseStrip1 extends StatelessWidget {
           Container(
             width: 38,
             height: 38,
-            decoration: BoxDecoration(color: colors.accent.withValues(alpha: 0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: colors.accent.withValues(alpha: 0.1),
+                shape: BoxShape.circle),
             alignment: Alignment.center,
             child: (d.image ?? '').isNotEmpty
-                ? SizedBox(width: 22, height: 22, child: BasketImage(url: d.image))
-                : Icon(_iconFor('${d.title} ${d.subTitle}', i), size: 19, color: colors.accent),
+                ? SizedBox(
+                    width: 22, height: 22, child: BasketImage(url: d.image))
+                : Icon(_iconFor('${d.title} ${d.subTitle}', i),
+                    size: 19, color: colors.accent),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(d.title ?? '',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: FontUtils.primaryFontStyle(fontSize: 13, fontWeight: FontWeight.w800, color: colors.cardText)
+                  style: FontUtils.primaryFontStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: colors.cardText)
                       .copyWith(height: 1.2)),
               if ((d.subTitle ?? '').isNotEmpty) ...[
                 const SizedBox(height: 3),
                 Text(d.subTitle!,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: FontUtils.secondaryFontStyle(fontSize: 11.5, color: colors.cardText.withValues(alpha: 0.6))
+                    style: FontUtils.secondaryFontStyle(
+                            fontSize: 11.5,
+                            color: colors.cardText.withValues(alpha: 0.6))
                         .copyWith(height: 1.3)),
               ],
             ]),
@@ -572,11 +690,13 @@ class BasketPromiseStrip1 extends StatelessWidget {
       if (rows.isNotEmpty) rows.add(const SizedBox(height: 10));
       rows.add(i + 1 < items.length
           ? IntrinsicHeight(
-              child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Expanded(child: card(i)),
-                const SizedBox(width: 10),
-                Expanded(child: card(i + 1)),
-              ]),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: card(i)),
+                    const SizedBox(width: 10),
+                    Expanded(child: card(i + 1)),
+                  ]),
             )
           : card(i));
     }
@@ -585,7 +705,9 @@ class BasketPromiseStrip1 extends StatelessWidget {
       bg: colors.bg,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         BasketSectionHead(content: content, colors: colors),
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(children: rows)),
+        Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(children: rows)),
       ]),
     );
   }

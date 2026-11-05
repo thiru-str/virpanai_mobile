@@ -6,6 +6,7 @@ import 'package:waioz/model/customer_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/accounts_page.dart';
 import 'package:waioz/ui/cart_page.dart';
+import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'package:waioz/ui/category_page.dart';
 import 'package:waioz/ui/home_page.dart';
 import 'package:waioz/ui/my_favorites_page.dart';
@@ -174,6 +175,10 @@ class _BottomNavPageState extends State<BottomNavPage>
         },
         child: Scaffold(
           backgroundColor: const Color(0xFFF9F9FB),
+          floatingActionButton: _isLoading || _currentIndex == 2
+              ? null
+              : FloatingCart(onTap: () => setState(() => _currentIndex = 2)),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 260),
             switchInCurve: Curves.easeOutCubic,

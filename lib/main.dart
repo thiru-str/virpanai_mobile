@@ -29,10 +29,11 @@ import 'api/push_notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+// Top-level function required — runs in a separate Dart isolate when the app
+// is terminated or in background and a data-only FCM message arrives.
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundMessageHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-
   final plugin = FlutterLocalNotificationsPlugin();
   await plugin.initialize(
     const InitializationSettings(
@@ -48,7 +49,6 @@ Future<void> _firebaseBackgroundMessageHandler(RemoteMessage message) async {
         description: 'Used for general app notifications',
         importance: Importance.high,
       ));
-
   await PushNotificationService.showNotification(plugin, message);
 }
 
@@ -129,7 +129,10 @@ Future<void> _runAppWithOptionalNewRelic(HomeScreen homeScreen) async {
     httpResponseBodyCaptureEnabled: true,
     loggingEnabled: kDebugMode,
     webViewInstrumentation: true,
-    printStatementAsEventsEnabled: kDebugMode,
+    // Off in every mode: AppLogger prints API responses line by line, and each
+    // forwarded print is a platform call on the main thread (thousands per
+    // response), which freezes debug builds on a phone.
+    printStatementAsEventsEnabled: false,
     httpInstrumentationEnabled: true,
     offlineStorageEnabled: true,
     backgroundReportingEnabled: false,

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -120,7 +120,7 @@ class _Grid10Card extends StatelessWidget {
           child: Container(
             color: const Color(0xFFD9DBE6),
             child: safeUrl.isNotEmpty
-                ? CachedNetworkImage(
+                ? StoreImage(
                     imageUrl: safeUrl,
                     width: double.infinity,
                     height: double.infinity,

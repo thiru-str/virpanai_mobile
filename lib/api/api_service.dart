@@ -445,25 +445,11 @@ class ApiService {
         AppLogger.print('Failed to generate a new FCM token', '');
         return null;
       }
-
       await SharedPreferencesUtil().saveString('fcm_token', fcmToken);
       return fcmToken;
     } catch (e) {
       AppLogger.print('Error getting FCM token: $e', '');
       return null;
-    }
-  }
-
-  Future<void> syncDeviceToken(String deviceToken) async {
-    await addToken();
-    await setPublishableKey();
-    final response = await _dio.post(
-      'store/customers/device-token',
-      data: {'device_id': deviceToken},
-    );
-    if (response.statusCode != 200) {
-      throw Exception(
-          'Device token sync failed with status ${response.statusCode}');
     }
   }
 
@@ -772,6 +758,19 @@ class ApiService {
     return response;
   }
 
+  Future<void> syncDeviceToken(String deviceToken) async {
+    await addToken();
+    await setPublishableKey();
+    final response = await _dio.post(
+      'store/customers/device-token',
+      data: {'device_id': deviceToken},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+          'Device token sync failed with status ${response.statusCode}');
+    }
+  }
+
   Future<HomePageResponse> getHomePage(BuildContext context,
       {int offset = 0,
       int limit = 0,
@@ -902,17 +901,32 @@ class ApiService {
   }
 
   /// Adds [quantity] of a variant (the backend raises an existing line) and
-  /// returns the settled cart body `{ cart }`.
+  /// returns the settled cart body `{ cart }`. A cart completed by a previous
+  /// order answers 409: pick up the store's current cart once and retry.
   Future<Map<String, dynamic>> addCartLine(
       BuildContext? context, String variantId, int quantity) async {
     final cartId = await SharedPreferencesUtil().getString('cart_id');
-    return _sendJson(
-      'POST',
-      'store/custom-carts/$cartId/line-items',
-      data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
-      queryParameters: _fullCartQuery,
-      context: context,
-    );
+    Future<Map<String, dynamic>> send(String? id) => _sendJson(
+          'POST',
+          'store/custom-carts/$id/line-items',
+          data: {"variant_id": variantId, "quantity": quantity, "metadata": {}},
+          queryParameters: _fullCartQuery,
+          context: context,
+        );
+    try {
+      return await send(cartId);
+    } on ApiException catch (e) {
+      if (e.statusCode != 409 || context == null || !context.mounted) rethrow;
+      String? fresh;
+      try {
+        fresh = (await getHomePage(context)).global?.cartId;
+      } catch (_) {
+        // no fresh cart to move to: the 409 below stands
+      }
+      if (fresh == null || fresh.isEmpty || fresh == cartId) rethrow;
+      await SharedPreferencesUtil().saveString('cart_id', fresh);
+      return send(fresh);
+    }
   }
 
   /// Sets a line's quantity; the body may carry a `notice` when the backend
