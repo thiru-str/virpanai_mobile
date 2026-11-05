@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -186,7 +186,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             },
             onFavTap: addFavourite,
             onShareTap: () {
-              AppLinkHelper.shareProductInvite(widget.productId, context: context);
+              AppLinkHelper.shareProductInvite(widget.productId,
+                  context: context);
             },
             isFavorite: isFavorite, // Pass the updated favorite status here
           ),
@@ -342,7 +343,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   ),
                                 ],
                               )
-                            : CachedNetworkImage(
+                            : StoreImage(
                                 imageUrl: url,
                                 width: double.infinity,
                                 height: 400,
@@ -761,7 +762,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     // Stock only caps the quantity when it is tracked and cannot be
     // backordered — the same rule isStockAvailable uses, so a sellable
     // backorder variant (stock 0) is never refused as "max reached".
-    final stockCaps = variant.manageInventory == true && variant.allowBackorder != true;
+    final stockCaps =
+        variant.manageInventory == true && variant.allowBackorder != true;
     if (stockCaps && variant.inventoryQuantity != null) {
       return (variant.inventoryQuantity! - cartQuantity).clamp(0, 9999);
     }
@@ -771,12 +773,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget buildProductDescription() {
-    final variantDesc = selectedVariant?.metadata?.description ?? '';
-    final productDesc =
-        product?.metadata?.additionalDescription ?? product?.description ?? '';
+    final String variantDesc = selectedVariant?.metadata?.description ?? '';
+    final String plainDesc = product?.description ?? '';
+    final String htmlDesc = product?.metadata?.additionalDescription ?? '';
 
-    final descriptionToShow =
-        (variantDesc?.isNotEmpty == true) ? variantDesc : productDesc;
+    // Variant description overrides everything when present.
+    // Otherwise show plain text description followed by rich HTML
+    // additional_description (which may contain images/banners).
+    final String textToShow = variantDesc.isNotEmpty ? variantDesc : plainDesc;
+    final String htmlToShow = variantDesc.isNotEmpty ? '' : htmlDesc;
+
+    if (textToShow.isEmpty && htmlToShow.isEmpty) return const SizedBox();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -786,7 +793,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           style: UiTypography.cardTitle().copyWith(fontSize: 18),
         ),
         const SizedBox(height: 10),
-        CommonHtmlWidget(htmlContent: descriptionToShow ?? ''),
+        if (textToShow.isNotEmpty)
+          CommonHtmlWidget(
+            htmlContent: textToShow.contains('<')
+                ? textToShow
+                : '<p>${textToShow.replaceAll('\n\n', '</p><p>').replaceAll('\n', '<br/>')}</p>',
+          ),
+        if (textToShow.isNotEmpty && htmlToShow.isNotEmpty)
+          const SizedBox(height: 8),
+        if (htmlToShow.isNotEmpty) CommonHtmlWidget(htmlContent: htmlToShow),
       ],
     );
   }
@@ -894,8 +909,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   bottom: MediaQuery.of(context).padding.bottom + 16,
                 ),
                 child: GestureDetector(
-                  onTap: () {
-                    PageRouteUtils.pushWithSlide(context, const CartPage());
+                  onTap: () async {
+                    await PageRouteUtils.pushWithSlide(
+                        context, const CartPage());
+                    if (mounted) await getCartApi();
                   },
                   child: ViewCartWidget(
                       totalItems: cartItems ?? 0, itemImages: cartItemImages),
@@ -928,7 +945,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget buildQuantitySelector() {
     final v = selectedVariant;
-    final bool stockCaps = v?.manageInventory == true && v?.allowBackorder != true;
+    final bool stockCaps =
+        v?.manageInventory == true && v?.allowBackorder != true;
     final int _stepperMax = (productPresentInCart == true)
         ? (stockCaps ? (v?.inventoryQuantity ?? 99) : 99)
         : getMaxQuantity(v, cartResponse?.cart?.items ?? []);
@@ -1040,6 +1058,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       return;
                     }
+                    if (productPresentInCart == true &&
+                        _cartLineItemId != null) {
+                      // Already in the cart: the button sets the line to the
+                      // chosen quantity (instant, like every other cart change).
+                      CartStore.instance.setLineQuantity(
+                          context, _cartLineItemId!, selectedQuantity);
+                      return;
+                    }
                     if ((addOnProductsCount ?? 0) > 0) {
                       final selectedAddOns = await showAddOnBottomSheet(
                         context,
@@ -1079,7 +1105,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ? AppStrings.select_variant
                         : stockNotAvailable
                             ? AppStrings.out_of_stock
-                            : AppStrings.add_to_cart,
+                            : (productPresentInCart == true
+                                ? AppStrings.update_cart
+                                : AppStrings.add_to_cart),
                     style: FontUtils.primaryFontStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -1393,9 +1421,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (!mounted) return;
     setState(() {
       cartResponse = cart;
-      productPresentInCart = cart.cart?.items
-              ?.any((item) => item.variantId == selectedVariantId) ??
-          false;
+      _syncCartStateForVariant();
     });
   }
 

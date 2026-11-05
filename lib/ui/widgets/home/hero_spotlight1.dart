@@ -23,7 +23,9 @@ class SplitHero1 extends StatelessWidget {
         child: IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Expanded(child: ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20)),
-            child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover))),
+            // an explicit width: IntrinsicHeight above can't measure a LayoutBuilder
+            child: merchImageOrFallback(content.layoutBannerImage ?? '', fit: BoxFit.cover,
+                width: MediaQuery.of(context).size.width / 2))),
           Expanded(child: Padding(padding: const EdgeInsets.all(16), child: Column(
             mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min, children: [

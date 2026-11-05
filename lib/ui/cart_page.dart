@@ -143,8 +143,7 @@ class _CartPageState extends State<CartPage>
       });
     });
 
-    _cartStateSubscription =
-        eventBus.on<CartStateEvent>().listen(_onCartState);
+    _cartStateSubscription = eventBus.on<CartStateEvent>().listen(_onCartState);
     _loadDismissedCouponKey();
     _showCachedCart();
     initGlobal();
@@ -544,8 +543,7 @@ class _CartPageState extends State<CartPage>
                                     // Totals are the last server values until
                                     // queued cart changes are confirmed.
                                     opacity: cartSyncing ? 0.6 : 1,
-                                    duration:
-                                        const Duration(milliseconds: 150),
+                                    duration: const Duration(milliseconds: 150),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -573,27 +571,28 @@ class _CartPageState extends State<CartPage>
                                         ),
                                         _priceRow(
                                             AppStrings.subTotal,
-                                            CurrencyUtil.appendCurrency(
-                                                (_numOrZero(cartResponse?.cart
+                                            CurrencyUtil.appendCurrency((_numOrZero(
+                                                        cartResponse?.cart
                                                             ?.itemSubtotal) -
-                                                        _numOrZero(cartResponse
-                                                            ?.cart?.items
-                                                            ?.where((item) => item
-                                                                .isVirtualItem)
-                                                            .fold<num>(
-                                                                0,
-                                                                (sum, item) =>
-                                                                    sum +
-                                                                    (item.total ??
-                                                                        0))))
-                                                    .toStringAsFixed(2))),
+                                                    _numOrZero(cartResponse
+                                                        ?.cart?.items
+                                                        ?.where((item) =>
+                                                            item.isVirtualItem)
+                                                        .fold<num>(
+                                                            0,
+                                                            (sum, item) =>
+                                                                sum +
+                                                                (item.total ??
+                                                                    0))))
+                                                .toStringAsFixed(2))),
                                         _priceRow(
                                             AppStrings.shipping,
                                             _numOrZero(cartResponse?.cart
                                                         ?.shippingSubtotal) >
                                                     0
                                                 ? CurrencyUtil.appendCurrency(
-                                                    _numOrZero(cartResponse?.cart
+                                                    _numOrZero(cartResponse
+                                                            ?.cart
                                                             ?.shippingSubtotal)
                                                         .toStringAsFixed(2))
                                                 : 'FREE'),
@@ -616,7 +615,8 @@ class _CartPageState extends State<CartPage>
                                                   _numOrZero(cartResponse
                                                           ?.cart?.taxTotal)
                                                       .toStringAsFixed(2))),
-                                        if ((cartResponse?.cart?.promotions ?? [])
+                                        if ((cartResponse?.cart?.promotions ??
+                                                    [])
                                                 .isNotEmpty &&
                                             _numOrZero(cartResponse
                                                     ?.cart?.discountSubtotal) >
@@ -632,7 +632,8 @@ class _CartPageState extends State<CartPage>
                                                     item.isLoyaltyDiscount) ??
                                             false))
                                           Builder(builder: (_) {
-                                            final li = cartResponse!.cart!.items!
+                                            final li = cartResponse!
+                                                .cart!.items!
                                                 .firstWhere((item) =>
                                                     item.isLoyaltyDiscount);
                                             final amt = (li.total ?? 0).abs();
@@ -650,15 +651,16 @@ class _CartPageState extends State<CartPage>
                                             '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
                                             valueColor: AppColors.primary,
                                           ),
-                                        if (splitActive && splitWalletAmount > 0)
+                                        if (splitActive &&
+                                            splitWalletAmount > 0)
                                           _priceRow(
                                             'Wallet',
                                             '- ${CurrencyUtil.appendCurrency(splitWalletAmount.toStringAsFixed(2))}',
                                             valueColor: AppColors.primary,
                                           ),
                                         const Padding(
-                                          padding:
-                                              EdgeInsets.symmetric(vertical: 10),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 10),
                                           child: Divider(
                                               color: Color(0xFFE5E7EC),
                                               height: 1),
@@ -687,7 +689,8 @@ class _CartPageState extends State<CartPage>
                                                 textAlign: TextAlign.right,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: UiTypography.cardPrice(
-                                                        color: AppColors.primary)
+                                                        color:
+                                                            AppColors.primary)
                                                     .copyWith(fontSize: 20),
                                               ),
                                             ),
@@ -869,10 +872,12 @@ class _CartPageState extends State<CartPage>
     }
   }
 
-  Future<void> getCartApi() async {
+  /// True when the cart was read from the server just now.
+  Future<bool> getCartApi() async {
     final previousCartId = cartResponse?.cart?.id;
     await CartStore.instance.refresh(context);
-    if (!mounted) return;
+    final ok = CartStore.instance.lastReadOk;
+    if (!mounted) return ok;
     setState(() => apiLoading = false);
     final cartId = cartResponse?.cart?.id;
     if (cartId != null && cartId.isNotEmpty) {
@@ -882,6 +887,7 @@ class _CartPageState extends State<CartPage>
     }
     // Load wallet info after cart is ready
     await _loadWalletInfo();
+    return ok;
   }
 
   /// Every cart change, optimistic or confirmed, from any screen.
@@ -953,7 +959,7 @@ class _CartPageState extends State<CartPage>
         cartLoading = false;
       });
       // Refresh cart to ensure UI matches backend state after failure
-      getCartApi();
+      await getCartApi();
       print(e);
     }
   }
@@ -1138,8 +1144,7 @@ class _CartPageState extends State<CartPage>
       final session = response.paymentCollection?.paymentSessions
           ?.where((session) => session.providerId == paymentProviderId)
           .firstOrNull;
-      paytmData =
-          paymentProviderId == 'pp_paytm_paytm' ? session?.data : null;
+      paytmData = paymentProviderId == 'pp_paytm_paytm' ? session?.data : null;
     } on ApiException catch (error) {
       AppUtils.showToast(error.message);
     } catch (e) {
@@ -1254,7 +1259,22 @@ class _CartPageState extends State<CartPage>
     // Refresh cart first — in-memory state may be stale; the shipping method
     // may already have been attached server-side since the last fetch.
     setState(() => cartLoading = true);
-    await getCartApi();
+    final refreshed = await getCartApi();
+
+    if (!refreshed) {
+      if (mounted) setState(() => cartLoading = false);
+      AppUtils.showToast(
+          'Unable to verify the latest cart availability. Please try again.');
+      return;
+    }
+
+    // The cart may have become stale while the app was backgrounded. Re-check
+    // the freshly fetched inventory result before opening an external gateway.
+    if (cartResponse?.cart?.error == true) {
+      if (mounted) setState(() => cartLoading = false);
+      AppUtils.showToast(AppStrings.remove_unavailable_stock_items);
+      return;
+    }
 
     final hasShipping =
         (cartResponse?.cart?.shippingMethods?.isNotEmpty ?? false);
@@ -1293,23 +1313,35 @@ class _CartPageState extends State<CartPage>
         makeRazorPayCall(orderId!);
         break;
       case 'pp_cashfree_cashfree':
-        final cashfreeSession = cartResponse
-            ?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
-            .firstOrNull;
-        final cashfreeOrderId = cashfreeSession?.data?.orderId ??
-            cashfreeSession?.data?.id ??
-            orderId;
-        final paymentSessionId =
-            cashfreeSession?.data?.paymentSessionId ?? cashfreePaymentSessionId;
-        final environment =
-            cashfreeSession?.data?.environment ?? cashfreeEnvironment;
-        if (cashfreeOrderId == null || paymentSessionId == null) {
+        if (mounted) setState(() => cartLoading = true);
+        try {
+          // Create/reconcile the Cashfree session at the last possible moment
+          // and use only this response. Never open the SDK with a token cached
+          // by an earlier cart fetch because pricing subscribers can replace
+          // pending Medusa payment sessions.
+          final response = await ApiService()
+              .updatePaymentMethod(context, paymentProviderId);
+          final cashfreeSession = response.paymentCollection?.paymentSessions
+              ?.where((session) => session.providerId == 'pp_cashfree_cashfree')
+              .firstOrNull;
+          final data = cashfreeSession?.data;
+          final cashfreeOrderId = data?.orderId ?? data?.id;
+          final paymentSessionId = data?.paymentSessionId;
+          if (cashfreeOrderId == null || paymentSessionId == null) {
+            throw StateError('Cashfree payment session is unavailable.');
+          }
+
+          cashfreePaymentSessionId = paymentSessionId;
+          cashfreeEnvironment = data?.environment;
+          orderId = cashfreeOrderId;
+          _openCashfree(cashfreeOrderId, paymentSessionId, data?.environment);
+        } catch (e) {
+          debugPrint('Cashfree checkout initialization failed: $e');
           AppUtils.showToast(
-              'Cashfree payment session is unavailable. Please select Cashfree again.');
-          return;
+              'Unable to start Cashfree checkout. Please try again.');
+        } finally {
+          if (mounted) setState(() => cartLoading = false);
         }
-        _openCashfree(cashfreeOrderId, paymentSessionId, environment);
         break;
       case 'pp_stripe_stripe':
         makeStripeCall(clientSecret!);
@@ -1324,45 +1356,66 @@ class _CartPageState extends State<CartPage>
         _makeWalletPayment();
         break;
       case 'pp_paytm_paytm':
-        makePaytmCall();
+        await makePaytmCall();
         break;
     }
   }
 
-  void makePaytmCall() {
-    final data = paytmData ??
-        cartResponse?.cart?.paymentCollection?.paymentSessions
-            ?.where((session) => session.providerId == 'pp_paytm_paytm')
-            .firstOrNull
-            ?.data;
-    if (data == null ||
-        data.host == null ||
-        data.mid == null ||
-        (data.orderId ?? data.id) == null ||
-        (data.txnToken ?? data.token) == null ||
-        data.amount == null) {
-      AppUtils.showToast(
-          'Paytm payment session is incomplete. Please try again.');
-      return;
-    }
+  Future<void> makePaytmCall() async {
+    if (cartResponse == null) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PaytmPaymentPage(
-          data: data,
-          onSuccess: () {
-            Navigator.pop(context);
-            completeCart();
-          },
-          onFailure: (message, failure) {
-            Navigator.pop(context);
-            _showCompletionFailure(
-                failure ?? CompletionFailure.fromBody({'message': message}));
-          },
+    setState(() => cartLoading = true);
+
+    try {
+      // Paytm transaction tokens are short-lived. Always create a fresh
+      // session when checkout starts instead of reusing the one created when
+      // Paytm was selected earlier.
+      final response =
+          await ApiService().updatePaymentMethod(context, 'pp_paytm_paytm');
+      final data = response.paymentCollection?.paymentSessions
+          ?.where((session) => session.providerId == 'pp_paytm_paytm')
+          .firstOrNull
+          ?.data;
+
+      if (data == null ||
+          data.host == null ||
+          data.mid == null ||
+          (data.orderId ?? data.id) == null ||
+          (data.txnToken ?? data.token) == null ||
+          data.amount == null) {
+        AppUtils.showToast(
+            'Paytm payment session is incomplete. Please try again.');
+        return;
+      }
+
+      paytmData = data;
+      if (!mounted) return;
+      setState(() => cartLoading = false);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaytmPaymentPage(
+            data: data,
+            onSuccess: () {
+              Navigator.pop(context);
+              completeCart();
+            },
+            onFailure: (message, failure) {
+              Navigator.pop(context);
+              _showCompletionFailure(
+                  failure ?? CompletionFailure.fromBody({'message': message}));
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      AppUtils.showToast('Unable to start Paytm payment. Please try again.');
+    } finally {
+      if (mounted && cartLoading) {
+        setState(() => cartLoading = false);
+      }
+    }
   }
 
   Future<void> _makeIciciPayment() async {
@@ -1585,7 +1638,8 @@ class _CartPageState extends State<CartPage>
 
   void _showOrderPlaced(String orderId) {
     CartStore.instance.clear();
-    PageRouteUtils.pushAndRemoveUntil(context, OrderPlacedPage(orderId: orderId));
+    PageRouteUtils.pushAndRemoveUntil(
+        context, OrderPlacedPage(orderId: orderId));
   }
 
   /// Stock that ran out, or a charged payment that was refunded, gets the
@@ -2135,8 +2189,7 @@ class _CartPageState extends State<CartPage>
 
   // The backend removed a coupon that stopped qualifying; say why.
   Widget _buildCouponRemovedNotice() {
-    final notice =
-        CouponRemoved.fromCartMetadata(cartResponse?.cart?.metadata);
+    final notice = CouponRemoved.fromCartMetadata(cartResponse?.cart?.metadata);
     if (notice == null || notice.key == _dismissedCouponKey) {
       return const SizedBox.shrink();
     }

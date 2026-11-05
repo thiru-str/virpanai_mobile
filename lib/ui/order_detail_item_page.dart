@@ -41,7 +41,9 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   double get _walletAmount {
     final meta = order?.metadata;
     if (meta is Map && meta['wallet_split'] is Map) {
-      return double.tryParse(meta['wallet_split']['wallet_amount']?.toString() ?? '0') ?? 0;
+      return double.tryParse(
+              meta['wallet_split']['wallet_amount']?.toString() ?? '0') ??
+          0;
     }
     return 0;
   }
@@ -66,6 +68,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     }
     return 0;
   }
+
   Map<String, String> paymentTypeMap = {
     "pp_system_default": "COD",
     "pp_stripe_stripe": "Stripe",
@@ -73,6 +76,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
     "pp_neft_neft": "NEFT",
     "pp_payu_payu": "PayU",
     "pp_paytm_paytm": "Paytm",
+    "pp_cashfree_cashfree": "Cashfree",
     "pp_wallet_wallet": "Wallet",
   };
   bool apiLoading = true;
@@ -256,12 +260,18 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                               visible: (order?.prices?.itemSubtotal ?? 0) > 0,
                               child: CartCalculation(
                                 keyText: '${AppStrings.subTotal}:',
-                                valueText: CurrencyUtil.appendCurrency(
-                                    ((order?.prices?.itemSubtotal ?? 0) -
+                                valueText: CurrencyUtil.appendCurrency(((order
+                                                ?.prices?.itemSubtotal ??
+                                            0) -
                                         ((order?.items ?? [])
                                             .where((item) => item.isPlatformFee)
-                                            .fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))))
-                                        .toString()),
+                                            .fold<num>(
+                                                0,
+                                                (sum, item) =>
+                                                    sum +
+                                                    ((item.unitPrice ?? 0) *
+                                                        (item.quantity ?? 0)))))
+                                    .toString()),
                               ),
                             ),
                             if ((order?.prices?.discountTotal ?? 0) > 0)
@@ -269,25 +279,42 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                                 keyText: order?.couponCode != null
                                     ? 'Coupon (${order!.couponCode}):'
                                     : 'Coupon Discount:',
-                                valueText: '- ${CurrencyUtil.appendCurrency((order?.prices?.discountTotal ?? 0).toStringAsFixed(2))}',
-                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
+                                valueText:
+                                    '- ${CurrencyUtil.appendCurrency((order?.prices?.discountTotal ?? 0).toStringAsFixed(2))}',
+                                valueStyle: TextStyle(
+                                    fontSize: 16, color: Colors.green.shade700),
                               ),
                             Visibility(
                               visible: (order?.prices?.shippingTotal ?? 0) > 0,
                               child: CartCalculation(
                                 keyText: '${AppStrings.shipping}:',
                                 valueText: CurrencyUtil.appendCurrency(
-                                    (order?.prices?.shippingTotal ?? 0).toString()),
+                                    (order?.prices?.shippingTotal ?? 0)
+                                        .toString()),
                               ),
                             ),
-                            if ((order?.items ?? []).any((item) => item.isPlatformFee) &&
-                                (order!.items!.where((item) => item.isPlatformFee).fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0)))) > 0)
+                            if ((order?.items ?? [])
+                                    .any((item) => item.isPlatformFee) &&
+                                (order!.items!
+                                        .where((item) => item.isPlatformFee)
+                                        .fold<num>(
+                                            0,
+                                            (sum, item) =>
+                                                sum +
+                                                ((item.unitPrice ?? 0) *
+                                                    (item.quantity ?? 0)))) >
+                                    0)
                               CartCalculation(
                                 keyText: '${AppStrings.platform_fee}:',
                                 valueText: CurrencyUtil.appendCurrency(
                                     ((order?.items ?? [])
-                                        .where((item) => item.isPlatformFee)
-                                        .fold<num>(0, (sum, item) => sum + ((item.unitPrice ?? 0) * (item.quantity ?? 0))))
+                                            .where((item) => item.isPlatformFee)
+                                            .fold<num>(
+                                                0,
+                                                (sum, item) =>
+                                                    sum +
+                                                    ((item.unitPrice ?? 0) *
+                                                        (item.quantity ?? 0))))
                                         .toString()),
                               ),
                             Visibility(
@@ -300,32 +327,48 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                             ),
                             if (_loyaltyDiscount > 0)
                               CartCalculation(
-                                keyText: 'Loyalty ($_loyaltyPointsApplied pts):',
-                                valueText: '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
-                                keyStyle: TextStyle(fontSize: 16, color: AppColors.primary),
-                                valueStyle: TextStyle(fontSize: 16, color: AppColors.primary),
+                                keyText:
+                                    'Loyalty ($_loyaltyPointsApplied pts):',
+                                valueText:
+                                    '- ${CurrencyUtil.appendCurrency(_loyaltyDiscount.toStringAsFixed(2))}',
+                                keyStyle: TextStyle(
+                                    fontSize: 16, color: AppColors.primary),
+                                valueStyle: TextStyle(
+                                    fontSize: 16, color: AppColors.primary),
                               ),
                             if (_walletAmount > 0)
                               CartCalculation(
                                 keyText: 'Wallet:',
-                                valueText: '- ${CurrencyUtil.appendCurrency(_walletAmount.toStringAsFixed(2))}',
-                                keyStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
-                                valueStyle: TextStyle(fontSize: 16, color: Colors.green.shade700),
+                                valueText:
+                                    '- ${CurrencyUtil.appendCurrency(_walletAmount.toStringAsFixed(2))}',
+                                keyStyle: TextStyle(
+                                    fontSize: 16, color: Colors.green.shade700),
+                                valueStyle: TextStyle(
+                                    fontSize: 16, color: Colors.green.shade700),
                               ),
                             Visibility(
                               visible: (order?.prices?.total ?? 0) > 0,
                               child: CartCalculation(
                                   keyText: '${AppStrings.total}:',
                                   valueText: CurrencyUtil.appendCurrency(
-                                      (((order?.prices?.total ?? 0) - _walletAmount - _loyaltyDiscount).clamp(0, double.infinity)).toStringAsFixed(2))),
+                                      (((order?.prices?.total ?? 0) -
+                                                  _walletAmount -
+                                                  _loyaltyDiscount)
+                                              .clamp(0, double.infinity))
+                                          .toStringAsFixed(2))),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 20),
-                      if ((order?.prices?.itemSubtotal ?? order?.prices?.total ?? 0) > 0)
+                      if ((order?.prices?.itemSubtotal ??
+                              order?.prices?.total ??
+                              0) >
+                          0)
                         OrderLoyaltyBadge(
-                          orderTotal: (order!.prices!.itemSubtotal ?? order!.prices!.total!) - _loyaltyDiscount,
+                          orderTotal: (order!.prices!.itemSubtotal ??
+                                  order!.prices!.total!) -
+                              _loyaltyDiscount,
                           orderStatus: order?.status ?? '',
                           paymentStatus: order?.paymentStatus ?? '',
                           orderId: order?.id,
@@ -435,7 +478,8 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
   }
 
   Widget _buildOrdersList() {
-    final List<Item> allItems = (order?.items ?? []).where((item) => !item.isPlatformFee).toList();
+    final List<Item> allItems =
+        (order?.items ?? []).where((item) => !item.isPlatformFee).toList();
 
     // Split items by status
     final List<Item> returnedItems = allItems
@@ -818,8 +862,7 @@ class _OrderDetailItemPageState extends State<OrderDetailItemPage> {
                   const SizedBox(height: 6),
                   Text(
                     '${order?.shippingAddress?.phone ?? ''}',
-                    style:
-                        UiTypography.cardMeta(color: AppColors.textColor50),
+                    style: UiTypography.cardMeta(color: AppColors.textColor50),
                   ),
                 ],
               ),

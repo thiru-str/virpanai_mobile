@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -47,11 +47,16 @@ class CategoryCard extends StatelessWidget {
                   topRight: Radius.circular(16.0),
                 ),
                 child: imagePath.isNotEmpty
-                    ? CachedNetworkImage(
+                    ? StoreImage(
                         imageUrl: imagePath,
                         height: 140, // Adjusted image height
                         width: double.infinity, // Take full width
                         fit: BoxFit.cover,
+                        // a soft tile, not a blank card, while the picture loads
+                        placeholder: (context, url) => Container(
+                          height: 140,
+                          color: NoImageMark.surface,
+                        ),
                         errorWidget: (context, url, error) =>
                             const ImageFallbackWidget(
                           w: double.infinity,
@@ -61,10 +66,10 @@ class CategoryCard extends StatelessWidget {
                     : Container(
                         height: 140,
                         width: double.infinity,
-                        color: AppColors.secondary,
+                        color: NoImageMark.surface,
                         child: const ImageFallbackWidget(
-                          w: 110,
-                          h: 110,
+                          w: 140,
+                          h: 140,
                         ), // Placeholder background
                       ),
               ),

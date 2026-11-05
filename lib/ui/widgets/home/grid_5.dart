@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -65,7 +65,7 @@ class Grid5 extends StatelessWidget {
                   width: 72,
                   height: 72,
                   child: headerImage.isNotEmpty
-                      ? CachedNetworkImage(
+                      ? StoreImage(
                           imageUrl: headerImage,
                           fit: BoxFit.contain,
                           errorWidget: (_, __, ___) =>
@@ -141,7 +141,7 @@ class _Grid5Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: SizedBox.expand(
           child: imageUrl.isNotEmpty
-              ? CachedNetworkImage(
+              ? StoreImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => const ImageFallbackWidget(

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
 
@@ -110,7 +110,7 @@ class _HeroTile extends StatelessWidget {
                         w: double.infinity,
                         fit: BoxFit.contain,
                       )
-                    : CachedNetworkImage(
+                    : StoreImage(
                         imageUrl: image,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => const ImageFallbackWidget(

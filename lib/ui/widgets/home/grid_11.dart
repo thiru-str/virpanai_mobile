@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -88,7 +88,7 @@ class _Grid11Item extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: safeUrl.isNotEmpty
-                  ? CachedNetworkImage(
+                  ? StoreImage(
                       imageUrl: safeUrl,
                       width: double.infinity,
                       height: double.infinity,

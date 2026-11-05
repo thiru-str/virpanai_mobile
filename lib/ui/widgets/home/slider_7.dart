@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -95,7 +95,7 @@ class _Slider7Card extends StatelessWidget {
           width: MediaQuery.sizeOf(context).width * 0.72,
           height: 230,
           child: imageUrl.isNotEmpty
-              ? CachedNetworkImage(
+              ? StoreImage(
                   imageUrl: Uri.encodeFull(imageUrl),
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => const ImageFallbackWidget(

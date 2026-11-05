@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -147,7 +147,7 @@ class _Slider6Card extends StatelessWidget {
                     ),
                     child: ClipOval(
                       child: productImage.isNotEmpty
-                          ? CachedNetworkImage(
+                          ? StoreImage(
                               imageUrl: Uri.encodeFull(productImage),
                               fit: BoxFit.cover,
                               errorWidget: (_, __, ___) =>
@@ -317,7 +317,7 @@ class _Slider6MediaState extends State<_Slider6Media> {
     }
 
     if (widget.mediaUrl.isNotEmpty) {
-      return CachedNetworkImage(
+      return StoreImage(
         imageUrl: Uri.encodeFull(widget.mediaUrl),
         fit: BoxFit.cover,
         errorWidget: (_, __, ___) => const ImageFallbackWidget(

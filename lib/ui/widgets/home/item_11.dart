@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'cms_text_color.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/model/home_page_response.dart';
@@ -168,7 +168,7 @@ class _Item11CardState extends State<_Item11Card> {
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: SizedBox(
                       height: 150,
-                      child: CachedNetworkImage(
+                      child: StoreImage(
                         imageUrl: data.image ?? '',
                         fit: BoxFit.cover,
                         width: double.infinity,

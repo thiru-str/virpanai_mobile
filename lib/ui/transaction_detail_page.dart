@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/api/api_service.dart';
 import 'package:waioz/model/neft_transaction_response.dart';
@@ -279,7 +279,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                         child: (neftPayment?.image == null ||
                                 (neftPayment?.image?.isEmpty ?? false))
                             ? const ImageFallbackWidget(h: 120, w: 120)
-                            : CachedNetworkImage(
+                            : StoreImage(
                                 imageUrl: neftPayment!.image!,
                                 fit: BoxFit.contain,
                                 errorWidget: (context, url, error) =>
@@ -293,7 +293,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               child: (neftPayment?.image == null ||
                       (neftPayment?.image?.isEmpty ?? false))
                   ? const ImageFallbackWidget(h: 60, w: 60)
-                  : CachedNetworkImage(
+                  : StoreImage(
                       imageUrl: neftPayment!.image!,
                       width: 60,
                       height: 60,

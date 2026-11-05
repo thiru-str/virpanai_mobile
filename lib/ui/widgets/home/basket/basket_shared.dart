@@ -1,11 +1,13 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:waioz/utility/image_fallback_widget.dart';
+import 'package:waioz/utility/store_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/model/view_cart_model.dart';
 import 'package:waioz/ui/product_detail_page.dart';
+import 'package:waioz/ui/widgets/home/basket/basket_options_sheet.dart';
 import 'package:waioz/utility/cart_store.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
@@ -22,8 +24,8 @@ import 'package:waioz/utility/redirect_utils.dart';
 ///  - PRICE IS THE HEADLINE OF A TILE: selling price bold, MRP struck, saving
 ///    as a "% OFF" corner badge in its own colour.
 ///  - ADD IS ONE TAP AND BECOMES A STEPPER, through the one live cart
-///    (CartStore). A product with several variants opens its page instead of
-///    adding one blindly.
+///    (CartStore). A product with several variants opens the options sheet
+///    (basket_options_sheet.dart) instead of adding one blindly.
 ///  - THREE COLOURS WITH JOBS: Primary = act (ADD, links), sun = offers,
 ///    blue = savings. Grounds stay light so the packshots carry the colour.
 
@@ -57,13 +59,14 @@ Color? basketParseColor(String? value) {
   if (hex8 != null) return Color(int.parse(hex8.group(1)!, radix: 16));
   final rgb = RegExp(r'rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)').firstMatch(v);
   if (rgb != null) {
-    return Color.fromARGB(255, int.parse(rgb.group(1)!), int.parse(rgb.group(2)!),
-        int.parse(rgb.group(3)!));
+    return Color.fromARGB(255, int.parse(rgb.group(1)!),
+        int.parse(rgb.group(2)!), int.parse(rgb.group(3)!));
   }
   return null;
 }
 
-Color basketOn(Color bg) => bg.computeLuminance() > 0.45 ? kBasketInk : Colors.white;
+Color basketOn(Color bg) =>
+    bg.computeLuminance() > 0.45 ? kBasketInk : Colors.white;
 
 /// Style-tab colours of one section, mirroring basketColors() on the web.
 /// Primary = action colour · Text = all type (auto-contrasts) · Card = tile
@@ -116,14 +119,18 @@ String basketVariantId(LayoutDatum d) =>
 int basketVariantCount(LayoutDatum d) {
   final listed = d.raw['product_variants'];
   final n = int.tryParse(d.rawString('no_of_variants')) ?? 0;
-  return [n, listed is List ? listed.length : 0].reduce((a, b) => a > b ? a : b);
+  return [n, listed is List ? listed.length : 0]
+      .reduce((a, b) => a > b ? a : b);
 }
 
 /// The products a custom item carries (BasketAisleTabs1's tab products).
 List<LayoutDatum> basketMultiProducts(LayoutDatum d) {
   final list = d.raw['multi_product_data'];
   if (list is! List) return const [];
-  return list.whereType<Map>().map((m) => LayoutDatum.fromJson(Map<String, dynamic>.from(m))).toList();
+  return list
+      .whereType<Map>()
+      .map((m) => LayoutDatum.fromJson(Map<String, dynamic>.from(m)))
+      .toList();
 }
 
 /// First non-empty of the item's custom string fields.
@@ -140,19 +147,24 @@ void basketOpen(BuildContext context, Content content, LayoutDatum item) {
   final option = content.layoutOption ?? 'Custom';
   if (option == 'Product') {
     final id = item.id ?? '';
-    if (id.isNotEmpty) PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: id));
+    if (id.isNotEmpty)
+      PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: id));
     return;
   }
-  RedirectUtils.handleContentRedirect(context: context, layoutOption: option, layoutData: item);
+  RedirectUtils.handleContentRedirect(
+      context: context, layoutOption: option, layoutData: item);
 }
 
 /// The section's own "See all" link (layout redirect).
 VoidCallback? basketSeeAll(BuildContext context, Content content) {
   final r = content.redirectData;
-  if ((content.layoutRedirectTitle ?? '').isEmpty || r == null || (r.redirectType ?? '').isEmpty) {
+  if ((content.layoutRedirectTitle ?? '').isEmpty ||
+      r == null ||
+      (r.redirectType ?? '').isEmpty) {
     return null;
   }
-  return () => RedirectUtils.handleContentRedirectViewAll(context: context, redirectData: r);
+  return () => RedirectUtils.handleContentRedirectViewAll(
+      context: context, redirectData: r);
 }
 
 // ── Images ──────────────────────────────────────────────────────────────────
@@ -168,17 +180,24 @@ class BasketImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final u = (url ?? '').trim();
-    if (u.isEmpty) return const ColoredBox(color: Color(0xFFF1F3EF));
+    if (u.isEmpty) {
+      return NoImageMark.branded
+          ? const ImageFallbackWidget()
+          : const ColoredBox(color: Color(0xFFF1F3EF));
+    }
     final override = debugProvider;
     if (override != null) return Image(image: override(u), fit: fit);
-    return CachedNetworkImage(
+    return StoreImage(
       imageUrl: u,
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 180),
       placeholder: (_, __) => const ColoredBox(color: Color(0xFFF4F5F2)),
-      errorWidget: (_, __, ___) => const Center(
-        child: Icon(Icons.image_outlined, size: 20, color: Color(0x401B1F1D)),
-      ),
+      errorWidget: (_, __, ___) => NoImageMark.branded
+          ? const ImageFallbackWidget()
+          : const Center(
+              child: Icon(Icons.image_outlined,
+                  size: 20, color: Color(0x401B1F1D)),
+            ),
     );
   }
 }
@@ -198,8 +217,8 @@ class BasketSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) =>
-      Container(width: double.infinity, color: bg, padding: padding, child: child);
+  Widget build(BuildContext context) => Container(
+      width: double.infinity, color: bg, padding: padding, child: child);
 }
 
 /// Title (+ optional kicker) left, "See all ›" right.
@@ -207,7 +226,8 @@ class BasketSectionHead extends StatelessWidget {
   final Content content;
   final BasketColors colors;
   final VoidCallback? onSeeAll;
-  const BasketSectionHead({super.key, required this.content, required this.colors, this.onSeeAll});
+  const BasketSectionHead(
+      {super.key, required this.content, required this.colors, this.onSeeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +239,8 @@ class BasketSectionHead extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             if (kicker.isNotEmpty)
               Text(kicker.toUpperCase(),
                   maxLines: 1,
@@ -249,7 +270,9 @@ class BasketSectionHead extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 2),
               child: Text('$cta ›',
                   style: FontUtils.primaryFontStyle(
-                      fontSize: 13, fontWeight: FontWeight.w700, color: colors.accent)),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: colors.accent)),
             ),
           ),
         ],
@@ -266,15 +289,20 @@ class BasketTile extends StatefulWidget {
   final LayoutDatum item;
   final BasketColors colors;
   final void Function(int delta, String variantId)? onCartQtyChanged;
-  const BasketTile({super.key, required this.item, required this.colors, this.onCartQtyChanged});
+  const BasketTile(
+      {super.key,
+      required this.item,
+      required this.colors,
+      this.onCartQtyChanged});
 
   /// Tile height for a given width: square image + name + price row, plus a
   /// line for the pack size only when a product on the shelf has one — so
   /// rails and grids size rows without measuring and leave no empty band.
-  static double heightFor(double width, {bool pack = false}) => width + 82 + (pack ? 16 : 0);
+  static double heightFor(double width, {bool pack = false}) =>
+      width + 82 + (pack ? 16 : 0);
 
-  static bool anyPack(Iterable<LayoutDatum> items) =>
-      items.any((d) => basketField(d, ['product_sub_title', 'feature_text']).isNotEmpty);
+  static bool anyPack(Iterable<LayoutDatum> items) => items.any(
+      (d) => basketField(d, ['product_sub_title', 'feature_text']).isNotEmpty);
 
   @override
   State<BasketTile> createState() => _BasketTileState();
@@ -300,7 +328,8 @@ class _BasketTileState extends State<BasketTile> {
 
   void _open() {
     final id = widget.item.id ?? '';
-    if (id.isNotEmpty) PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: id));
+    if (id.isNotEmpty)
+      PageRouteUtils.pushWithSlide(context, ProductDetailPage(productId: id));
   }
 
   @override
@@ -313,7 +342,9 @@ class _BasketTileState extends State<BasketTile> {
     final mrp = basketAmount(d.prices?.originalPrice);
     final pack = basketField(d, ['product_sub_title', 'feature_text']);
     final variantId = basketVariantId(d);
-    final count = CartStore.instance.quantityForVariant(variantId) ?? d.cartDetails?.quantity ?? 0;
+    final count = CartStore.instance.quantityForVariant(variantId) ??
+        d.cartDetails?.quantity ??
+        0;
     final multi = basketVariantCount(d) > 1;
 
     return Container(
@@ -333,7 +364,9 @@ class _BasketTileState extends State<BasketTile> {
               child: Stack(fit: StackFit.expand, children: [
                 ColoredBox(
                   color: Colors.white,
-                  child: Padding(padding: const EdgeInsets.all(6), child: BasketImage(url: d.image)),
+                  child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: BasketImage(url: d.image)),
                 ),
                 if (off > 0)
                   Positioned(
@@ -343,12 +376,15 @@ class _BasketTileState extends State<BasketTile> {
                       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
                       decoration: const BoxDecoration(
                         color: kBasketDeal,
-                        borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
+                        borderRadius:
+                            BorderRadius.only(bottomRight: Radius.circular(10)),
                       ),
                       child: Text('$off%\nOFF',
                           textAlign: TextAlign.center,
                           style: FontUtils.primaryFontStyle(
-                                  fontSize: 9.5, fontWeight: FontWeight.w800, color: Colors.white)
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white)
                               .copyWith(height: 1.05)),
                     ),
                   ),
@@ -375,30 +411,44 @@ class _BasketTileState extends State<BasketTile> {
             child: Text(pack,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: FontUtils.secondaryFontStyle(fontSize: 11.5, color: ink.withValues(alpha: 0.55))),
+                style: FontUtils.secondaryFontStyle(
+                    fontSize: 11.5, color: ink.withValues(alpha: 0.55))),
           ),
         const Spacer(),
         Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-              if (selling.isNotEmpty)
-                Text(selling,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: FontUtils.primaryFontStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: ink)),
-              if (off > 0 && mrp.isNotEmpty)
-                Text(mrp,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: FontUtils.secondaryFontStyle(
-                        fontSize: 11,
-                        color: ink.withValues(alpha: 0.45),
-                        decoration: TextDecoration.lineThrough)),
-            ]),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (selling.isNotEmpty)
+                    Text(selling,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.primaryFontStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: ink)),
+                  if (off > 0 && mrp.isNotEmpty)
+                    Text(mrp,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: FontUtils.secondaryFontStyle(
+                            fontSize: 11,
+                            color: ink.withValues(alpha: 0.45),
+                            decoration: TextDecoration.lineThrough)),
+                ]),
           ),
           const SizedBox(width: 6),
           if (multi)
-            _BasketPill(label: 'OPTIONS', colors: c, onTap: _open)
+            _BasketPill(
+              label: 'OPTIONS',
+              colors: c,
+              onTap: widget.onCartQtyChanged == null
+                  ? _open
+                  : () => showBasketOptionsSheet(
+                      context, d, c, widget.onCartQtyChanged!),
+            )
           else if (variantId.isNotEmpty && widget.onCartQtyChanged != null)
             BasketStepper(
               count: count,
@@ -416,7 +466,8 @@ class _BasketPill extends StatelessWidget {
   final String label;
   final BasketColors colors;
   final VoidCallback onTap;
-  const _BasketPill({required this.label, required this.colors, required this.onTap});
+  const _BasketPill(
+      {required this.label, required this.colors, required this.onTap});
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -432,7 +483,10 @@ class _BasketPill extends StatelessWidget {
           ),
           child: Text(label,
               style: FontUtils.primaryFontStyle(
-                  fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 0.3, color: colors.accent)),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                  color: colors.accent)),
         ),
       );
 }
@@ -444,23 +498,32 @@ class BasketStepper extends StatelessWidget {
   final VoidCallback onInc;
   final VoidCallback onDec;
   const BasketStepper(
-      {super.key, required this.count, required this.colors, required this.onInc, required this.onDec});
+      {super.key,
+      required this.count,
+      required this.colors,
+      required this.onInc,
+      required this.onDec});
 
   @override
   Widget build(BuildContext context) {
-    if (count <= 0) return _BasketPill(label: 'ADD', colors: colors, onTap: onInc);
+    if (count <= 0)
+      return _BasketPill(label: 'ADD', colors: colors, onTap: onInc);
     final on = colors.onAccent;
     Widget btn(IconData icon, VoidCallback tap) => GestureDetector(
           onTap: tap,
           behavior: HitTestBehavior.opaque,
-          child: SizedBox(width: 26, height: 30, child: Icon(icon, size: 15, color: on)),
+          child: SizedBox(
+              width: 26, height: 30, child: Icon(icon, size: 15, color: on)),
         );
     return Container(
       height: 30,
-      decoration: BoxDecoration(color: colors.accent, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+          color: colors.accent, borderRadius: BorderRadius.circular(8)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         btn(Icons.remove_rounded, onDec),
-        Text('$count', style: FontUtils.primaryFontStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: on)),
+        Text('$count',
+            style: FontUtils.primaryFontStyle(
+                fontSize: 12.5, fontWeight: FontWeight.w800, color: on)),
         btn(Icons.add_rounded, onInc),
       ]),
     );
@@ -472,7 +535,11 @@ class BasketTileRail extends StatelessWidget {
   final List<LayoutDatum> items;
   final BasketColors colors;
   final void Function(int delta, String variantId)? onCartQtyChanged;
-  const BasketTileRail({super.key, required this.items, required this.colors, this.onCartQtyChanged});
+  const BasketTileRail(
+      {super.key,
+      required this.items,
+      required this.colors,
+      this.onCartQtyChanged});
 
   static const double tileWidth = 148;
 
@@ -480,7 +547,8 @@ class BasketTileRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.3);
     return SizedBox(
-      height: BasketTile.heightFor(tileWidth, pack: BasketTile.anyPack(items)) + 18 * (scale - 1) * 3,
+      height: BasketTile.heightFor(tileWidth, pack: BasketTile.anyPack(items)) +
+          18 * (scale - 1) * 3,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -488,7 +556,10 @@ class BasketTileRail extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, i) => SizedBox(
           width: tileWidth,
-          child: BasketTile(item: items[i], colors: colors, onCartQtyChanged: onCartQtyChanged),
+          child: BasketTile(
+              item: items[i],
+              colors: colors,
+              onCartQtyChanged: onCartQtyChanged),
         ),
       ),
     );
