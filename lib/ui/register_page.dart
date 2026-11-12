@@ -39,6 +39,9 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  static const MethodChannel _androidContactPickerChannel =
+      MethodChannel('com.annachi_maligai/contact_picker');
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController firstNameController = TextEditingController();
@@ -396,7 +399,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _pickFromContacts() async {
-    // Pre-prompt soft sheet — explain why we need contacts before the system dialog.
+    final isAndroid = Platform.isAndroid;
     final proceed = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.white,
@@ -445,7 +448,9 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Pick a contact whose phone number is\nregistered as a referrer.',
+                isAndroid
+                    ? 'Select one contact from your phone app.\nWe only use the selected number.'
+                    : 'Pick a contact whose phone number is\nregistered as a referrer.',
                 textAlign: TextAlign.center,
                 style: FontUtils.secondaryFontStyle(
                   fontSize: 14,
@@ -468,7 +473,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   onPressed: () => Navigator.pop(context, true),
                   child: Text(
-                    'Allow access',
+                    isAndroid ? 'Choose contact' : 'Allow access',
                     style: FontUtils.primaryFontStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -510,6 +515,22 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
     if (proceed != true || !mounted) return;
+
+    if (isAndroid) {
+      try {
+        final phone = await _androidContactPickerChannel
+            .invokeMethod<String>('pickPhoneNumber');
+        if (phone != null && phone.trim().isNotEmpty && mounted) {
+          referralCodeController.text = phone.trim();
+        }
+      } on PlatformException {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Unable to open contacts. Type the referral code manually.'),
+        ));
+      }
+      return;
+    }
 
     final granted = await FlutterContacts.requestPermission(readonly: true);
     if (!granted) {

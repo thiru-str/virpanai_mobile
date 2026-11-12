@@ -15,6 +15,18 @@ if (localPropertiesFile.exists()) {
 }
 
 
+def signingProfile = project.findProperty('signingProfile') ?: localProperties.getProperty('signingProfile')
+def signingDir = project.findProperty('signingDir') ?: localProperties.getProperty('signingDir')
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = signingProfile && signingDir
+        ? file("${signingDir}/${signingProfile}.properties")
+        : rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
 def flutterVersionCode = project.hasProperty('flutter.versionCode') ? project['flutter.versionCode'].toInteger() : 1
 def flutterVersionName = project.hasProperty('flutter.versionName') ? project['flutter.versionName'] : "1.0.0"
 def flutterCompileSdkVersion = project.hasProperty('flutter.compileSdkVersion') ? project['flutter.compileSdkVersion'] : 35
@@ -48,18 +60,34 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 24
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion flutterTargetSdkVersion.toInteger()
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         // Required for FCM
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            if (!keystoreProperties.isEmpty()) {
+                def configuredStoreFile = keystoreProperties['storeFile']
+                def resolvedStoreFile = configuredStoreFile ? new File(configuredStoreFile) : null
+                if (resolvedStoreFile != null && !resolvedStoreFile.isAbsolute()) {
+                    resolvedStoreFile = signingDir
+                            ? new File(signingDir, configuredStoreFile)
+                            : file(configuredStoreFile)
+                }
+                storeFile resolvedStoreFile
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }

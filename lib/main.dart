@@ -126,7 +126,7 @@ Future<void> _runAppWithOptionalNewRelic(HomeScreen homeScreen) async {
     networkRequestEnabled: true,
     crashReportingEnabled: true,
     interactionTracingEnabled: true,
-    httpResponseBodyCaptureEnabled: true,
+    httpResponseBodyCaptureEnabled: false,
     loggingEnabled: kDebugMode,
     webViewInstrumentation: true,
     // Off in every mode: AppLogger prints API responses line by line, and each

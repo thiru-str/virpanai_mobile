@@ -138,16 +138,11 @@ class AppErrorReporter {
       );
     }
 
-    final fullName = [firstName, lastName]
-        .whereType<String>()
-        .map((value) => value.trim())
-        .where((value) => value.isNotEmpty)
-        .join(' ');
-
-    await _setAttributeIfPresent('user_email', email);
-    await _setAttributeIfPresent('user_phone', phone);
-    await _setAttributeIfPresent('user_name', fullName);
-    await _setAttributeIfPresent('user_company', companyName);
+    // Diagnostics use the customer ID without copying personal contact details.
+    await _removeAttribute('user_email');
+    await _removeAttribute('user_phone');
+    await _removeAttribute('user_name');
+    await _removeAttribute('user_company');
   }
 
   Future<void> clearUser() async {
@@ -205,12 +200,6 @@ class AppErrorReporter {
         operation: isFatal ? 'recordFatal' : 'recordHandled',
       ),
     );
-  }
-
-  Future<void> _setAttributeIfPresent(String key, String? value) async {
-    final normalized = value?.trim() ?? '';
-    if (normalized.isEmpty) return;
-    await setAttribute(key, normalized);
   }
 
   Future<void> _removeAttribute(String key) async {
