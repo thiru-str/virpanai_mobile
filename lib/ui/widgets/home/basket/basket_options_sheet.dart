@@ -38,7 +38,16 @@ List<BasketOption> basketSortOptions(Iterable<BasketOption> options) =>
 /// in the product page's order. The card's own variant (the cheapest, whose
 /// price the card shows) gets the card's MRP so its discount shows at once.
 List<BasketOption> basketOptionsFromItem(LayoutDatum d) {
-  final cardVariant = basketVariantId(d);
+  final variants = maisonVariants(d);
+  // The card's variant, or, when the payload doesn't name it, the first one
+  // priced at the card's selling price (Thiru's 2026-11-14 fallback).
+  final summaryPrice = basketNumber(d.prices?.sellingPrice);
+  final named = basketVariantId(d);
+  final cardVariant = named.isNotEmpty
+      ? named
+      : summaryPrice > 0
+          ? (variants.where((v) => basketNumber(v.price) == summaryPrice).firstOrNull?.id ?? '')
+          : '';
   // every option value ("Dates · 50P"), the way the product's own variants name it
   final names = <String, String>{};
   final raw = d.raw['product_variants'];
@@ -51,7 +60,7 @@ List<BasketOption> basketOptionsFromItem(LayoutDatum d) {
       if (values.isNotEmpty) names[(v['variant_id'] ?? v['id'] ?? '').toString()] = values.join(' · ');
     }
   }
-  return basketSortOptions(maisonVariants(d).map((v) => BasketOption(v.id, names[v.id] ?? v.name, v.price,
+  return basketSortOptions(variants.map((v) => BasketOption(v.id, names[v.id] ?? v.name, v.price,
       v.id == cardVariant ? (d.prices?.originalPrice ?? '') : '', v.image, true)));
 }
 
@@ -59,10 +68,30 @@ List<BasketOption> basketOptionsFromItem(LayoutDatum d) {
 /// is right before the product loads instead of changing under the shopper.
 String basketOptionLabelFromItem(LayoutDatum d) {
   final opts = d.raw['product_options'];
-  if (opts is! List) return '';
-  final titles = opts.whereType<Map>().map((o) => (o['title'] ?? '').toString().trim()).where((t) => t.isNotEmpty).toList();
-  // one option names the heading; several (flavour and pack) read "Choose an option"
-  return titles.length == 1 ? titles.first : '';
+  if (opts is List) {
+    final titles = opts.whereType<Map>().map((o) => (o['title'] ?? '').toString().trim()).where((t) => t.isNotEmpty).toList();
+    // one option names the heading; several (flavour and pack) read "Choose an option"
+    return titles.length == 1 ? titles.first : '';
+  }
+  // No product_options: a variant's option_title, but only when it is a name.
+  // On Annachi's payload it is the option value's id ("optval_…"), never shown.
+  bool isName(String t) => t.isNotEmpty && !RegExp(r'^opt(val)?_', caseSensitive: false).hasMatch(t);
+  for (final option in d.variantDetails?.variantOptions ?? const <VariantOption>[]) {
+    final title = option.optionTitle?.trim() ?? '';
+    if (isName(title)) return title;
+  }
+  final variants = d.raw['product_variants'];
+  if (variants is List) {
+    for (final variant in variants.whereType<Map>()) {
+      final options = variant['variant_options'];
+      if (options is! List) continue;
+      for (final option in options.whereType<Map>()) {
+        final title = (option['option_title'] ?? '').toString().trim();
+        if (isName(title)) return title;
+      }
+    }
+  }
+  return '';
 }
 
 /// Every option with its own price, MRP, stock and photo, from the product.

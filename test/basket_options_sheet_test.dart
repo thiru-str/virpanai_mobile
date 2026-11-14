@@ -51,6 +51,49 @@ void main() {
   setUp(() => BasketImage.debugProvider = (_) => MemoryImage(_pixel));
   tearDown(() => BasketImage.debugProvider = null);
 
+  testWidgets('opening options keeps home order, label and discount after detail loads', (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    final item = LayoutDatum.fromJson({
+      'id': 'prod_candy',
+      'title': 'Groundnut Candy',
+      'image': _main,
+      'prices': {'selling_price': '10', 'original_price': '12'},
+      'variant_details': {
+        'variant_id': 'v-12',
+        'variant_options': [{'option_title': 'Quantity', 'option_value': '12Pcs'}],
+      },
+      'product_variants': [
+        {'variant_id': 'v-12', 'variant_price': '10', 'variant_options': [{'option_title': 'Quantity', 'option_value': '12Pcs'}]},
+        {'variant_id': 'v-24', 'variant_price': '20', 'variant_options': [{'option_title': 'Quantity', 'option_value': '24Pcs'}]},
+        {'variant_id': 'v-50', 'variant_price': '35', 'variant_options': [{'option_title': 'Quantity', 'option_value': '50Pcs'}]},
+      ],
+    });
+    await t.pumpWidget(MaterialApp(
+      home: Scaffold(body: SingleChildScrollView(child: BasketOptionsSheet(
+        item: item,
+        colors: const BasketColors(Colors.white, Color(0xFF0F7A3D), Colors.white, kBasketInk),
+        onCartQtyChanged: (_, __) {},
+        load: (_, __) => detail.future,
+      ))),
+    ));
+    await t.pump();
+
+    List<String> visibleDetails() => t.widgetList<Text>(find.byType(Text))
+        .map((text) => text.data ?? '')
+        .where((text) => {'12Pcs', '24Pcs', '50Pcs', '₹10', '₹12', '₹20', '₹35', '17% OFF', 'CHOOSE QUANTITY'}.contains(text))
+        .toList();
+    final before = visibleDetails();
+    expect(before, ['12Pcs', '₹10', '₹12', '17% OFF', 'CHOOSE QUANTITY', '12Pcs', '₹10', '24Pcs', '₹20', '50Pcs', '₹35']);
+
+    detail.complete((label: 'Quantity', options: const [
+      BasketOption('v-50', '50Pcs', '35', '35', '', true),
+      BasketOption('v-12', '12Pcs', '10', '12', '', true),
+      BasketOption('v-24', '24Pcs', '20', '20', '', true),
+    ]));
+    await t.pump();
+    expect(visibleDetails(), before);
+  });
+
   testWidgets('names the option the way the product does', (t) async {
     await _open(t);
     expect(find.text('CHOOSE WEIGHT'), findsOneWidget);
