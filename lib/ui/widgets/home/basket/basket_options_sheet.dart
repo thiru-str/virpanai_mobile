@@ -157,7 +157,11 @@ class _BasketOptionsSheetState extends State<BasketOptionsSheet> {
           // price differs from the card's. The pick follows the page's rule
           // until the shopper taps a chip themselves.
           final keep = _userPicked && r.options.any((o) => o.id == _pickedId && o.inStock);
-          _options = r.options.map((o) {
+          // Equal prices keep the order the chips opened in (the API may list
+          // them differently), so only a real price difference moves a chip.
+          final rank = {for (var i = 0; i < _options.length; i++) _options[i].id: i};
+          final byShown = [...r.options]..sort((a, b) => (rank[a.id] ?? 1 << 30).compareTo(rank[b.id] ?? 1 << 30));
+          _options = basketSortOptions(byShown).map((o) {
             // keep the card's photo when the variant has none of its own
             // keep the name and photo the chip opened with, so nothing re-labels
             final shown = _options.where((x) => x.id == o.id).firstOrNull;

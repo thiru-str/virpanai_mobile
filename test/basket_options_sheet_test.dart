@@ -249,4 +249,36 @@ void main() {
     expect(find.text('Dates · 50P'), findsWidgets);
     expect(find.text('50P · Dates'), findsNothing);
   });
+
+  testWidgets('equal-priced options keep the order they opened in when the API lists them differently', (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    await t.pumpWidget(MaterialApp(
+      home: Scaffold(
+          body: SingleChildScrollView(
+              child: BasketOptionsSheet(
+        item: LayoutDatum.fromJson({
+          'id': 'prod_eclairs',
+          'title': 'Eclairs',
+          'image': _main,
+          'product_variants': [
+            {'variant_id': 'v-dates', 'variant_price': '90', 'variant_options': [{'option_value': 'Dates'}]},
+            {'variant_id': 'v-milk', 'variant_price': '90', 'variant_options': [{'option_value': 'Milk'}]},
+          ],
+        }),
+        colors: const BasketColors(Colors.white, Color(0xFF0F7A3D), Colors.white, kBasketInk),
+        onCartQtyChanged: (_, __) {},
+        load: (_, __) => detail.future,
+      ))),
+    ));
+    await t.pump();
+    List<String> order() => t.widgetList<Text>(find.byType(Text)).map((x) => x.data ?? '').where((x) => x == 'Dates' || x == 'Milk').skip(1).toList();
+    expect(order(), ['Dates', 'Milk']);
+    detail.complete((label: '', options: basketSortOptions(const [
+      BasketOption('v-milk', 'Milk', '90', '', '', true),
+      BasketOption('v-dates', 'Dates', '90', '', '', true),
+    ])));
+    await t.pump();
+    await t.pump();
+    expect(order(), ['Dates', 'Milk']);
+  });
 }
