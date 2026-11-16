@@ -39,21 +39,30 @@ List<BasketOption> basketSortOptions(Iterable<BasketOption> options) =>
 /// price the card shows) gets the card's MRP so its discount shows at once.
 List<BasketOption> basketOptionsFromItem(LayoutDatum d) {
   final cardVariant = basketVariantId(d);
-  return basketSortOptions(maisonVariants(d).map((v) => BasketOption(
-      v.id, v.name, v.price, v.id == cardVariant ? (d.prices?.originalPrice ?? '') : '', v.image, true)));
+  // every option value ("Dates · 50P"), the way the product's own variants name it
+  final names = <String, String>{};
+  final raw = d.raw['product_variants'];
+  if (raw is List) {
+    for (final v in raw.whereType<Map>()) {
+      final opts = v['variant_options'];
+      final values = opts is List
+          ? opts.whereType<Map>().map((o) => (o['option_value'] ?? '').toString()).where((x) => x.isNotEmpty).toList()
+          : const <String>[];
+      if (values.isNotEmpty) names[(v['variant_id'] ?? v['id'] ?? '').toString()] = values.join(' · ');
+    }
+  }
+  return basketSortOptions(maisonVariants(d).map((v) => BasketOption(v.id, names[v.id] ?? v.name, v.price,
+      v.id == cardVariant ? (d.prices?.originalPrice ?? '') : '', v.image, true)));
 }
 
 /// "Size", "Weight"…: the option's name from the home payload, so the heading
 /// is right before the product loads instead of changing under the shopper.
 String basketOptionLabelFromItem(LayoutDatum d) {
   final opts = d.raw['product_options'];
-  if (opts is List) {
-    for (final o in opts.whereType<Map>()) {
-      final t = (o['title'] ?? '').toString().trim();
-      if (t.isNotEmpty) return t;
-    }
-  }
-  return '';
+  if (opts is! List) return '';
+  final titles = opts.whereType<Map>().map((o) => (o['title'] ?? '').toString().trim()).where((t) => t.isNotEmpty).toList();
+  // one option names the heading; several (flavour and pack) read "Choose an option"
+  return titles.length == 1 ? titles.first : '';
 }
 
 /// Every option with its own price, MRP, stock and photo, from the product.
@@ -61,12 +70,15 @@ String basketOptionLabelFromItem(LayoutDatum d) {
 Future<({String label, List<BasketOption> options})> basketLoadOptions(BuildContext context, LayoutDatum item) async {
   final response = await ApiService().productDetail(context, item.id ?? '');
   final variants = response.product?.variants ?? const <pr.Variant>[];
-  String label = '';
+  final titles = <String>{};
   final options = <BasketOption>[];
   for (final v in variants) {
     if ((v.id ?? '').isEmpty) continue;
     final values = (v.options ?? const <pr.Value>[]).map((o) => o.value ?? '').where((s) => s.isNotEmpty).toList();
-    if (label.isEmpty && (v.options?.isNotEmpty ?? false)) label = v.options!.first.option?.title ?? '';
+    for (final o in v.options ?? const <pr.Value>[]) {
+      final t = o.option?.title?.trim() ?? '';
+      if (t.isNotEmpty) titles.add(t);
+    }
     final photos = v.metadata?.images ?? const [];
     final photo = photos.isNotEmpty ? photos.first.url ?? '' : v.metadata?.thumbnail ?? '';
     final inStock = v.manageInventory != true || v.allowBackorder == true || (v.inventoryQuantity ?? 0) > 0;
@@ -79,7 +91,7 @@ Future<({String label, List<BasketOption> options})> basketLoadOptions(BuildCont
       inStock,
     ));
   }
-  return (label: label, options: basketSortOptions(options));
+  return (label: titles.length == 1 ? titles.first : '', options: basketSortOptions(options));
 }
 
 Future<void> showBasketOptionsSheet(BuildContext context, LayoutDatum item, BasketColors colors,
@@ -147,10 +159,11 @@ class _BasketOptionsSheetState extends State<BasketOptionsSheet> {
           final keep = _userPicked && r.options.any((o) => o.id == _pickedId && o.inStock);
           _options = r.options.map((o) {
             // keep the card's photo when the variant has none of its own
+            // keep the name and photo the chip opened with, so nothing re-labels
             final shown = _options.where((x) => x.id == o.id).firstOrNull;
-            return o.image.isEmpty && shown != null && shown.image.isNotEmpty
-                ? BasketOption(o.id, o.name, o.price, o.mrp, shown.image, o.inStock)
-                : o;
+            if (shown == null) return o;
+            return BasketOption(o.id, shown.name.isNotEmpty ? shown.name : o.name, o.price, o.mrp,
+                o.image.isNotEmpty ? o.image : shown.image, o.inStock);
           }).toList();
           if (!keep) _pickedId = _firstInStock(_options);
         }
