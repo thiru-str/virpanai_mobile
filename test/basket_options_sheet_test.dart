@@ -211,4 +211,42 @@ void main() {
     expect(cheapestInStock(sorted, (s) => s != 'd:5'), 'a:10');
     expect(cheapestInStock(<String>[], (_) => true), isNull);
   });
+
+  testWidgets('two options (flavour and pack) name each chip by both values and keep them after load', (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    await t.pumpWidget(MaterialApp(
+      home: Scaffold(
+          body: SingleChildScrollView(
+              child: BasketOptionsSheet(
+        item: LayoutDatum.fromJson({
+          'id': 'prod_eclairs',
+          'title': 'Eclairs',
+          'image': _main,
+          'product_options': [
+            {'title': 'Flavour', 'values': ['Dates', 'Milk']},
+            {'title': 'Quantity', 'values': ['50P', '100P']}
+          ],
+          'product_variants': [
+            {'variant_id': 'v-d100', 'variant_price': '180', 'variant_options': [{'option_value': 'Dates'}, {'option_value': '100P'}]},
+            {'variant_id': 'v-d50', 'variant_price': '90', 'variant_options': [{'option_value': 'Dates'}, {'option_value': '50P'}]},
+          ],
+        }),
+        colors: const BasketColors(Colors.white, Color(0xFF0F7A3D), Colors.white, kBasketInk),
+        onCartQtyChanged: (_, __) {},
+        load: (_, __) => detail.future,
+      ))),
+    ));
+    await t.pump();
+    expect(find.text('CHOOSE AN OPTION'), findsOneWidget);
+    expect(find.text('Dates · 50P'), findsWidgets);
+    expect(find.text('Dates · 100P'), findsOneWidget);
+    detail.complete((label: '', options: basketSortOptions(const [
+      BasketOption('v-d100', '100P · Dates', '180', '', '', true),
+      BasketOption('v-d50', '50P · Dates', '90', '', '', true),
+    ])));
+    await t.pump();
+    await t.pump();
+    expect(find.text('Dates · 50P'), findsWidgets);
+    expect(find.text('50P · Dates'), findsNothing);
+  });
 }
