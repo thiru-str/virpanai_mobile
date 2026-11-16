@@ -587,6 +587,11 @@ class ApiService {
 
     if (sortBy != null && sortBy.trim().isNotEmpty) {
       queryParams['order'] = sortBy == AppStrings.low_high ? 'price' : '-price';
+    } else {
+      // No sort picked: the same request as the website's All products page.
+      // The backend reads order=id on the unfiltered list as A–Z; with a
+      // category, collection or search it keeps their own order as before.
+      queryParams['order'] = 'id';
     }
 
     if (searchString.isNotEmpty) {
