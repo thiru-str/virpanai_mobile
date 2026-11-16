@@ -1192,6 +1192,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     productPresentInCart = _cartLineItemQty > 0;
     if (_cartLineItemQty > 0) {
       selectedQuantity = _cartLineItemQty;
+    } else if (selectedQuantity < 1) {
+      // Just removed at 0: back to adding one.
+      selectedQuantity = 1;
     }
     // Always sync the controller — switching variants must clear the previous
     // variant's qty even when the new variant has nothing in the cart.
@@ -1458,9 +1461,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             children: [
               _buildStepperButton(
                 icon: Icons.remove_rounded,
-                enabled: selectedQuantity > 1,
+                // Once the variant is in the cart the stepper may reach 0, and
+                // the button then removes it ("Remove from cart").
+                enabled: selectedQuantity > (productPresentInCart == true ? 0 : 1),
                 onTap: () {
-                  if (selectedQuantity > 1) {
+                  if (selectedQuantity > (productPresentInCart == true ? 0 : 1)) {
                     setState(() => selectedQuantity--);
                     _quantityController.text = selectedQuantity.toString();
                   }
@@ -1489,7 +1494,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   onChanged: (value) {
                     final parsed = int.tryParse(value);
-                    if (parsed != null && parsed > 0) {
+                    if (parsed != null &&
+                        (parsed > 0 ||
+                            (parsed == 0 && productPresentInCart == true))) {
                       setState(() => selectedQuantity = parsed);
                     }
                   },
@@ -1530,6 +1537,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     }
                     final parsedQty =
                         int.tryParse(_quantityController.text.trim());
+                    if (parsedQty == 0 &&
+                        productPresentInCart == true &&
+                        _cartLineItemId != null) {
+                      CartStore.instance
+                          .setLineQuantity(context, _cartLineItemId!, 0);
+                      AppUtils.showToast('Removed from cart');
+                      return;
+                    }
                     if (parsedQty == null || parsedQty <= 0) {
                       AppUtils.showToast(
                           AppStrings.please_enter_valid_quantity);
@@ -1640,7 +1655,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         : stockNotAvailable
                             ? AppStrings.out_of_stock
                             : (productPresentInCart == true
-                                ? AppStrings.update_cart
+                                ? (selectedQuantity == 0
+                                    ? 'Remove from cart'
+                                    : AppStrings.update_cart)
                                 : AppStrings.add_to_cart),
                     style: FontUtils.primaryFontStyle(
                         fontSize: 16,
