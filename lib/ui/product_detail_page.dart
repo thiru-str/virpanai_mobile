@@ -741,6 +741,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     productPresentInCart = _cartLineItemQty > 0;
     if (_cartLineItemQty > 0) {
       selectedQuantity = _cartLineItemQty;
+    } else if (selectedQuantity < 1) {
+      // Just removed at 0: back to adding one.
+      selectedQuantity = 1;
     }
   }
 
@@ -1006,9 +1009,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             children: [
               _buildStepperButton(
                 icon: Icons.remove_rounded,
-                enabled: selectedQuantity > 1,
+                // Once the variant is in the cart the stepper may reach 0, and
+                // the button then removes it ("Remove from cart").
+                enabled: selectedQuantity > (productPresentInCart == true ? 0 : 1),
                 onTap: () {
-                  if (selectedQuantity > 1) {
+                  if (selectedQuantity > (productPresentInCart == true ? 0 : 1)) {
                     setState(() => selectedQuantity--);
                   }
                 },
@@ -1053,6 +1058,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             onPressed: selectedVariantId == null || stockNotAvailable
                 ? null
                 : () async {
+                    if (selectedQuantity == 0 &&
+                        productPresentInCart == true &&
+                        _cartLineItemId != null) {
+                      CartStore.instance
+                          .setLineQuantity(context, _cartLineItemId!, 0);
+                      AppUtils.showToast('Removed from cart');
+                      return;
+                    }
                     final enteredQty = selectedQuantity;
                     final maxQty = getMaxQuantity(
                         selectedVariant, cartResponse?.cart?.items ?? []);
@@ -1147,7 +1160,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         : stockNotAvailable
                             ? AppStrings.out_of_stock
                             : (productPresentInCart == true
-                                ? AppStrings.update_cart
+                                ? (selectedQuantity == 0
+                                    ? 'Remove from cart'
+                                    : AppStrings.update_cart)
                                 : AppStrings.add_to_cart),
                     style: FontUtils.primaryFontStyle(
                         fontSize: 16,
