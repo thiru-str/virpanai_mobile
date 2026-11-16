@@ -138,10 +138,17 @@ class CartStore {
     String variantId,
     int delta,
   ) async {
-    final line = lineForVariant(variantId);
+    var line = lineForVariant(variantId);
+    // A card can show a quantity from its own payload before the cart was
+    // read here; minus would then find no line and do nothing. Read it once.
+    if (line == null && delta < 0 && !_queue.isSyncing) {
+      await refresh(context);
+      line = lineForVariant(variantId);
+    }
     final lineId = line?['id'];
     if (lineId is String) {
       final current = (line?['quantity'] as num?)?.toInt() ?? 0;
+      // At 1 (current + delta <= 0) the line is removed and the card shows ADD again.
       return setLineQuantity(context, lineId, current + delta);
     }
     if (delta <= 0) return null;
