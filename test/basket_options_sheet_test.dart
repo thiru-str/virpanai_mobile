@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:waioz/model/home_page_response.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_options_sheet.dart';
 import 'package:waioz/ui/widgets/home/basket/basket_shared.dart';
+import 'package:waioz/utility/variant_order.dart';
 
 const _main = 'https://cdn.example.com/rice.webp';
 const _bagPhoto = 'https://cdn.example.com/rice-5kg.webp';
@@ -99,5 +101,114 @@ void main() {
     expect(t.takeException(), isNull);
     expect(find.text("Couldn't load the options"), findsOneWidget);
     expect(find.text('View product'), findsOneWidget);
+  });
+
+  // ── order and default: the same rule as the product page ──────────────────
+  // The home payload can list variants most expensive first; the product page
+  // shows them cheapest first and opens on the cheapest in stock.
+  Map<String, dynamic> candy({String cardVariant = 'v-12'}) => {
+        'id': 'prod_candy',
+        'title': 'Groundnut Candy',
+        'image': _main,
+        'prices': {'selling_price': '10', 'original_price': '12'},
+        'variant_details': {'variant_id': cardVariant},
+        'product_options': [
+          {'title': 'Quantity', 'values': ['50Pcs', '24Pcs', '12Pcs']}
+        ],
+        'product_variants': [
+          {'variant_id': 'v-50', 'variant_price': '35', 'variant_options': [{'option_title': 'optval_x', 'option_value': '50Pcs'}]},
+          {'variant_id': 'v-24', 'variant_price': '20', 'variant_options': [{'option_title': 'optval_y', 'option_value': '24Pcs'}]},
+          {'variant_id': 'v-12', 'variant_price': '10', 'variant_options': [{'option_title': 'optval_z', 'option_value': '12Pcs'}]},
+        ],
+      };
+
+  List<String> chips(WidgetTester t) => t
+      .widgetList<Text>(find.byType(Text))
+      .map((x) => x.data ?? '')
+      .where((x) => const {'12Pcs', '24Pcs', '50Pcs'}.contains(x))
+      .skip(1) // the first is the picked option's name under the title
+      .toList();
+
+  Future<List<String>> openCandy(WidgetTester t, Completer<({String label, List<BasketOption> options})> detail) async {
+    final added = <String>[];
+    await t.pumpWidget(MaterialApp(
+      home: Scaffold(
+          body: SingleChildScrollView(
+              child: BasketOptionsSheet(
+        item: LayoutDatum.fromJson(candy()),
+        colors: const BasketColors(Colors.white, Color(0xFF0F7A3D), Colors.white, kBasketInk),
+        onCartQtyChanged: (d, id) => added.add('$d:$id'),
+        load: (_, __) => detail.future,
+      ))),
+    ));
+    await t.pump();
+    return added;
+  }
+
+  testWidgets('opens cheapest first on the cheapest option, with the right heading, before details load', (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    final added = await openCandy(t, detail);
+    expect(chips(t), ['12Pcs', '24Pcs', '50Pcs']);
+    expect(find.text('CHOOSE QUANTITY'), findsOneWidget);
+    expect(find.text('17% OFF'), findsOneWidget); // the card's MRP for its own variant
+    await t.tap(find.text('Add to cart'));
+    expect(added, ['1:v-12']);
+  });
+
+  testWidgets('loading the details moves nothing: same order, pick, price and heading', (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    await openCandy(t, detail);
+    List<String> visible() => t
+        .widgetList<Text>(find.byType(Text))
+        .map((x) => x.data ?? '')
+        .where((x) => x.isNotEmpty && !x.contains('Add to cart'))
+        .toList();
+    final before = visible();
+    // the API returns them in yet another order
+    detail.complete((label: 'Quantity', options: basketSortOptions(const [
+      BasketOption('v-24', '24Pcs', '20', '20', '', true),
+      BasketOption('v-50', '50Pcs', '35', '35', '', true),
+      BasketOption('v-12', '12Pcs', '10', '12', '', true),
+    ])));
+    await t.pump();
+    await t.pump();
+    expect(visible(), before);
+  });
+
+  testWidgets('when the cheapest turns out sold out, it opens on the next cheapest like the product page', (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    final added = await openCandy(t, detail);
+    detail.complete((label: 'Quantity', options: basketSortOptions(const [
+      BasketOption('v-12', '12Pcs', '10', '12', '', false),
+      BasketOption('v-24', '24Pcs', '20', '20', '', true),
+      BasketOption('v-50', '50Pcs', '35', '35', '', true),
+    ])));
+    await t.pump();
+    await t.pump();
+    await t.tap(find.text('Add to cart'));
+    expect(added, ['1:v-24']);
+  });
+
+  testWidgets("a chip the shopper tapped stays picked when the details arrive", (t) async {
+    final detail = Completer<({String label, List<BasketOption> options})>();
+    final added = await openCandy(t, detail);
+    await t.tap(find.text('50Pcs').first);
+    await t.pump();
+    detail.complete((label: 'Quantity', options: basketSortOptions(const [
+      BasketOption('v-12', '12Pcs', '10', '12', '', true),
+      BasketOption('v-24', '24Pcs', '20', '20', '', true),
+      BasketOption('v-50', '50Pcs', '35', '35', '', true),
+    ])));
+    await t.pump();
+    await t.pump();
+    await t.tap(find.text('Add to cart'));
+    expect(added, ['1:v-50']);
+  });
+
+  test('variant order: cheapest first, equal prices keep their order, unknown prices last', () {
+    final sorted = sortCheapestFirst(['c:30', 'a:10', 'x:', 'b:10', 'd:5'], (s) => variantPriceValue(s.split(':')[1]));
+    expect(sorted, ['d:5', 'a:10', 'b:10', 'c:30', 'x:']);
+    expect(cheapestInStock(sorted, (s) => s != 'd:5'), 'a:10');
+    expect(cheapestInStock(<String>[], (_) => true), isNull);
   });
 }
