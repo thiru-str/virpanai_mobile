@@ -12,6 +12,7 @@ import 'package:waioz/ui/widgets/home/maison/maison_shared.dart';
 import 'package:waioz/utility/cart_store.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/page_route_utils.dart';
+import 'package:waioz/utility/variant_order.dart';
 
 /// BASKET's options sheet — MAISON's colour sheet made for a grocery shelf.
 /// Same idea (pick the exact option and add it without leaving the shelf; the
@@ -29,10 +30,31 @@ class BasketOption {
   const BasketOption(this.id, this.name, this.price, this.mrp, this.image, this.inStock);
 }
 
-/// The options the home payload already carries, so the sheet opens filled.
-List<BasketOption> basketOptionsFromItem(LayoutDatum d) => maisonVariants(d)
-    .map((v) => BasketOption(v.id, v.name, v.price, '', v.image, true))
-    .toList();
+/// Options cheapest first: the order the product page shows them in.
+List<BasketOption> basketSortOptions(Iterable<BasketOption> options) =>
+    sortCheapestFirst(options, (o) => variantPriceValue(o.price));
+
+/// The options the home payload already carries, so the sheet opens filled,
+/// in the product page's order. The card's own variant (the cheapest, whose
+/// price the card shows) gets the card's MRP so its discount shows at once.
+List<BasketOption> basketOptionsFromItem(LayoutDatum d) {
+  final cardVariant = basketVariantId(d);
+  return basketSortOptions(maisonVariants(d).map((v) => BasketOption(
+      v.id, v.name, v.price, v.id == cardVariant ? (d.prices?.originalPrice ?? '') : '', v.image, true)));
+}
+
+/// "Size", "Weight"…: the option's name from the home payload, so the heading
+/// is right before the product loads instead of changing under the shopper.
+String basketOptionLabelFromItem(LayoutDatum d) {
+  final opts = d.raw['product_options'];
+  if (opts is List) {
+    for (final o in opts.whereType<Map>()) {
+      final t = (o['title'] ?? '').toString().trim();
+      if (t.isNotEmpty) return t;
+    }
+  }
+  return '';
+}
 
 /// Every option with its own price, MRP, stock and photo, from the product.
 /// Same in-stock rule as the product page.
@@ -57,7 +79,7 @@ Future<({String label, List<BasketOption> options})> basketLoadOptions(BuildCont
       inStock,
     ));
   }
-  return (label: label, options: options);
+  return (label: label, options: basketSortOptions(options));
 }
 
 Future<void> showBasketOptionsSheet(BuildContext context, LayoutDatum item, BasketColors colors,
@@ -88,8 +110,9 @@ class BasketOptionsSheet extends StatefulWidget {
 
 class _BasketOptionsSheetState extends State<BasketOptionsSheet> {
   late List<BasketOption> _options = basketOptionsFromItem(widget.item);
-  String _label = '';
+  late String _label = basketOptionLabelFromItem(widget.item);
   String _pickedId = '';
+  bool _userPicked = false;
   bool _loading = true;
   StreamSubscription<CartStateEvent>? _sub;
 
@@ -109,12 +132,8 @@ class _BasketOptionsSheetState extends State<BasketOptionsSheet> {
     super.dispose();
   }
 
-  String _firstInStock(List<BasketOption> options) {
-    for (final o in options) {
-      if (o.inStock) return o.id;
-    }
-    return options.isEmpty ? '' : options.first.id;
-  }
+  /// Same default as the product page: the cheapest option in stock.
+  String _firstInStock(List<BasketOption> options) => cheapestInStock(options, (o) => o.inStock)?.id ?? '';
 
   Future<void> _load() async {
     try {
@@ -122,11 +141,20 @@ class _BasketOptionsSheetState extends State<BasketOptionsSheet> {
       if (!mounted) return;
       setState(() {
         if (r.options.isNotEmpty) {
-          final keep = r.options.any((o) => o.id == _pickedId && o.inStock);
-          _options = r.options;
-          if (!keep) _pickedId = _firstInStock(r.options);
+          // Already in the product page's order, so chips don't move unless a
+          // price differs from the card's. The pick follows the page's rule
+          // until the shopper taps a chip themselves.
+          final keep = _userPicked && r.options.any((o) => o.id == _pickedId && o.inStock);
+          _options = r.options.map((o) {
+            // keep the card's photo when the variant has none of its own
+            final shown = _options.where((x) => x.id == o.id).firstOrNull;
+            return o.image.isEmpty && shown != null && shown.image.isNotEmpty
+                ? BasketOption(o.id, o.name, o.price, o.mrp, shown.image, o.inStock)
+                : o;
+          }).toList();
+          if (!keep) _pickedId = _firstInStock(_options);
         }
-        _label = r.label;
+        if (r.label.isNotEmpty) _label = r.label;
       });
     } catch (_) {
       // the options the shelf carried still work without their photos
@@ -245,7 +273,10 @@ class _BasketOptionsSheetState extends State<BasketOptionsSheet> {
                   onTap: opt.inStock
                       ? () {
                           HapticFeedback.selectionClick();
-                          setState(() => _pickedId = opt.id);
+                          setState(() {
+                            _pickedId = opt.id;
+                            _userPicked = true;
+                          });
                         }
                       : null,
                 ),

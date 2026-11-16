@@ -31,6 +31,7 @@ import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/app_utils.dart';
 import 'package:waioz/utility/cart_optimistic.dart';
 import 'package:waioz/utility/cart_store.dart';
+import 'package:waioz/utility/variant_order.dart';
 import 'package:waioz/utility/currency_util.dart';
 import 'package:waioz/utility/font_utils.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -1084,7 +1085,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: option.values!.map((optionValue) {
+              children: _valuesCheapestFirst(option).map((optionValue) {
                 final isSelected =
                     selectedOptions[option.id!]?.id == optionValue.id;
 
@@ -1672,31 +1673,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  double _variantPrice(ProductResponse.Variant v) =>
+      variantPriceValue(v.calculatedPrice?.rawCalculatedAmount?.value);
+
+  /// The default variant: the cheapest one in stock, by the same rule the
+  /// BASKET options sheet uses (utility/variant_order.dart). Sorts a copy, so
+  /// the product's own variant list keeps its order.
   ProductResponse.Variant? getCheapestAvailableVariant(
       ProductResponse.Product product) {
     if (product.variants == null || product.variants!.isEmpty) return null;
+    final sorted = sortCheapestFirst(product.variants!, _variantPrice);
+    return cheapestInStock(sorted, isStockAvailable);
+  }
 
-    // sort variants by price ascending
-    final sortedVariants = product.variants!
-      ..sort((a, b) {
-        final priceA = double.tryParse(
-                a.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ??
-            double.infinity;
-        final priceB = double.tryParse(
-                b.calculatedPrice?.rawCalculatedAmount?.value ?? '9999999') ??
-            double.infinity;
-        return priceA.compareTo(priceB);
-      });
-
-    // return first variant that has stock
-    for (final variant in sortedVariants) {
-      if (isStockAvailable(variant)) {
-        return variant;
+  /// An option's values cheapest first (by the cheapest variant carrying each
+  /// value), so the chips read in the same order as the options sheet.
+  List<ProductResponse.Value> _valuesCheapestFirst(ProductOption option) {
+    final cheapest = <String, double>{};
+    for (final v in product?.variants ?? const <ProductResponse.Variant>[]) {
+      final price = _variantPrice(v);
+      for (final o in v.options ?? const []) {
+        final id = o.id;
+        if (id == null) continue;
+        if (price < (cheapest[id] ?? double.infinity)) cheapest[id] = price;
       }
     }
-
-    // if nothing available → return the absolute cheapest anyway
-    return sortedVariants.first;
+    return sortCheapestFirst(option.values ?? const <ProductResponse.Value>[],
+        (value) => cheapest[value.id] ?? double.infinity);
   }
 
   Future<void> getRelatedProductsApi() async {
