@@ -1043,6 +1043,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return null;
   }
 
+  /// How many of the variant this option value would pick (the other options
+  /// as currently chosen) are already in the cart: a count on the chip, like
+  /// the Options sheet.
+  int _cartQtyForOption(String optionId, ProductResponse.Value optionValue) {
+    final picked = {...selectedOptions, optionId: optionValue};
+    if (picked.values.any((v) => v == null)) return 0;
+    final ids = picked.values.map((v) => v?.id).toSet();
+    for (final variant in product?.variants ?? []) {
+      final variantIds = (variant.options ?? []).map((opt) => opt.id).toSet();
+      if (variantIds.length == ids.length && variantIds.containsAll(ids)) {
+        return (cartResponse?.cart?.items ?? [])
+            .where((item) => item.variantId == variant.id)
+            .fold<int>(0, (n, item) => n + (item.quantity ?? 0));
+      }
+    }
+    return 0;
+  }
+
   Widget buildCartSection() {
     if (product?.variants?.isEmpty ?? true) {
       return const SizedBox();
@@ -1111,12 +1129,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       borderRadius: BorderRadius.circular(999),
                       color: isSelected ? AppColors.primary : Colors.white,
                     ),
-                    child: Text(
-                      optionValue.value ?? '',
-                      style: UiTypography.cardAction(
-                        color: isSelected ? Colors.white : AppColors.textColor,
-                      ),
-                    ),
+                    child: Builder(builder: (context) {
+                      final inCart = _cartQtyForOption(option.id!, optionValue);
+                      final label = Text(
+                        optionValue.value ?? '',
+                        style: UiTypography.cardAction(
+                          color: isSelected ? Colors.white : AppColors.textColor,
+                        ),
+                      );
+                      if (inCart <= 0) return label;
+                      return Row(mainAxisSize: MainAxisSize.min, children: [
+                        label,
+                        const SizedBox(width: 8),
+                        Container(
+                          constraints: const BoxConstraints(minWidth: 20),
+                          height: 20,
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.white : AppColors.primary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$inCart',
+                            semanticsLabel: '$inCart in cart',
+                            style: UiTypography.cardAction(
+                              color: isSelected ? AppColors.primary : Colors.white,
+                            ).copyWith(fontSize: 11, fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ]);
+                    }),
                   ),
                 );
               }).toList(),
