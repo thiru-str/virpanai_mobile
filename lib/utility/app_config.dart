@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
-  static const String appName = 'VirpanAi';
+  static const String appName = 'Unnwrap';
   // LOCAL (marketplace-v1.6.0 review): pointing at the local backend on :9000.
   // iOS Simulator: http://localhost:9000/
   // Android Emulator: http://10.0.2.2:9000/
   // Physical device (same WiFi): http://<your-Mac-LAN-ip>:9000/
-  static const String baseUrl = 'http://localhost:9000/';
+  static const String baseUrl = 'https://api-aham.getvirpanai.in/';
   // static const String baseUrl = 'https://virpanai.dev.api.waioz.com/';
   // static const String baseUrl = 'https://virpanai.api.waioz.com/';
   // The store's website serves resized WebP at /_next/image for files on its
