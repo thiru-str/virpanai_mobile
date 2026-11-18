@@ -3,6 +3,7 @@ import 'package:waioz/model/home_page_response.dart';
 
 import 'atelier/atelier_sections.dart';
 import 'maison/maison_sections.dart';
+import 'ribbon/ribbon_sections.dart';
 import 'theatre/theatre_sections.dart';
 import 'basket/basket_sections.dart';
 import 'grocery_grid1.dart';
@@ -241,6 +242,10 @@ const List<String> kMarketplaceLayouts = [
   // THEATRE home-cinema family (2026-11) — app side of the web theatre-*.tsx
   'TheatreHero1', 'TheatreSpotlights1', 'ProductTheatreGrid1', 'TheatreLayouts1',
   'TheatreReels1', 'TheatreBudget1', 'TheatreBrandWall1',
+  // RIBBON experience-gifting family (2026-11) — app side of the web ribbon-*.tsx,
+  // app-native: story hero that unwraps, city carousel, voucher walkthrough
+  'RibbonHero1', 'RibbonCities1', 'RibbonTabs1', 'RibbonHow1', 'RibbonMoods1',
+  'ProductRibbonGrid1', 'RibbonVoices1',
 ];
 
 // Layouts that render from copy alone (no layoutData required).
@@ -364,6 +369,20 @@ Widget? marketplaceHomeWidget(Content content,
       return MaisonChapter1(content: content);
     case 'MaisonVoices1':
       return MaisonVoices1(content: content);
+    case 'RibbonHero1':
+      return RibbonHero1(content: content);
+    case 'RibbonCities1':
+      return RibbonCities1(content: content);
+    case 'RibbonTabs1':
+      return RibbonTabs1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'RibbonHow1':
+      return RibbonHow1(content: content);
+    case 'RibbonMoods1':
+      return RibbonMoods1(content: content);
+    case 'ProductRibbonGrid1':
+      return ProductRibbonGrid1(content: content, onCartQtyChanged: onCartQtyChanged);
+    case 'RibbonVoices1':
+      return RibbonVoices1(content: content);
     case 'TheatreHero1':
       return TheatreHero1(content: content);
     case 'TheatreSpotlights1':
