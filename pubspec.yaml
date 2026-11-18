@@ -162,6 +162,13 @@ flutter:
     - family: Archivo
       fonts:
         - asset: fonts/Archivo-Variable.ttf
+    # RIBBON app family (experience gifting), variable wght, both carry ₹ (SIL OFL — fonts/OFL-SofiaSans.txt)
+    - family: SofiaSans
+      fonts:
+        - asset: fonts/SofiaSans-Variable.ttf
+    - family: SofiaSansExtraCondensed
+      fonts:
+        - asset: fonts/SofiaSansExtraCondensed-Variable.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

@@ -186,6 +186,16 @@ class RedirectUtils {
       PageRouteUtils.pushWithSlide(context, ProductPage(initialQuery: query));
       return;
     }
+    // "/products/<handle>": the app has no handle lookup, so open the list
+    // searched for the handle's words (it finds that product)
+    if ((head == 'products' || head == 'product') && segments.length > 1) {
+      PageRouteUtils.pushWithSlide(context, ProductPage(initialQuery: rest.replaceAll('-', ' ')));
+      return;
+    }
+    if (head == 'shop' || head == 'store' || head == 'products') {
+      PageRouteUtils.pushWithSlide(context, const ProductPage());
+      return;
+    }
     debugPrint('Unhandled storefront link: $raw');
   }
 
