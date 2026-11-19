@@ -1,4 +1,3 @@
-import 'package:waioz/ui/minipos/minipos_price_details.dart';
 import 'package:waioz/ui/minipos/minipos_temp_cart.dart';
 import 'package:waioz/ui/minipos/minipos_scan_flow.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +29,7 @@ class _MiniPosCartPageState extends State<MiniPosCartPage> {
   }
 
   Future<void> _scan() async {
-    if (_scanning) return;
+    if (_scanning || _tempCart.itemCount > 0) return;
     setState(() => _scanning = true);
     try {
       final cart = await scanMiniPosPhone(context);
@@ -77,34 +76,6 @@ class _MiniPosCartPageState extends State<MiniPosCartPage> {
     }
   }
 
-  Future<void> _editPrice(Map<String, dynamic> item) async {
-    final id = '${item['id']}';
-    final current = int.tryParse('${item['unit_price']}') ?? 0;
-    final price = await showDialog<int>(
-      context: context,
-      builder: (_) => MiniPosCartPriceDialog(
-          checkPrice: (price) async {
-            final result = await _api.post('minipos/cart/price-check', {
-              'unit_price': price,
-              'imeis': item['imeis'],
-            });
-            return result['below_cost'] == true;
-          },
-          unitPrice: current,
-          quantity: int.tryParse('${item['quantity']}') ?? 1),
-    );
-    if (!mounted || price == null || price == current) return;
-    setState(() => _updating.add(id));
-    try {
-      _tempCart.setPrice(id, price);
-      if (mounted) setState(() => _cart = _tempCart.snapshot());
-    } catch (e) {
-      if (mounted) miniPosMessage(context, e);
-    } finally {
-      if (mounted) setState(() => _updating.remove(id));
-    }
-  }
-
   /// Medusa names option-less products "Default variant"; the card hides an empty size.
   String _variant(Map<String, dynamic> item) {
     final title = '${item['variant_title'] ?? ''}'.trim();
@@ -138,15 +109,19 @@ class _MiniPosCartPageState extends State<MiniPosCartPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('MiniPOS',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-            Text('Cart', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text('Cart', style: TextStyle(fontSize: 11, color: Colors.white70)),
           ],
         ),
         actions: [
           IconButton(
             tooltip: 'Scan product IMEI',
-            onPressed:
-                _scanning || _loading || _updating.isNotEmpty ? null : _scan,
+            onPressed: _scanning ||
+                    _loading ||
+                    _updating.isNotEmpty ||
+                    items.isNotEmpty
+                ? null
+                : _scan,
             icon: const Icon(Icons.qr_code_scanner),
           ),
           const SizedBox(width: 4),
@@ -188,22 +163,14 @@ class _MiniPosCartPageState extends State<MiniPosCartPage> {
                                   isUpdating:
                                       _updating.contains('${item['id']}'),
                                   onRemoveAll: () => _quantity(item, 0),
-                                  onEditPrice: () => _editPrice(item),
                                 );
                               },
                             ),
                           ),
                         ),
-                        MiniPosPriceDetails(
-                          platformFeePaise:
-                              int.tryParse('${_cart?['platform_fee']}') ?? 0,
-                          subtotal: miniPosMoney(_cart?['subtotal']),
-                          total: miniPosMoney(_cart?['total']),
-                        ),
                         SafeArea(
                           top: false,
                           child: MiniPosCartTotalBar(
-                            amount: miniPosMoney(_cart?['total']),
                             loading: _updating.isNotEmpty,
                             onCheckout: _checkout,
                           ),

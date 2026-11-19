@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/ui/widgets/app_shimmer.dart';
 import 'package:waioz/utility/font_utils.dart';
-import 'package:waioz/utility/ui_typography.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
 
 import 'package:waioz/utility/app_colors.dart';
@@ -20,7 +19,6 @@ class MiniPosCartItemCard extends StatelessWidget {
   final int quantity;
   final bool isUpdating;
   final VoidCallback onRemoveAll;
-  final VoidCallback onEditPrice;
 
   const MiniPosCartItemCard({
     super.key,
@@ -33,7 +31,6 @@ class MiniPosCartItemCard extends StatelessWidget {
     required this.quantity,
     this.isUpdating = false,
     required this.onRemoveAll,
-    required this.onEditPrice,
   });
 
   @override
@@ -119,13 +116,6 @@ class MiniPosCartItemCard extends StatelessWidget {
                           color: Colors.black87,
                         ),
                       ),
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary),
-                        onPressed: isUpdating ? null : onEditPrice,
-                        icon: const Icon(Icons.edit_outlined, size: 16),
-                        label: const Text('Edit price'),
-                      ),
                       Row(
                         children: [
                           Text('Qty: $quantity',
@@ -187,13 +177,11 @@ class MiniPosCartItemCard extends StatelessWidget {
 }
 
 class MiniPosCartTotalBar extends StatelessWidget {
-  final String amount;
   final bool loading;
   final VoidCallback? onCheckout;
 
   const MiniPosCartTotalBar({
     super.key,
-    required this.amount,
     this.loading = false,
     this.onCheckout,
   });
@@ -213,97 +201,75 @@ class MiniPosCartTotalBar extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left: total amount
-          Expanded(
-            flex: 2,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Total', style: UiTypography.cardMeta()),
-                const SizedBox(height: 1),
-                Text(
-                  amount,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: UiTypography.cardPrice(color: AppColors.textColor)
-                      .copyWith(fontSize: 22, letterSpacing: -0.3),
-                ),
-              ],
-            ),
+      child: ElevatedButton(
+        onPressed: loading ? null : onCheckout,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          disabledBackgroundColor: AppColors.primary.withAlpha(128),
+          elevation: 0,
+          minimumSize: const Size(double.infinity, 54),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(width: 14),
-          // Right: dominant Checkout CTA
-          Expanded(
-            flex: 3,
-            child: ElevatedButton(
-              onPressed: loading ? null : onCheckout,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                disabledBackgroundColor: AppColors.primary.withAlpha(128),
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 54),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: loading
-                    ? const SizedBox(
-                        key: ValueKey('loader'),
-                        height: 38,
-                        child: Center(
-                          child: SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: loading
+              ? const SizedBox(
+                  key: ValueKey('loader'),
+                  height: 38,
+                  child: Center(
+                    child: SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    ),
+                  ),
+                )
+              : Column(
+                  key: const ValueKey('text'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            'Checkout',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: FontUtils.primaryFontStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
-                              strokeWidth: 2.5,
                             ),
                           ),
                         ),
-                      )
-                    : Column(
-                        key: const ValueKey('text'),
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Checkout',
-                                style: FontUtils.primaryFontStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded,
-                                  color: Colors.white, size: 18),
-                            ],
-                          ),
-                          const Text(
-                            'Online / Card Payment',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white70,
-                              height: 1.3,
-                            ),
-                          ),
+                        if (MediaQuery.textScalerOf(context).scale(16) <=
+                            24) ...[
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_forward_rounded,
+                              color: Colors.white, size: 18),
                         ],
+                      ],
+                    ),
+                    const Text(
+                      'Choose card or EMI securely',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white70,
+                        height: 1.3,
                       ),
-              ),
-            ),
-          ),
-        ],
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }

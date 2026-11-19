@@ -98,9 +98,9 @@ class _MiniPosSellPageState extends State<MiniPosSellPage>
                 children: [
                   Text('MiniPOS',
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   Text('Products',
-                      style: TextStyle(fontSize: 12, color: Colors.white70)),
+                      style: TextStyle(fontSize: 11, color: Colors.white70)),
                 ]),
             actions: [
               IconButton(

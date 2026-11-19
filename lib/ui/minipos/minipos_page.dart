@@ -6,7 +6,6 @@ import 'package:waioz/ui/minipos/minipos_cart_page.dart';
 import 'package:waioz/ui/minipos/minipos_orders_page.dart';
 import 'package:waioz/ui/minipos/minipos_settings_page.dart';
 import 'package:waioz/ui/minipos/minipos_temp_cart.dart';
-import 'package:waioz/ui/minipos/minipos_sell_page.dart';
 import 'package:waioz/ui/minipos/minipos_vendor_page.dart';
 import 'package:waioz/ui/minipos/minipos_widgets.dart';
 import 'package:waioz/utility/app_colors.dart';
@@ -118,6 +117,12 @@ class _MiniPosPageState extends State<MiniPosPage> {
     if (_scanning || !await _canProceed() || !mounted) return;
     setState(() => _scanning = true);
     try {
+      await MiniPosTempCart.instance.bindToCurrentAccount();
+      if (!mounted) return;
+      if (MiniPosTempCart.instance.itemCount > 0) {
+        await _open(const MiniPosCartPage());
+        return;
+      }
       final cart = await scanMiniPosPhone(context);
       if (!mounted || cart == null) return;
       await _open(const MiniPosCartPage());
@@ -153,7 +158,9 @@ class _MiniPosPageState extends State<MiniPosPage> {
                 onPressed: _back),
             title: const Text('MiniPOS',
                 style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700)),
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700)),
             actions: [
               if (_connected && !_loading && _error == null) ...[
                 IconButton(
@@ -178,66 +185,68 @@ class _MiniPosPageState extends State<MiniPosPage> {
                 ? MiniPosUnavailable(message: _error!, onRetry: _load)
                 : RefreshIndicator(
                     onRefresh: _load,
-                    child: LayoutBuilder(builder: (context, constraints) {
-                      // Stretch the action tiles so the page fills the screen.
-                      const fixed = 16 + 168 + 14 + 24 + 12 + 12 + 16;
-                      final tileHeight = ((constraints.maxHeight - fixed) / 2)
-                          .clamp(120.0, 170.0);
-                      return ListView(
-                        padding: const EdgeInsets.all(16),
-                        children: [
-                          _VendorBanner(
-                            status: _vendorStatus,
-                            connected: _connected,
-                            onTap: () => _open(const MiniPosVendorPage()),
-                          ),
-                          if (!_connected) ...[
-                            const SizedBox(height: 12),
-                            _VendorConnectionTip(status: _vendorStatus),
-                          ],
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            height: 24,
-                            child: Text('Quick Actions',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700)),
-                          ),
-                          const SizedBox(height: 12),
-                          _ActionRow(height: tileHeight, tiles: [
-                            _ActionTile(
-                                icon: Icons.storefront_outlined,
-                                title: 'Products',
-                                onTap: _salesEnabled
-                                    ? () => _open(const MiniPosSellPage())
-                                    : null),
-                            _ActionTile(
-                                icon: Icons.assignment_outlined,
-                                title: 'Orders',
-                                onTap: _salesEnabled
-                                    ? () => _open(const MiniPosOrdersPage())
-                                    : null),
-                          ]),
-                          const SizedBox(height: 12),
-                          _ActionRow(height: tileHeight, tiles: [
-                            _ActionTile(
-                                icon: Icons.settings_outlined,
-                                title: 'Settings',
-                                onTap: _salesEnabled
-                                    ? () => _open(const MiniPosSettingsPage())
-                                    : null),
-                            _ActionTile(
-                                icon: Icons.badge_outlined,
-                                title: 'Vendor details',
-                                onTap: _salesEnabled
-                                    ? () => _open(const MiniPosVendorPage())
-                                    : null),
-                          ]),
-                        ],
-                      );
-                    }),
+                    child: MiniPosHomeContent(
+                      status: _vendorStatus,
+                      connected: _connected,
+                      onVendor: () => _open(const MiniPosVendorPage()),
+                      onOrders: _salesEnabled
+                          ? () => _open(const MiniPosOrdersPage())
+                          : null,
+                      onSettings: _salesEnabled
+                          ? () => _open(const MiniPosSettingsPage())
+                          : null,
+                    ),
                   ),
+      );
+}
+
+/// Content-driven production layout, independently testable without API calls.
+class MiniPosHomeContent extends StatelessWidget {
+  final String status;
+  final bool connected;
+  final VoidCallback onVendor;
+  final VoidCallback? onOrders, onSettings;
+  const MiniPosHomeContent({
+    super.key,
+    required this.status,
+    required this.connected,
+    required this.onVendor,
+    this.onOrders,
+    this.onSettings,
+  });
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+        top: false,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          children: [
+            _VendorBanner(
+                status: status, connected: connected, onTap: onVendor),
+            if (!connected) ...[
+              const SizedBox(height: 12),
+              _VendorConnectionTip(status: status),
+            ],
+            const SizedBox(height: 14),
+            Text('Quick Actions',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            _ActionRow(tiles: [
+              _ActionTile(
+                  icon: Icons.assignment_outlined,
+                  title: 'Orders',
+                  onTap: onOrders),
+              _ActionTile(
+                  icon: Icons.settings_outlined,
+                  title: 'Settings',
+                  onTap: onSettings),
+            ]),
+          ],
+        ),
       );
 }
 
@@ -297,8 +306,8 @@ class _VendorConnectionTip extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   verifying
-                      ? 'Your vendor details are being verified. Products, orders and sales will unlock once connected.'
-                      : 'Add your vendor details to unlock products, orders and sales in MiniPOS.',
+                      ? 'Your vendor details are being verified. Orders and sales will unlock once connected.'
+                      : 'Add your vendor details to unlock orders and sales in MiniPOS.',
                   style: const TextStyle(
                       color: Color(0xFF454545), fontSize: 13, height: 1.45),
                 ),
@@ -356,112 +365,136 @@ class _VendorBanner extends StatelessWidget {
       child: InkWell(
         borderRadius: _cardRadius,
         onTap: onTap,
-        child: Ink(
-          height: 168,
-          decoration: BoxDecoration(
-            borderRadius: _cardRadius,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.primary,
-                Color.lerp(AppColors.primary, Colors.black, 0.25)!,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 168),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: _cardRadius,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary,
+                  Color.lerp(AppColors.primary, Colors.black, 0.25)!,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
               ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(18),
-          child: Row(children: [
-            Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(18),
+            child: Row(children: [
+              Expanded(
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.badge_outlined,
+                              color: Colors.white),
                         ),
-                        child: const Icon(Icons.badge_outlined,
-                            color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text('Vendor',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800)),
-                    ]),
-                    const SizedBox(height: 14),
-                    // Connection badge sits on the left under the title.
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(icon, size: 16, color: color),
-                        const SizedBox(width: 4),
-                        Text(label,
-                            style: TextStyle(
-                                color: color,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700)),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                            child: Text('Vendor',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800))),
                       ]),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(hint,
-                        style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 13)),
-                  ]),
-            ),
-            const SizedBox(width: 12),
-            // Round arrow: tap to open vendor details.
-            Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
+                      const SizedBox(height: 14),
+                      // Connection badge sits on the left under the title.
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(icon, size: 16, color: color),
+                          const SizedBox(width: 4),
+                          Flexible(
+                              child: Text(label,
+                                  style: TextStyle(
+                                      color: color,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700))),
+                        ]),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(hint,
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 13)),
+                    ]),
               ),
-              child: Icon(Icons.chevron_right_rounded,
-                  size: 28, color: AppColors.primary),
-            ),
-          ]),
+              const SizedBox(width: 12),
+              // Round arrow: tap to open vendor details.
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.chevron_right_rounded,
+                    size: 28, color: AppColors.primary),
+              ),
+            ]),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Two equal action tiles side by side at a fixed height.
+/// Grow to fit labels instead of deriving a fixed height from the viewport.
 class _ActionRow extends StatelessWidget {
-  final double height;
   final List<Widget> tiles;
-  const _ActionRow({required this.height, required this.tiles});
+  const _ActionRow({required this.tiles});
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        height: height,
-        child: Row(children: [
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, constraints) {
+        final largeText = MediaQuery.textScalerOf(context).scale(16) > 24;
+        if (constraints.maxWidth < 280 || largeText) {
+          return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < tiles.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 160),
+                      child: tiles[i]),
+                ],
+              ]);
+        }
+        // Only four tiles: intrinsic sizing keeps each pair aligned while
+        // allowing wrapped labels and accessibility fonts to increase height.
+        return IntrinsicHeight(
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           for (var i = 0; i < tiles.length; i++) ...[
             if (i > 0) const SizedBox(width: 12),
-            Expanded(child: tiles[i]),
+            Expanded(
+                child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 160),
+                    child: tiles[i])),
           ],
-        ]),
-      );
+        ]));
+      });
 }
 
 class _ActionTile extends StatelessWidget {
@@ -480,26 +513,29 @@ class _ActionTile extends StatelessWidget {
           child: Ink(
             decoration: _cardDecoration(),
             padding: const EdgeInsets.all(16),
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color:
-                      onTap == null ? Colors.grey.shade400 : AppColors.primary,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Icon(icon, color: Colors.white, size: 40),
-              ),
-              const SizedBox(height: 14),
-              Text(title,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700)),
-            ]),
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      color: onTap == null
+                          ? Colors.grey.shade400
+                          : AppColors.primary,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 40),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(title,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                ]),
           ),
         ),
       );

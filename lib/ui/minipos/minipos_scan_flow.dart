@@ -101,7 +101,7 @@ Future<Map<String, dynamic>?> scanMiniPosPhone(BuildContext context) async {
             _ScannedDetailRow(label: 'IMEI', value: '${product['imei']}'),
             const SizedBox(height: 12),
             _ScannedDetailRow(
-              label: 'Selling price',
+              label: 'MOP',
               value: miniPosMoney(product['selling_price']),
               highlight: true,
             ),

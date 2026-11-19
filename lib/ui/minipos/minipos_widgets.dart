@@ -31,8 +31,8 @@ class MiniPosTheme extends StatelessWidget {
           foregroundColor: Colors.white,
           iconTheme: const IconThemeData(color: Colors.white),
           actionsIconTheme: const IconThemeData(color: Colors.white),
-          titleTextStyle: theme.textTheme.titleLarge
-              ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+          titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+              color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
           systemOverlayStyle: SystemUiOverlayStyle.light,
           surfaceTintColor: Colors.transparent,
           elevation: 0,

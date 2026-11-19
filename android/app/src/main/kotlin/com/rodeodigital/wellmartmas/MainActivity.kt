@@ -5,12 +5,14 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterFragmentActivity() {
     private val upiChannelName = "com.waioz.cartel/upi"
+    private val miniPosSecurityChannelName = "com.waioz.minipos/security"
     private val upiRequestCode = 7421
     private var pendingUpiResult: MethodChannel.Result? = null
 
@@ -48,6 +50,23 @@ class MainActivity: FlutterFragmentActivity() {
                 } catch (error: Exception) {
                     pendingUpiResult = null
                     result.error("UPI_LAUNCH_FAILED", error.message, null)
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, miniPosSecurityChannelName)
+            .setMethodCallHandler { call, result ->
+                if (call.method != "setSecureScreen") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val secure = call.arguments as? Boolean ?: false
+                runOnUiThread {
+                    if (secure) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
+                    result.success(null)
                 }
             }
     }

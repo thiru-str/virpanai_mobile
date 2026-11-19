@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:waioz/api/minipos_service.dart';
 import 'package:waioz/ui/minipos/minipos_widgets.dart';
+import 'package:waioz/ui/minipos/minipos_vendor_form_fields.dart';
 import 'package:waioz/utility/app_colors.dart';
 
 /// Only three states are shown: Not connected, Verifying, Connected.
@@ -78,10 +79,6 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
       return saved.isNotEmpty ? saved : profileValue;
     }
 
-    String capitalizeName(String value) => value.replaceAllMapped(
-        RegExp(r'(^|[\s./&,-])([a-z])'),
-        (match) => '${match.group(1)}${match.group(2)!.toUpperCase()}');
-
     String localPhone(String value) {
       final digits = value.replaceAll(RegExp(r'\D'), '');
       return digits.length == 12 && digits.startsWith('91')
@@ -91,9 +88,9 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
 
     _vendorName.text = contactValue(
         'vendor_name',
-        capitalizeName(profileName.isNotEmpty
+        profileName.isNotEmpty
             ? profileName
-            : '${customer?['company_name'] ?? ''}'.trim()));
+            : '${customer?['company_name'] ?? ''}'.trim());
     _vendorEmail.text =
         contactValue('email', '${customer?['email'] ?? ''}'.trim());
     _vendorPhone.text =
@@ -283,8 +280,7 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
                             (v) => (v ?? '').trim().length >= 2
                                 ? null
                                 : 'Enter vendor name',
-                            enabled: !locked,
-                            capitalization: TextCapitalization.words),
+                            enabled: !locked),
                         _field(
                             _vendorEmail,
                             'Vendor email',
@@ -294,8 +290,7 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
                                 : 'Enter a valid email',
                             keyboard: TextInputType.emailAddress,
                             enabled: !locked,
-                            validateOnChange: true,
-                            capitalization: TextCapitalization.none),
+                            validateOnChange: true),
                         _field(
                             _vendorPhone,
                             'Vendor mobile number',
@@ -307,7 +302,6 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
                             enabled: !locked,
                             validateOnChange: true,
                             prefixText: '+91 ',
-                            capitalization: TextCapitalization.none,
                             formatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(10)
@@ -474,39 +468,26 @@ class _MiniPosVendorPageState extends State<MiniPosVendorPage> {
           bool enabled = true,
           bool validateOnChange = false,
           String? prefixText,
-          TextCapitalization capitalization = TextCapitalization.characters,
           List<TextInputFormatter>? formatters}) =>
       Padding(
           padding: const EdgeInsets.only(bottom: 14),
-          child: TextFormField(
+          child: MiniPosVendorTextField(
               controller: c,
+              label: label,
               enabled: enabled,
               validator: validator,
-              autovalidateMode: validateOnChange
-                  ? AutovalidateMode.onUserInteraction
-                  : AutovalidateMode.disabled,
-              keyboardType: keyboard,
-              textCapitalization: capitalization,
-              inputFormatters: formatters,
-              decoration: InputDecoration(
-                  labelText: label,
-                  prefixText: prefixText,
-                  border: const OutlineInputBorder())));
+              validateOnChange: validateOnChange,
+              keyboard: keyboard,
+              formatters: formatters,
+              prefixText: prefixText));
   Widget _dropdown(String label, String? value, List<String> items,
           ValueChanged<String?> changed, {bool enabled = true}) =>
       Padding(
           padding: const EdgeInsets.only(bottom: 14),
-          child: DropdownButtonFormField<String>(
-              initialValue: value,
-              isExpanded: true,
-              validator: _req,
-              decoration: InputDecoration(
-                  labelText: label, border: const OutlineInputBorder()),
-              items: items
-                  .map((v) => DropdownMenuItem(
-                      value: v,
-                      child: Text(v.replaceAll('_', ' '),
-                          maxLines: 1, overflow: TextOverflow.ellipsis)))
-                  .toList(),
-              onChanged: enabled ? changed : null));
+          child: MiniPosVendorSelectField(
+              label: label,
+              value: value,
+              items: items,
+              onChanged: changed,
+              enabled: enabled));
 }
