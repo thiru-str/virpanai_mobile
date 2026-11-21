@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Adaptive launcher icon ground (Unnwrap ink). Kept apart from
+         ic_launcher_background, which also paints the launch screen. -->
+    <color name="ic_launcher_brand_background">#141414</color>
+</resources>
