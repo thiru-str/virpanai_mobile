@@ -96,8 +96,7 @@ class CategoryViewColors {
 
   /// The accent when it is dark enough to read as text on white, else ink:
   /// a pale primary (yellow, mint) still marks the bar, not the label.
-  static Color get accentText =>
-      accent.computeLuminance() < 0.3 ? accent : ink;
+  static Color get accentText => accent.computeLuminance() < 0.3 ? accent : ink;
 }
 
 /// A category picture filling its box, with the store's no-image mark when
@@ -171,16 +170,18 @@ class CategoryTile extends StatelessWidget {
           children: [
             AspectRatio(aspectRatio: 1, child: CategoryPicture(url: imageUrl)),
             const SizedBox(height: 8),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize,
-                height: 1.3,
-                fontWeight: FontWeight.w500,
-                color: CategoryViewColors.ink,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  height: 1.3,
+                  fontWeight: FontWeight.w500,
+                  color: CategoryViewColors.ink,
+                ),
               ),
             ),
           ],

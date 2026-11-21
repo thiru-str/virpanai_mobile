@@ -58,7 +58,7 @@ class _CategoryTabsViewState extends State<CategoryTabsView> {
   Widget build(BuildContext context) {
     final cats = widget.categories;
     final text = MediaQuery.textScalerOf(context);
-    final tabHeight = 12 + 56 + 6 + text.scale(12) * 1.25 * 2 + 12;
+    final tabHeight = 12 + 56 + 6 + text.scale(12) * 1.25 * 2 + 12 + 4;
     return ColoredBox(
       color: Colors.white,
       child: Column(
@@ -79,7 +79,8 @@ class _CategoryTabsViewState extends State<CategoryTabsView> {
               ),
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: CategoryViewColors.hairline),
+          const Divider(
+              height: 1, thickness: 1, color: CategoryViewColors.hairline),
           Expanded(
             child: PageView.builder(
               controller: _pages,
@@ -167,19 +168,21 @@ class _Tab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      category.name ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.25,
-                        fontWeight:
-                            selected ? FontWeight.w600 : FontWeight.w500,
-                        color: selected
-                            ? CategoryViewColors.accentText
-                            : CategoryViewColors.muted,
+                    Flexible(
+                      child: Text(
+                        category.name ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.25,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w500,
+                          color: selected
+                              ? CategoryViewColors.accentText
+                              : CategoryViewColors.muted,
+                        ),
                       ),
                     ),
                   ],
@@ -194,8 +197,8 @@ class _Tab extends StatelessWidget {
                     height: 2.5,
                     decoration: BoxDecoration(
                       color: accent,
-                      borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(2)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(2)),
                     ),
                   ),
                 ),
