@@ -21,6 +21,8 @@ class AppAssets {
   static const String app_icon = 'images/app_icon.png';
   // Wide logo for headers that put it on a white plate (header-19).
   static const String app_logo_wide = 'images/app_logo_wide.png';
+  // A logo drawn for a dark bar (header-20); optional, the bar falls back to the name.
+  static const String app_logo_light = 'images/app_logo_light.webp';
   static const String ic_no_image = 'images/ic_no_image.svg';
   static const String order_shipped = 'images/order_shipped.svg';
   static const String order_processing = 'images/order_processing.svg';
