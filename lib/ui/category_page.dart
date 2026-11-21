@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:waioz/model/product_categories_response.dart';
-import 'package:waioz/ui/product_page.dart';
-import 'package:waioz/ui/sub_category_page.dart';
-import 'package:waioz/ui/widgets/category_card.dart';
+import 'package:waioz/ui/widgets/category_views/category_views.dart';
 import 'package:waioz/ui/widgets/floating_cart.dart';
 import 'package:waioz/ui/widgets/no_orders_widget.dart';
 import 'package:waioz/ui/widgets/screen_skeletons.dart';
 import 'package:waioz/utility/app_assets.dart';
 import 'package:waioz/utility/app_strings.dart';
-import 'package:waioz/utility/page_route_utils.dart';
-import 'package:waioz/utility/ui_typography.dart';
+import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../api/api_service.dart';
 import 'widgets/common_header_app_bar.dart';
@@ -34,11 +30,22 @@ class _CategoryPageState extends State<CategoryPage> {
   List<ProductCategory> get _categories =>
       productCategoriesResponse?.productCategories ?? const <ProductCategory>[];
 
+  /// Store-wide layout from admin Global Settings (theme.categoryView).
+  static CategoryView _lastView = CategoryView.categoryView1;
+  CategoryView _view = _lastView;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _loadView();
     getCategoriesApi();
+  }
+
+  Future<void> _loadView() async {
+    final v = categoryViewFrom(
+        await SharedPreferencesUtil().getString('category_view'));
+    _lastView = v;
+    if (mounted && v != _view) setState(() => _view = v);
   }
 
   @override
@@ -65,60 +72,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     showExplore: widget.isFromBottomNav,
                     onButtonTap: () {},
                   )
-                : Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                          child: Text(AppStrings.all_category,
-                              style: UiTypography.cardTitle().copyWith(
-                                fontSize: 20,
-                                height: 1.25,
-                                letterSpacing: -0.2,
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-                        Expanded(
-                          child: MasonryGridView.count(
-                            padding: const EdgeInsets.only(bottom: FloatingCart.clearance),
-                            crossAxisCount: 2,
-                            itemCount: _categories.length,
-                            itemBuilder: (context, index) {
-                              final productCategory = _categories[index];
-
-                              return CategoryCard(
-                                imagePath: categoryCoverImage(productCategory),
-                                title: productCategory.name!,
-                                onTap: () {
-                                  if (productCategory
-                                      .categoryChildren!.isNotEmpty) {
-                                    PageRouteUtils.pushWithFade(
-                                      context,
-                                      SubCategoryPage(
-                                        categoryTitle: productCategory.name!,
-                                        productCategory:
-                                            productCategory.categoryChildren!,
-                                      ),
-                                    );
-                                  } else {
-                                    PageRouteUtils.pushWithFade(
-                                      context,
-                                      ProductPage(
-                                          categoryId: productCategory.id!),
-                                    );
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                        )
-                      ],
-                    ),
-                  ));
+                : categoryViewBody(_view, _categories));
   }
 
   void getCategoriesApi() async {
@@ -141,17 +95,4 @@ class _CategoryPageState extends State<CategoryPage> {
       print(e);
     }
   }
-}
-
-/// The picture for a category tile: its own image, else the first image found
-/// among its sub-categories (depth-first). Grouping categories (SAREES › Silk,
-/// Tussar…) usually have no photo of their own, while their children do.
-String categoryCoverImage(ProductCategory category) {
-  final own = (category.image ?? '').trim();
-  if (own.isNotEmpty) return own;
-  for (final child in category.categoryChildren ?? const <ProductCategory>[]) {
-    final found = categoryCoverImage(child);
-    if (found.isNotEmpty) return found;
-  }
-  return '';
 }

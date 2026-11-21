@@ -166,6 +166,7 @@ class Theme {
   String? secondaryColor;
   String? header;
   String? productView;
+  String? categoryView;
   String? titleFont;
   String? contentFont;
 
@@ -175,6 +176,7 @@ class Theme {
     this.secondaryColor,
     this.header,
     this.productView,
+    this.categoryView,
     this.titleFont,
     this.contentFont,
   });
@@ -185,6 +187,7 @@ class Theme {
     secondaryColor: json["secondaryColor"],
     header: json["header"],
     productView: json["productView"],
+    categoryView: json["categoryView"],
     titleFont: json["titleFont"],
     contentFont: json["contentFont"],
   );
@@ -195,6 +198,7 @@ class Theme {
     "secondaryColor": secondaryColor,
     "header": header,
     "productView": productView,
+    "categoryView": categoryView,
     "titleFont": titleFont,
     "contentFont": contentFont,
   };

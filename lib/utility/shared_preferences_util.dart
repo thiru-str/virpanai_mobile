@@ -132,6 +132,7 @@ class SharedPreferencesUtil {
     await saveBool('google_map_usage', details.googleMapUsage ?? false);
     await saveString('app_header', details.theme?.header ?? '');
     await saveString('product_view', details.theme?.productView ?? '');
+    await saveString('category_view', details.theme?.categoryView ?? '');
     await saveString(
         'invoice_url', details.storeDetails?.storeMetadata?.invoiceUrl ?? '');
     final bool skipLogin =

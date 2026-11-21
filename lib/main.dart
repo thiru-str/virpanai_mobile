@@ -169,6 +169,7 @@ Future<void> _savePublicDetailsToPrefs(PublicDetailsResponse details) async {
   await prefs.saveBool('google_map_usage', details.googleMapUsage ?? false);
   await prefs.saveString('app_header', details.theme?.header ?? '');
   await prefs.saveString('product_view', details.theme?.productView ?? '');
+  await prefs.saveString('category_view', details.theme?.categoryView ?? '');
   await prefs.saveString(
       'invoice_url', details.storeDetails?.storeMetadata?.invoiceUrl ?? '');
   final bool skipLogin =
