@@ -283,6 +283,22 @@ void main() {
     expect(
         find.byKey(const ValueKey('charge-breakdown-drawer')), findsOneWidget);
     expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('charge-breakdown-drawer')),
+        matching: find.byKey(
+          const ValueKey('breakdown-interest-badge-corporate:18'),
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('charge-breakdown-drawer')),
+        matching: find.text('17.00% p.a.'),
+      ),
+      findsOneWidget,
+    );
+    expect(
       find.ancestor(
         of: find.byKey(const ValueKey('charge-breakdown-drawer')),
         matching: find.byType(MiniPosTheme),
@@ -329,6 +345,8 @@ void main() {
     expect(find.text('₹147.00'), findsNothing);
     expect(find.text('Convenience fee'), findsOneWidget);
     expect(find.text('Platform fee (GST inclusive)'), findsOneWidget);
+    expect(find.text('₹2,194.00'), findsOneWidget);
+    expect(find.text('₹383.00'), findsOneWidget);
     expect(find.text('GST included in platform fee'), findsNothing);
     expect(find.text('Gowelmart margin'), findsNothing);
     await tester.tap(find.text('Done'));

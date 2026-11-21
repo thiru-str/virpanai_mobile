@@ -29,9 +29,13 @@ class MiniPosService {
 
   Never _throw(DioException error) {
     final data = error.response?.data;
-    final message = data is Map && data['message'] is String
+    final rawMessage = data is Map && data['message'] is String
         ? data['message'] as String
-        : 'MiniPOS request failed. Please try again.';
+        : 'EMI POS request failed. Please try again.';
+    final message = rawMessage.replaceAll(
+      RegExp(r'\bmini\s?pos\b', caseSensitive: false),
+      'EMI POS',
+    );
     throw MiniPosException(message, error.response?.statusCode);
   }
 

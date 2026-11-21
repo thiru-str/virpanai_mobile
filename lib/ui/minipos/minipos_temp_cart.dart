@@ -63,7 +63,7 @@ class MiniPosTempCart with WidgetsBindingObserver {
     }
     if (itemCount > 0) {
       throw const FormatException(
-          'Only one phone can be added to a MiniPOS checkout. Complete or clear the current cart first.');
+          'Only one phone can be added to an EMI POS checkout. Complete or clear the current cart first.');
     }
     final item = _items.putIfAbsent(
         variantId,

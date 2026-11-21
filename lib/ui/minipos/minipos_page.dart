@@ -50,7 +50,7 @@ class _MiniPosPageState extends State<MiniPosPage> {
       final status = await _api.get('minipos/status');
       if (status['enabled'] != true) {
         MiniPosTempCart.instance.clear();
-        throw const MiniPosException('MiniPOS is not enabled');
+        throw const MiniPosException('EMI POS is not enabled');
       }
       if (!mounted) return;
       setState(() {
@@ -96,7 +96,7 @@ class _MiniPosPageState extends State<MiniPosPage> {
         }
       });
       if (!connected)
-        miniPosMessage(context, 'Connect your vendor account to use MiniPOS.');
+        miniPosMessage(context, 'Connect your vendor account to use EMI POS.');
       return connected;
     } catch (e) {
       if (mounted) {
@@ -156,7 +156,7 @@ class _MiniPosPageState extends State<MiniPosPage> {
                 tooltip: 'Back',
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _back),
-            title: const Text('MiniPOS',
+            title: const Text('EMI POS',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 17,
@@ -171,7 +171,7 @@ class _MiniPosPageState extends State<MiniPosPage> {
                     isLabelVisible: _cartCount > 0,
                     label: Text('$_cartCount'),
                     child: IconButton(
-                        tooltip: 'MiniPOS cart',
+                        tooltip: 'EMI POS cart',
                         onPressed: _salesEnabled
                             ? () => _openSales(const MiniPosCartPage())
                             : null,
@@ -307,7 +307,7 @@ class _VendorConnectionTip extends StatelessWidget {
                 Text(
                   verifying
                       ? 'Your vendor details are being verified. Orders and sales will unlock once connected.'
-                      : 'Add your vendor details to unlock orders and sales in MiniPOS.',
+                      : 'Add your vendor details to unlock orders and sales in EMI POS.',
                   style: const TextStyle(
                       color: Color(0xFF454545), fontSize: 13, height: 1.45),
                 ),

@@ -96,7 +96,7 @@ class _MiniPosSellPageState extends State<MiniPosSellPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('MiniPOS',
+                  Text('EMI POS',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   Text('Products',

@@ -1727,6 +1727,19 @@ class _MiniPosCheckoutPageState extends State<MiniPosCheckoutPage>
     return (finalPayout - profit).round();
   }
 
+  int? _convenienceFeePaise(Map<String, dynamic> offer) {
+    final explicit =
+        num.tryParse('${offer['convenience_fee_paise'] ?? ''}'.trim());
+    if (explicit != null) return explicit.round();
+    // Compatibility for quotes created before the backend exposed the
+    // separated field. Total GPF already includes the platform component.
+    final total = num.tryParse('${offer['total_gpf_paise'] ?? ''}'.trim());
+    final platform =
+        num.tryParse('${offer['gowelmart_margin_paise'] ?? ''}'.trim());
+    if (total == null || platform == null) return null;
+    return (total - platform).clamp(0, double.maxFinite).round();
+  }
+
   String _dealerProfitText(Map<String, dynamic> offer) {
     final profitPaise =
         num.tryParse('${offer['dealer_profit_paise'] ?? ''}'.trim());
@@ -1763,6 +1776,7 @@ class _MiniPosCheckoutPageState extends State<MiniPosCheckoutPage>
 
   Future<void> _showChargeBreakdown(Map<String, dynamic> offer) async {
     final months = int.tryParse('${offer['tenure_months'] ?? 0}') ?? 0;
+    final interestRate = _interestRateText(offer);
     var revealProfit = false;
     await showModalBottomSheet<void>(
       context: context,
@@ -1824,6 +1838,33 @@ class _MiniPosCheckoutPageState extends State<MiniPosCheckoutPage>
                       'Private shopkeeper view. Use this to understand the payout and charges.',
                       style: TextStyle(color: Colors.black54),
                     ),
+                    if (months > 0 && interestRate != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        key: ValueKey(
+                          'breakdown-interest-badge-${offer['offer_id']}',
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: .12),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: .55),
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          interestRate,
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Expanded(
                       child: SingleChildScrollView(
@@ -1880,7 +1921,7 @@ class _MiniPosCheckoutPageState extends State<MiniPosCheckoutPage>
                           ),
                           const Divider(height: 28),
                           _summaryRow(
-                              'Convenience fee', offer['total_gpf_paise']),
+                              'Convenience fee', _convenienceFeePaise(offer)),
                           _summaryRow('Platform fee (GST inclusive)',
                               offer['gowelmart_margin_paise']),
                         ]),

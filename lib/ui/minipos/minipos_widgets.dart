@@ -92,7 +92,7 @@ class MiniPosUnavailable extends StatelessWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           MiniPosEmpty(
               icon: Icons.storefront_outlined,
-              title: 'MiniPOS unavailable',
+              title: 'EMI POS unavailable',
               message: message),
           OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
         ]),

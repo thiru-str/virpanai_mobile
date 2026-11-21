@@ -52,7 +52,7 @@ class _MiniPosSettingsPageState extends State<MiniPosSettingsPage> {
 
   @override
   Widget build(BuildContext context) => MiniPosScaffold(
-        appBar: AppBar(title: const Text('MiniPOS Settings')),
+        appBar: AppBar(title: const Text('EMI POS settings')),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null

@@ -67,7 +67,6 @@ class _MiniPosOrdersPageState extends State<MiniPosOrdersPage> {
     }
   }
 
-
   Future<void> _loadMore() async {
     if (_loadingMore || !_hasMore) return;
     setState(() => _loadingMore = true);
@@ -95,7 +94,7 @@ class _MiniPosOrdersPageState extends State<MiniPosOrdersPage> {
 
   @override
   Widget build(BuildContext context) => MiniPosScaffold(
-        appBar: AppBar(title: const Text('MiniPOS orders')),
+        appBar: AppBar(title: const Text('EMI POS orders')),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
@@ -109,7 +108,7 @@ class _MiniPosOrdersPageState extends State<MiniPosOrdersPage> {
                                 SizedBox(height: 100),
                                 MiniPosEmpty(
                                     icon: Icons.receipt_long_outlined,
-                                    title: 'No MiniPOS orders yet',
+                                    title: 'No EMI POS orders yet',
                                     message:
                                         'Paid customer sales will appear here.'),
                               ])

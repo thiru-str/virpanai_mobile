@@ -278,7 +278,7 @@ class _BottomNavPageState extends State<BottomNavPage>
                             const BottomNavigationBarItem(
                               icon: _MiniPosNavIcon(),
                               activeIcon: _MiniPosNavIcon(),
-                              label: 'MiniPOS',
+                              label: 'EMI POS',
                             ),
                           BottomNavigationBarItem(
                             icon: Stack(

@@ -108,7 +108,7 @@ class _MiniPosCartPageState extends State<MiniPosCartPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('MiniPOS',
+            Text('EMI POS',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             Text('Cart', style: TextStyle(fontSize: 11, color: Colors.white70)),
           ],
