@@ -392,14 +392,14 @@ class ProductTheatreGrid1 extends StatelessWidget {
         child: IntrinsicHeight(
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(
-                child: _TheatreTile(
+                child: TheatreTile(
                     item: items[i],
                     colors: colors,
                     onCartQtyChanged: onCartQtyChanged)),
             const SizedBox(width: 12),
             Expanded(
                 child: i + 1 < items.length
-                    ? _TheatreTile(
+                    ? TheatreTile(
                         item: items[i + 1],
                         colors: colors,
                         onCartQtyChanged: onCartQtyChanged)
@@ -424,12 +424,30 @@ class ProductTheatreGrid1 extends StatelessWidget {
   }
 }
 
-class _TheatreTile extends StatelessWidget {
+/// The shelf tile, shared by ProductTheatreGrid1 and the product-list card
+/// (ProductCard13), so the list and the home read as one store. It needs a
+/// bounded height (the button sits at the foot); [heightFor] gives one.
+class TheatreTile extends StatelessWidget {
   final LayoutDatum item;
   final TheatreColors colors;
   final void Function(int delta, String variantId)? onCartQtyChanged;
-  const _TheatreTile(
-      {required this.item, required this.colors, this.onCartQtyChanged});
+
+  /// Opens the product; defaults to the home's product route.
+  final VoidCallback? onTap;
+  const TheatreTile(
+      {super.key,
+      required this.item,
+      required this.colors,
+      this.onCartQtyChanged,
+      this.onTap});
+
+  /// A height that fits the tallest tile at [width]: the square stage, then
+  /// brand, two-line name, up to two rows of spec chips, price and button.
+  /// Narrow tiles (small phones) wrap the chips and struck price sooner.
+  static double heightFor(BuildContext context, double width) {
+    final text = MediaQuery.textScalerOf(context);
+    return width + 68 + text.scale(width < 160 ? 124 : 100);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +459,7 @@ class _TheatreTile extends StatelessWidget {
     final mrp = off > 0 ? basketAmount(item.prices?.originalPrice) : '';
     final ink = colors.ink;
     return GestureDetector(
-      onTap: () => maisonOpenProduct(context, item),
+      onTap: onTap ?? () => maisonOpenProduct(context, item),
       behavior: HitTestBehavior.opaque,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         AspectRatio(

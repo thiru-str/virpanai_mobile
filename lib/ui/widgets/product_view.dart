@@ -13,6 +13,7 @@ import 'package:waioz/ui/widgets/product_card_9.dart';
 import 'package:waioz/ui/widgets/product_card_10.dart';
 import 'package:waioz/ui/widgets/product_card_11.dart';
 import 'package:waioz/ui/widgets/product_card_12.dart';
+import 'package:waioz/ui/widgets/product_card_13.dart';
 import 'package:waioz/utility/shared_preferences_util.dart';
 
 import '../../model/product_response.dart';
@@ -190,6 +191,12 @@ class _ProductViewState extends State<ProductView> {
           product: widget.product,
           onTapCard: widget.onTapCard,
         );
+
+      case ProductCardType.productView13:
+        return ProductCard13(
+          product: widget.product,
+          onTapCard: widget.onTapCard,
+        );
     }
   }
 }
@@ -207,4 +214,5 @@ enum ProductCardType {
   productView10,
   productView11,
   productView12, // BASKET shelf card (same tile as the home shelves)
+  productView13, // THEATRE card (same tile as the home cinema shelves, with the ripple)
 }

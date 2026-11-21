@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:waioz/ui/widgets/home/app_header_basket1.dart';
+import 'package:waioz/ui/widgets/home/app_header_theatre1.dart';
 import 'package:waioz/ui/widgets/home/premium_app_headers.dart';
 import 'package:waioz/ui/widgets/search_address.dart';
 import 'package:waioz/ui/widgets/search_bar_rolling_widget.dart';
@@ -57,6 +58,7 @@ class CombinedHeaderAppBar extends StatelessWidget
     'AppHeaderCategoryTabs1': 'header-17',
     'AppHeaderLuxe1': 'header-18',
     'AppHeaderBasket1': 'header-19',
+    'AppHeaderTheatre1': 'header-20',
   };
 
   static String normalizeHeaderType(String type) => _slugToKey[type] ?? type;
@@ -109,6 +111,13 @@ class CombinedHeaderAppBar extends StatelessWidget
           onSearchClick: onSearchClick,
           onProfileTap: onProfileTap,
         );
+      case "header-20":
+        return AppHeaderTheatre1(
+          cartCount: cartCount,
+          onCartClick: onCartClick,
+          onSearchClick: onSearchClick,
+          onProfileTap: onProfileTap,
+        );
       default:
         return _buildHeader1();
     }
@@ -154,6 +163,8 @@ class CombinedHeaderAppBar extends StatelessWidget
         return 60;
       case "header-19":
         return AppHeaderBasket1.height;
+      case "header-20":
+        return AppHeaderTheatre1.height;
       default:
         return 120;
     }
