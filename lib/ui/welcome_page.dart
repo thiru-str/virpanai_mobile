@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waioz/utility/app_config.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/utility/app_assets.dart';
@@ -58,7 +59,7 @@ class WelcomePage extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          AppStrings.welcome_to_store,
+                          AppConfig.appName,
                           textAlign: TextAlign.center,
                           style: UiTypography.cardTitle().copyWith(
                             fontSize: 32,
