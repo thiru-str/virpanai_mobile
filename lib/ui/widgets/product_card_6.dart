@@ -1,4 +1,5 @@
 import 'package:waioz/utility/store_image.dart';
+import 'package:waioz/utility/html_text.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -55,7 +56,7 @@ class _ProductCard6State extends State<ProductCard6> {
     final product = widget.product;
     final images = product.cardImages;
     final imageUrl = images.isNotEmpty ? (images.first.url ?? '') : '';
-    final description = (product.description ?? '').trim();
+    final description = htmlToPlainText(product.description);
     final cheapest = _cheapestVariant(product);
 
     final calc = cheapest != null

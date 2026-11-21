@@ -1,4 +1,5 @@
 import 'package:waioz/utility/store_image.dart';
+import 'package:waioz/utility/html_text.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -261,12 +262,12 @@ class _ProductCard4State extends State<ProductCard4> {
             }),
 
             Visibility(
-              visible: (product.description??'').isNotEmpty,
+              visible: htmlToPlainText(product.description).isNotEmpty,
               child: Padding(
                 padding:
                 const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                 child: Text(
-                  product.description ?? "Add a short section",
+                  htmlToPlainText(product.description),
                   style: UiTypography.cardSubtitle(color: Colors.black54),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
