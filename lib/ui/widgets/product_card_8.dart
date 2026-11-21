@@ -1,4 +1,5 @@
 import 'package:waioz/utility/store_image.dart';
+import 'package:waioz/utility/html_text.dart';
 import 'package:flutter/material.dart';
 import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/image_fallback_widget.dart';
@@ -160,7 +161,7 @@ class ProductCard8 extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            product.description ?? '',
+                            htmlToPlainText(product.description),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: UiTypography.cardMeta(
