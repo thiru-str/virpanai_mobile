@@ -311,27 +311,49 @@ class TheatrePlate extends StatelessWidget {
                 colors: [Color.lerp(plate, Colors.white, 0.55)!, plate]),
           ),
           child: Stack(fit: StackFit.passthrough, children: [
+            // the rings go on the stage first, so the product stands in front
+            // of them (as on the web)
+            if (waves) Positioned.fill(child: TheatreSoundWaves(seed: seed)),
             Padding(
               padding: padding,
               child: ColorFiltered(
-                // multiply: the studio's white sinks into the plate instead of boxing the product
-                colorFilter: ColorFilter.mode(plate, BlendMode.multiply),
+                colorFilter: waves
+                    ? theatreCutOutFilter(plate)
+                    // multiply: the studio's white sinks into the plate instead of boxing the product
+                    : ColorFilter.mode(plate, BlendMode.multiply),
                 child: BasketImage(url: url, fit: BoxFit.contain),
               ),
             ),
-            // drawn over the photo but multiplied, so they read on the pale
-            // stage and all but vanish over the dark hardware — as if behind it
-            if (waves) Positioned.fill(child: TheatreSoundWaves(seed: seed)),
           ]),
         ),
       );
 }
 
+/// Lifts a packshot off its studio white so whatever sits behind it (the
+/// stage gradient, the sound waves) shows through, the way the web's
+/// `mix-blend-multiply` does: near-white pixels turn transparent, anything
+/// darker than about 75% grey stays solid, and colours are tinted by [plate]
+/// as a multiply would. Flutter widgets can't blend with what's beneath them,
+/// so this is done with alpha instead.
+ColorFilter theatreCutOutFilter(Color plate) {
+  // alpha = 4 * (alpha - average brightness): 0 on pure white, solid below
+  // ~75% grey, and still 0 where the layer is empty (no offset term, or the
+  // whole layer would turn black)
+  const k = 4.0;
+  return ColorFilter.matrix(<double>[
+    plate.r, 0, 0, 0, 0, //
+    0, plate.g, 0, 0, 0, //
+    0, 0, plate.b, 0, 0, //
+    -k / 3, -k / 3, -k / 3, k, 0, //
+  ]);
+}
+
 /// The family's motion touch (the app twin of the web's SoundWaves): three thin
-/// rings ripple out from the centre of the stage like sound from a speaker
-/// (painted over the photo with a multiply blend, so they read as behind it),
-/// fading as they grow — 32% ink, 1.75 px, a 4.2 s cycle, each ring a third of
-/// a cycle behind the last. Starts at a point seeded by the product so tiles
+/// rings ripple out from the centre of the stage like sound from a speaker,
+/// behind the product (see [TheatrePlate]), fading as they grow: 27% ink (the
+/// web's 32% at 85%), a line that scales with the stage (1 px on a phone tile,
+/// 1.75 px on a 300 px stage, as on the web), a 4.2 s cycle, each ring a third
+/// of a cycle behind the last. Starts at a point seeded by the product so tiles
 /// don't pulse together; nothing is drawn when the phone has animations off.
 class TheatreSoundWaves extends StatefulWidget {
   final String seed;
@@ -380,10 +402,9 @@ class _TheatreSoundWavesState extends State<TheatreSoundWaves>
   Widget build(BuildContext context) {
     if (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
       return const SizedBox.shrink();
-    // no RepaintBoundary: the multiply blend has to reach the photo beneath
     return IgnorePointer(
       child: CustomPaint(
-          painter: _WavesPainter(_c, widget.ink.withValues(alpha: 0.32))),
+          painter: _WavesPainter(_c, widget.ink.withValues(alpha: 0.27))),
     );
   }
 }
@@ -407,7 +428,7 @@ class _WavesPainter extends CustomPainter {
       final o = p < 0.18 ? p / 0.18 : 1 - (p - 0.18) / 0.82;
       final paint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.75
+        ..strokeWidth = (size.shortestSide * 0.0058).clamp(1.0, 1.75)
         ..blendMode = BlendMode.multiply
         ..color = color.withValues(alpha: color.a * o.clamp(0.0, 1.0));
       canvas.drawCircle(centre, base * scale, paint);
