@@ -545,10 +545,15 @@ class _Layout {
   static _Layout? parse(String name) {
     final m = RegExp(r'(\d{1,2})\.(\d)(?:\.(\d))?').firstMatch(name);
     if (m == null) return null;
-    return _Layout(
-        math.min(int.parse(m.group(1)!), 9),
-        math.min(int.parse(m.group(2)!), 2),
-        math.min(int.tryParse(m.group(3) ?? '0') ?? 0, 4));
+    final total = int.parse(m.group(1)!);
+    final subs = math.min(int.parse(m.group(2)!), 2);
+    final given = int.tryParse(m.group(3) ?? '0') ?? 0;
+    // a bare count above 9 ("11.2") is a 7-speaker room plus the rest
+    // overhead: 11.2 is drawn as 7.2.4
+    if (total > 9 && given == 0) {
+      return _Layout(7, subs, math.min(total - 7, 4));
+    }
+    return _Layout(math.min(total, 9), subs, math.min(given, 4));
   }
 
   String get legend {
