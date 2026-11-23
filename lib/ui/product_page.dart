@@ -806,6 +806,7 @@ class _ProductPageState extends State<ProductPage> {
           await SharedPreferencesUtil().getMap('selected_address');
       final latitude = _extractAddressCoordinate(selectedAddress, 'latitude');
       final longitude = _extractAddressCoordinate(selectedAddress, 'longitude');
+      final pincode = selectedAddress?['postal_code']?.toString().trim();
       final response = await apiService.listProducts(
         context,
         categoryIds ?? '',
@@ -819,6 +820,7 @@ class _ProductPageState extends State<ProductPage> {
         limit: pageSize,
         latitude: latitude,
         longitude: longitude,
+        pincode: pincode,
       );
 
       // Check if this is the most recent search request

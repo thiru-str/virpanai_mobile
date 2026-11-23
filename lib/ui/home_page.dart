@@ -858,6 +858,7 @@ class _HomePageState extends State<HomePage> {
       final nextLocationDetails = await apiService.getPublicDetails(
         latitude: nextLat,
         longitude: nextLng,
+        pincode: nextAddress['postal_code']?.toString(),
       );
       final nextStoreId = nextLocationDetails.storeId?.trim() ?? '';
 
@@ -881,6 +882,7 @@ class _HomePageState extends State<HomePage> {
           final currentLocationDetails = await apiService.getPublicDetails(
             latitude: currentLat,
             longitude: currentLng,
+            pincode: currentAddress?['postal_code']?.toString(),
           );
           final currentResolvedStoreId =
               currentLocationDetails.storeId?.trim() ?? '';

@@ -493,6 +493,7 @@ class ApiService {
     int limit = 10,
     double? latitude,
     double? longitude,
+    String? pincode,
   }) async {
     await addToken();
     String? regionId = await SharedPreferencesUtil().getString('region_id');
@@ -556,6 +557,9 @@ class ApiService {
     if (longitude != null) {
       queryParams['longitude'] = longitude;
     }
+    if (pincode != null && pincode.trim().isNotEmpty) {
+      queryParams['pincode'] = pincode.trim();
+    }
 
     queryParams['offset'] = offset.toString();
     queryParams['limit'] = limit.toString();
@@ -593,6 +597,7 @@ class ApiService {
     final longitude = metadata is Map
         ? double.tryParse(metadata['longitude']?.toString() ?? '')
         : null;
+    final pincode = selectedAddress?['postal_code']?.toString().trim();
 
     return _makeGetRequest<ProductDetailReponse>(
       'store/custom-product-detail',
@@ -601,6 +606,7 @@ class ApiService {
         "region_id": regionId,
         if (latitude != null) "latitude": latitude,
         if (longitude != null) "longitude": longitude,
+        if (pincode != null && pincode.isNotEmpty) "pincode": pincode,
       },
       (json) => ProductDetailReponse.fromJson(json),
       context,
@@ -1132,13 +1138,21 @@ class ApiService {
   Future<PublicDetailsResponse> getPublicDetails({
     double? latitude,
     double? longitude,
+    String? pincode,
   }) async {
+    final selectedAddress =
+        await SharedPreferencesUtil().getMap('selected_address');
+    final resolvedPincode = pincode?.trim().isNotEmpty == true
+        ? pincode!.trim()
+        : selectedAddress?['postal_code']?.toString().trim();
     return _makeGetRequest<PublicDetailsResponse>(
       'public/details',
       null,
       {
         if (latitude != null) 'lat': latitude,
         if (longitude != null) 'lng': longitude,
+        if (resolvedPincode != null && resolvedPincode.isNotEmpty)
+          'pincode': resolvedPincode,
       },
       (json) => PublicDetailsResponse.fromJson(json),
       null,
@@ -1161,6 +1175,8 @@ class ApiService {
         'cart_id': cartId,
         'latitude': latitude,
         'longitude': longitude,
+        if (address?['postal_code']?.toString().trim().isNotEmpty == true)
+          'pincode': address!['postal_code'].toString().trim(),
         if (address != null) 'address_1': address['address_1'],
         if (address != null) 'address_2': address['address_2'],
         if (address != null) 'city': address['city'],
