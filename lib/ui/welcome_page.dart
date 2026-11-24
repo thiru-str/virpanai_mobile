@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:waioz/ui/phone_number_page.dart';
 import 'package:waioz/utility/app_assets.dart';
+import 'package:waioz/utility/app_colors.dart';
 import 'package:waioz/utility/app_strings.dart';
 import 'package:waioz/utility/font_utils.dart';
 
@@ -146,9 +147,9 @@ class _WelcomePageState extends State<WelcomePage>
                           center: Alignment.center,
                           radius: 1.1,
                           colors: [
-                            Color(0xFF56C254),
-                            Color(0xFF3EAA3C),
-                            Color(0xFF2A7D29),
+                            Color(0xFF24945C), // lighter tint of brandGreen
+                            AppColors.brandGreen,
+                            Color(0xFF165A38), // darker shade of brandGreen
                           ],
                           stops: [0.0, 0.55, 1.0],
                         ),
@@ -311,7 +312,7 @@ class _WelcomePageState extends State<WelcomePage>
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF3EAA3C).withValues(
+                                    color: AppColors.brandGreen.withValues(
                                         alpha: _btnGlow.value * 0.45),
                                     blurRadius: 12 + _btnGlow.value * 10,
                                     spreadRadius: _btnGlow.value * 2,
@@ -327,7 +328,7 @@ class _WelcomePageState extends State<WelcomePage>
                                       context, const PhoneNumberPage()),
                                   style: ButtonStyle(
                                     backgroundColor: WidgetStateProperty.all(
-                                        const Color(0xFF3EAA3C)),
+                                        AppColors.brandGreen),
                                     foregroundColor:
                                         WidgetStateProperty.all(Colors.white),
                                     overlayColor: WidgetStateProperty.all(

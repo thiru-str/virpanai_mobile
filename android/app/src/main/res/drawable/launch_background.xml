@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="#3EAA3C" />
+    <item android:drawable="#1E7B4B" />
     <item
         android:left="28dp"
         android:right="28dp">

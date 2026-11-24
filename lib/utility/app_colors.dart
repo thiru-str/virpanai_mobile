@@ -3,7 +3,12 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static Color primary = Color(0xFF1E7B4B);
+  /// Annachi Maligai brand green (#1E7B4B). Used by the splash and welcome
+  /// screens, and mirrored in the native launch screens (Android
+  /// launch_background / styles.xml, iOS LaunchScreen.storyboard) — change all
+  /// together. Unlike [primary] it is never overridden by the store's theme.
+  static const Color brandGreen = Color(0xFF1E7B4B);
+  static Color primary = brandGreen;
   static Color secondary = Color(0xFFF4F4F4);
   static const Color tabInActivecolor = Color(0xFFA2A2A2);
   static const Color profileItemArrowColor = Color(0xFF272727);

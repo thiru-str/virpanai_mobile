@@ -7,6 +7,7 @@ import 'package:waioz/api/api_service.dart';
 import 'package:waioz/ui/bottom_nav_page.dart';
 import 'package:waioz/ui/soft_update_bottom_sheet.dart';
 import 'package:waioz/ui/welcome_page.dart';
+import 'package:waioz/utility/app_colors.dart';
 import '../api/push_notification_service.dart';
 import '../model/public_detail_model.dart';
 import '../utility/shared_preferences_util.dart';
@@ -41,7 +42,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF3EAA3C),
+      backgroundColor: AppColors.brandGreen,
       body: Stack(
         children: [
           Center(

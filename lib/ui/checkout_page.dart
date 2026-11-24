@@ -170,6 +170,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
                                       context,
                                       _fulfillment.toMetadata(),
                                     );
+                                    // Pickup is free: reload so the shipping
+                                    // fee and order total reflect the switch.
+                                    if (mounted) getCartApi();
                                   } catch (_) {}
                                 },
                               ),

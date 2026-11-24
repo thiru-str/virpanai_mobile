@@ -364,13 +364,27 @@ class _CartPageState extends State<CartPage>
                                     ? cartResponse!.cart!.metadata as Map<String, dynamic>
                                     : null,
                                 onChanged: (sel) async {
-                                  setState(() => _fulfillment = sel ?? const FulfillmentSelection(type: 'standard'));
+                                  // cartLoading shows the spinner and blocks Checkout
+                                  // until the repriced cart arrives, so a stale fee or
+                                  // total is never shown or paid.
+                                  setState(() {
+                                    _fulfillment = sel ?? const FulfillmentSelection(type: 'standard');
+                                    cartLoading = true;
+                                  });
                                   try {
                                     await ApiService().updateCartFulfillment(
                                       context,
                                       _fulfillment.toMetadata(),
                                     );
-                                  } catch (_) {}
+                                    // Delivery <-> self pickup reprices shipping on the
+                                    // server (pickup is free). Only the cart is needed:
+                                    // _onCartState repaints the page, so skip
+                                    // getCartApi's wallet-balance and cross-sell calls.
+                                    if (mounted) await CartStore.instance.refresh(context);
+                                  } catch (_) {
+                                  } finally {
+                                    if (mounted) setState(() => cartLoading = false);
+                                  }
                                 },
                               ),
                             ),
