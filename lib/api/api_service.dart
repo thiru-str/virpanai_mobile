@@ -1090,10 +1090,11 @@ class ApiService {
   Future<DeliveryScheduleResponse> getDeliveryScheduleSlots(
       BuildContext context, String date) async {
     await addToken();
+    String? cartId = await SharedPreferencesUtil().getString('cart_id');
     return _makeGetRequest(
       'store/delivery-scheduling/slots',
       null,
-      {'date': date},
+      {'date': date, 'cart_id': cartId},
       (json) => DeliveryScheduleResponse.fromJson(json),
       context,
     );
